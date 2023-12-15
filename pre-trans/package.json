@@ -1,0 +1,23 @@
+{
+  "devDependencies": {
+    "lint-staged": "^15.2.0",
+    "simple-git-hooks": "^2.9.0"
+  },
+  "simple-git-hooks": {
+    "pre-commit": "npx lint-staged"
+  },
+  "lint-staged": {
+    "src/**/*.{js,jsx,ts,tsx}": [
+      "prettier --write --loglevel=error",
+      "eslint --fix --quiet"
+    ],
+    "{public,src}/**/*.{html,gql,graphql,json}": [
+      "prettier --write --loglevel=error"
+    ]
+  },
+  "scripts": {
+    "lint:fix": "eslint --fix 'src/**/*.{js,jsx,ts,tsx}'",
+    "preinstall": "typesync || :",
+    "prepare": "simple-git-hooks > /dev/null"
+  }
+}
