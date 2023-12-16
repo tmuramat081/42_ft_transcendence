@@ -29,7 +29,7 @@ services:
       POSTGRES_PASSWORD: ts_password
       POSTGRES_DB: ts_database
     volumes:
-      - pgdata:/var/lib/postgresl/data
+      - pgdata:/var/lib/postgresql/data
 
 volumes:
   pgdata:
