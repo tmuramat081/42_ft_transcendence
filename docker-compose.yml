@@ -4,20 +4,26 @@ services:
   frontend:
     build:
       context: ./frontend
-    tty: true
-    volumes:
-      - ./frontend:/frontend
+    # tty: true
+    # volumes:
+    #   - ./frontend:/frontend
     ports:
       - "3000:3000"
+    networks:
+      - ft_transcendence
   
   # Backend - NestJS service
   backend:
     build:
       context: ./backend
-    volumes:
-      - ./backend:/backend
+    # volumes:
+    #   - ./backend:/backend
     ports:
       - "3001:3000"
+    networks:
+      - ft_transcendence
+    depends_on:
+      - database
 
   # Database - PostgreSQL service
   database:
@@ -30,6 +36,12 @@ services:
       POSTGRES_DB: ts_database
     volumes:
       - pgdata:/var/lib/postgresql/data
+    networks:
+      - ft_transcendence
+
+networks:
+  ft_transcendence:
+    driver: bridge
 
 volumes:
   pgdata:
