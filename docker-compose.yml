@@ -10,14 +10,14 @@ services:
     ports:
       - "3000:3000"
   
-  # # Backend - NestJS service
-  # backend:
-  #   build:
-  #     context: ./backend
-  #   volumes:
-  #     - ./backend:/backend
-  #   ports:
-  #     - "3001:3000"
+  # Backend - NestJS service
+  backend:
+    build:
+      context: ./backend
+    volumes:
+      - ./backend:/backend
+    ports:
+      - "3001:3000"
 
   # Database - PostgreSQL service
   database:
