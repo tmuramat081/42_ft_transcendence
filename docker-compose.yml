@@ -5,8 +5,9 @@ services:
     build:
       context: ./frontend
     # tty: true
-    # volumes:
-    #   - ./frontend:/frontend
+    volumes:
+      - ./frontend:/frontend
+      - nextjs-node-modules:/frontend/node_modules
     ports:
       - "3000:3000"
     networks:
@@ -16,8 +17,9 @@ services:
   backend:
     build:
       context: ./backend
-    # volumes:
-    #   - ./backend:/backend
+    volumes:
+      - ./backend:/backend
+      - nestjs-node-modules:/backend/node_modules
     ports:
       - "3001:3000"
     networks:
@@ -45,3 +47,5 @@ networks:
 
 volumes:
   pgdata:
+  nestjs-node-modules:
+  nextjs-node-modules:
