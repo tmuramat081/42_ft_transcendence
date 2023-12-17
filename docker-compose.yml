@@ -17,6 +17,8 @@ services:
   backend:
     build:
       context: ./backend
+    env_file:
+      - .env
     volumes:
       - ./backend:/backend
       - nestjs-node-modules:/backend/node_modules
