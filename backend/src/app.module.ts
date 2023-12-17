@@ -14,6 +14,8 @@ dotenv.config();
     ConfigModule.forRoot({
       isGlobal: true,
       envFilePath: '.env',
+      //バリデーション
+      //required()は必須項目
       validationSchema: Joi.object({
         POSTGRESS_HOST: Joi.string().required(),
         POSTGRESS_PORT: Joi.number().required(),
@@ -22,6 +24,7 @@ dotenv.config();
         POSTGRESS_DB: Joi.string().required(),
       }),
     }),
+    // forRootAsync()を使って非同期接続
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule],
       inject: [ConfigService],
