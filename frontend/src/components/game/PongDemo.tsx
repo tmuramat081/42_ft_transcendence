@@ -27,14 +27,15 @@ export default function PongDemo({ title, width, height }: PongDemoProps) {
   // canvas要素に対する参照
   const canvasRef = useRef<HTMLCanvasElement>(null);
   // ボール位置の参照
-  const ballRef = useRef<Ball>({ x: width / 2, y: height / 2, speedX: 5, speedY: 5 });
+  const ballRef = useRef<Ball>({ x: 0, y: 0, speedX: 0, speedY: 0 });
   // プレイヤー位置の参照
-  const playerPaddleYRef = useRef(height / 4);
+  const playerPaddleYRef = useRef<number>(0);
   // 相手位置の参照
   const computerPaddleYRef = useRef<number>(0);
   // キー入力の参照
   const keyStateRef = useRef<KeyState>({ ArrowUp: false, ArrowDown: false });
-  
+
+  // ゲーム状態の初期化
   const resetGame = (ctx: CanvasRenderingContext2D) => {
     ballRef.current.x = width / 2;
     ballRef.current.y = height / 2;
@@ -45,11 +46,13 @@ export default function PongDemo({ title, width, height }: PongDemoProps) {
   };
 
   const drawCanvas = (ctx: CanvasRenderingContext2D) => {
+    // パドルの描画
     function drawPaddle(x: number, y: number) {
       ctx.fillStyle = 'black';
       ctx.fillRect(x, y, PADDLE_WIDTH, PADDLE_HEIGHT);
     }
 
+    // ボールの描画
     function drawBall(x: number, y: number) {
       ctx.beginPath();
       ctx.arc(x, y, 10, 0, Math.PI * 2);
@@ -58,6 +61,7 @@ export default function PongDemo({ title, width, height }: PongDemoProps) {
       ctx.closePath();
     }
 
+    // キーの入力状態に応じてプレーヤーのパドル位置を更新
     function updatePaddlePosition() {
       if (keyStateRef.current.ArrowUp) {
         playerPaddleYRef.current = Math.max(playerPaddleYRef.current - PADDLE_SPEED, 0);
@@ -67,6 +71,7 @@ export default function PongDemo({ title, width, height }: PongDemoProps) {
       }
     }
 
+    // パドルの衝突判定
     function checkPaddleCollision() {
       if (
         ballRef.current.x < 20 && ballRef.current.x > 10 &&
@@ -122,8 +127,9 @@ export default function PongDemo({ title, width, height }: PongDemoProps) {
     draw();
   };
 
-  
+  // キー入力時の更新処理
   useEffect(() => {
+    // キー押下時のイベントハンドラ
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'ArrowUp' || e.key === 'ArrowDown') {
         keyStateRef.current[e.key] = true;
@@ -136,19 +142,23 @@ export default function PongDemo({ title, width, height }: PongDemoProps) {
       }
     };
   
+    // キー開放時のイベントハンドラ
     const handleKeyUp = (e: KeyboardEvent) => {
       if (e.key === 'ArrowUp' || e.key === 'ArrowDown') {
         keyStateRef.current[e.key] = false;
       }
     };
     
-  
+    // イベントリスナーをセット
     window.addEventListener('keydown', handleKeyDown);
     window.addEventListener('keyup', handleKeyUp);
+
+    // クリーンアップ
     return () => {
       window.removeEventListener('keydown', handleKeyDown);
       window.removeEventListener('keyup', handleKeyUp);
     };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // canvas描画
@@ -159,9 +169,9 @@ export default function PongDemo({ title, width, height }: PongDemoProps) {
       resetGame(ctx);
       drawCanvas(ctx);
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-    
   return (
     <>
       <h1>Pong! demo</h1>
