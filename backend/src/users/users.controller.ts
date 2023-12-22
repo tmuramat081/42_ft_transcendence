@@ -8,7 +8,7 @@ import {
   Delete,
 } from '@nestjs/common';
 import { UsersService } from './users.service'; //Serviceの定義をインポート
-import { User } from './users.model';
+import { User } from './users.model'; // Import the missing module or corresponding type declaration.
 
 @Controller('users') //コントローラーの定義、ルートパスを指定
 export class UsersController {
