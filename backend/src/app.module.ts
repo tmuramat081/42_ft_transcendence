@@ -4,6 +4,7 @@ import { AppService } from './app.service';
 //
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ConfigModule, ConfigService } from '@nestjs/config';
+import { UsersModule } from './users/users.module';
 import * as dotenv from 'dotenv';
 import * as Joi from 'joi';
 
