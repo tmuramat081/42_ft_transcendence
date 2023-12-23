@@ -22,12 +22,12 @@ export class UsersService {
 
     async findOne(id: number): Promise<User | undefined> {
         //return this.connection.getRepository(User).findOne({ where: { user_id: id } });
-        return this.userRepository.findOne({ where: { user_id: id }});
+        return this.userRepository.findOne({ where: { userId: id }});
     }
 
     async findOneByName(name: string): Promise<User | undefined> {
         //return this.connection.getRepository(User).findOne({ where: { user_name: name } });
-        return this.userRepository.findOne({ where: { user_name: name } });
+        return this.userRepository.findOne({ where: { userName: name } });
     }
     
     // async findOne(username: string): Promise<User | undefined> {

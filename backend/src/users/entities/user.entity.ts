@@ -17,36 +17,36 @@ import { Column, CreateDateColumn, DeleteDateColumn, Entity, OneToMany, PrimaryG
 // entityはデータベースのテーブルを表す
 // Uniqueはユニーク制約
 @Entity('users')
-@Unique(['user_name', 'email'])
+@Unique(['userName', 'email'])
 export class User {
     // @PrimaryGeneratedColumn()は主キーを自動生成する
-    @PrimaryGeneratedColumn()
-    user_id: number;
+    @PrimaryGeneratedColumn({ name: 'user_id', type: 'integer', unsigned: true})
+    userId: number;
 
-    @Column({ type: 'varchar', length: 20, unique: true })
-    user_name: string;
+    @Column({ name: 'user_name', type: 'varchar', length: 20, unique: true })
+    userName: string;
 
-    @Column({ type: 'varchar', length: 100, unique: true})
+    @Column({ name: 'email', type: 'varchar', length: 100, unique: true})
     email: string;
 
-    @Column({ type: 'varchar'})
+    @Column({ name: 'password', type: 'varchar'})
     password: string;
 
-    @Column({ type: 'text'})
+    @Column({ name: 'icon', type: 'text'})
     icon: string;
 
-    @CreateDateColumn({type: 'timestamp'})
-    created_at: Timestamp;
+    @CreateDateColumn({ name: 'created_at', type: 'timestamp'})
+    createdAt: Timestamp;
 
-    @DeleteDateColumn({type: 'timestamp'})
-    deleted_at: Timestamp;
+    @DeleteDateColumn({ name: 'deleted_at', type: 'timestamp'})
+    deletedAt: Timestamp;
 
     @Column({ type: 'varchar', length: 20,  default: ''})
     name42: string;
 
-    @Column({ type: 'boolean', default: false, nullable: false})
-    two_factor_auth: boolean;
+    @Column({ name: 'two_factor_auth', type: 'boolean', default: false, nullable: false})
+    twoFactorAuth: boolean;
 
-    @Column({ type: 'text', nullable: true})
-    two_factor_auth_secret: string;
+    @Column({ name: 'two_factor_auth_secret', type: 'text', nullable: true})
+    twoFactorAuthSecret: string;
 }
