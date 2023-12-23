@@ -1,4 +1,3 @@
-// 14 yu さんこう
 
 /*
 Table user {
