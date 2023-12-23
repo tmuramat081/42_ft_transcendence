@@ -7,6 +7,9 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import * as dotenv from 'dotenv';
 import * as Joi from 'joi';
 
+import { User } from './users/entities/user.entity';
+import { UsersModule } from './users/users.module';
+
  // .envを読み込む
 dotenv.config();
 @Module({
@@ -35,10 +38,11 @@ dotenv.config();
         username: config.get<string>('POSTGRESS_USER'),
         password: config.get<string>('POSTGRESS_PASSWORD'),
         database: config.get<string>('POSTGRESS_DB'),
-        entities: [],
+        entities: [User],
         synchronize: true,
       }),
     }),
+    UsersModule,
   ],
   controllers: [AppController],
   providers: [AppService],
