@@ -16,7 +16,7 @@ Service
 export class UsersService {
     constructor(
         // 依存性注入
-        @InjectRepository(User)
+        //@InjectRepository(User)
         private userRepository: UserRepository,
         //private userRepository: Repository<User>,
         //private connection: Connection,

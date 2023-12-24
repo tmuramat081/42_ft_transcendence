@@ -31,7 +31,7 @@ export class User {
     @Column({ name: 'password', type: 'varchar'})
     password: string;
 
-    @Column({ name: 'icon', type: 'text'})
+    @Column({ name: 'icon', type: 'text', default: ''})
     icon: string;
 
     @CreateDateColumn({ name: 'created_at', type: 'timestamp'})

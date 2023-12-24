@@ -3,6 +3,7 @@ import { UsersService } from './users.service';
 import { UserDto } from './dto/user.dto';
 import { User } from './entities/user.entity';
 import { Response } from 'express';
+import * as bcrypt from 'bcrypt'
 
 /*
 分離のポイント
@@ -27,12 +28,24 @@ export class UsersController {
     }
 
     // ここ
+    // curl -X POST -H "Content-Type: application/json" -d '{"userName":"test","email":"test@test","password":"test","passwordConfirm":"test"}' http://localhost:3000/users
     // paththrouth: true は、レスポンスを返すときに、レスポンスヘッダーを変更するために必要
     @Post('')
     SignUp(@Body () userData: UserDto, @Res({ passthrough: true }) res: Response) {
         // リクエストハンドリング
+        if (!userData.userName || !userData.email || !userData.password) {
+            //return res.status(400).json({ message: 'Please enter all fields' });
+            return res.status(400).json({ message: 'Please enter all fields' });
+        }
 
         // リクエストの検証
+        if (userData.password !== userData.passwordConfirm) {
+            return res.status(400).json({ message: 'Passwords do not match' });
+        }
+
+        // if (bcrypt.compareSync(userData.password, userData.passwordConfirm) === false) {
+        //     return res.status(400).json({ message: 'Passwords do not match' });
+        // }
 
         // レスポンスの整形
         var user: User = new User();
@@ -40,7 +53,10 @@ export class UsersController {
         user.email = userData.email;
         user.password = userData.password;
 
+        // アクセストークンを作成
+
         // JWTを返す？
+        //どうやってフロントにユーザー情報を渡すのか？
         return this.usersService.createUser(user);
     }
 }

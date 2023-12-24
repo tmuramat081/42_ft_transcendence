@@ -9,6 +9,6 @@ import { UserRepository } from './users.repository';
   // DBのテーブルを使うためには、forFeature()を使う
   imports: [TypeOrmModule.forFeature([User])],
   controllers: [UsersController],
-  providers: [UsersService]
+  providers: [UserRepository, UsersService],
 })
 export class UsersModule {}
