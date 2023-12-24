@@ -2,59 +2,31 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, Connection } from 'typeorm';
 import { User } from './entities/user.entity';
+import { UserRepository } from './users.repository';
 
+/*
+Service
+ビジネスロジックの実装: アプリケーションの核となるビジネスロジックを実装します。
+データの加工・変換: ビジネスロジックに基づいてデータを加工・変換し、必要な形式にします。
+リポジトリとの連携: データベースや他のストレージへのアクセスをリポジトリを通じて行います。
+サードパーティサービスとの統合: 外部APIやサービスとの連携を管理します。
+*/
 
 @Injectable()
 export class UsersService {
     constructor(
         // 依存性注入
         @InjectRepository(User)
-        private userRepository: Repository<User>,
+        private userRepository: UserRepository,
+        //private userRepository: Repository<User>,
         //private connection: Connection,
     ) {}
 
+    async createUser(user: User): Promise<User> {
+        return await this.userRepository.createUser(user);
+    }
+
     async findAll(): Promise<User[]> {
-        // リポジトリパターンの方がいい？
-        // return this.userRepository.find();
-        //return this.connection.getRepository(User).find();
-        return this.userRepository.find();
+        return await this.userRepository.findAll();
     }
-
-    async findOne(id: number): Promise<User | undefined> {
-        //return this.connection.getRepository(User).findOne({ where: { user_id: id } });
-        return this.userRepository.findOne({ where: { userId: id }});
-    }
-
-    async findOneByName(name: string): Promise<User | undefined> {
-        //return this.connection.getRepository(User).findOne({ where: { user_name: name } });
-        return this.userRepository.findOne({ where: { userName: name } });
-    }
-    
-    // async findOne(username: string): Promise<User | undefined> {
-    //     return this.userRepository.findOne({ user_name: username });
-    // }
-    
-    // async findOneById(id: number): Promise<User | undefined> {
-    //     return this.userRepository.findOne({ user_id: id });
-    // }
-    
-    // async findOneByEmail(email: string): Promise<User | undefined> {
-    //     return this.userRepository.findOne({ email: email });
-    // }
-    
-    // async findOneByName42(name42: string): Promise<User | undefined> {
-    //     return this.userRepository.findOne({ name42: name42 });
-    // }
-    
-    // async findOneByTwoFactorAuthSecret(secret: string): Promise<User | undefined> {
-    //     return this.userRepository.findOne({ two_factor_auth_secret: secret });
-    // }
-    
-    // async save(user: User): Promise<User> {
-    //     return this.userRepository.save(user);
-    // }
-    
-    // async remove(user: User): Promise<User> {
-    //     return this.userRepository.remove(user);
-    // }
 }

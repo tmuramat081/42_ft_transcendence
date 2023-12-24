@@ -3,6 +3,7 @@ import { UsersController } from './users.controller';
 import { UsersService } from './users.service';
 import { User } from './entities/user.entity';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { UserRepository } from './users.repository';
 
 @Module({
   // DBのテーブルを使うためには、forFeature()を使う
