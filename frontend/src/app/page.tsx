@@ -1,7 +1,7 @@
-"use client"
-import styles from './page.module.css'
+"use client";
+import styles from "./page.module.css";
 
-import Link from 'next/link'
+import Link from "next/link";
 /**
  * TOPページ
  * [TODO] 画面設計後に実装する
@@ -14,13 +14,15 @@ export default function Home() {
       <main className={styles.main}>
         <ul>
           <li>
-          {/* ルーティング */}
-          <Link href="./game/demonstration">
-            ゲーム デモンストレーション
-          </Link>
+            {/* ルーティング */}
+            <Link href="./game/demonstration">ゲーム デモンストレーション</Link>
+          </li>
+          {/* chatページを追加 */}
+          <li>
+            <Link href="./chat">チャット</Link>
           </li>
         </ul>
       </main>
     </>
-  )
+  );
 }

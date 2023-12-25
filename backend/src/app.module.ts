@@ -9,6 +9,7 @@ import * as Joi from 'joi';
 
 import { User } from './users/entities/user.entity';
 import { UsersModule } from './users/users.module';
+import { ChatModule } from './chat/chat.module';
 
  // .envを読み込む
 dotenv.config();
@@ -43,6 +44,7 @@ dotenv.config();
       }),
     }),
     UsersModule,
+    ChatModule,
   ],
   controllers: [AppController],
   providers: [AppService],
