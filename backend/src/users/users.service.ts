@@ -3,6 +3,9 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, Connection } from 'typeorm';
 import { User } from './entities/user.entity';
 import { UserRepository } from './users.repository';
+import { UserDto } from './dto/user.dto';
+import { JwtService } from '@nestjs/jwt'
+import { JwtPayload } from './interfaces/jwt_payload';
 
 /*
 Service
@@ -17,13 +20,28 @@ export class UsersService {
     constructor(
         // 依存性注入
         //@InjectRepository(User)
-        private userRepository: UserRepository,
         //private userRepository: Repository<User>,
         //private connection: Connection,
+
+        private userRepository: UserRepository,
+        private jwtService: JwtService,
     ) {}
 
-    async createUser(user: User): Promise<User> {
-        return await this.userRepository.createUser(user);
+    async signUp(userData: UserDto): Promise<string> {
+        var user: User = new User();
+        user.userName = userData.userName;
+        user.email = userData.email;
+        user.password = userData.password;
+
+        // ユーザーの作成
+        const resultUser: User = await this.userRepository.createUser(user);
+        //return resultUser;
+        //return await this.userRepository.createUser(user);
+
+        //JWTを返す？
+        const payload: JwtPayload = { userId: resultUser.userId, userName: resultUser.userName, email: resultUser.email };
+        const accessToken: string = this.jwtService.sign(payload);
+        return accessToken
     }
 
     async findAll(): Promise<User[]> {

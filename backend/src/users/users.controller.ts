@@ -28,10 +28,11 @@ export class UsersController {
     }
 
     // ここ
-    // curl -X POST -H "Content-Type: application/json" -d '{"userName":"test","email":"test@test","password":"test","passwordConfirm":"test"}' http://localhost:3000/users
+    // curl -X POST -H "Content-Type: application/json" -d '{"userName":"test","email":"test@test","password":"test","passwordConfirm":"test"}' http://localhost:3001/users/signup
     // paththrouth: true は、レスポンスを返すときに、レスポンスヘッダーを変更するために必要
-    @Post('')
-    SignUp(@Body () userData: UserDto, @Res({ passthrough: true }) res: Response) {
+    //: Promise<User>
+    @Post('/signup')
+    SignUp(@Body () userData: UserDto, @Res({ passthrough: true }) res: Response) : Promise<string> | Response {
         // リクエストハンドリング
         if (!userData.userName || !userData.email || !userData.password) {
             //return res.status(400).json({ message: 'Please enter all fields' });
@@ -43,20 +44,25 @@ export class UsersController {
             return res.status(400).json({ message: 'Passwords do not match' });
         }
 
-        // if (bcrypt.compareSync(userData.password, userData.passwordConfirm) === false) {
-        //     return res.status(400).json({ message: 'Passwords do not match' });
-        // }
-
-        // レスポンスの整形
-        var user: User = new User();
-        user.userName = userData.userName;
-        user.email = userData.email;
-        user.password = userData.password;
+        if (bcrypt.compare(userData.password, userData.passwordConfirm) === false) {
+            return res.status(400).json({ message: 'Passwords do not match' });
+        }
 
         // アクセストークンを作成
+        const accessToken: Promise<string> = this.usersService.signUp(userData);
 
-        // JWTを返す？
-        //どうやってフロントにユーザー情報を渡すのか？
-        return this.usersService.createUser(user);
+        //cookieにアクセストークンを保存
+        res.cookie('jwt', accessToken, { httpOnly: true })
+
+        return accessToken;
     }
+
+    @Post('/signin')
+    SignIn(@Body () userData: UserDto, @Res({ passthrough: true }) res: Response) : Promise<string> | Response {
+    
+    }
+
+    // JWTからユーザーを取得する　API
+    @Get('/me')
+    currentUser(@Req() req) {}
 }
