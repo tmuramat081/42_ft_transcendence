@@ -1,9 +1,6 @@
 "use client";
 import styles from "./page.module.css";
-"use client";
-import styles from "./page.module.css";
 
-import Link from "next/link";
 import Link from "next/link";
 /**
  * TOPページ
@@ -23,8 +20,6 @@ export default function Home() {
           {/* chatページを追加 */}
           <li>
             <Link href="./chat">チャット</Link>
-            {/* ルーティング */}
-            <Link href="./game/demonstration">ゲーム デモンストレーション</Link>
           </li>
         </ul>
       </main>
