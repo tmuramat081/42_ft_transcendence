@@ -24,6 +24,10 @@ function ChatPage() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [newMessage, setNewMessage] = useState<string>("");
   const [state, setState] = useState<StateType>(initialState);
+  const [inputText, setInputText] = useState("");
+  const [chatLog, setChatLog] = useState<string[]>([]);
+  const [msg, setMsg] = useState("");
+  const [roomID, setRoomID] = useState("");
 
   const handleSendMessage = () => {
     if (newMessage.trim() !== "") {
@@ -39,12 +43,19 @@ function ChatPage() {
   }, []);
 
   const onClickSubmit = useCallback(() => {
-    socket.emit("message", "hello");
+    socket.emit("message", inputText);
+  }, [inputText]);
+
+  useEffect(() => {
+    socket.on("update", (message: string) => {
+      console.log("recieved : ", message);
+      setMsg(message);
+    });
   }, []);
 
-  socket.on("update", (message: string) => {
-    console.log("recieved : ", message);
-  });
+  useEffect(() => {
+    setChatLog([...chatLog, msg]);
+  }, [msg]);
 
   return (
     <div>
@@ -60,6 +71,19 @@ function ChatPage() {
           ))}
         </ul>
       </div>
+
+      <select
+        onChange={(event) => {
+          setRoomID(event.target.value);
+          socket.emit("joinRoom", event.target.value);
+          setChatLog([]);
+        }}
+        value={roomID}
+      >
+        <option value="">---</option>
+        <option value="room1">Room1</option>
+        <option value="room2">Room2</option>
+      </select>
 
       {/* 新しいメッセージの入力フォーム */}
       <div>
