@@ -20,14 +20,13 @@ const initialState: StateType = {
 
 const socket = io("http://localhost:3001");
 
-function ChatPage() {
+const ChatPage: React.FC = () => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [newMessage, setNewMessage] = useState<string>("");
-  const [state, setState] = useState<StateType>(initialState);
-  const [inputText, setInputText] = useState("");
-  const [chatLog, setChatLog] = useState<string[]>([]);
   const [msg, setMsg] = useState("");
   const [roomID, setRoomID] = useState("");
+
+  //   const socket = io("http://localhost:3001");
 
   const handleSendMessage = () => {
     if (newMessage.trim() !== "") {
@@ -36,15 +35,16 @@ function ChatPage() {
     }
   };
 
+  const onClickSubmit = useCallback(() => {
+    console.log(newMessage);
+    socket.emit("message", newMessage);
+  }, [newMessage]);
+
   useEffect(() => {
     socket.on("connect", () => {
       console.log("connection ID : ", socket.id);
     });
   }, []);
-
-  const onClickSubmit = useCallback(() => {
-    socket.emit("message", inputText);
-  }, [inputText]);
 
   useEffect(() => {
     socket.on("update", (message: string) => {
@@ -54,8 +54,21 @@ function ChatPage() {
   }, []);
 
   useEffect(() => {
-    setChatLog([...chatLog, msg]);
-  }, [msg]);
+    const handleRoomChange = (newRoomID: string) => {
+      // Roomが切り替わったときに新しいRoomのメッセージを取得
+      socket.emit("getMessages", newRoomID, (messages: Message[]) => {
+        setMessages(messages);
+      });
+    };
+
+    // joinRoomイベントのリスナーを設定
+    socket.on("joinRoom", handleRoomChange);
+
+    return () => {
+      // コンポーネントがアンマウントされたときにリスナーをクリーンアップ
+      socket.off("joinRoom", handleRoomChange);
+    };
+  }, []); // 依存リストが空なので、最初のマウント時のみ実行される
 
   return (
     <div>
@@ -76,7 +89,6 @@ function ChatPage() {
         onChange={(event) => {
           setRoomID(event.target.value);
           socket.emit("joinRoom", event.target.value);
-          setChatLog([]);
         }}
         value={roomID}
       >
@@ -96,6 +108,6 @@ function ChatPage() {
       </div>
     </div>
   );
-}
+};
 
 export default ChatPage;
