@@ -2,6 +2,7 @@
 import React, { useState, useEffect, useCallback } from "react";
 import io from "socket.io-client";
 import ChatLayout from "./layout";
+import { text } from "stream/consumers";
 
 interface Message {
   text: string;
@@ -21,9 +22,15 @@ const initialState: StateType = {
 const socket = io("http://localhost:3001");
 
 const ChatPage: React.FC = () => {
-  const [messages, setMessages] = useState<Message[]>([]);
   const [newMessage, setNewMessage] = useState<string>("");
-  const [roomID, setRoomID] = useState<string | null>(null);
+  const [chatLog, setChatLog] = useState<Message[]>([]);
+  const [msg, setMsg] = useState<Message>({ text: "", timestamp: new Date() });
+  const [roomID, setRoomID] = useState<string>("");
+
+  const onClickSubmit = useCallback(() => {
+    socket.emit("message", { roomID, newMessage });
+    setChatLog([...chatLog, { text: newMessage, timestamp: new Date() }]);
+  }, [roomID, newMessage, chatLog]);
 
   // コンポーネントがマウントされたときのみ接続
   useEffect(() => {
@@ -39,93 +46,45 @@ const ChatPage: React.FC = () => {
     };
   }, []); // 空の依存配列はマウント時のみ実行
 
-  const handleSendMessage = () => {
-    if (newMessage.trim() !== "") {
-      setMessages([...messages, { text: newMessage, timestamp: new Date() }]);
-      setNewMessage("");
-    }
-  };
-
-  const onClickSubmit = useCallback(() => {
-    socket.emit("message", { roomID, text: newMessage });
-  }, [newMessage, roomID]);
-
   useEffect(() => {
-    socket.on("connect", () => {
-      console.log("connection ID : ", socket.id);
+    socket.on("update", (message) => {
+      console.log("recieved : ", message);
+      setMsg(message);
     });
   }, []);
 
-  useEffect(() => {
-    if (roomID) {
-      socket.emit("joinRoom", roomID);
-
-      socket.on("update", (message: string) => {
-        setMessages((prevMessages) => [
-          ...prevMessages,
-          { text: message, timestamp: new Date() },
-        ]);
-      });
-
-      // ルームに参加したことをサーバーに通知
-      socket.emit("getMessages", roomID, (roomMessages: Message[]) => {
-        setMessages(roomMessages);
-      });
-    }
-  }, [roomID]);
-
-  useEffect(() => {
-    const handleRoomChange = (newRoomID: string) => {
-      // Roomが切り替わったときに新しいRoomのメッセージを取得
-      socket.emit("getMessages", newRoomID, (messages: Message[]) => {
-        setMessages(messages);
-      });
-    };
-
-    // joinRoomイベントのリスナーを設定
-    socket.on("joinRoom", handleRoomChange);
-
-    return () => {
-      // コンポーネントがアンマウントされたときにリスナーをクリーンアップ
-      socket.off("joinRoom", handleRoomChange);
-    };
-  }, []); // 依存リストが空なので、最初のマウント時のみ実行される
-
   return (
-    <div>
+    <>
       <h1>Chat Page</h1>
-
-      <div>
-        <ul>
-          {messages.map((message, index) => (
-            <li key={index}>
-              {message.text} - {message.timestamp.toLocaleString()}
-            </li>
-          ))}
-        </ul>
-      </div>
 
       <select
         onChange={(event) => {
-          const newRoomID = event.target.value;
-          setRoomID(newRoomID);
+          setRoomID(event.target.value);
+          socket.emit("joinRoom", event.target.value);
+          //   setChatLog([]);
         }}
-        value={roomID || ""}
+        value={roomID}
       >
         <option value="">---</option>
         <option value="room1">Room1</option>
         <option value="room2">Room2</option>
       </select>
 
-      <div>
+      <>
         <input
+          id="newMessage"
           type="text"
           value={newMessage}
           onChange={(e) => setNewMessage(e.target.value)}
         />
-        <button onClick={handleSendMessage}>Send</button>
-      </div>
-    </div>
+        <button onClick={onClickSubmit}>Send</button>
+      </>
+      {chatLog.map((message, index) => (
+        <li key={index}>
+          {message.text} - {message.timestamp.toLocaleString()}
+        </li>
+      ))}
+    </>
   );
 };
 
