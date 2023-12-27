@@ -6,6 +6,7 @@ import { UserRepository } from './users.repository';
 import { UserDto } from './dto/user.dto';
 import { JwtService } from '@nestjs/jwt'
 import { JwtPayload } from './interfaces/jwt_payload';
+import * as bcrypt from 'bcrypt';
 
 /*
 Service
@@ -42,6 +43,28 @@ export class UsersService {
         const payload: JwtPayload = { userId: resultUser.userId, userName: resultUser.userName, email: resultUser.email };
         const accessToken: string = this.jwtService.sign(payload);
         return accessToken
+    }
+
+    async signIn(userData: UserDto): Promise<string> {
+        // ユーザーの検索
+        const user: User = await this.userRepository.findOneByName(userData.userName);
+        // パスワードの検証
+        if (user && user.password === userData.password && bcrypt.compare(userData.password, user.password)) {
+            // JWTを返す？
+            const payload: JwtPayload = { userId: user.userId, userName: user.userName, email: user.email };
+            const accessToken: string = this.jwtService.sign(payload);
+            return accessToken
+        } else {
+            return null
+        }
+    }
+
+    // Partial<User> は User の一部のプロパティを表す
+    async currentUser(userData: UserDto): Promise<Partial<User>> {
+        // ユーザーの検索
+        const user: User = await this.userRepository.findOneByName(userData.userName);
+        const { password, ...result } = user;
+        return result
     }
 
     async findAll(): Promise<User[]> {

@@ -6,6 +6,8 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { UserRepository } from './users.repository';
 import { JwtModule } from '@nestjs/jwt';
 import { PassportModule } from '@nestjs/passport';
+import { JwtStrategy } from './strategy/jwt.strategy';
+import { JwtAuthGuard } from './guards/jwt-auth.guard';
 
 @Module({
   // DBのテーブルを使うためには、forFeature()を使う
@@ -24,6 +26,7 @@ import { PassportModule } from '@nestjs/passport';
     }),
   ],
   controllers: [UsersController],
-  providers: [UserRepository, UsersService],
+  providers: [UserRepository, UsersService, JwtStrategy, JwtAuthGuard],
+  exports: [JwtStrategy, JwtAuthGuard],
 })
 export class UsersModule {}

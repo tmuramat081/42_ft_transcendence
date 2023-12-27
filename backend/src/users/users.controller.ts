@@ -2,8 +2,11 @@ import { Controller, Get, Post, Body, Req, Res } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { UserDto } from './dto/user.dto';
 import { User } from './entities/user.entity';
-import { Response } from 'express';
+import { Response, Request } from 'express';
 import * as bcrypt from 'bcrypt'
+import { UseGuards } from '@nestjs/common';
+import { JwtAuthGuard } from './guards/jwt-auth.guard';
+import { AuthGuard } from '@nestjs/passport';
 
 /*
 分離のポイント
@@ -54,15 +57,36 @@ export class UsersController {
         //cookieにアクセストークンを保存
         res.cookie('jwt', accessToken, { httpOnly: true })
 
+        //redisにアクセストークンを保存
+
         return accessToken;
     }
 
+    // curl -X POST -H "Content-Type: application/json" -d '{"userName":"test","password":"test"}' http://localhost:3001/users/signin
+    //redisに保存されているアクセストークンを削除
     @Post('/signin')
     SignIn(@Body () userData: UserDto, @Res({ passthrough: true }) res: Response) : Promise<string> | Response {
-    
+        //アクセストークンを返す
+        if (!userData.userName || !userData.password) {
+            return res.status(400).json({ message: 'Please enter all fields' });
+        }
+
+        const accessToken: Promise<string> = this.usersService.signIn(userData);
+
+        //cookieにアクセストークンを保存
+        res.cookie('jwt', accessToken, { httpOnly: true })
+
+        //redisにアクセストークンを保存
+
+        return accessToken;
     }
 
+    // curl -X GET -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInVzZXJOYW1lIjoidGVzdCIsImVtYWlsIjoidGVzdEB0ZXN0IiwiaWF0IjoxNzAzNjg5NDUyLCJleHAiOjE3MDM2OTMwNTJ9.sI9qtCGhs1Azc7zKyXQkqRmkIYlC8Axb-6Lkz3N1GYw" http://localhost:3001/users/me
     // JWTからユーザーを取得する　API
+    @UseGuards(JwtAuthGuard)
     @Get('/me')
-    currentUser(@Req() req) {}
+    currentUser(@Req() req) : Partial<User>{
+        const { password, ...user } = req.user;
+        return user;
+    }
 }

@@ -5,10 +5,10 @@ import { AuthGuard } from "@nestjs/passport";
 export class JwtAuthGuard extends AuthGuard('jwt') {
     // 認証に失敗した場合はnullを返す
     // いる？
-    handleRequest(err: any, user: any, info: any) {
-        if (err || !user) {
-            return null;
-        }
-        return user;
-    }
+    // handleRequest(err: any, user: any, info: any) {
+    //     if (err || !user) {
+    //         return null;
+    //     }
+    //     return user;
+    // }
 }
