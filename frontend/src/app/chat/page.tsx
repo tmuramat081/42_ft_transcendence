@@ -49,13 +49,13 @@ const ChatPage: React.FC = () => {
 
   const onClickSubmit = useCallback(() => {
     socket.emit("message", { roomID, newMessage });
-    //     setChatLog([...chatLog, { text: newMessage, timestamp: new Date() }]);
-    //   }, [roomID, newMessage, chatLog]);
-  }, [roomID, newMessage]);
+    setChatLog([...chatLog, { text: newMessage, timestamp: new Date() }]);
+  }, [roomID, newMessage, chatLog]);
+  //   }, [roomID, newMessage]);
 
-  useEffect(() => {
-    setChatLog([...chatLog, msg]);
-  }, [msg, chatLog]);
+  //   useEffect(() => {
+  //     setChatLog([...chatLog, msg]);
+  //   }, [msg, chatLog]);
 
   return (
     <>
