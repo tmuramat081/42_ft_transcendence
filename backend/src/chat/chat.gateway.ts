@@ -3,9 +3,10 @@ import {
   WebSocketGateway,
   WebSocketServer,
   MessageBody,
+  ConnectedSocket,
 } from '@nestjs/websockets';
 import { Logger } from '@nestjs/common';
-import { Server } from 'socket.io';
+import { Server, Socket } from 'socket.io';
 
 @WebSocketGateway({ cors: { origin: '*' } })
 export class ChatGateway {
@@ -13,29 +14,25 @@ export class ChatGateway {
   server: Server;
 
   private logger: Logger = new Logger('Gateway Log');
-  private rooms: { [key: string]: { messages: string[] } } = {};
 
   @SubscribeMessage('message')
   handleMessage(
-    @MessageBody() { roomID, text }: { roomID: string; text: string },
+    @MessageBody() message: string,
+    @ConnectedSocket() socket: Socket,
   ) {
-    this.logger.log(`message received: ${text}`);
-    this.rooms[roomID].messages.push(text);
-    this.server.to(roomID).emit('update', text);
+    this.logger.log(`message received: ${message}`);
+    const rooms = [...socket.rooms].slice(0);
+    this.server.to(rooms[1]).emit('update', message);
   }
 
   @SubscribeMessage('joinRoom')
-  handleJoinRoom(@MessageBody() roomID: string) {
-    this.logger.log(`joining room: ${roomID}`);
-    if (!this.rooms[roomID]) {
-      this.rooms[roomID] = { messages: [] };
-    }
-    this.server.socketsJoin(roomID);
-    this.server.to(roomID).emit('update', 'Joined the room');
-  }
-
-  @SubscribeMessage('getMessages')
-  handleGetMessages(@MessageBody() roomID: string) {
-    return this.rooms[roomID]?.messages || [];
+  handleJoinRoom(
+    @MessageBody() roomID: string,
+    @ConnectedSocket() socket: Socket,
+  ) {
+    this.logger.log(`joinRoom: ${socket.id} joined ${roomId}`);
+    const rooms = [...socket.rooms].slice(0);
+    if (rooms.length == 2) socket.leave(rooms[1]);
+    socket.join(roomId);
   }
 }
