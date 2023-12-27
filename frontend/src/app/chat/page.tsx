@@ -48,13 +48,13 @@ const ChatPage: React.FC = () => {
 
   const onClickSubmit = useCallback(() => {
     socket.emit("message", { roomID, text: newMessage });
-  }, [newMessage, roomID, socket]);
+  }, [newMessage, roomID]);
 
   useEffect(() => {
     socket.on("connect", () => {
       console.log("connection ID : ", socket.id);
     });
-  }, [socket]);
+  }, []);
 
   useEffect(() => {
     if (roomID) {
@@ -72,7 +72,7 @@ const ChatPage: React.FC = () => {
         setMessages(roomMessages);
       });
     }
-  }, [roomID, socket]);
+  }, [roomID]);
 
   useEffect(() => {
     const handleRoomChange = (newRoomID: string) => {

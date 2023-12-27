@@ -30,7 +30,7 @@ export class ChatGateway {
     if (!this.rooms[roomID]) {
       this.rooms[roomID] = { messages: [] };
     }
-    this.server.join(roomID);
+    this.server.socketsJoin(roomID);
     this.server.to(roomID).emit('update', 'Joined the room');
   }
 
