@@ -2,7 +2,6 @@
 import React, { useState, useEffect, useCallback } from "react";
 import io from "socket.io-client";
 import ChatLayout from "./layout";
-import { text } from "stream/consumers";
 
 interface Message {
   text: string;
@@ -27,11 +26,6 @@ const ChatPage: React.FC = () => {
   const [msg, setMsg] = useState<Message>({ text: "", timestamp: new Date() });
   const [roomID, setRoomID] = useState<string>("");
 
-  const onClickSubmit = useCallback(() => {
-    socket.emit("message", { roomID, newMessage });
-    setChatLog([...chatLog, { text: newMessage, timestamp: new Date() }]);
-  }, [roomID, newMessage, chatLog]);
-
   // コンポーネントがマウントされたときのみ接続
   useEffect(() => {
     const socket = io("http://localhost:3001");
@@ -53,6 +47,16 @@ const ChatPage: React.FC = () => {
     });
   }, []);
 
+  const onClickSubmit = useCallback(() => {
+    socket.emit("message", { roomID, newMessage });
+    //     setChatLog([...chatLog, { text: newMessage, timestamp: new Date() }]);
+    //   }, [roomID, newMessage, chatLog]);
+  }, [roomID, newMessage]);
+
+  useEffect(() => {
+    setChatLog([...chatLog, msg]);
+  }, [msg, chatLog]);
+
   return (
     <>
       <h1>Chat Page</h1>
@@ -61,7 +65,7 @@ const ChatPage: React.FC = () => {
         onChange={(event) => {
           setRoomID(event.target.value);
           socket.emit("joinRoom", event.target.value);
-          //   setChatLog([]);
+          setChatLog([]);
         }}
         value={roomID}
       >
