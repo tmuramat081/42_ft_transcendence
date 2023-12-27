@@ -3,6 +3,7 @@ import {
   WebSocketGateway,
   WebSocketServer,
   MessageBody,
+  ConnectedSocket,
 } from '@nestjs/websockets';
 import { Logger } from '@nestjs/common';
 import { Server, Socket } from 'socket.io';
@@ -19,7 +20,6 @@ export class ChatGateway {
   server: Server;
 
   private logger: Logger = new Logger('Gateway Log');
-  private rooms: { [key: string]: { messages: string[] } } = {};
 
   @SubscribeMessage('talk')
   handleMessage(
