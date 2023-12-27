@@ -3,21 +3,6 @@ import React, { useState, useEffect, useCallback } from "react";
 import io from "socket.io-client";
 import ChatLayout from "./layout";
 
-// interface Message {
-//   text: string;
-//   timestamp: Date;
-// }
-
-// interface StateType {
-//   messages: Message[];
-//   newMessage: string;
-// }
-
-// const initialState: StateType = {
-//   messages: [],
-//   newMessage: "",
-// };
-
 const socket = io("http://localhost:3001");
 
 const ChatPage = () => {
@@ -50,20 +35,10 @@ const ChatPage = () => {
       setMsg(message);
     });
   }, []);
-  //       setChatLog([
-  //         ...chatLog,
-  //         { text: message.text, timestamp: message.timestamp },
-  //       ]);
-  //     });
-  //   }, [chatLog]);
 
   useEffect(() => {
     setChatLog([...chatLog, msg]);
-  }, [msg]);
-
-  // useEffect(() => {
-  //     setChatLog([...chatLog, { text: newMessage, timestamp: new Date() }]);
-  // }, [chatLog, newMessage]);
+  }, [msg]); //chatlogを入れるとループする
 
   return (
     <>
@@ -93,9 +68,6 @@ const ChatPage = () => {
       </>
       {chatLog.map((message, index) => (
         <p key={index}>{message}</p>
-        // <li key={index}>
-        //   {message.text} - {message.timestamp.toLocaleString()}
-        // </li>
       ))}
     </>
   );
