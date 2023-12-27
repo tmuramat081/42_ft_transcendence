@@ -21,12 +21,10 @@ export class ChatGateway {
     @ConnectedSocket() socket: Socket,
   ) {
     this.logger.log(`message received: ${message}`);
+    // 送信者の部屋IDを取得
     const rooms = [...socket.rooms].slice(0);
+    // 送信者の部屋以外に送信
     this.server.to(rooms[1]).emit('update', message);
-    // const rooms = [...socket.rooms];
-    // rooms.forEach((room) => {
-    //   this.server.to(room).emit('update', message);
-    // });
   }
 
   @SubscribeMessage('joinRoom')
@@ -36,12 +34,8 @@ export class ChatGateway {
   ) {
     this.logger.log(`joinRoom: ${socket.id} joined ${roomID}`);
     const rooms = [...socket.rooms].slice(0);
+    // 既に部屋に入っている場合は退出
     if (rooms.length == 2) socket.leave(rooms[1]);
-    // // 既存の部屋を離脱
-    // socket.rooms.forEach((room) => {
-    //   socket.leave(room);
-    // });
-    // // 新しい部屋に参加
     socket.join(roomID);
   }
 }

@@ -3,28 +3,28 @@ import React, { useState, useEffect, useCallback } from "react";
 import io from "socket.io-client";
 import ChatLayout from "./layout";
 
-interface Message {
-  text: string;
-  timestamp: Date;
-}
+// interface Message {
+//   text: string;
+//   timestamp: Date;
+// }
 
-interface StateType {
-  messages: Message[];
-  newMessage: string;
-}
+// interface StateType {
+//   messages: Message[];
+//   newMessage: string;
+// }
 
-const initialState: StateType = {
-  messages: [],
-  newMessage: "",
-};
+// const initialState: StateType = {
+//   messages: [],
+//   newMessage: "",
+// };
 
 const socket = io("http://localhost:3001");
 
-const ChatPage: React.FC = () => {
-  const [newMessage, setNewMessage] = useState<string>("");
-  const [chatLog, setChatLog] = useState<Message[]>([]);
-  const [msg, setMsg] = useState<Message>({ text: "", timestamp: new Date() });
-  const [roomID, setRoomID] = useState<string>("");
+const ChatPage = () => {
+  const [newMessage, setNewMessage] = useState("");
+  const [chatLog, setChatLog] = useState<string[]>([]);
+  const [msg, setMsg] = useState("");
+  const [roomID, setRoomID] = useState("");
 
   // コンポーネントがマウントされたときのみ接続
   useEffect(() => {
@@ -40,22 +40,30 @@ const ChatPage: React.FC = () => {
     };
   }, []); // 空の依存配列はマウント時のみ実行
 
+  const onClickSubmit = useCallback(() => {
+    socket.emit("message", newMessage);
+  }, [newMessage]);
+
   useEffect(() => {
-    socket.on("update", (message) => {
+    socket.on("update", (message: string) => {
       console.log("recieved : ", message);
       setMsg(message);
     });
   }, []);
+  //       setChatLog([
+  //         ...chatLog,
+  //         { text: message.text, timestamp: message.timestamp },
+  //       ]);
+  //     });
+  //   }, [chatLog]);
 
-  const onClickSubmit = useCallback(() => {
-    socket.emit("message", { roomID, newMessage });
-    setChatLog([...chatLog, { text: newMessage, timestamp: new Date() }]);
-  }, [roomID, newMessage, chatLog]);
-  //   }, [roomID, newMessage]);
+  useEffect(() => {
+    setChatLog([...chatLog, msg]);
+  }, [msg]);
 
-  //   useEffect(() => {
-  //     setChatLog([...chatLog, msg]);
-  //   }, [msg, chatLog]);
+  // useEffect(() => {
+  //     setChatLog([...chatLog, { text: newMessage, timestamp: new Date() }]);
+  // }, [chatLog, newMessage]);
 
   return (
     <>
@@ -84,9 +92,10 @@ const ChatPage: React.FC = () => {
         <button onClick={onClickSubmit}>Send</button>
       </>
       {chatLog.map((message, index) => (
-        <li key={index}>
-          {message.text} - {message.timestamp.toLocaleString()}
-        </li>
+        <p key={index}>{message}</p>
+        // <li key={index}>
+        //   {message.text} - {message.timestamp.toLocaleString()}
+        // </li>
       ))}
     </>
   );
