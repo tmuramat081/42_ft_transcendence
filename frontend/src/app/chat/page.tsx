@@ -2,6 +2,7 @@
 import React, { useState, useEffect, useCallback } from "react";
 import io from "socket.io-client";
 import ChatLayout from "./layout";
+import "./ChatPage.css"; // スタイルシートの追加
 
 const socket = io("http://localhost:3001");
 
@@ -56,21 +57,37 @@ const ChatPage = () => {
   };
 
   return (
-    <>
+    <div className="chat-container">
       <h1>Chat Page</h1>
 
-      <select
-        onChange={(event) => {
-          handleRoomChange(event);
-        }}
-        value={roomID}
-      >
-        <option value="">---</option>
-        <option value="room1">Room1</option>
-        <option value="room2">Room2</option>
-      </select>
+      <div className="chat-room-selector">
+        <select
+          onChange={(event) => {
+            handleRoomChange(event);
+          }}
+          value={roomID}
+        >
+          <option value="">---</option>
+          <option value="room1">Room1</option>
+          <option value="room2">Room2</option>
+        </select>
+      </div>
 
-      <>
+      <div className="chat-messages">
+        {roomchatLogs[roomID]?.map((message, index) => (
+          <div
+            key={index}
+            className={`message-bubble ${
+              message.sender === "self" ? "self" : "other"
+            }`}
+          >
+            {message.text}
+            <div className="timestamp">{message.timestamp}</div>
+          </div>
+        ))}
+      </div>
+
+      <div className="chat-input">
         <input
           id="newMessage"
           type="text"
@@ -78,13 +95,8 @@ const ChatPage = () => {
           onChange={(event) => setNewMessage(event.target.value)}
         />
         <button onClick={onClickSubmit}>Send</button>
-      </>
-      {roomchatLogs[roomID]?.map((message, index) => (
-        <p key={index}>
-          {message.text} {message.timestamp}
-        </p>
-      ))}
-    </>
+      </div>
+    </div>
   );
 };
 
