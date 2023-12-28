@@ -7,7 +7,9 @@ const socket = io("http://localhost:3001");
 
 const ChatPage = () => {
   const [newMessage, setNewMessage] = useState("");
-  const [chatLog, setChatLog] = useState<string[]>([]);
+  const [chatLog, setChatLog] = useState<{ text: string; timestamp: string }[]>(
+    []
+  );
   const [roomID, setRoomID] = useState("");
 
   // コンポーネントがマウントされたときのみ接続
@@ -31,10 +33,17 @@ const ChatPage = () => {
   useEffect(() => {
     socket.on("update", (message: string) => {
       console.log("recieved : ", message);
-      setChatLog([...chatLog, message]);
+      setChatLog((prevChatLog) => [
+        ...prevChatLog,
+        { text: message, timestamp: new Date().toLocaleString() },
+      ]);
       setNewMessage("");
     });
-  }, [chatLog]);
+
+    return () => {
+      socket.off("update");
+    };
+  }, []);
 
   const handleRoomChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
     const newRoomID = event.target.value;
@@ -69,7 +78,9 @@ const ChatPage = () => {
         <button onClick={onClickSubmit}>Send</button>
       </>
       {chatLog.map((message, index) => (
-        <p key={index}>{message}</p>
+        <p key={index}>
+          {message.text} {message.timestamp}
+        </p>
       ))}
     </>
   );
