@@ -90,6 +90,14 @@ const ChatPage = () => {
     socket.emit("joinRoom", newRoomID);
   };
 
+  const handleRoomChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
+    const newRoomID = event.target.value;
+    setRoomID(newRoomID);
+    setChatLog([]); // ルームが変更されたらチャットログをリセット
+    setNewMessage(""); // ルームが変更されたら新しいメッセージもリセット
+    socket.emit("joinRoom", newRoomID);
+  };
+
   return (
     <div className="chat-container">
       <h1>Chat Page</h1>
