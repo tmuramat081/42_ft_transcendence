@@ -28,6 +28,8 @@ export class UsersService {
         private jwtService: JwtService,
     ) {}
 
+    //asyncは非同期処理
+    //awaitを使うと、その行の処理が終わるまで次の行には進まない
     async signUp(userData: UserDto): Promise<string> {
         var user: User = new User();
         user.userName = userData.userName;
@@ -55,6 +57,7 @@ export class UsersService {
             const accessToken: string = this.jwtService.sign(payload);
             return accessToken
         } else {
+            //console.log("error")
             return null
         }
     }

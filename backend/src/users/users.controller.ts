@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Req, Res } from '@nestjs/common';
+import { Controller, Get, Post, Body, Req, Res, InternalServerErrorException, ForbiddenException, UnauthorizedException } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { UserDto } from './dto/user.dto';
 import { User } from './entities/user.entity';
@@ -35,57 +35,100 @@ export class UsersController {
     // paththrouth: true は、レスポンスを返すときに、レスポンスヘッダーを変更するために必要
     //: Promise<User>
     @Post('/signup')
-    SignUp(@Body () userData: UserDto, @Res({ passthrough: true }) res: Response) : Promise<string> | Response {
+    async SignUp(@Body () userData: UserDto, @Res({ passthrough: true }) res: Response) : Promise<string> {
         // リクエストハンドリング
         if (!userData.userName || !userData.email || !userData.password) {
+            throw new ForbiddenException("Please enter all fields");
             //return res.status(400).json({ message: 'Please enter all fields' });
-            return res.status(400).json({ message: 'Please enter all fields' });
         }
 
         // リクエストの検証
         if (userData.password !== userData.passwordConfirm) {
-            return res.status(400).json({ message: 'Passwords do not match' });
+            throw new ForbiddenException("Passwords do not match");
+            //return res.status(400).json({ message: 'Passwords do not match' });
         }
 
         if (bcrypt.compare(userData.password, userData.passwordConfirm) === false) {
-            return res.status(400).json({ message: 'Passwords do not match' });
+            throw new ForbiddenException("Passwords do not match");
+            //return res.status(400).json({ message: 'Passwords do not match' });
         }
 
         // アクセストークンを作成
-        const accessToken: Promise<string> = this.usersService.signUp(userData);
+        try {
+            // saveは例外を投げる為、try-catchで囲む
+            const accessToken: string = await this.usersService.signUp(userData);
 
-        //cookieにアクセストークンを保存
-        res.cookie('jwt', accessToken, { httpOnly: true })
+            //cookieにアクセストークンを保存
+            res.cookie('jwt', accessToken, { httpOnly: true })
 
-        //redisにアクセストークンを保存
+            // //redisにアクセストークンを保存
 
-        return accessToken;
+            return accessToken;
+        } catch (error) {
+            if (error.code === 'ER_DUP_ENTRY') {
+                throw new InternalServerErrorException('User already exists');
+                //return res.status(400).json({ message: 'User already exists' });
+            }
+            throw new InternalServerErrorException("access token error");
+            //return res.status(400).json({ message: 'User already exists' });
+        }
     }
 
     // curl -X POST -H "Content-Type: application/json" -d '{"userName":"test","password":"test"}' http://localhost:3001/users/signin
     //redisに保存されているアクセストークンを削除
     @Post('/signin')
-    SignIn(@Body () userData: UserDto, @Res({ passthrough: true }) res: Response) : Promise<string> | Response {
+    async SignIn(@Body () userData: UserDto, @Res({ passthrough: true }) res: Response) : Promise<string> {
         //アクセストークンを返す
         if (!userData.userName || !userData.password) {
-            return res.status(400).json({ message: 'Please enter all fields' });
+            //return res.status(400).json({ message: 'Please enter all fields' });
+            throw new ForbiddenException("Please enter all fields");
         }
 
-        const accessToken: Promise<string> = this.usersService.signIn(userData);
+        // try {
+        //     const accessToken: Promise<string> = this.usersService.signIn(userData);
+        //     if (accessToken === null) {
+        //         console.log("Invalid credentials");
+        //         //throw new ForbiddenException("Invalid credentials");
+        //         return res.status(400).json({ message: 'Invalid credentials' });
+        //     }
+        //     //cookieにアクセストークンを保存
+        //     res.cookie('jwt', accessToken, { httpOnly: true })
 
+        //     console.log("accessToken: " + accessToken);
+
+        //     //redisにアクセストークンを保存
+
+        //     return accessToken;
+        // } catch (error) {
+        //     console.log(error);
+        //     //throw new UnauthorizedException("Invalid credentials");
+        //     //throw new InternalServerErrorException("access token error");
+        //     return res.status(400).json({ message: 'User already exists' });
+        // }
+        
+        // findは例外を投げない為、try-catchで囲まない
+        const accessToken: string = await this.usersService.signIn(userData);
+        if (accessToken === null) {
+            //console.log("Invalid credentials");
+            throw new ForbiddenException("Invalid credentials");
+            //return res.status(400).json({ message: 'Invalid credentials' });
+        }
         //cookieにアクセストークンを保存
         res.cookie('jwt', accessToken, { httpOnly: true })
+
+        console.log("accessToken: " + accessToken);
 
         //redisにアクセストークンを保存
 
         return accessToken;
     }
 
-    // curl -X GET -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInVzZXJOYW1lIjoidGVzdCIsImVtYWlsIjoidGVzdEB0ZXN0IiwiaWF0IjoxNzAzNjg5NDUyLCJleHAiOjE3MDM2OTMwNTJ9.sI9qtCGhs1Azc7zKyXQkqRmkIYlC8Axb-6Lkz3N1GYw" http://localhost:3001/users/me
+    // curl -X GET -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInVzZXJOYW1lIjoidGVzdCIsImVtYWlsIjoidGVzdEB0ZXN0IiwiaWF0IjoxNzAzNzU5NjU5LCJleHAiOjE3MDM3NjMyNTl9.R1TfxoDLp5kTOAAfIEGrkplZquRACJltQv3oGEANKDU" http://localhost:3001/users/me
     // JWTからユーザーを取得する　API
     @UseGuards(JwtAuthGuard)
     @Get('/me')
     currentUser(@Req() req) : Partial<User>{
+        //throw new ForbiddenException("Invalid credentials");
         const { password, ...user } = req.user;
         return user;
     }
