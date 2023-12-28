@@ -1,0 +1,35 @@
+.chat-container {
+    max-width: 600px;
+    margin: 0 auto;
+  }
+  
+  .chat-room-selector {
+    margin-bottom: 10px;
+  }
+  
+  .chat-messages {
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .message-bubble {
+    padding: 10px;
+    margin-bottom: 5px;
+    border-radius: 8px;
+    max-width: 70%;
+  }
+  
+  .message-bubble.self {
+    align-self: flex-end;
+    background-color: #e2f8ff; /* 自分のメッセージの背景色 */
+  }
+  
+  .message-bubble.other {
+    align-self: flex-start;
+    background-color: #f0f0f0; /* 相手のメッセージの背景色 */
+  }
+  
+  .timestamp {
+    font-size: 10px;
+    color: #888;
+  }
