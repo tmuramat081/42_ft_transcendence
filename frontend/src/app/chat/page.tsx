@@ -32,6 +32,7 @@ const ChatPage = () => {
     socket.on("update", (message: string) => {
       console.log("recieved : ", message);
       setChatLog([...chatLog, message]);
+      setNewMessage("");
     });
   }, [chatLog]);
 
@@ -49,9 +50,7 @@ const ChatPage = () => {
 
       <select
         onChange={(event) => {
-          setRoomID(event.target.value);
-          socket.emit("joinRoom", event.target.value);
-          setChatLog([]);
+          handleRoomChange(event);
         }}
         value={roomID}
       >
@@ -65,7 +64,7 @@ const ChatPage = () => {
           id="newMessage"
           type="text"
           value={newMessage}
-          onChange={(e) => setNewMessage(e.target.value)}
+          onChange={(event) => setNewMessage(event.target.value)}
         />
         <button onClick={onClickSubmit}>Send</button>
       </>
