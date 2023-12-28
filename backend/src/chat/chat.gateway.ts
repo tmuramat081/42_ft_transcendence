@@ -17,14 +17,17 @@ export class ChatGateway {
 
   @SubscribeMessage('message')
   handleMessage(
-    @MessageBody() message: string,
+    @MessageBody() data: { roomID: string; newMessage: string },
     @ConnectedSocket() socket: Socket,
   ) {
-    this.logger.log(`message received: ${message}`);
+    // const { roomID, message } = data;
+    this.logger.log(`message received: ${data.roomID} ${data.newMessage}`);
     // 送信者の部屋IDを取得
     const rooms = [...socket.rooms].slice(0);
     // 送信者の部屋以外に送信
-    this.server.to(rooms[1]).emit('update', message);
+    this.server
+      .to(rooms[1])
+      .emit('update', { roomID: data.roomID, message: data.newMessage });
   }
 
   @SubscribeMessage('joinRoom')
