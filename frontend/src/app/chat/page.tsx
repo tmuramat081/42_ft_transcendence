@@ -40,6 +40,14 @@ const ChatPage = () => {
     setChatLog([...chatLog, msg]);
   }, [msg]); //chatlogを入れるとループする
 
+  const handleRoomChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
+    const newRoomID = event.target.value;
+    setRoomID(newRoomID);
+    setChatLog([]); // ルームが変更されたらチャットログをリセット
+    setNewMessage(""); // ルームが変更されたら新しいメッセージもリセット
+    socket.emit("joinRoom", newRoomID);
+  };
+
   return (
     <>
       <h1>Chat Page</h1>
