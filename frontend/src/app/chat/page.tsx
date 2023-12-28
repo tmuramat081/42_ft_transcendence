@@ -7,10 +7,10 @@ const socket = io("http://localhost:3001");
 
 const ChatPage = () => {
   const [newMessage, setNewMessage] = useState("");
-  const [chatLog, setChatLog] = useState<{ text: string; timestamp: string }[]>(
-    []
-  );
   const [roomID, setRoomID] = useState("");
+  const [roomchatLogs, setRoomChatLogs] = useState<{
+    [roomId: string]: { text: string; timestamp: string }[];
+  }>({});
 
   // コンポーネントがマウントされたときのみ接続
   useEffect(() => {
@@ -20,23 +20,26 @@ const ChatPage = () => {
       console.log("connection ID : ", socket.id);
     });
 
+    // コンポーネントがアンマウントされるときに切断
     return () => {
-      // コンポーネントがアンマウントされるときに切断
       socket.disconnect();
     };
-  }, []); // 空の依存配列はマウント時のみ実行
+  }, []);
 
   const onClickSubmit = useCallback(() => {
-    socket.emit("message", newMessage);
-  }, [newMessage]);
+    socket.emit("message", { roomID, newMessage });
+  }, [roomID, newMessage]);
 
   useEffect(() => {
-    socket.on("update", (message: string) => {
-      console.log("recieved : ", message);
-      setChatLog((prevChatLog) => [
-        ...prevChatLog,
-        { text: message, timestamp: new Date().toLocaleString() },
-      ]);
+    socket.on("update", ({ roomID, message }): void => {
+      console.log("recieved : ", roomID, message);
+      setRoomChatLogs((prevRoomChatLogs) => ({
+        ...prevRoomChatLogs,
+        [roomID]: [
+          ...(prevRoomChatLogs[roomID] || []),
+          { text: message, timestamp: new Date().toLocaleString() },
+        ],
+      }));
       setNewMessage("");
     });
 
@@ -48,7 +51,6 @@ const ChatPage = () => {
   const handleRoomChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
     const newRoomID = event.target.value;
     setRoomID(newRoomID);
-    setChatLog([]); // ルームが変更されたらチャットログをリセット
     setNewMessage(""); // ルームが変更されたら新しいメッセージもリセット
     socket.emit("joinRoom", newRoomID);
   };
@@ -77,7 +79,7 @@ const ChatPage = () => {
         />
         <button onClick={onClickSubmit}>Send</button>
       </>
-      {chatLog.map((message, index) => (
+      {roomchatLogs[roomID]?.map((message, index) => (
         <p key={index}>
           {message.text} {message.timestamp}
         </p>
