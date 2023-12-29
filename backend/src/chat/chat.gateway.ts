@@ -7,7 +7,12 @@ import {
 } from '@nestjs/websockets';
 import { Logger } from '@nestjs/common';
 import { Server, Socket } from 'socket.io';
-// import { User } from './page.tsx'; // Import the User class
+
+interface User {
+  ID: string;
+  name: string;
+  icon: string;
+}
 
 @WebSocketGateway({ cors: { origin: '*' } })
 export class ChatGateway {
