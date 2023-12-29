@@ -13,6 +13,8 @@
   }
   
   .message-bubble {
+    display: flex;
+    align-items: flex-start;
     padding: 10px;
     margin-bottom: 5px;
     border-radius: 8px;
@@ -28,6 +30,14 @@
     align-self: flex-start;
     background-color: #f0f0f0; /* 相手のメッセージの背景色 */
   }
+  
+  .icon {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    margin-right: 10px;
+  }
+  
   
   .timestamp {
     font-size: 10px;
