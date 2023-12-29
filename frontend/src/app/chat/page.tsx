@@ -3,25 +3,36 @@ import React, { useState, useEffect, useCallback } from "react";
 import io from "socket.io-client";
 import ChatLayout from "./layout";
 import "./ChatPage.css"; // スタイルシートの追加
+import Image from "next/image";
 
-interface User {
-  ID: string;
-  name: string;
-  icon: string;
-}
+//Userを上手に渡す、iconの画像処理
+// interface User {
+//   ID: string;
+//   name: string;
+//   icon: string;
+// }
 
 const socket = io("http://localhost:3001");
 
 const ChatPage = () => {
   const [message, setMessage] = useState("");
   const [roomID, setRoomID] = useState("");
-  const [sender, setSender] = useState<User>({
+  const [sender, setSender] = useState<{
+    ID: string;
+    name: string;
+    icon: string;
+  }>({
     ID: "",
     name: "",
     icon: "",
   });
   const [roomchatLogs, setRoomChatLogs] = useState<{
-    [roomId: string]: { user: User; text: string; timestamp: string }[];
+    [roomId: string]: {
+      user: string;
+      photo: string;
+      text: string;
+      timestamp: string;
+    }[];
   }>({});
 
   // コンポーネントがマウントされたときのみ接続
@@ -30,6 +41,11 @@ const ChatPage = () => {
 
     socket.on("connect", () => {
       console.log("connection ID : ", socket.id);
+      setSender({
+        ID: socket.id,
+        name: "",
+        icon: "",
+      });
     });
 
     // コンポーネントがアンマウントされるときに切断
@@ -44,13 +60,14 @@ const ChatPage = () => {
 
   useEffect(() => {
     socket.on("update", ({ roomID, sender, message }): void => {
-      console.log("recieved : ", roomID, sender, message);
+      console.log("recieved : ", roomID, sender.ID, message);
       setRoomChatLogs((prevRoomChatLogs) => ({
         ...prevRoomChatLogs,
         [roomID]: [
           ...(prevRoomChatLogs[roomID] || []),
           {
-            user: sender,
+            user: sender.ID,
+            photo: sender.icon,
             text: message,
             timestamp: new Date().toLocaleString(),
           },
@@ -96,7 +113,7 @@ const ChatPage = () => {
               message.user === "self" ? "self" : "other"
             }`}
           >
-            <img src={message.user.icon} alt="User Icon" className="icon" />
+            <Image src={message.photo} alt="User Icon" className="icon" />
             <div>
               <div>{message.text}</div>
               <div className="timestamp">{message.timestamp}</div>
