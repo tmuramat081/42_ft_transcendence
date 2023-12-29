@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, Connection } from 'typeorm';
 import { User } from './entities/user.entity';
+import * as bycrypt from 'bcrypt';
 
 /*
 Repository
@@ -19,6 +20,10 @@ export class UserRepository {
     ) {}
 
     async createUser(user: User): Promise<User> {
+        const salt = await bycrypt.genSalt();
+        // パスワードのハッシュ化
+        user.password = await bycrypt.hash(user.password, salt);
+
         return await this.userRepository.save(user);
     }
 
