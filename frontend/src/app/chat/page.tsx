@@ -4,13 +4,24 @@ import io from "socket.io-client";
 import ChatLayout from "./layout";
 import "./ChatPage.css"; // スタイルシートの追加
 
+interface User {
+  ID: string;
+  name: string;
+  icon: string;
+}
+
 const socket = io("http://localhost:3001");
 
 const ChatPage = () => {
-  const [newMessage, setNewMessage] = useState("");
+  const [message, setMessage] = useState("");
   const [roomID, setRoomID] = useState("");
+  const [sender, setSender] = useState<User>({
+    ID: "",
+    name: "",
+    icon: "",
+  });
   const [roomchatLogs, setRoomChatLogs] = useState<{
-    [roomId: string]: { text: string; timestamp: string }[];
+    [roomId: string]: { user: User; text: string; timestamp: string }[];
   }>({});
 
   // コンポーネントがマウントされたときのみ接続
@@ -28,20 +39,24 @@ const ChatPage = () => {
   }, []);
 
   const onClickSubmit = useCallback(() => {
-    socket.emit("message", { roomID, newMessage });
-  }, [roomID, newMessage]);
+    socket.emit("talk", { roomID, sender, message });
+  }, [roomID, sender, message]);
 
   useEffect(() => {
-    socket.on("update", ({ roomID, message }): void => {
-      console.log("recieved : ", roomID, message);
+    socket.on("update", ({ roomID, sender, message }): void => {
+      console.log("recieved : ", roomID, sender, message);
       setRoomChatLogs((prevRoomChatLogs) => ({
         ...prevRoomChatLogs,
         [roomID]: [
           ...(prevRoomChatLogs[roomID] || []),
-          { text: message, timestamp: new Date().toLocaleString() },
+          {
+            user: sender,
+            text: message,
+            timestamp: new Date().toLocaleString(),
+          },
         ],
       }));
-      setNewMessage("");
+      setMessage("");
     });
 
     return () => {
@@ -52,7 +67,7 @@ const ChatPage = () => {
   const handleRoomChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
     const newRoomID = event.target.value;
     setRoomID(newRoomID);
-    setNewMessage(""); // ルームが変更されたら新しいメッセージもリセット
+    setMessage(""); // ルームが変更されたら新しいメッセージもリセット
     socket.emit("joinRoom", newRoomID);
   };
 
@@ -78,21 +93,24 @@ const ChatPage = () => {
           <div
             key={index}
             className={`message-bubble ${
-              message.sender === "self" ? "self" : "other"
+              message.user === "self" ? "self" : "other"
             }`}
           >
-            {message.text}
-            <div className="timestamp">{message.timestamp}</div>
+            <img src={message.user.icon} alt="User Icon" className="icon" />
+            <div>
+              <div>{message.text}</div>
+              <div className="timestamp">{message.timestamp}</div>
+            </div>
           </div>
         ))}
       </div>
 
       <div className="chat-input">
         <input
-          id="newMessage"
+          id="message"
           type="text"
-          value={newMessage}
-          onChange={(event) => setNewMessage(event.target.value)}
+          value={message}
+          onChange={(event) => setMessage(event.target.value)}
         />
         <button onClick={onClickSubmit}>Send</button>
       </div>
