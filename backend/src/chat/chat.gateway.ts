@@ -7,7 +7,12 @@ import {
 } from '@nestjs/websockets';
 import { Logger } from '@nestjs/common';
 import { Server, Socket } from 'socket.io';
-// import { User } from './page.tsx'; // Import the User class
+
+interface User {
+  ID: string;
+  name: string;
+  icon: string;
+}
 
 @WebSocketGateway({ cors: { origin: '*' } })
 export class ChatGateway {
@@ -21,9 +26,8 @@ export class ChatGateway {
     @MessageBody() data: { roomID: string; sender: User; message: string },
     @ConnectedSocket() socket: Socket,
   ) {
-    // const { roomID, message } = data;
     this.logger.log(
-      `message received: ${data.roomID} ${data.sender} ${data.message}`,
+      `message received: ${data.roomID} ${data.sender.ID} ${data.message}`,
     );
     // 送信者の部屋IDを取得
     const rooms = [...socket.rooms].slice(0);
