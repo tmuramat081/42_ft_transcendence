@@ -50,8 +50,33 @@ export class UsersService {
     async signIn(userData: UserDto): Promise<string> {
         // ユーザーの検索
         const user: User = await this.userRepository.findOneByName(userData.userName);
+
+        // パスワードをハッシュ化
+        // これでは確認できない
+        // const salt = await bcrypt.genSalt();
+        // const hashedPassword = await bcrypt.hash(userData.password, salt);
+
+        // console.log("user.password: " + user.password)
+        // console.log("userData.password: " + hashedPassword)
+
         // パスワードの検証
-        if (user && user.password === userData.password && bcrypt.compare(userData.password, user.password)) {
+        // bcrypt.compare(userData.password, user.password) は、true or false を返す　ハッシュ値を比較している
+        /*
+            bcrypt.compare(userData.password, user.password) というコードが true を返す理由は、bcrypt ライブラリの比較メカニズムの仕組みにあります。bcrypt は、生のパスワード（ハッシュされていないパスワード）と、そのパスワードから生成されたハッシュ値を比較するために設計されています。
+
+            ここでの動作は以下の通りです：
+
+            ハッシュ生成: ユーザーがアカウントを作成する際、生のパスワード（userData.password）は bcrypt によってハッシュ化され、このハッシュ値がデータベースに保存されます（この例では user.password として参照されます）。
+
+            パスワード検証: ユーザーがログインする際、入力された生のパスワード（userData.password）と、データベースに保存されたハッシュ値（user.password）が bcrypt.compare 関数に渡されます。
+
+            ハッシュの比較: bcrypt.compare 関数は、入力された生のパスワードを同じハッシュ化プロセスで処理します。その後、この新しいハッシュ値をデータベースに保存されたハッシュ値と比較します。
+
+            結果: もし入力されたパスワードが正しければ、同じハッシュ化プロセスによって同じハッシュ値が生成されるため、比較結果は true になります。パスワードが異なれば、異なるハッシュ値が生成され、結果は false になります。
+
+            この方法により、セキュリティを確保しつつ、ユーザーが正しいパスワードを入力したかどうかを確認できます。重要なのは、実際のパスワード自体がデータベースに保存されることはなく、そのハッシュ値のみが保存されることです。これにより、もしデータベースが何らかの方法で漏洩した場合でも、実際のパスワードは保護されます。
+        */
+        if (user && bcrypt.compare(userData.password, user.password)) {
             // JWTを返す？
             const payload: JwtPayload = { userId: user.userId, userName: user.userName, email: user.email };
             const accessToken: string = this.jwtService.sign(payload);

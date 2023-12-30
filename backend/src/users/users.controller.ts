@@ -63,7 +63,8 @@ export class UsersController {
 
             // //redisにアクセストークンを保存
 
-            return accessToken;
+            //return accessToken;
+            return JSON.stringify({"accessToken": accessToken});
         } catch (error) {
             if (error.code === 'ER_DUP_ENTRY') {
                 throw new InternalServerErrorException('User already exists');
@@ -79,6 +80,7 @@ export class UsersController {
     @Post('/signin')
     async SignIn(@Body () userData: UserDto, @Res({ passthrough: true }) res: Response) : Promise<string> {
         //アクセストークンを返す
+        console.log(userData)
         if (!userData.userName || !userData.password) {
             //return res.status(400).json({ message: 'Please enter all fields' });
             throw new ForbiddenException("Please enter all fields");
@@ -120,16 +122,16 @@ export class UsersController {
 
         //redisにアクセストークンを保存
 
-        return accessToken;
+        return JSON.stringify({"accessToken": accessToken});
     }
 
     // curl -X GET -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInVzZXJOYW1lIjoidGVzdCIsImVtYWlsIjoidGVzdEB0ZXN0IiwiaWF0IjoxNzAzNzU5NjU5LCJleHAiOjE3MDM3NjMyNTl9.R1TfxoDLp5kTOAAfIEGrkplZquRACJltQv3oGEANKDU" http://localhost:3001/users/me
     // JWTからユーザーを取得する　API
     @UseGuards(JwtAuthGuard)
     @Get('/me')
-    currentUser(@Req() req) : Partial<User>{
+    currentUser(@Req() req) : string {
         //throw new ForbiddenException("Invalid credentials");
         const { password, ...user } = req.user;
-        return user;
+        return JSON.stringify({"user": user});
     }
 }

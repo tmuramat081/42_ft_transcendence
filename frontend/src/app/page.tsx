@@ -19,6 +19,11 @@ export default function Home() {
             ゲーム デモンストレーション
           </Link>
           </li>
+          <li>
+            <Link href="./auth/login">
+              ログイン
+            </Link>
+          </li>
         </ul>
       </main>
     </>
