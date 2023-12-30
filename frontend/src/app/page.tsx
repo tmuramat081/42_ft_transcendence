@@ -20,8 +20,13 @@ export default function Home() {
           </Link>
           </li>
           <li>
-            <Link href="./auth/login">
-              ログイン
+            <Link href="./auth/signup">
+              サインアップ
+            </Link>
+          </li>
+          <li>
+            <Link href="./auth/signin">
+              サインイン
             </Link>
           </li>
         </ul>

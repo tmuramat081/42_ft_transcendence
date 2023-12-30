@@ -2,12 +2,22 @@
 import { useState, useEffect } from 'react';
 import axios from 'axios';
 
+type User = {
+    userId: number,
+    userName: string,
+    email: string,
+    password: string,
+    createdAt: Date,
+};
+
 export default function Form() {
     const [userName, setUserName] = useState('');
     const [password, setPassword] = useState('');
     const [token, setToken] = useState('');
+    const [user, setUser] = useState({});
 
     useEffect(() => {
+        if (token == '') return;
         fetch('http://localhost:3001/users/me', {
             method: 'GET',
             headers: {
@@ -20,6 +30,7 @@ export default function Form() {
         })
         .then((data) => {
             console.log('Success:', data);
+            setUser(data.user);
         })
         .catch((error) => {
             console.error('Error:', error);
@@ -80,6 +91,7 @@ export default function Form() {
             <button type="submit">送信</button>
 
             <p>AccessToken: {token}</p>
+            <p>user: {user.userName}</p>
         </form>
         </div>
     );

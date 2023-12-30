@@ -1,6 +1,6 @@
 "use client";
 import { useState } from 'react';
-import Form from '@/components/auth/login';
+import Form from '@/components/auth/signin';
 
 export default function Page() {
     return (
