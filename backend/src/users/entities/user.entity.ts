@@ -34,11 +34,11 @@ export class User {
     @Column({ name: 'icon', type: 'text', default: ''})
     icon: string;
 
-    @CreateDateColumn({ name: 'created_at', type: 'timestamp'})
-    createdAt: Timestamp;
+    @CreateDateColumn({ name: 'created_at', type: 'timestamp', default: () => 'CURRENT_TIMESTAMP'})
+    createdAt: Date;
 
-    @DeleteDateColumn({ name: 'deleted_at', type: 'timestamp'})
-    deletedAt: Timestamp;
+    @DeleteDateColumn({ name: 'deleted_at', type: 'timestamp', nullable: true})
+    deletedAt: Date;
 
     @Column({ type: 'varchar', length: 20,  default: ''})
     name42: string;

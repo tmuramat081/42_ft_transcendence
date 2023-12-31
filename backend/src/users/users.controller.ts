@@ -134,4 +134,9 @@ export class UsersController {
         const { password, ...user } = req.user;
         return JSON.stringify({"user": user});
     }
+
+    @Get('/all')
+    findAllUsers() {
+        return this.usersService.findAll();
+    }
 }

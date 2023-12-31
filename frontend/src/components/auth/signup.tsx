@@ -7,6 +7,8 @@ export default function Form() {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [passwordConfirm, setPasswordConfirm] = useState('');
+    const [user, setUser] = useState({});
+
 
     const [token, setToken] = useState('');
 
@@ -24,6 +26,7 @@ export default function Form() {
         })
         .then((data) => {
             console.log('Success:', data);
+            setUser(data.user);
         })
         .catch((error) => {
             console.error('Error:', error);
@@ -61,6 +64,7 @@ export default function Form() {
         setUserName('');
         setEmail('');
         setPassword('');
+        setPasswordConfirm('');
     };
     
     return (
@@ -102,6 +106,7 @@ export default function Form() {
             <button type="submit">送信</button>
 
             <p>AccessToken: {token}</p>
+            <p>user: {user.userName}</p>
         </form>
         </div>
     );

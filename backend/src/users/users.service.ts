@@ -98,4 +98,8 @@ export class UsersService {
     async findAll(): Promise<User[]> {
         return await this.userRepository.findAll();
     }
+
+    async findOne(id: number): Promise<User | undefined> {
+        return await this.userRepository.findOne(id);
+    }
 }
