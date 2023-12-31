@@ -188,6 +188,24 @@ describe('UsersService', () => {
     });
   });
 
+  describe('currentUser', () => {
+    it('should return a user', async () => {
+      const expected = mockUser1;
+
+      const dto: UserDto  = {
+        userId: 0,
+        userName: mockUser1.userName,
+        email: mockUser1.email,
+        password: mockUser1.password,
+        passwordConfirm: mockUser1.password,
+      };
+
+      // signupメソッドのモックを設定（もし必要な場合）
+      const result = await service.currentUser(dto);
+
+      expect(result).toEqual(expected);
+    });
+
   describe('findAll', () => {
     it('should return an array of users', async () => {
       const expected = [mockUser1];
