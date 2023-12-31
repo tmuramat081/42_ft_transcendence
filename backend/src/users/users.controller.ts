@@ -80,7 +80,7 @@ export class UsersController {
     @Post('/signin')
     async SignIn(@Body () userData: UserDto, @Res({ passthrough: true }) res: Response) : Promise<string> {
         //アクセストークンを返す
-        console.log(userData)
+        //console.log(userData)
         if (!userData.userName || !userData.password) {
             //return res.status(400).json({ message: 'Please enter all fields' });
             throw new ForbiddenException("Please enter all fields");
@@ -118,7 +118,7 @@ export class UsersController {
         //cookieにアクセストークンを保存
         res.cookie('jwt', accessToken, { httpOnly: true })
 
-        console.log("accessToken: " + accessToken);
+        //console.log("accessToken: " + accessToken);
 
         //redisにアクセストークンを保存
 

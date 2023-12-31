@@ -77,6 +77,7 @@ describe('UsersService', () => {
           }),
         }),
         // forRootAsync()を使って非同期接続
+        // テスト用のDBを使う方法もある
         TypeOrmModule.forRootAsync({
           imports: [ConfigModule],
           inject: [ConfigService],
@@ -200,11 +201,17 @@ describe('UsersService', () => {
         passwordConfirm: mockUser1.password,
       };
 
+      jest.spyOn(repository, 'findOneByName').mockResolvedValue(expected);
+
       // signupメソッドのモックを設定（もし必要な場合）
       const result = await service.currentUser(dto);
 
-      expect(result).toEqual(expected);
+      const {password, ...expected2} = expected;
+
+      //expect(result).toEqual(expected);
+      expect(result).toEqual(expected2);
     });
+  });
 
   describe('findAll', () => {
     it('should return an array of users', async () => {

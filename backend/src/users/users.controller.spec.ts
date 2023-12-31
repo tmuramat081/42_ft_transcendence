@@ -1,6 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { UsersController } from './users.controller';
 import { UsersService } from './users.service';
+import { UsersController } from './users.controller';
 // import { User } from './entities/user.entity';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { UserRepository } from './users.repository';
@@ -8,16 +8,31 @@ import { JwtModule } from '@nestjs/jwt';
 import { PassportModule } from '@nestjs/passport';
 import { JwtStrategy } from './strategy/jwt.strategy';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
+import { JwtPayload } from './interfaces/jwt_payload';
+import { JwtService } from '@nestjs/jwt'
 import { User } from './entities/user.entity';
+import { UserDto } from './dto/user.dto';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import * as dotenv from 'dotenv'; 
 import * as Joi from 'joi';
+import { Column, CreateDateColumn, DeleteDateColumn, Entity, OneToMany, PrimaryGeneratedColumn, Timestamp, Unique } from "typeorm";
+import { Response } from 'express';
 
+// serviceをモックする
+
+const mockUsersService = () => ({
+  signUp: jest.fn(),
+  signIn: jest.fn(),
+  findAll: jest.fn(),
+  findOne: jest.fn(),
+  findOneByName: jest.fn(),
+});
 
 dotenv.config();
 describe('UsersController', () => {
   let controller: UsersController;
-  
+  let service: UsersService;
+
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       // controllers: [UsersController],
@@ -64,14 +79,65 @@ describe('UsersController', () => {
         }),
       ],
       controllers: [UsersController],
-      providers: [UserRepository, UsersService, JwtStrategy, JwtAuthGuard],
+      providers: [UserRepository, JwtStrategy, JwtAuthGuard, { provide: UsersService, useFactory: mockUsersService }],
       exports: [JwtStrategy, JwtAuthGuard],
     }).compile();
 
     controller = module.get<UsersController>(UsersController);
+    service = module.get<UsersService>(UsersService);
   });
 
   it('should be defined', () => {
     expect(controller).toBeDefined();
   });
+
+  describe('signUp', () => {
+    it('should return a jwt token', async () => {
+      const result = 'testToken';
+      const userDto = {
+        userId: 1,
+        userName: 'testUser',
+        email: 'test@test.com',
+        password: 'testPassword',
+        passwordConfirm: 'testPassword',
+      };
+
+      const mockResponse = {
+        status: jest.fn().mockReturnThis(),
+        json: jest.fn().mockReturnThis(),
+        send: jest.fn().mockReturnThis(),
+        cookie: jest.fn().mockReturnThis(),
+        // 他に必要なメソッドをモック化
+      } as unknown as Response;
+
+      jest.spyOn(service, 'signUp').mockImplementation(async () => result);
+
+      expect(await controller.SignUp(userDto, mockResponse)).toBe("{\"accessToken\":\"testToken\"}");
+    }); 
+  }); 
+
+  describe('signIn', () => {
+    it('should return a jwt token', async () => {
+      const result = 'testToken';
+      const userDto = {
+        userId: 1,
+        userName: 'testUser',
+        email: 'test@test.com',
+        password: 'testPassword',
+        passwordConfirm: 'testPassword',
+      };
+
+      const mockResponse = {
+        status: jest.fn().mockReturnThis(),
+        json: jest.fn().mockReturnThis(),
+        send: jest.fn().mockReturnThis(),
+        cookie: jest.fn().mockReturnThis(),
+        // 他に必要なメソッドをモック化
+      } as unknown as Response;
+
+      jest.spyOn(service, 'signIn').mockImplementation(async () => result);
+
+      expect(await controller.SignIn(userDto, mockResponse)).toBe("{\"accessToken\":\"testToken\"}");
+    }); 
+  }); 
 });
