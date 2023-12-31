@@ -18,8 +18,22 @@ import * as Joi from 'joi';
 import { Column, CreateDateColumn, DeleteDateColumn, Entity, OneToMany, PrimaryGeneratedColumn, Timestamp, Unique } from "typeorm";
 import { Response } from 'express';
 
-// serviceをモックする
 
+dotenv.config();
+const mockUser1: User = {
+  userId: 1,
+  userName: "test",
+  email: "test@test",
+  password: "test",
+  icon: "",
+  createdAt: new Date('2023-01-01T00:00:00Z'),
+  deletedAt: new Date('2023-01-01T00:00:00Z'),
+  name42: "",
+  twoFactorAuth: false,
+  twoFactorAuthSecret: "",
+};
+
+// serviceをモックする
 const mockUsersService = () => ({
   signUp: jest.fn(),
   signIn: jest.fn(),
