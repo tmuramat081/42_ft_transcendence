@@ -13,7 +13,7 @@ export default function Form() {
     const [token, setToken] = useState('');
 
     useEffect(() => {
-        if (token == '') return;
+        if (token == '' || token === undefined) return;
         fetch('http://localhost:3001/users/me', {
             method: 'GET',
             headers: {

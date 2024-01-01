@@ -40,6 +40,7 @@ const mockUsersService = () => ({
   findAll: jest.fn(),
   findOne: jest.fn(),
   findOneByName: jest.fn(),
+  currentUser: jest.fn(),
 });
 
 dotenv.config();
@@ -154,4 +155,37 @@ describe('UsersController', () => {
       expect(await controller.SignIn(userDto, mockResponse)).toBe("{\"accessToken\":\"testToken\"}");
     }); 
   }); 
+
+  describe('currentUser', () => {
+    it('should return a user', async () => {
+      const expected = mockUser1;
+      
+      jest.spyOn(service, 'currentUser').mockResolvedValue(expected);
+
+      const mockRequest = {
+        user: {
+          userId: mockUser1.userId,
+          userName: mockUser1.userName,
+          email: mockUser1.email,
+          password: mockUser1.password,
+          passwordConfirm: mockUser1.password,
+        },
+      };
+
+      const result = await controller.currentUser(mockRequest);
+      //const {password, ...expected2} = expected;
+
+
+      expect(result).toEqual("{\"user\":{\"userId\":1,\"userName\":\"test\",\"email\":\"test@test\",\"passwordConfirm\":\"test\"}}");
+    });
+  });
+
+
+  describe('findAll', () => {
+    it('should return an array of users', async () => {
+      const result = [mockUser1];
+      jest.spyOn(service, 'findAll').mockResolvedValue(result);
+      expect(await controller.findAll()).toBe(result);
+    }); 
+  });
 });
