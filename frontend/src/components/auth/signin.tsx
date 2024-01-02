@@ -17,7 +17,7 @@ export default function Form() {
     const [user, setUser] = useState({});
 
     useEffect(() => {
-        if (token == '') return;
+        if (token == '' || token === undefined) return;
         fetch('http://localhost:3001/users/me', {
             method: 'GET',
             headers: {
@@ -38,7 +38,7 @@ export default function Form() {
     }, [token]);
 
 
-    
+    // mfnyuを参考にしてloginをさんこう　 if res.status == 200 でtokenをsetToken
     const handleSubmit = (e) => {
         e.preventDefault();
         // ここでフォームのデータを処理します

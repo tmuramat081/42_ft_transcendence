@@ -132,6 +132,7 @@ export class UsersController {
     currentUser(@Req() req) : string {
         //throw new ForbiddenException("Invalid credentials");
         const { password, ...user } = req.user;
+        //const user = req.user;
         return JSON.stringify({"user": user});
     }
 

@@ -93,6 +93,7 @@ export class UsersService {
         const user: User = await this.userRepository.findOneByName(userData.userName);
         const { password, ...result } = user;
         return result
+        //return user
     }
 
     async findAll(): Promise<User[]> {
