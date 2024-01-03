@@ -7,6 +7,8 @@ import * as bcrypt from 'bcrypt'
 import { UseGuards } from '@nestjs/common';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
 import { AuthGuard } from '@nestjs/passport';
+//Excludeを使うと、指定したプロパティを除外した型を作成できる
+import { classToPlain } from "class-transformer";
 
 /*
 分離のポイント
@@ -132,12 +134,17 @@ export class UsersController {
     currentUser(@Req() req) : string {
         //throw new ForbiddenException("Invalid credentials");
         const { password, ...user } = req.user;
-        //const user = req.user;
+        //const user: User = req.user;
         return JSON.stringify({"user": user});
     }
 
     @Get('/all')
     findAllUsers() {
-        return this.usersService.findAll();
+        return classToPlain(this.usersService.findAll());
+    }
+
+    @Get('/:id')
+    findOne(@Req() req) {
+        return classToPlain(this.usersService.findOne(req.params.id));
     }
 }

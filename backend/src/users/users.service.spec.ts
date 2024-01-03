@@ -141,7 +141,6 @@ describe('UsersService', () => {
       const expected = mockUser1;
 
       const dto: UserDto  = {
-        userId: 0,
         userName: mockUser1.userName,
         email: mockUser1.email,
         password: mockUser1.password,
@@ -167,7 +166,6 @@ describe('UsersService', () => {
       const expected = mockUser1;
 
       const dto: UserDto  = {
-        userId: 0,
         userName: mockUser1.userName,
         email: mockUser1.email,
         password: mockUser1.password,
@@ -194,7 +192,6 @@ describe('UsersService', () => {
       const expected = mockUser1;
 
       const dto: UserDto  = {
-        userId: 0,
         userName: mockUser1.userName,
         email: mockUser1.email,
         password: mockUser1.password,

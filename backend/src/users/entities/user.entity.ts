@@ -69,7 +69,6 @@ export class User {
 
     @Column({ name: 'password', type: 'varchar'})
     @Factory((faker) => faker.internet.password())
-    @Exclude()
     @IsNotEmpty()
     @MinLength(4)
     @MaxLength(20)
@@ -80,6 +79,7 @@ export class User {
     @Matches(/((?=.*\d)|(?=.*\W+))(?![.\n])(?=.*[A-Z])(?=.*[a-z]).*$/,
         { message: 'パスワードは大文字、小文字、数字、記号を含めてください' }
     )
+    @Exclude()
     password: string;
 
     @Column({ name: 'icon', type: 'text', default: ''})
