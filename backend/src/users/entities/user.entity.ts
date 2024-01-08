@@ -25,6 +25,7 @@ import { Factory } from "nestjs-seeder";
 // 16
 // 出力フィールドを制御するために、class-transformerパッケージを使用する
 import { Exclude } from "class-transformer"; 
+import { MatchResult } from "src/games/entities/matchResult.entity";
 
 
 // entityはデータベースのテーブルを表す
@@ -90,4 +91,10 @@ export class User {
     @Column({ name: 'two_factor_auth_secret', type: 'text', nullable: true})
     @Exclude()
     twoFactorAuthSecret: string;
+
+    /**
+     * リレーション定義
+     */
+    @OneToMany(() => MatchResult, (matchResult) => matchResult.userId)
+    MatchResult: MatchResult[];
 }
