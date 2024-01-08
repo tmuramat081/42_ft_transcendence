@@ -1,6 +1,9 @@
 "use client"
 import { useState, useEffect } from 'react';
 import axios from 'axios';
+//import { useHistory, useLocation } from 'react-router-dom';
+import { Router, useRouter } from 'next/router';
+
 
 type User = {
     userId: number,
@@ -32,6 +35,7 @@ export default function Form() {
         .then((data) => {
             console.log('Success:', data);
             setUser(data.user);
+            Router.push('/');
         })
         .catch((error) => {
             console.error('Error:', error);
