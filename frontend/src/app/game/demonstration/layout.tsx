@@ -1,9 +1,10 @@
-import type { Metadata } from 'next'
+import React from 'react';
+import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
   title: 'Pong game demonstration',
   description: 'demonstration for game design.',
-}
+};
 
 export default function Layout({
   children,
@@ -14,5 +15,5 @@ export default function Layout({
     <section>
       {children}
     </section>
-  )
+  );
 }

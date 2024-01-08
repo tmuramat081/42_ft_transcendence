@@ -1,5 +1,5 @@
-"use client"
-import PongDemo from '@/components/game/PongDemo'
+'use client';
+import PongDemo from '@/components/game/PongDemo';
 
 /**
  * Pageはルート固有のUIです。page.jsファイルからコンポーネントをエクスポートすることでページを定義できます。
@@ -9,10 +9,10 @@ import PongDemo from '@/components/game/PongDemo'
  */
 export default function Page() {
   return (
-	<PongDemo
+    <PongDemo
 	  title={'Pong! demo'}
 	  width={1200}
 	  height={800}
-	/>
-  )
+    />
+  );
 }
