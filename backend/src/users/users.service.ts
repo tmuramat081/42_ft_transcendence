@@ -3,10 +3,11 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, Connection } from 'typeorm';
 import { User } from './entities/user.entity';
 import { UserRepository } from './users.repository';
-import { UserDto } from './dto/user.dto';
+import { SignUpUserDto, SignInUserDto } from './dto/user.dto';
 import { JwtService } from '@nestjs/jwt'
 import { JwtPayload } from './interfaces/jwt_payload';
 import * as bcrypt from 'bcrypt';
+import { UserDto42 } from './dto/user42.dto';
 
 /*
 Service
@@ -30,7 +31,7 @@ export class UsersService {
 
     //asyncは非同期処理
     //awaitを使うと、その行の処理が終わるまで次の行には進まない
-    async signUp(userData: UserDto): Promise<string> {
+    async signUp(userData: SignUpUserDto): Promise<string> {
         var user: User = new User();
         user.userName = userData.userName;
         user.email = userData.email;
@@ -47,9 +48,11 @@ export class UsersService {
         return accessToken
     }
 
-    async signIn(userData: UserDto): Promise<string> {
+    async signIn(userData: SignInUserDto): Promise<string> {
         // ユーザーの検索
-        const user: User = await this.userRepository.findOneByName(userData.userName);
+        //const user: User = await this.userRepository.findOneByName(userData.userName);
+        const user: User = await this.userRepository.findOne({ where: { userName: userData.userName }});
+
 
         // パスワードをハッシュ化
         // これでは確認できない
@@ -88,9 +91,11 @@ export class UsersService {
     }
 
     // Partial<User> は User の一部のプロパティを表す
-    async currentUser(userData: UserDto): Promise<Partial<User>> {
+    async currentUser(userData: SignUpUserDto): Promise<Partial<User>> {
         // ユーザーの検索
-        const user: User = await this.userRepository.findOneByName(userData.userName);
+        //const user: User = await this.userRepository.findOneByName(userData.userName);
+        const user: User = await this.userRepository.findOne({ where: { userName: userData.userName }});
+
         const { password, ...result } = user;
         return result
         //return user
@@ -102,5 +107,36 @@ export class UsersService {
 
     async findOne(id: number): Promise<User | undefined> {
         return await this.userRepository.findOne(id);
+    }
+
+    async validateUser42(userData: UserDto42): Promise<User> {
+        // ユーザーの検索
+        const { name42 } = userData;
+        let user: User = await this.userRepository.findOne({ where: { name42: name42 } });
+        
+        // ユーザーが存在する場合
+        if (user) {
+            return user;
+        }
+
+        // ユーザーが存在しない場合
+        let { userName } = userData
+        // ユーザー名のコンフリクトを避ける
+        user = await this.userRepository.findOne({ where: { userName: name42 } });
+        if (user) {
+            // ユーザー名が既に存在する場合、ユーザー名を変更する
+			const rand = Math.random().toString(16).substr(2, 5)
+			userName = userName + '-' + rand
+        }
+        let newUser = new User()
+        newUser.userName = userName
+        newUser.name42 = name42
+        newUser.email = userData.email
+        newUser.password = userData.password
+        newUser.icon = userData.icon
+        newUser.twoFactorAuth = false
+        newUser.twoFactorAuthSecret = ''
+        newUser  = await this.userRepository.createUser42(newUser)
+		return newUser
     }
 }

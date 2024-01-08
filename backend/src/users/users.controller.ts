@@ -1,6 +1,6 @@
 import { Controller, Get, Post, Body, Req, Res, InternalServerErrorException, ForbiddenException, UnauthorizedException } from '@nestjs/common';
 import { UsersService } from './users.service';
-import { UserDto } from './dto/user.dto';
+import { SignUpUserDto, SignInUserDto } from './dto/user.dto';
 import { User } from './entities/user.entity';
 import { Response, Request } from 'express';
 import * as bcrypt from 'bcrypt'
@@ -37,7 +37,7 @@ export class UsersController {
     // paththrouth: true は、レスポンスを返すときに、レスポンスヘッダーを変更するために必要
     //: Promise<User>
     @Post('/signup')
-    async SignUp(@Body () userData: UserDto, @Res({ passthrough: true }) res: Response) : Promise<string> {
+    async SignUp(@Body () userData: SignUpUserDto, @Res({ passthrough: true }) res: Response) : Promise<string> {
         // リクエストハンドリング
         if (!userData.userName || !userData.email || !userData.password) {
             throw new ForbiddenException("Please enter all fields");
@@ -80,7 +80,7 @@ export class UsersController {
     // curl -X POST -H "Content-Type: application/json" -d '{"userName":"test","password":"test"}' http://localhost:3001/users/signin
     //redisに保存されているアクセストークンを削除
     @Post('/signin')
-    async SignIn(@Body () userData: UserDto, @Res({ passthrough: true }) res: Response) : Promise<string> {
+    async SignIn(@Body () userData: SignInUserDto, @Res({ passthrough: true }) res: Response) : Promise<string> {
         //アクセストークンを返す
         //console.log(userData)
         if (!userData.userName || !userData.password) {

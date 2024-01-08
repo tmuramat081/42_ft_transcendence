@@ -35,9 +35,13 @@ export class UserRepository {
         return this.userRepository.find();
     }
 
-    async findOne(id: number): Promise<User | undefined> {
-        //return this.connection.getRepository(User).findOne({ where: { user_id: id } });
-        return this.userRepository.findOne({ where: { userId: id }});
+    // async findOne(id: number): Promise<User | undefined> {
+    //     //return this.connection.getRepository(User).findOne({ where: { user_id: id } });
+    //     return this.userRepository.findOne({ where: { userId: id }});
+    // }
+
+    async findOne(params: any): Promise<User | undefined> {
+        return this.userRepository.findOne(params);
     }
 
     async findOneByName(name: string): Promise<User | undefined> {
@@ -72,4 +76,11 @@ export class UserRepository {
     // async remove(user: User): Promise<User> {
     //     return this.userRepository.remove(user);
     // }
+
+    async createUser42(user: User): Promise<User> {
+        const salt = await bycrypt.genSalt();
+        // パスワードのハッシュ化
+        user.password = await bycrypt.hash(user.password, salt);
+        return this.userRepository.save(user);
+    }
 }

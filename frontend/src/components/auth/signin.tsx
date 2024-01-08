@@ -13,16 +13,17 @@ type User = {
 export default function Form() {
     const [userName, setUserName] = useState('');
     const [password, setPassword] = useState('');
-    const [token, setToken] = useState('');
     const [user, setUser] = useState({});
 
-    useEffect(() => {
-        if (token == '' || token === undefined) return;
+    const [token, setToken] = useState('');
+
+    const getCurrentUser = () => {
         fetch('http://localhost:3001/users/me', {
             method: 'GET',
-            headers: {
-                "Authorization": `Bearer ${token}`
-            }
+            credentials: 'include',
+            // headers: {
+            //     "Authorization": `Bearer ${token}`
+            // }
         })
         .then((res) => {
             //console.log(res.data);
@@ -34,8 +35,15 @@ export default function Form() {
         })
         .catch((error) => {
             console.error('Error:', error);
+            
+            // redirect
         });
-    }, [token]);
+    }
+
+    useEffect(() => {
+        //if (token == '' || token === undefined) return;
+        getCurrentUser();
+    }, []);
 
 
     // mfnyuを参考にしてloginをさんこう　 if res.status == 200 でtokenをsetToken
@@ -45,6 +53,7 @@ export default function Form() {
         // axios.post('localhost:3001/users/login', { username, email });
         fetch('http://localhost:3001/users/signin', {
             method: 'POST',
+            credentials: 'include',
             headers: {
                 'Content-Type': 'application/json',
             },
@@ -58,6 +67,7 @@ export default function Form() {
         .then((data) => {
             console.log('Success:', data.accessToken);
             setToken(data.accessToken);
+            getCurrentUser();
         })
         .catch((error) => {
             console.error('Error:', error);
@@ -91,7 +101,13 @@ export default function Form() {
             <button type="submit">送信</button>
 
             <p>AccessToken: {token}</p>
-            <p>user: {user.userName}</p>
+            
+            { user && 
+                <p>user: {user.userName}</p>
+            } { !user && 
+                <p>user: </p>
+            }
+
         </form>
         </div>
     );

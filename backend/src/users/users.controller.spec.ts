@@ -11,7 +11,7 @@ import { JwtAuthGuard } from './guards/jwt-auth.guard';
 import { JwtPayload } from './interfaces/jwt_payload';
 import { JwtService } from '@nestjs/jwt'
 import { User } from './entities/user.entity';
-import { UserDto } from './dto/user.dto';
+import { SignUpUserDto, SignInUserDto } from './dto/user.dto';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import * as dotenv from 'dotenv'; 
 import * as Joi from 'joi';
