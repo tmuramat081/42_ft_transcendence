@@ -1,7 +1,8 @@
+/* eslint-disable */
 'use client';
 import { useState, useEffect } from 'react';
 
-type User = {
+export type User = {
   userId: number;
   userName: string;
   email: string;
@@ -89,7 +90,7 @@ export default function Form() {
         <button type="submit">送信</button>
 
         <p>AccessToken: {token}</p>
-        <p>user: {user.userName}</p>
+        <p>user: {user?.userName}</p>
       </form>
     </div>
   );

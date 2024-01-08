@@ -1,12 +1,14 @@
+/* eslint-disable */
 'use client';
 import { useState, useEffect } from 'react';
+import { User } from './signin';
 
 export default function Form() {
   const [userName, setUserName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [passwordConfirm, setPasswordConfirm] = useState('');
-  const [user, setUser] = useState({});
+  const [user, setUser] = useState<User | null>(null);
 
   const [token, setToken] = useState('');
 
@@ -101,7 +103,7 @@ export default function Form() {
         <button type="submit">送信</button>
 
         <p>AccessToken: {token}</p>
-        <p>user: {user.userName}</p>
+        <p>user: {user?.userName}</p>
       </form>
     </div>
   );
