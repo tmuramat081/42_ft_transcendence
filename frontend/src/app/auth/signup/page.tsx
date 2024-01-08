@@ -2,7 +2,5 @@
 import Form from '@/components/auth/signup';
 
 export default function Page() {
-  return (
-    <Form />
-  );
+  return <Form />;
 }

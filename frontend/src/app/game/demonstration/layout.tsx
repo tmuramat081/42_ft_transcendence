@@ -6,14 +6,6 @@ export const metadata: Metadata = {
   description: 'demonstration for game design.',
 };
 
-export default function Layout({
-  children,
-}: {
-  children: React.ReactNode
-}) {
-  return (
-    <section>
-      {children}
-    </section>
-  );
+export default function Layout({ children }: { children: React.ReactNode }) {
+  return <section>{children}</section>;
 }
