@@ -1,4 +1,4 @@
-"use client"
+'use client';
 import React, { useEffect, useRef } from 'react';
 
 const PADDLE_SPEED = 5;
@@ -6,20 +6,20 @@ const PADDLE_WIDTH = 10;
 const PADDLE_HEIGHT = 100;
 
 type Ball = {
-  x: number,
-  y: number,
-  speedX: number,
-  speedY: number,
+  x: number;
+  y: number;
+  speedX: number;
+  speedY: number;
 };
 
 type PongDemoProps = {
-  title: string,
-  width: number,
-  height: number,
+  title: string;
+  width: number;
+  height: number;
 };
 
 type KeyState = {
-  ArrowUp: boolean,
+  ArrowUp: boolean;
   ArrowDown: boolean;
 };
 
@@ -67,17 +67,21 @@ export default function PongDemo({ title, width, height }: PongDemoProps) {
         playerPaddleYRef.current = Math.max(playerPaddleYRef.current - PADDLE_SPEED, 0);
       }
       if (keyStateRef.current.ArrowDown) {
-        playerPaddleYRef.current = Math.min(playerPaddleYRef.current + PADDLE_SPEED, height - PADDLE_HEIGHT);
+        playerPaddleYRef.current = Math.min(
+          playerPaddleYRef.current + PADDLE_SPEED,
+          height - PADDLE_HEIGHT,
+        );
       }
     }
 
     // パドルの衝突判定
     function checkPaddleCollision() {
       if (
-        ballRef.current.x < 20 && ballRef.current.x > 10 &&
-        ballRef.current.y > playerPaddleYRef.current && 
-        ballRef.current.y < playerPaddleYRef.current + PADDLE_HEIGHT)
-      {
+        ballRef.current.x < 20 &&
+        ballRef.current.x > 10 &&
+        ballRef.current.y > playerPaddleYRef.current &&
+        ballRef.current.y < playerPaddleYRef.current + PADDLE_HEIGHT
+      ) {
         ballRef.current.speedX = -ballRef.current.speedX;
       }
     }
@@ -107,10 +111,12 @@ export default function PongDemo({ title, width, height }: PongDemoProps) {
       }
 
       // ボールがコンピュータのパドルに当たった場合
-      if (ballRef.current.x > ctx.canvas.width - 20 &&
+      if (
+        ballRef.current.x > ctx.canvas.width - 20 &&
         ballRef.current.x < ctx.canvas.width - 10 &&
         ballRef.current.y > computerPaddleYRef.current &&
-        ballRef.current.y < computerPaddleYRef.current + PADDLE_HEIGHT) {
+        ballRef.current.y < computerPaddleYRef.current + PADDLE_HEIGHT
+      ) {
         ballRef.current.speedX = -ballRef.current.speedX;
       }
 
@@ -141,14 +147,14 @@ export default function PongDemo({ title, width, height }: PongDemoProps) {
         }
       }
     };
-  
+
     // キー開放時のイベントハンドラ
     const handleKeyUp = (e: KeyboardEvent) => {
       if (e.key === 'ArrowUp' || e.key === 'ArrowDown') {
         keyStateRef.current[e.key] = false;
       }
     };
-    
+
     // イベントリスナーをセット
     window.addEventListener('keydown', handleKeyDown);
     window.addEventListener('keyup', handleKeyUp);
@@ -158,7 +164,7 @@ export default function PongDemo({ title, width, height }: PongDemoProps) {
       window.removeEventListener('keydown', handleKeyDown);
       window.removeEventListener('keyup', handleKeyUp);
     };
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // canvas描画
@@ -169,7 +175,7 @@ export default function PongDemo({ title, width, height }: PongDemoProps) {
       resetGame(ctx);
       drawCanvas(ctx);
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return (
