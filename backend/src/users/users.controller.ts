@@ -61,6 +61,8 @@ export class UsersController {
             const accessToken: string = await this.usersService.signUp(userData);
 
             //cookieにアクセストークンを保存
+            // localstrageよりcookieの方が安全
+            // XSS, 有効期限の観点からもcookieの方が良い
             res.cookie('jwt', accessToken, { httpOnly: true })
 
             // //redisにアクセストークンを保存
@@ -140,11 +142,13 @@ export class UsersController {
 
     @Get('/all')
     findAllUsers() {
+        // passwordを除外する
         return classToPlain(this.usersService.findAll());
     }
 
     @Get('/:id')
     findOne(@Req() req) {
+        // passwordを除外する
         return classToPlain(this.usersService.findOne(req.params.id));
     }
 }

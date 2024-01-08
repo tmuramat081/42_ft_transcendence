@@ -19,6 +19,11 @@ export class AuthController {
 
 
     // passportを使う場合
+    // 以下のURLにアクセスすると、認証画面に飛ぶ。
+    // その後、設定したリダイレクト先に飛び、認証コードを受け取る。
+    // この認証コードを使って、アクセストークンを取得する。
+    // アクセストークンを使って、ユーザー情報を取得する。
+    //https://api.intra.42.fr/oauth/authorize?client_id=u-s4t2ud-326bb2dea9d537b9d377e8d7f2ae37131be5fc8644c00cc79e59ac87e74e0f3c&redirect_uri=http%3A%2F%2Flocalhost%3A3001%2Fauth%2Fcallback%2F42&response_type=code
     // アクセストークンを返す 16を参考
     @Get('/callback/42')
     @UseGuards(IntraAuthGuard)
