@@ -91,4 +91,31 @@ export class AuthController {
     //     console.log("accessToken: " + accessToken);
     //     res.redirect(process.env.FRONTEND_URL)
     // }
+
+    // 2faの設定
+    // @Post("/2fa")
+    // @UseGuards(JwtAuthGuard)
+    // async enable2fa(@Req() req: Request) {
+    //     const user = req.user
+    //     const secret = await this.authService.update2fa(user)
+    //     return secret
+    // }
+
+    // // 2faが正しいかを検証
+    // @Post("/2fa/verify")
+    // @UseGuards(JwtAuthGuard)
+    // async verify2fa(@Req() req: Request) {
+    //     const user = req.user
+    //     const secret = await this.authService.verify2fa(user)
+    //     return secret
+    // }
+
+    // // qrcodeを出力
+    // @Get("2fa/generate")
+    // @UseGuards(JwtAuthGuard)
+    // async get2faCode(@Req() req: Request) {
+    //     const user = req.user
+    //     const code = await this.authService.get2faCode(user)
+    //     return code
+    // }
 }
