@@ -43,8 +43,8 @@ const ChatPage = () => {
       console.log("connection ID : ", socket.id);
       setSender({
         ID: socket.id,
-        name: "",
-        icon: "",
+        name: "kshima",
+        icon: "https://cdn.intra.42.fr/users/b9712d0534942eacfb43c2b0b031ae76/kshima.jpg",
       });
     });
 
@@ -113,7 +113,13 @@ const ChatPage = () => {
               message.user === "self" ? "self" : "other"
             }`}
           >
-            <Image src={message.photo} alt="User Icon" className="icon" />
+            <Image
+              src={message.photo}
+              alt="User Icon"
+              className="icon"
+              width={50}
+              height={50}
+            />
             <div>
               <div>{message.text}</div>
               <div className="timestamp">{message.timestamp}</div>
