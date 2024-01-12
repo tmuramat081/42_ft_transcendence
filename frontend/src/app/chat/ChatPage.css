@@ -3,11 +3,11 @@
     margin: 0 auto;
     display: flex;
     flex-direction: column;
-    height: 100vh; /* 画面全体の高さいっぱいに広がるようにする */
+    height: 100vh;
   }
 
   .chat-input {
-    margin-top: 10px; /* 適切な余白を設定してください */
+    margin-top: 10px;
     align-self: flex-end;
   }
   
