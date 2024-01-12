@@ -12,6 +12,7 @@ import { UsersModule } from './users/users.module';
 import { ChatModule } from './chat/chat.module';
 
 // .envを読み込む
+// .envを読み込む
 dotenv.config();
 @Module({
   imports: [
