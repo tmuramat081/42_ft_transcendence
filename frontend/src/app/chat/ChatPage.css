@@ -1,6 +1,14 @@
 .chat-container {
     max-width: 600px;
     margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    height: 100vh; /* 画面全体の高さいっぱいに広がるようにする */
+  }
+
+  .chat-input {
+    margin-top: 10px; /* 適切な余白を設定してください */
+    align-self: flex-end;
   }
   
   .chat-room-selector {
