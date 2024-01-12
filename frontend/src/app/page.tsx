@@ -26,10 +26,6 @@ export default function Home() {
             {/* ルーティング */}
             <Link href="./game/demonstration">ゲーム デモンストレーション</Link>
           </li>
-          {/* chatページを追加 */}
-          <li>
-            <Link href="./chat">チャット</Link>
-          </li>
         </ul>
       </main>
     </>
