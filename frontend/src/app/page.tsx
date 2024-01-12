@@ -29,6 +29,11 @@ export default function Home() {
               サインイン
             </Link>
           </li>
+          <li>
+            <Link href="./users/update">
+              ユーザー情報更新
+            </Link>
+          </li>
         </ul>
       </main>
     </>

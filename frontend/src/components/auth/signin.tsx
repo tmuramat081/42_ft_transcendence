@@ -113,6 +113,12 @@ export default function Form() {
             }
 
         </form>
+
+        <button onClick={() => Router.push('/auth/signup')}>signup</button>
+
+        <button>
+            <a href="http://localhost:3001/auth/callback/42">42ログイン</a>
+        </button>
         </div>
     );
     }
