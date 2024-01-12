@@ -1,0 +1,53 @@
+.chat-container {
+    max-width: 600px;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+  }
+
+  .chat-input {
+    margin-top: 10px;
+    align-self: flex-end;
+  }
+  
+  .chat-room-selector {
+    margin-bottom: 10px;
+  }
+  
+  .chat-messages {
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .message-bubble {
+    display: flex;
+    align-items: flex-start;
+    padding: 10px;
+    margin-bottom: 5px;
+    border-radius: 8px;
+    max-width: 70%;
+  }
+  
+  .message-bubble.self {
+    align-self: flex-end;
+    background-color: #e2f8ff; /* 自分のメッセージの背景色 */
+  }
+  
+  .message-bubble.other {
+    align-self: flex-start;
+    background-color: #f0f0f0; /* 相手のメッセージの背景色 */
+  }
+  
+  .icon {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    margin-right: 10px;
+  }
+  
+  
+  .timestamp {
+    font-size: 10px;
+    color: #888;
+  }
