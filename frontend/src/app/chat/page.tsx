@@ -5,13 +5,6 @@ import ChatLayout from "./layout";
 import "./ChatPage.css"; // スタイルシートの追加
 import Image from "next/image";
 
-//Userを上手に渡す、iconの画像処理
-// interface User {
-//   ID: string;
-//   name: string;
-//   icon: string;
-// }
-
 const socket = io("http://localhost:3001");
 
 const ChatPage = () => {
@@ -42,6 +35,7 @@ const ChatPage = () => {
     socket.on("connect", () => {
       console.log("connection ID : ", socket.id);
       setSender({
+        // ここはログイン情報を取得して設定する
         ID: socket.id,
         name: "kshima",
         icon: "https://cdn.intra.42.fr/users/b9712d0534942eacfb43c2b0b031ae76/kshima.jpg",
@@ -110,7 +104,7 @@ const ChatPage = () => {
           <div
             key={index}
             className={`message-bubble ${
-              message.user === "self" ? "self" : "other"
+              message.user === sender.ID ? "self" : "other"
             }`}
           >
             <Image
