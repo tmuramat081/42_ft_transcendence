@@ -21,10 +21,6 @@ export default function Home() {
           <li>
             <Link href="./chat">チャット</Link>
           </li>
-          {/* chatページを追加 */}
-          <li>
-            <Link href="./chat">チャット</Link>
-          </li>
         </ul>
       </main>
     </>
