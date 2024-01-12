@@ -2,6 +2,8 @@ import { Injectable } from '@nestjs/common';
 import { UserDto42 } from '../users/dto/user42.dto';
 import { UsersService } from '../users/users.service';
 import { User } from '../users/entities/user.entity';
+import { JwtService } from '@nestjs/jwt'
+//import { JwtPayload } from './interfaces/jwt_payload';
 
 // mfnyu 15, 16
 
@@ -15,12 +17,16 @@ export class AuthService {
         return await this.usersService.validateUser42(user);
     }
 
-    // async update2fa(user: UserDto42): Promise<User> {
-    //     return await this.usersService.update2fa(user);
+    // // JWT
+    // async update2fa(user: User, updateUserData: UserDto42): Promise<User> {
+    //     var updateUser: User = new User();
+    //     updateUser.userName = user.userName;
+    //     updateUser.email = user.email;
+    //     updateUser.password = user.password;
+    //     return await this.usersService.updateUser(user.userName, );
     // }
 
     // async verify2fa(user: UserDto42): Promise<User> {
-
     //     return await this.usersService.verify2fa(user);
     // }
 

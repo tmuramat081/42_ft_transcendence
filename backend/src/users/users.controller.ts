@@ -1,6 +1,6 @@
 import { Controller, Get, Post, Body, Req, Res, InternalServerErrorException, ForbiddenException, UnauthorizedException } from '@nestjs/common';
 import { UsersService } from './users.service';
-import { SignUpUserDto, SignInUserDto } from './dto/user.dto';
+import { SignUpUserDto, SignInUserDto, UpdateUserDto } from './dto/user.dto';
 import { User } from './entities/user.entity';
 import { Response, Request } from 'express';
 import * as bcrypt from 'bcrypt'
@@ -138,6 +138,42 @@ export class UsersController {
         const { password, ...user } = req.user;
         //const user: User = req.user;
         return JSON.stringify({"user": user});
+    }
+
+    @UseGuards(JwtAuthGuard)
+    @Post('/:id/update')
+    async updateUser(@Req() req, @Body () userData: UpdateUserDto, @Res({ passthrough: true }) res: Response) {
+        // リクエストハンドリング
+        if (!userData.userName || !userData.email) {
+            throw new ForbiddenException("Please enter all fields");
+            //return res.status(400).json({ message: 'Please enter all fields' });
+        }
+
+        // リクエストの検証
+        if (userData.password !== userData.passwordConfirm) {
+            throw new ForbiddenException("Passwords do not match");
+            //return res.status(400).json({ message: 'Passwords do not match' });
+        }
+
+        if (bcrypt.compare(userData.password, userData.passwordConfirm) === false) {
+            throw new ForbiddenException("Passwords do not match");
+            //return res.status(400).json({ message: 'Passwords do not match' });
+        }
+
+        // アクセストークンを更新
+        // idにした方がいい
+        var accessToken: string = await this.usersService.updateUser(req.user.userName, userData);
+        if (accessToken === null) {
+            //console.log("Invalid credentials");
+            throw new ForbiddenException("Invalid credentials");
+            //return res.status(400).json({ message: 'Invalid credentials' });
+        }
+        //cookieにアクセストークンを保存
+        res.cookie('jwt', accessToken, { httpOnly: true })
+
+        //redisにアクセストークンを保存
+
+        return JSON.stringify({"accessToken": accessToken});
     }
 
     @Get('/all')

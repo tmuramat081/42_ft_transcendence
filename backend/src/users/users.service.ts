@@ -3,7 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, Connection } from 'typeorm';
 import { User } from './entities/user.entity';
 import { UserRepository } from './users.repository';
-import { SignUpUserDto, SignInUserDto } from './dto/user.dto';
+import { SignUpUserDto, SignInUserDto, UpdateUserDto } from './dto/user.dto';
 import { JwtService } from '@nestjs/jwt'
 import { JwtPayload } from './interfaces/jwt_payload';
 import * as bcrypt from 'bcrypt';
@@ -99,6 +99,28 @@ export class UsersService {
         const { password, ...result } = user;
         return result
         //return user
+    }
+
+    async updateUser(userName: string, updateUser: UpdateUserDto): Promise<string> {
+        const user = await this.userRepository.findOne({ where : { userName: userName }});
+        if (!user) {
+            // 例外を投げる
+            return null;
+        }
+        user.userName ? updateUser.userName : user.userName;
+        user.email ?  updateUser.email : user.email;
+        user.password ? updateUser.password: user.password;
+        user.twoFactorAuth ? updateUser.twoFactorAuth : user.twoFactorAuth;
+
+        if (updateUser.icon) {
+            user.icon = updateUser.icon;
+            //画像を保存する
+        }
+        const resultUser: User = await this.userRepository.saveUser(user);
+
+        const payload: JwtPayload = { userId: resultUser.userId, userName: resultUser.userName, email: resultUser.email };
+        const accessToken: string = this.jwtService.sign(payload);
+        return accessToken
     }
 
     async findAll(): Promise<User[]> {

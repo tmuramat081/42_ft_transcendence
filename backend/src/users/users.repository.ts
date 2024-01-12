@@ -27,6 +27,12 @@ export class UserRepository {
         return await this.userRepository.save(user);
     }
 
+    // idからUserを取得して、Userを更新する
+    // 二つのUserを渡す方法もある
+    async saveUser(user: User): Promise<User> {
+        return await this.userRepository.save(user);
+    }
+
      // 他のカスタムメソッドをここに追加できます
     async findAll(): Promise<User[]> {
         // リポジトリパターンの方がいい？

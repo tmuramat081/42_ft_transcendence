@@ -1,10 +1,11 @@
-import { Controller, Get, Res, Req, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Res, Req, UseGuards } from '@nestjs/common';
 import { Response, Request } from 'express'
 import { AuthService } from './auth.service';
 import { IntraAuthGuard } from './guards/auth.guards';
 import { HttpService } from '@nestjs/axios';
 import { JwtService } from '@nestjs/jwt';
 import { JwtPayload } from '../users/interfaces/jwt_payload';
+import { JwtAuthGuard } from '../users/guards/jwt-auth.guard';
 
 // mfnyu 15, 16
 
@@ -95,7 +96,7 @@ export class AuthController {
     // 2faの設定
     // @Post("/2fa")
     // @UseGuards(JwtAuthGuard)
-    // async enable2fa(@Req() req: Request) {
+    // async update2fa(@Req() req) {
     //     const user = req.user
     //     const secret = await this.authService.update2fa(user)
     //     return secret
