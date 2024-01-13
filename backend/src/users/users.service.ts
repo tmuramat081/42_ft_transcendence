@@ -107,15 +107,27 @@ export class UsersService {
             // 例外を投げる
             return null;
         }
-        user.userName ? updateUser.userName : user.userName;
-        user.email ?  updateUser.email : user.email;
-        user.password ? updateUser.password: user.password;
-        user.twoFactorAuth ? updateUser.twoFactorAuth : user.twoFactorAuth;
+        // user.userName ? updateUser.userName : user.userName;
+        // user.email ?  updateUser.email : user.email;
+        // user.password ? updateUser.password: user.password;
+        // user.twoFactorAuth ? updateUser.twoFactorAuth : user.twoFactorAuth;
 
-        if (updateUser.icon) {
-            user.icon = updateUser.icon;
-            //画像を保存する
+        user.userName = updateUser.userName ? updateUser.userName : user.userName;
+        user.email = updateUser.email ? updateUser.email : user.email;
+        user.password = updateUser.password ? updateUser.password : user.password;
+        user.twoFactorAuth = updateUser.twoFactorAuth ? updateUser.twoFactorAuth : user.twoFactorAuth;
+
+        console.log("updateUser1: ", updateUser)
+        console.log("updateUser2: ", user)
+
+        if (user.twoFactorAuth) {
+            user.twoFactorAuthSecret = user.userName
         }
+
+        // if (updateUser.icon) {
+        //     user.icon = updateUser.icon;
+        //     //画像を保存する
+        // }
         const resultUser: User = await this.userRepository.saveUser(user);
 
         const payload: JwtPayload = { userId: resultUser.userId, userName: resultUser.userName, email: resultUser.email };

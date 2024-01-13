@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Req, Res, InternalServerErrorException, ForbiddenException, UnauthorizedException } from '@nestjs/common';
+import { Controller, Get, Post, Put, Body, Req, Res, Param, InternalServerErrorException, ForbiddenException, UnauthorizedException } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { SignUpUserDto, SignInUserDto, UpdateUserDto } from './dto/user.dto';
 import { User } from './entities/user.entity';
@@ -129,20 +129,12 @@ export class UsersController {
         return JSON.stringify({"accessToken": accessToken});
     }
 
-    // curl -X GET -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInVzZXJOYW1lIjoidGVzdCIsImVtYWlsIjoidGVzdEB0ZXN0IiwiaWF0IjoxNzAzNzU5NjU5LCJleHAiOjE3MDM3NjMyNTl9.R1TfxoDLp5kTOAAfIEGrkplZquRACJltQv3oGEANKDU" http://localhost:3001/users/me
-    // JWTからユーザーを取得する　API
+    //@Param('username') userName: string, 引数に追加する
+    // curl -X POST -H "Content-Type: application/json" -d '{"userName":"test","email":"test@example.com","password":"Test123!","passwordConfirm":"Test123!"}' http://localhost:3001/users/test/update
+    //@UseGuards(AuthGuard('jwt'), JwtAuthGuard)
     @UseGuards(JwtAuthGuard)
-    @Get('/me')
-    currentUser(@Req() req) : string {
-        //throw new ForbiddenException("Invalid credentials");
-        const { password, ...user } = req.user;
-        //const user: User = req.user;
-        return JSON.stringify({"user": user});
-    }
-
-    @UseGuards(JwtAuthGuard)
-    @Post('/:id/update')
-    async updateUser(@Req() req, @Body () userData: UpdateUserDto, @Res({ passthrough: true }) res: Response) {
+    async updateUser(@Body () userData: UpdateUserDto, @Req() req,  @Res({ passthrough: true }) res: Response) {
+        console.log("userData: ", userData)
         // リクエストハンドリング
         if (!userData.userName || !userData.email) {
             throw new ForbiddenException("Please enter all fields");
@@ -174,6 +166,22 @@ export class UsersController {
         //redisにアクセストークンを保存
 
         return JSON.stringify({"accessToken": accessToken});
+    }
+
+    // @Post('/:username/update')
+    // async updateUser() {
+    //     console.log("updateUser")
+    // }
+
+    // curl -X GET -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInVzZXJOYW1lIjoidGVzdCIsImVtYWlsIjoidGVzdEB0ZXN0IiwiaWF0IjoxNzAzNzU5NjU5LCJleHAiOjE3MDM3NjMyNTl9.R1TfxoDLp5kTOAAfIEGrkplZquRACJltQv3oGEANKDU" http://localhost:3001/users/me
+    // JWTからユーザーを取得する　API
+    @UseGuards(JwtAuthGuard)
+    @Get('/me')
+    currentUser(@Req() req) : string {
+        //throw new ForbiddenException("Invalid credentials");
+        const { password, ...user } = req.user;
+        //const user: User = req.user;
+        return JSON.stringify({"user": user});
     }
 
     @Get('/all')

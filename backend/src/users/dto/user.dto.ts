@@ -88,7 +88,7 @@ export class UpdateUserDto {
     )
     passwordConfirm: string;
 
-    icon: string;
+    //icon: string;
 
     @IsBoolean()
     twoFactorAuth: boolean;

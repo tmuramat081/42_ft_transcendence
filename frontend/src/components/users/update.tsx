@@ -12,7 +12,7 @@ export default function Form() {
     const [password, setPassword] = useState('');
     const [passwordConfirm, setPasswordConfirm] = useState('');
     const [file, setFile] = useState(null);
-    const [is2FAEnabled, setIs2FAEnabled] = useState(false);
+    const [twoFactorAuth, setTwoFactorAuth] = useState(false);
     const [user, setUser] = useState({});
 
     const [token, setToken] = useState('');
@@ -32,7 +32,10 @@ export default function Form() {
         .then((data) => {
             console.log('Success:', data);
             setUser(data.user);
-            Router.push('/');
+            setUserName(data.user.userName);
+            setEmail(data.user.email);
+            setTwoFactorAuth(data.user.twoFactorAuth);
+            //Router.push('/');
         })
         .catch((error) => {
             console.error('Error:', error);
@@ -55,8 +58,8 @@ export default function Form() {
         // axios.post('localhost:3001/users/login', { username, email });
 
         // ここにフォームデータの送信ロジックを追加します
-        console.log('ファイル:', file);
-        console.log('2FA有効:', is2FAEnabled);
+        // console.log('ファイル:', file);
+        // console.log('2FA有効:', is2FAEnabled);
 
         // fetch('http://localhost:3001/users/signup', {
         //     method: 'POST',
@@ -80,6 +83,35 @@ export default function Form() {
         //     console.error('Error:', error);
         // });
 
+        // var formData = new FormData()
+        // formData.append('userName', userName)
+        // formData.append('email', email)
+
+
+        fetch("http://localhost:3001/users/update", {
+            method: 'POST',
+            credentials: 'include',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ userName, email, password, passwordConfirm, twoFactorAuth }),
+        })
+        .then ((res) => {
+            // /console.log(res.json());
+            return res.json();
+        })
+        //.then((res) => res.json())
+        .then((data) => {
+            console.log('Success:', data.accessToken);
+            setToken(data.accessToken);
+            getCurrentUser();
+        })
+        .catch((error) => {
+            console.error('Error:', error);
+        });
+
+
+
         // console.log('送信されたデータ:', { userName, password });
         // // 送信後の処理（例: フォームをクリアする）
         setUserName('');
@@ -87,7 +119,7 @@ export default function Form() {
         setPassword('');
         setPasswordConfirm('');
         setFile(null);
-        setIs2FAEnabled(false);
+        setTwoFactorAuth(false);
     };
 
     const handleFileChange = (e) => {
@@ -95,11 +127,18 @@ export default function Form() {
     };
     
     const handle2FAToggle = (e) => {
-        setIs2FAEnabled(e.target.checked);
+        setTwoFactorAuth(e.target.checked);
     };
     
     return (
         <div>
+        <form onSubmit={()=>{}}>
+            <div>
+            <label htmlFor="fileInput">画像ファイル：</label>
+            <input type="file" id="fileInput" onChange={handleFileChange} />
+            </div>
+            <button type="submit">送信</button>
+        </form>
         <form onSubmit={handleSubmit}>
             <label htmlFor="username">名前:</label>
             <input
@@ -133,10 +172,6 @@ export default function Form() {
             onChange={(e) => setPasswordConfirm(e.target.value)}
             />
 
-            <div>
-            <label htmlFor="fileInput">画像ファイル：</label>
-            <input type="file" id="fileInput" onChange={handleFileChange} />
-            </div>
             {/* <div>
             <label htmlFor="2faToggle">2FA：</label>
             <input type="checkbox" id="2faToggle" checked={is2FAEnabled} onChange={handle2FAToggle} />
@@ -147,12 +182,12 @@ export default function Form() {
             <label className={styles.switch}>
             <input
               type="checkbox"
-              checked={is2FAEnabled}
+              checked={twoFactorAuth}
               onChange={handle2FAToggle}
             />
             <span className={styles.slider}></span>
             </label>
-            <span>{is2FAEnabled ? '2FA有効' : '2FA無効'}</span>
+            <span>{twoFactorAuth ? '2FA有効' : '2FA無効'}</span>
             </div>
     
             <button type="submit">送信</button>
