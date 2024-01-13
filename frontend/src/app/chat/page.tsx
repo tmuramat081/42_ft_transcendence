@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, use } from "react";
 import io from "socket.io-client";
 import ChatLayout from "./layout";
 import "./ChatPage.css"; // スタイルシートの追加
@@ -10,6 +10,8 @@ const socket = io("http://localhost:3001");
 const ChatPage = () => {
   const [message, setMessage] = useState("");
   const [roomID, setRoomID] = useState("");
+  const [newRoomName, setNewRoomName] = useState("");
+  const [roomList, setRoomList] = useState<string[]>([]);
   const [sender, setSender] = useState<{
     ID: string;
     name: string;
@@ -48,9 +50,23 @@ const ChatPage = () => {
     };
   }, []);
 
+  useEffect(() => {
+    socket.on("roomList", (roomList) => {
+      setRoomList(roomList);
+    });
+
+    return () => {
+      socket.off("roomList");
+    };
+  }, []);
+
   const onClickSubmit = useCallback(() => {
     socket.emit("talk", { roomID, sender, message });
   }, [roomID, sender, message]);
+
+  const onClickCreateRoom = useCallback(() => {
+    socket.emit("createRoom", { sender, name: newRoomName });
+  }, [sender, newRoomName]);
 
   useEffect(() => {
     socket.on("update", ({ roomID, sender, message }): void => {
@@ -86,6 +102,18 @@ const ChatPage = () => {
     <div className="chat-container">
       <h1>Chat Page</h1>
 
+      {/* 新しいチャットグループの作成UI */}
+      <div>
+        <input
+          type="text"
+          placeholder="Enter new room name"
+          value={newRoomName}
+          onChange={(e) => setNewRoomName(e.target.value)}
+        />
+        <button onClick={onClickCreateRoom}>Create Room</button>
+      </div>
+
+      {/* チャットグループの選択UI */}
       <div className="chat-room-selector">
         <select
           onChange={(event) => {
@@ -94,8 +122,13 @@ const ChatPage = () => {
           value={roomID}
         >
           <option value="">---</option>
-          <option value="room1">Room1</option>
-          <option value="room2">Room2</option>
+          {roomList.map((roomID) => (
+            <option key={roomID} value={roomID}>
+              {roomID}
+            </option>
+          ))}
+          {/* <option value="room1">Room1</option>
+          <option value="room2">Room2</option> */}
         </select>
       </div>
 
@@ -126,6 +159,7 @@ const ChatPage = () => {
         <input
           id="message"
           type="text"
+          placeholder="Enter message"
           value={message}
           onChange={(event) => setMessage(event.target.value)}
         />

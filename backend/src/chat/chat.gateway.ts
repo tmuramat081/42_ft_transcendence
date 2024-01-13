@@ -20,6 +20,7 @@ export class ChatGateway {
   server: Server;
 
   private logger: Logger = new Logger('Gateway Log');
+  private roomList: string[] = [];
 
   @SubscribeMessage('talk')
   handleMessage(
@@ -37,6 +38,16 @@ export class ChatGateway {
       sender: data.sender,
       message: data.message,
     });
+  }
+
+  @SubscribeMessage('createRoom')
+  handleCreateRoom(
+    @MessageBody() room: { sender: User; name: string },
+    @ConnectedSocket() socket: Socket,
+  ) {
+    this.logger.log(`${room.sender} createRoom: ${room.name}`);
+    this.roomList.push(room.name);
+    this.server.emit('roomList', this.roomList); // ルームリストを更新して全クライアントに通知
   }
 
   @SubscribeMessage('joinRoom')
