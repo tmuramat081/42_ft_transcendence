@@ -63,7 +63,10 @@ export class UsersController {
       //return res.status(400).json({ message: 'Passwords do not match' });
     }
 
-    if (bcrypt.compare(userData.password, userData.passwordConfirm) === false) {
+    if (
+      (await bcrypt.compare(userData.password, userData.passwordConfirm)) ===
+      false
+    ) {
       throw new ForbiddenException('Passwords do not match');
       //return res.status(400).json({ message: 'Passwords do not match' });
     }
