@@ -12,6 +12,7 @@ const ChatPage = () => {
   const [roomID, setRoomID] = useState("");
   const [newRoomName, setNewRoomName] = useState("");
   const [roomList, setRoomList] = useState<string[]>([]);
+  const [selectedRoom, setSelectedRoom] = useState<string | null>(null);
   const [sender, setSender] = useState<{
     ID: string;
     name: string;
@@ -50,6 +51,30 @@ const ChatPage = () => {
     };
   }, []);
 
+  const onClickSubmit = useCallback(() => {
+    socket.emit("talk", { roomID, sender, message });
+  }, [roomID, sender, message]);
+
+  const onClickCreateRoom = useCallback(() => {
+    socket.emit("createRoom", { sender, name: newRoomName });
+  }, [sender, newRoomName]);
+
+  const onContextMenu = (event: React.MouseEvent<HTMLDivElement>) => {
+    event.preventDefault();
+    const roomId = event.currentTarget.getAttribute('data-roomid');
+    if (roomId) {
+      setSelectedRoom(roomId);
+      // 右クリックメニューを表示する処理なども追加できます
+    }
+  };
+
+  const onClickDeleteRoom = useCallback(() => {
+    if (selectedRoom) {
+      socket.emit('deleteRoom', selectedRoom);
+      setSelectedRoom(null);
+    }
+  }, [selectedRoom]);
+
   useEffect(() => {
     socket.on("roomList", (roomList) => {
       setRoomList(roomList);
@@ -60,13 +85,15 @@ const ChatPage = () => {
     };
   }, []);
 
-  const onClickSubmit = useCallback(() => {
-    socket.emit("talk", { roomID, sender, message });
-  }, [roomID, sender, message]);
+  useEffect(() => {
+    socket.on('roomError', (error) => {
+      console.error(error);
+    });
 
-  const onClickCreateRoom = useCallback(() => {
-    socket.emit("createRoom", { sender, name: newRoomName });
-  }, [sender, newRoomName]);
+    return () => {
+      socket.off('roomError');
+    };
+  }, []);
 
   useEffect(() => {
     socket.on("update", ({ roomID, sender, message }): void => {
@@ -113,7 +140,29 @@ const ChatPage = () => {
         <button onClick={onClickCreateRoom}>Create Room</button>
       </div>
 
-      {/* チャットグループの選択UI */}
+      {/* チャットグループの一覧表示 */}
+      <div className="chat-room-list">
+        {roomList.map((roomId) => (
+          <div
+            key={roomId}
+            className={`room-item ${roomId === selectedRoom ? 'selected' : ''}`}
+            data-roomid={roomId}
+            onContextMenu={onContextMenu}
+            onClick={() => setSelectedRoom(roomId)}
+          >
+            {roomId}
+          </div>
+        ))}
+      </div>
+
+       {/* ルーム削除のUI */}
+       {selectedRoom && (
+        <div className="delete-room-button" onClick={onClickDeleteRoom}>
+          Delete Room
+        </div>
+      )}
+
+      {/* チャットグループの選択UI
       <div className="chat-room-selector">
         <select
           onChange={(event) => {
@@ -127,10 +176,8 @@ const ChatPage = () => {
               {roomID}
             </option>
           ))}
-          {/* <option value="room1">Room1</option>
-          <option value="room2">Room2</option> */}
         </select>
-      </div>
+      </div> */}
 
       <div className="chat-messages">
         {roomchatLogs[roomID]?.map((message, index) => (

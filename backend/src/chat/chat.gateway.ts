@@ -45,20 +45,35 @@ export class ChatGateway {
     @MessageBody() room: { sender: User; name: string },
     @ConnectedSocket() socket: Socket,
   ) {
-    this.logger.log(`${room.sender} createRoom: ${room.name}`);
-    this.roomList.push(room.name);
-    this.server.emit('roomList', this.roomList); // ルームリストを更新して全クライアントに通知
+    // 同じ名前のルームが存在しないか確認
+    if (!this.roomList[room.name]) {
+      this.roomList[room.name] = room.name; // 一意なキーとしてルーム名を使用
+      socket.join(room.name);
+      this.server.emit('roomList', Object.keys(this.roomList)); // ルームリストを更新して全クライアントに通知
+    } else {
+      socket.emit('roomError', 'Room with the same name already exists.');
+    }
   }
 
   @SubscribeMessage('joinRoom')
   handleJoinRoom(
-    @MessageBody() roomID: string,
+    @MessageBody() roomName: string,
     @ConnectedSocket() socket: Socket,
   ) {
-    this.logger.log(`joinRoom: ${socket.id} joined ${roomID}`);
+    this.logger.log(`joinRoom: ${socket.id} joined ${roomName}`);
     const rooms = [...socket.rooms].slice(0);
     // 既に部屋に入っている場合は退出
     if (rooms.length == 2) socket.leave(rooms[1]);
-    socket.join(roomID);
+    socket.join(roomName);
+  }
+
+  @SubscribeMessage('deleteRoom')
+  handleDeleteRoom(
+    @MessageBody() roomName: string,
+    @ConnectedSocket() socket: Socket,
+  ) {
+    this.logger.log(`${socket.id} deleteRoom: ${roomName}`);
+    delete this.roomList[roomName];
+    this.server.emit('roomList', Object.keys(this.roomList)); // ルームリストを更新して全クライアントに通知
   }
 }
