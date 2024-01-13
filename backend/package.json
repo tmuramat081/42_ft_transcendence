@@ -31,6 +31,8 @@
     "@nestjs/platform-socket.io": "^10.3.0",
     "@nestjs/typeorm": "^10.0.1",
     "@nestjs/websockets": "^10.3.0",
+    "@types/bcrypt": "^5.0.2",
+    "bcrypt": "^5.1.1",
     "dotenv": "^16.3.1",
     "joi": "^17.11.0",
     "nestjs-seeder": "^0.3.2",
