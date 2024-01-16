@@ -20,7 +20,7 @@ export class ChatGateway {
   server: Server;
 
   private logger: Logger = new Logger('Gateway Log');
-  private roomList: string[] = [];
+  private roomList: { [key: string]: string } = {};
 
   @SubscribeMessage('talk')
   handleMessage(
@@ -45,11 +45,13 @@ export class ChatGateway {
     @MessageBody() room: { sender: User; name: string },
     @ConnectedSocket() socket: Socket,
   ) {
+    this.logger.log(`${room.sender} createRoom: ${room.name}`);
     // 同じ名前のルームが存在しないか確認
     if (!this.roomList[room.name]) {
       this.roomList[room.name] = room.name; // 一意なキーとしてルーム名を使用
       socket.join(room.name);
-      this.server.emit('roomList', Object.keys(this.roomList)); // ルームリストを更新して全クライアントに通知
+      console.log('Room created. Emitting updated roomList:', this.roomList);
+      this.server.emit('roomList', this.roomList); // ルームリストを更新して全クライアントに通知
     } else {
       socket.emit('roomError', 'Room with the same name already exists.');
     }
