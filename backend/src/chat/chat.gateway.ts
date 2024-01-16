@@ -46,6 +46,13 @@ export class ChatGateway {
     @ConnectedSocket() socket: Socket,
   ) {
     this.logger.log(`${room.sender} createRoom: ${room.name}`);
+
+    // ルーム名が空かどうかを確認
+    if (!room.name.trim()) {
+      socket.emit('roomError', 'Room name cannot be empty.');
+      return; // 空の場合は処理を中断
+    }
+
     // 同じ名前のルームが存在しないか確認
     if (!this.roomList[room.name]) {
       this.roomList[room.name] = room.name; // 一意なキーとしてルーム名を使用
