@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Res, Req, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Res, Req, Param,  UseGuards, UnauthorizedException } from '@nestjs/common';
 import { Response, Request } from 'express'
 import { AuthService } from './auth.service';
 import { IntraAuthGuard } from './guards/auth.guards';
@@ -111,12 +111,39 @@ export class AuthController {
     //     return secret
     // }
 
+    //@Param() code: string
+    @UseGuards(JwtAuthGuard)
+    @Post("/2fa/verify/:code")
+    async verify2fa(@Req() req, @Res({ passthrough: true }) res: Response) {
+        const user = req.user
+        const code = req.params.code
+        const verified = await this.authService.verify2fa(user, code)
+        if (!verified) {
+            throw new UnauthorizedException("Invalid code")
+        }
+
+        const payload: JwtPayload = { userId: user.userId, userName: user.userName, email: user.email };
+        const accessToken: string = this.jwtService.sign(payload);
+        res.cookie('jwt', accessToken, { httpOnly: true })
+        return JSON.stringify({"accessToken": accessToken});
+    }
+
     // // qrcodeを出力
-    // @Get("2fa/generate")
-    // @UseGuards(JwtAuthGuard)
-    // async get2faCode(@Req() req: Request) {
-    //     const user = req.user
-    //     const code = await this.authService.get2faCode(user)
-    //     return code
-    // }
+    // secret keyだけ保存して
+    // verifyしたら、二段階認証を有効にする
+    // 資料確認
+    @UseGuards(JwtAuthGuard)
+    @Get("/2fa/generate")
+    async get2faCode(@Req() req) {
+        const user = req.user
+
+        console.log("generate")
+        // const code = await this.authService.get2faCode(user)
+        const code = await this.authService.generate2faAuthSecret(user)
+        const qrcode = await this.authService.generate2faQrCode(code)
+        //const img: string = "<img src=" + qrcode + ">"
+        //return img
+
+        return JSON.stringify({"qrCord": qrcode})
+    }
 }

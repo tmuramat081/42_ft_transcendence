@@ -115,14 +115,14 @@ export class UsersService {
         user.userName = updateUser.userName ? updateUser.userName : user.userName;
         user.email = updateUser.email ? updateUser.email : user.email;
         user.password = updateUser.password ? updateUser.password : user.password;
-        user.twoFactorAuth = updateUser.twoFactorAuth ? updateUser.twoFactorAuth : user.twoFactorAuth;
+        //user.twoFactorAuth = updateUser.twoFactorAuth ? updateUser.twoFactorAuth : user.twoFactorAuth;
 
         console.log("updateUser1: ", updateUser)
         console.log("updateUser2: ", user)
 
-        if (user.twoFactorAuth) {
-            user.twoFactorAuthSecret = user.userName
-        }
+        // if (user.twoFactorAuth) {
+        //     user.twoFactorAuthSecret = user.userName
+        // }
 
         // if (updateUser.icon) {
         //     user.icon = updateUser.icon;
@@ -134,6 +134,58 @@ export class UsersService {
         const accessToken: string = this.jwtService.sign(payload);
         return accessToken
     }
+
+    async updateUser2fa(userName: string, twoFactorAuth: boolean): Promise<User> {
+        const user = await this.userRepository.findOne({ where : { userName: userName }});
+        if (!user) {
+            // 例外を投げる
+            return null;
+        }
+        user.twoFactorAuth = twoFactorAuth;
+        if (twoFactorAuth) {
+            user.twoFactorAuthSecret = user.userName
+        }
+        const resultUser: User = await this.userRepository.saveUser(user);
+
+        return resultUser
+        
+        // const payload: JwtPayload = { userId: resultUser.userId, userName: resultUser.userName, email: resultUser.email };
+        // const accessToken: string = this.jwtService.sign(payload);
+        // return accessToken
+    }
+
+    async updateUser2faSecret(userName: string, twoFactorAuthSecret: string): Promise<User> {
+        const user = await this.userRepository.findOne({ where : { userName: userName }});
+        if (!user) {
+            // 例外を投げる
+            return null;
+        }
+        user.twoFactorAuthSecret = twoFactorAuthSecret;
+        const resultUser: User = await this.userRepository.saveUser(user);
+
+        return resultUser
+
+        // const payload: JwtPayload = { userId: resultUser.userId, userName: resultUser.userName, email: resultUser.email };
+        // const accessToken: string = this.jwtService.sign(payload);
+        // return accessToken
+    }
+
+    // async updateTwoFactorAuth(userName: string, twoFactorAuth: boolean): Promise<string> {
+    //     const user = await this.userRepository.findOne({ where : { userName: userName }});
+    //     if (!user) {
+    //         // 例外を投げる
+    //         return null;
+    //     }
+    //     user.twoFactorAuth = twoFactorAuth;
+    //     if (twoFactorAuth) {
+    //         user.twoFactorAuthSecret = user.userName
+    //     }
+    //     const resultUser: User = await this.userRepository.saveUser(user);
+        
+    //     const payload: JwtPayload = { userId: resultUser.userId, userName: resultUser.userName, email: resultUser.email };
+    //     const accessToken: string = this.jwtService.sign(payload);
+    //     return accessToken
+    // }
 
     async findAll(): Promise<User[]> {
         return await this.userRepository.findAll();

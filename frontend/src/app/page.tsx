@@ -34,6 +34,11 @@ export default function Home() {
               ユーザー情報更新
             </Link>
           </li>
+          <li>
+            <Link href="./users/2fa">
+              二段階認証ページ
+            </Link>
+          </li>
         </ul>
       </main>
     </>

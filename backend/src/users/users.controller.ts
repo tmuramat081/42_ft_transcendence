@@ -133,7 +133,7 @@ export class UsersController {
     // curl -X POST -H "Content-Type: application/json" -d '{"userName":"test","email":"test@example.com","password":"Test123!","passwordConfirm":"Test123!"}' http://localhost:3001/users/test/update
     //@UseGuards(AuthGuard('jwt'), JwtAuthGuard)
     @UseGuards(JwtAuthGuard)
-    async updateUser(@Body () userData: UpdateUserDto, @Req() req,  @Res({ passthrough: true }) res: Response) {
+    async UpdateUser(@Body () userData: UpdateUserDto, @Req() req,  @Res({ passthrough: true }) res: Response) {
         console.log("userData: ", userData)
         // リクエストハンドリング
         if (!userData.userName || !userData.email) {
@@ -177,7 +177,7 @@ export class UsersController {
     // JWTからユーザーを取得する　API
     @UseGuards(JwtAuthGuard)
     @Get('/me')
-    currentUser(@Req() req) : string {
+    CurrentUser(@Req() req) : string {
         //throw new ForbiddenException("Invalid credentials");
         const { password, ...user } = req.user;
         //const user: User = req.user;
@@ -185,13 +185,13 @@ export class UsersController {
     }
 
     @Get('/all')
-    findAllUsers() {
+    FindAllUsers() {
         // passwordを除外する
         return classToPlain(this.usersService.findAll());
     }
 
     @Get('/:id')
-    findOne(@Req() req) {
+    FindOne(@Req() req) {
         // passwordを除外する
         return classToPlain(this.usersService.findOne(req.params.id));
     }
