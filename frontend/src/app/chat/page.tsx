@@ -101,32 +101,34 @@ const ChatPage = () => {
   }, [roomID, sender, message]);
 
   const onClickCreateRoom = useCallback(() => {
-    socket.emit("createRoom", { sender, name: newRoomName });
+    socket.emit("createRoom", { sender, roomID: newRoomName });
     setNewRoomName("");
   }, [sender, newRoomName, socket]);
 
   const handleRoomChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
-    const newRoomName = event.target.value;
-    console.log("newRoomName:", newRoomName); // 追加
-    setSelectedRoom(newRoomName);
+    const newRoomID = event.target.value;
+    console.log("newRoomID:", newRoomID); // 追加
+    setRoomID(newRoomID);
+    setSelectedRoom(roomList[newRoomID]);
     setMessage(""); // ルームが変更されたら新しいメッセージもリセット
     // ルームが選択されたときにDelete Roomボタンを表示する
     setDeleteButtonVisible(true);
-    socket.emit("joinRoom", { sender, selectedRoom: newRoomName });
+    socket.emit("joinRoom", { sender, room: roomList[newRoomID] });
   };
 
   const onClickDeleteRoom = useCallback(() => {
     if (selectedRoom) {
-      socket.emit('deleteRoom', selectedRoom);
+      socket.emit('deleteRoom', {sender, room: selectedRoom});
       setSelectedRoom(null);
       setDeleteButtonVisible(false); // ボタンが押されたら非表示にする
       // ルームリストから削除する
-      const newRoomList = { ...roomList };
-      delete newRoomList[selectedRoom];
+      const newRoomList = Object.fromEntries(
+        Object.entries(roomList).filter(([key]) => key !== selectedRoom)
+      );
       setRoomList(newRoomList);
 
     }
-  }, [selectedRoom]);
+  }, [selectedRoom, roomList]);
 
   return (
     <div className="chat-container">

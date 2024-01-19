@@ -42,21 +42,21 @@ export class ChatGateway {
 
   @SubscribeMessage('createRoom')
   handleCreateRoom(
-    @MessageBody() room: { sender: User; name: string },
+    @MessageBody() create: { sender: User; roomID: string },
     @ConnectedSocket() socket: Socket,
   ) {
-    this.logger.log(`${room.sender.name} createRoom: ${room.name}`);
+    this.logger.log(`${create.sender.name} createRoom: ${create.roomID}`);
 
     // ルーム名が空かどうかを確認
-    if (!room.name.trim()) {
+    if (!create.roomID.trim()) {
       socket.emit('roomError', 'Room name cannot be empty.');
       return; // 空の場合は処理を中断
     }
 
     // 同じ名前のルームが存在しないか確認
-    if (!this.roomList[room.name]) {
-      this.roomList[room.name] = room.name; // 一意なキーとしてルーム名を使用
-      socket.join(room.name);
+    if (!this.roomList[create.roomID]) {
+      this.roomList[create.roomID] = create.roomID; // 一意なキーとしてルーム名を使用
+      socket.join(create.roomID);
       console.log('Room created. Emitting updated roomList:', this.roomList);
       this.server.emit('roomList', this.roomList); // ルームリストを更新して全クライアントに通知
     } else {
@@ -66,26 +66,27 @@ export class ChatGateway {
 
   @SubscribeMessage('joinRoom')
   handleJoinRoom(
-    @MessageBody() join: { sender: User; selectedRoom: string },
+    @MessageBody() join: { sender: User; room: string },
     @ConnectedSocket() socket: Socket,
   ) {
-    this.logger.log(
-      `joinRoom: ${join.sender.name} joined ${join.selectedRoom}`,
-    );
-    console.log('joinRoom: ', join.sender.name, 'joined', join.selectedRoom);
+    this.logger.log(`joinRoom: ${join.sender.name} joined ${join.room}`);
+    console.log('joinRoom: ', join.sender.name, 'joined', join.room);
     const rooms = [...socket.rooms].slice(0);
     // 既に部屋に入っている場合は退出
     if (rooms.length == 2) socket.leave(rooms[1]);
-    socket.join(join.selectedRoom);
+    socket.join(join.room);
   }
 
   @SubscribeMessage('deleteRoom')
   handleDeleteRoom(
-    @MessageBody() roomName: string,
-    @ConnectedSocket() socket: Socket,
+    @MessageBody() delet: { sender: User; room: string },
+    // @ConnectedSocket() socket: Socket,
   ) {
-    this.logger.log(`${socket.id} deleteRoom: ${roomName}`);
-    delete this.roomList[roomName];
-    this.server.emit('roomList', Object.keys(this.roomList)); // ルームリストを更新して全クライアントに通知
+    this.logger.log(`${delet.sender.name} deleteRoom: ${delet.room}`);
+    const updatedRoomList = Object.fromEntries(
+      Object.entries(this.roomList).filter(([key]) => key !== delet.room),
+    );
+    this.roomList = updatedRoomList;
+    this.server.emit('roomList', this.roomList);
   }
 }
