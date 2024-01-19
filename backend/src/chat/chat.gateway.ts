@@ -14,6 +14,15 @@ interface User {
   icon: string;
 }
 
+const roomChatLogs: { [roomId: string]: ChatMessage[] } = {};
+
+interface ChatMessage {
+  user: string;
+  photo: string;
+  text: string;
+  timestamp: string;
+}
+
 @WebSocketGateway({ cors: { origin: '*' } })
 export class ChatGateway {
   @WebSocketServer()
@@ -37,6 +46,20 @@ export class ChatGateway {
     this.logger.log(
       `message received: ${data.roomID} ${data.sender.ID} ${data.message}`,
     );
+
+    const timestamp = new Date().toLocaleString();
+
+    // チャットログを保存
+    if (!roomChatLogs[data.roomID]) {
+      roomChatLogs[data.roomID] = [];
+    }
+    roomChatLogs[data.roomID].push({
+      user: data.sender.ID,
+      photo: data.sender.icon,
+      text: data.message,
+      timestamp,
+    });
+
     // 送信者の部屋IDを取得
     const rooms = [...socket.rooms].slice(0);
     // 送信者の部屋以外に送信
@@ -44,6 +67,7 @@ export class ChatGateway {
       roomID: data.roomID,
       sender: data.sender,
       message: data.message,
+      timestamp,
     });
   }
 
@@ -95,5 +119,14 @@ export class ChatGateway {
     );
     this.roomList = updatedRoomList;
     this.server.emit('roomList', this.roomList);
+  }
+
+  @SubscribeMessage('getChatLogs')
+  handleGetChatLogs(
+    @MessageBody() data: { roomID: string },
+    @ConnectedSocket() socket: Socket,
+  ) {
+    const logs = roomChatLogs[data.roomID] || [];
+    socket.emit('chatLogs', { roomID: data.roomID, logs });
   }
 }

@@ -75,7 +75,7 @@ const ChatPage = () => {
   }, []);
 
   useEffect(() => {
-    socket.on("update", ({ roomID, sender, message }): void => {
+    socket.on("update", ({ roomID, sender, message, time }): void => {
       console.log("recieved : ", roomID, sender.ID, message);
       setRoomChatLogs((prevRoomChatLogs) => ({
         ...prevRoomChatLogs,
@@ -85,11 +85,11 @@ const ChatPage = () => {
             user: sender.ID,
             photo: sender.icon,
             text: message,
-            timestamp: new Date().toLocaleString(),
+            timestamp: time,
           },
         ],
       }));
-      setMessage("");
+      // setMessage("");
     });
 
     return () => {
@@ -97,8 +97,24 @@ const ChatPage = () => {
     };
   }, []);
 
+  // useEffect(() => {
+  //   socket.on('chatLogs', ({ roomID, logs }) => {
+  //     console.log(`Received chatLogs for room ${roomID}:`, logs);
+  //     setRoomChatLogs((prevRoomChatLogs) => ({
+  //       ...prevRoomChatLogs,
+  //       [roomID]: logs,
+  //     }));
+  //   });
+  
+  //   return () => {
+  //     socket.off('chatLogs');
+  //   };
+  // }, []);
+  
+
   const onClickSubmit = useCallback(() => {
     socket.emit("talk", { roomID, sender, message });
+    setMessage("");
   }, [roomID, sender, message]);
 
   const onClickCreateRoom = useCallback(() => {
@@ -121,6 +137,12 @@ const ChatPage = () => {
       socket.emit('deleteRoom', {sender, room: selectedRoom});
       setSelectedRoom(null);
       setDeleteButtonVisible(false); // ボタンが押されたら非表示にする
+      // チャットログをクリアする
+      setRoomChatLogs((prevRoomChatLogs) => {
+        const updatedLogs = { ...prevRoomChatLogs };
+        delete updatedLogs[selectedRoom];
+        return updatedLogs;
+      });
       // ルームリストから削除する
       const newRoomList = Object.fromEntries(
         Object.entries(roomList).filter(([key]) => key !== selectedRoom)
