@@ -22,6 +22,13 @@ export class ChatGateway {
   private logger: Logger = new Logger('Gateway Log');
   private roomList: { [key: string]: string } = {};
 
+  // 初期接続時にroomListを送信
+  @SubscribeMessage('getRoomList')
+  handleConnection(@ConnectedSocket() socket: Socket) {
+    this.logger.log(`Client connected: ${socket.id}`);
+    socket.emit('roomList', this.roomList);
+  }
+
   @SubscribeMessage('talk')
   handleMessage(
     @MessageBody() data: { roomID: string; sender: User; message: string },

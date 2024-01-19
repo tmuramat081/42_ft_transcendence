@@ -38,6 +38,7 @@ const ChatPage = () => {
 
     socket.on("connect", () => {
       console.log("connection ID : ", socket.id);
+      socket.emit("getRoomList", socket.id);
       setSender({
         // ここでログイン情報を取得して設定する
         ID: socket.id,
@@ -111,7 +112,6 @@ const ChatPage = () => {
     setRoomID(newRoomID);
     setSelectedRoom(roomList[newRoomID]);
     setMessage(""); // ルームが変更されたら新しいメッセージもリセット
-    // ルームが選択されたときにDelete Roomボタンを表示する
     setDeleteButtonVisible(true);
     socket.emit("joinRoom", { sender, room: roomList[newRoomID] });
   };
