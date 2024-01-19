@@ -45,7 +45,7 @@ export class ChatGateway {
     @MessageBody() room: { sender: User; name: string },
     @ConnectedSocket() socket: Socket,
   ) {
-    this.logger.log(`${room.sender} createRoom: ${room.name}`);
+    this.logger.log(`${room.sender.name} createRoom: ${room.name}`);
 
     // ルーム名が空かどうかを確認
     if (!room.name.trim()) {
@@ -66,14 +66,17 @@ export class ChatGateway {
 
   @SubscribeMessage('joinRoom')
   handleJoinRoom(
-    @MessageBody() roomName: string,
+    @MessageBody() join: { sender: User; selectedRoom: string },
     @ConnectedSocket() socket: Socket,
   ) {
-    this.logger.log(`joinRoom: ${socket.id} joined ${roomName}`);
+    this.logger.log(
+      `joinRoom: ${join.sender.name} joined ${join.selectedRoom}`,
+    );
+    console.log('joinRoom: ', join.sender.name, 'joined', join.selectedRoom);
     const rooms = [...socket.rooms].slice(0);
     // 既に部屋に入っている場合は退出
     if (rooms.length == 2) socket.leave(rooms[1]);
-    socket.join(roomName);
+    socket.join(join.selectedRoom);
   }
 
   @SubscribeMessage('deleteRoom')

@@ -30,6 +30,7 @@ const ChatPage = () => {
       timestamp: string;
     }[];
   }>({});
+  const [isDeleteButtonVisible, setDeleteButtonVisible] = useState(false);
 
   // コンポーネントがマウントされたときのみ接続
   useEffect(() => {
@@ -50,21 +51,6 @@ const ChatPage = () => {
       socket.disconnect();
     };
   }, []);
-
-  const onClickSubmit = useCallback(() => {
-    socket.emit("talk", { roomID, sender, message });
-  }, [roomID, sender, message]);
-
-  const onClickCreateRoom = useCallback(() => {
-    socket.emit("createRoom", { sender, name: newRoomName });
-  }, [sender, newRoomName, socket]);
-
-  const onClickDeleteRoom = useCallback(() => {
-    if (selectedRoom) {
-      socket.emit('deleteRoom', selectedRoom);
-      setSelectedRoom(null);
-    }
-  }, [selectedRoom]);
 
   useEffect(() => {
     socket.on("roomList", (rooms) => {
@@ -110,12 +96,37 @@ const ChatPage = () => {
     };
   }, []);
 
+  const onClickSubmit = useCallback(() => {
+    socket.emit("talk", { roomID, sender, message });
+  }, [roomID, sender, message]);
+
+  const onClickCreateRoom = useCallback(() => {
+    socket.emit("createRoom", { sender, name: newRoomName });
+    setNewRoomName("");
+  }, [sender, newRoomName, socket]);
+
   const handleRoomChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
-    const newRoomID = event.target.value;
-    setRoomID(newRoomID);
+    const newRoomName = event.target.value;
+    console.log("newRoomName:", newRoomName); // 追加
+    setSelectedRoom(newRoomName);
     setMessage(""); // ルームが変更されたら新しいメッセージもリセット
-    socket.emit("joinRoom", newRoomID);
+    // ルームが選択されたときにDelete Roomボタンを表示する
+    setDeleteButtonVisible(true);
+    socket.emit("joinRoom", { sender, selectedRoom: newRoomName });
   };
+
+  const onClickDeleteRoom = useCallback(() => {
+    if (selectedRoom) {
+      socket.emit('deleteRoom', selectedRoom);
+      setSelectedRoom(null);
+      setDeleteButtonVisible(false); // ボタンが押されたら非表示にする
+      // ルームリストから削除する
+      const newRoomList = { ...roomList };
+      delete newRoomList[selectedRoom];
+      setRoomList(newRoomList);
+
+    }
+  }, [selectedRoom]);
 
   return (
     <div className="chat-container">
@@ -142,12 +153,17 @@ const ChatPage = () => {
         >
           <option value="">---</option>
           {Object.entries(roomList).map(([roomId, roomName]) => (
-            <option key={roomID} value={roomID}>
+            <option key={`room_${roomId}`} value={roomId}>
               {roomName}
             </option>
           ))}
         </select>
       </div>
+
+      {/* Delete Room ボタン */}
+      {isDeleteButtonVisible && (
+        <button onClick={onClickDeleteRoom}>Delete Room</button>
+      )}
 
       <div className="chat-messages">
         {roomchatLogs[roomID]?.map((message, index) => (
