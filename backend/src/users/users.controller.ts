@@ -10,6 +10,7 @@ import { TwoFactorAuthGuard } from 'src/auth/guards/2fa-auth.guards';
 import { AuthGuard } from '@nestjs/passport';
 //Excludeを使うと、指定したプロパティを除外した型を作成できる
 import { classToPlain } from "class-transformer";
+//import { jwt_decode } from 'jwt-decode';
 
 /*
 分離のポイント
@@ -115,6 +116,15 @@ export class UsersController {
         
         // findは例外を投げない為、try-catchで囲まない
         const accessToken: string = await this.usersService.signIn(userData);
+
+        // 2faの判定 signInをuserを返す様に修正する
+        // accessTokenからtwoFactorAuthを取得する
+        // const decode = jwt_decode(accessToken)
+		// if (decode['auth'] === false && user.twoFactorAuth === true) {
+		// 	throw new ForbiddenException('need 2FA')
+		// }
+        
+
         if (accessToken === null) {
             //console.log("Invalid credentials");
             throw new ForbiddenException("Invalid credentials");

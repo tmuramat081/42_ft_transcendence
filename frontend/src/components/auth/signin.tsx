@@ -7,6 +7,7 @@ import axios from 'axios';
 //import { redirect } from 'next/navigation'
 //https://nextjs.org/docs/app/building-your-application/routing/linking-and-navigating
 import { useRouter } from 'next/navigation'
+import { jwtDecode } from "jwt-decode";
 
 type User = {
     userId: number,
@@ -20,14 +21,33 @@ export default function Form() {
     const [userName, setUserName] = useState('');
     const [password, setPassword] = useState('');
     const [user, setUser] = useState({});
-
     const [token, setToken] = useState('');
-
     const router = useRouter();
 
-    // if (user) {
-    //     router.push('/');
-    // }
+    useEffect(() => {
+        //if (token == '' || token === undefined) return;
+        getCurrentUser();
+    }, []);
+
+    useEffect(() => {
+        //if (token == '' || token === undefined) return;
+        //console.log('user: ', user);
+        if (!user || token == '' || token === undefined) {
+            return
+        }
+
+        // console.log('user: ', user);
+        // console.log('token: ', token);
+        const decode = jwtDecode(token);
+        // console.log('decode: ', decode['twoFactorAuth']);
+        // console.log(user.twoFactorAuth)
+        // console.log("if: ", decode['twoFactorAuth'] === false && user.twoFactorAuth === true)
+        if (decode['twoFactorAuth'] === false && user.twoFactorAuth === true) {
+            router.push('/users/2fa')
+            return
+        }
+        router.push('/');
+    })
 
     const getCurrentUser = () => {
         fetch('http://localhost:3001/users/me', {
@@ -47,11 +67,6 @@ export default function Form() {
             //router.push('/');
             //Router.push('/');
             //redirect('/');
-            console.log('user: ', data.user);
-            if (data.user === undefined) {
-                return
-            }
-            router.push('/');
         })
         .catch((error) => {
             console.error('Error:', error);
@@ -59,12 +74,6 @@ export default function Form() {
             // redirect
         });
     }
-
-    useEffect(() => {
-        //if (token == '' || token === undefined) return;
-        getCurrentUser();
-    }, []);
-
 
     // mfnyuを参考にしてloginをさんこう　 if res.status == 200 でtokenをsetToken
     const handleSubmit = (e) => {

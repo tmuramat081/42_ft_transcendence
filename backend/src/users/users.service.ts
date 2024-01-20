@@ -9,6 +9,8 @@ import { JwtPayload } from './interfaces/jwt_payload';
 import * as bcrypt from 'bcrypt';
 import { UserDto42 } from './dto/user42.dto';
 
+import jwt_decode from 'jwt-decode'
+
 /*
 Service
 ビジネスロジックの実装: アプリケーションの核となるビジネスロジックを実装します。
@@ -80,7 +82,7 @@ export class UsersService {
             この方法により、セキュリティを確保しつつ、ユーザーが正しいパスワードを入力したかどうかを確認できます。重要なのは、実際のパスワード自体がデータベースに保存されることはなく、そのハッシュ値のみが保存されることです。これにより、もしデータベースが何らかの方法で漏洩した場合でも、実際のパスワードは保護されます。
         */
         if (user && bcrypt.compare(userData.password, user.password)) {
-            // JWTを返す？
+            // JWTを返す？ userを返すように変更
             const payload: JwtPayload = { userId: user.userId, userName: user.userName, email: user.email, twoFactorAuth: false };
             const accessToken: string = this.jwtService.sign(payload);
             return accessToken
