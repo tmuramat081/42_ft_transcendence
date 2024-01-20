@@ -3,8 +3,8 @@ import { HttpModule } from '@nestjs/axios'
 import { forwardRef, Module } from '@nestjs/common';
 import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
-import { IntraAuthGuard } from './guards/auth.guards';
-import { IntraStrategy } from './strategy/auth.strategy';
+import { IntraAuthGuard } from './guards/42auth.guards';
+import { IntraStrategy } from './strategy/42auth.strategy';
 import { UsersModule } from '../users/users.module';
 import { UsersService } from '../users/users.service';
 

@@ -8,6 +8,8 @@ import { JwtModule } from '@nestjs/jwt';
 import { PassportModule } from '@nestjs/passport';
 import { JwtStrategy } from './strategy/jwt.strategy';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
+import { TwoFactorAuthGuard } from 'src/auth/guards/2fa-auth.guards';
+import { TwoFactorAuthStrategy } from 'src/auth/strategy/2fa.strategy';
 
 @Module({
   // DBのテーブルを使うためには、forFeature()を使う
@@ -26,7 +28,7 @@ import { JwtAuthGuard } from './guards/jwt-auth.guard';
     }),
   ],
   controllers: [UsersController],
-  providers: [UserRepository, UsersService, JwtStrategy, JwtAuthGuard],
-  exports: [JwtStrategy, JwtAuthGuard, UsersService, UserRepository, JwtModule],
+  providers: [UserRepository, UsersService, JwtStrategy, JwtAuthGuard, TwoFactorAuthGuard, TwoFactorAuthStrategy],
+  exports: [JwtStrategy, JwtAuthGuard, TwoFactorAuthGuard, TwoFactorAuthStrategy, UsersService, UserRepository, JwtModule],
 })
 export class UsersModule {}

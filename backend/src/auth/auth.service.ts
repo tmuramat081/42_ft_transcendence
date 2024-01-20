@@ -74,4 +74,10 @@ export class AuthService {
     async generate2faQrCode(otpAuthUrl: string): Promise<string> {
         return QRCode.toDataURL(otpAuthUrl)
     }
+
+    async disable2fa(user: User): Promise<User> {
+        user.twoFactorAuth = false
+        await this.usersService.updateUser2fa(user.userName, false);
+        return user
+    }
 }

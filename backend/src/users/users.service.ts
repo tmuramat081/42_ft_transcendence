@@ -43,7 +43,7 @@ export class UsersService {
         //return await this.userRepository.createUser(user);
 
         //JWTを返す？
-        const payload: JwtPayload = { userId: resultUser.userId, userName: resultUser.userName, email: resultUser.email };
+        const payload: JwtPayload = { userId: resultUser.userId, userName: resultUser.userName, email: resultUser.email, twoFactorAuth: false };
         const accessToken: string = this.jwtService.sign(payload);
         return accessToken
     }
@@ -81,7 +81,7 @@ export class UsersService {
         */
         if (user && bcrypt.compare(userData.password, user.password)) {
             // JWTを返す？
-            const payload: JwtPayload = { userId: user.userId, userName: user.userName, email: user.email };
+            const payload: JwtPayload = { userId: user.userId, userName: user.userName, email: user.email, twoFactorAuth: false };
             const accessToken: string = this.jwtService.sign(payload);
             return accessToken
         } else {
@@ -130,7 +130,7 @@ export class UsersService {
         // }
         const resultUser: User = await this.userRepository.saveUser(user);
 
-        const payload: JwtPayload = { userId: resultUser.userId, userName: resultUser.userName, email: resultUser.email };
+        const payload: JwtPayload = { userId: resultUser.userId, userName: resultUser.userName, email: resultUser.email, twoFactorAuth: true  };
         const accessToken: string = this.jwtService.sign(payload);
         return accessToken
     }

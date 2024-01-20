@@ -2,8 +2,11 @@
 import { useState, useEffect } from 'react';
 import axios from 'axios';
 //import { useHistory, useLocation } from 'react-router-dom';
-import { Router, useRouter } from 'next/router';
-
+//import { useRouter } from 'next/router';
+//import Router from 'next/router'
+//import { redirect } from 'next/navigation'
+//https://nextjs.org/docs/app/building-your-application/routing/linking-and-navigating
+import { useRouter } from 'next/navigation'
 
 type User = {
     userId: number,
@@ -20,6 +23,12 @@ export default function Form() {
 
     const [token, setToken] = useState('');
 
+    const router = useRouter();
+
+    // if (user) {
+    //     router.push('/');
+    // }
+
     const getCurrentUser = () => {
         fetch('http://localhost:3001/users/me', {
             method: 'GET',
@@ -35,7 +44,14 @@ export default function Form() {
         .then((data) => {
             console.log('Success:', data);
             setUser(data.user);
-            Router.push('/');
+            //router.push('/');
+            //Router.push('/');
+            //redirect('/');
+            console.log('user: ', data.user);
+            if (data.user === undefined) {
+                return
+            }
+            router.push('/');
         })
         .catch((error) => {
             console.error('Error:', error);

@@ -2,7 +2,9 @@
 import { useState, useEffect } from 'react';
 import axios from 'axios';
 //import { useHistory, useLocation } from 'react-router-dom';
-import { Router, useRouter } from 'next/router';
+import { useRouter } from 'next/router';
+// import Router from 'next/router'
+import { useRouter } from 'next/navigation'
 
 export default function Form() {
     const [userName, setUserName] = useState('');
@@ -12,6 +14,10 @@ export default function Form() {
     const [user, setUser] = useState({});
 
     const [token, setToken] = useState('');
+
+    const router = useRouter();
+
+    //const router = useRouter();
 
     const getCurrentUser = () => {
         fetch('http://localhost:3001/users/me', {
@@ -28,7 +34,10 @@ export default function Form() {
         .then((data) => {
             console.log('Success:', data);
             setUser(data.user);
-            Router.push('/');
+            //router.push('/');
+            if (user !== undefined) {
+                router.push('/');
+            }
         })
         .catch((error) => {
             console.error('Error:', error);

@@ -1,7 +1,7 @@
 import { Controller, Get, Post, Res, Req, Param,  UseGuards, UnauthorizedException } from '@nestjs/common';
 import { Response, Request } from 'express'
 import { AuthService } from './auth.service';
-import { IntraAuthGuard } from './guards/auth.guards';
+import { IntraAuthGuard } from './guards/42auth.guards';
 import { HttpService } from '@nestjs/axios';
 import { JwtService } from '@nestjs/jwt';
 import { JwtPayload } from '../users/interfaces/jwt_payload';
@@ -36,7 +36,7 @@ export class AuthController {
         const userName = req.user['username']
 		const userId = req.user['userId']
         const email = req.user['email']
-		const payload: JwtPayload = { userId: userId, userName: userName, email: email };
+		const payload: JwtPayload = { userId: userId, userName: userName, email: email, twoFactorAuth: false };
 		//console.log(payload)
 		const accessToken: string = await this.jwtService.sign(payload)
 		res.cookie('jwt', accessToken, { httpOnly: true })
@@ -122,10 +122,18 @@ export class AuthController {
             throw new UnauthorizedException("Invalid code")
         }
 
-        const payload: JwtPayload = { userId: user.userId, userName: user.userName, email: user.email };
+        const payload: JwtPayload = { userId: user.userId, userName: user.userName, email: user.email, twoFactorAuth: true };
         const accessToken: string = this.jwtService.sign(payload);
         res.cookie('jwt', accessToken, { httpOnly: true })
         return JSON.stringify({"accessToken": accessToken});
+    }
+
+    @UseGuards(JwtAuthGuard)
+    @Post("/2fa/disable")
+    async disable2fa(@Req() req, @Res({ passthrough: true }) res) {
+        const user = req.user
+        const resultUser = await this.authService.disable2fa(user)
+        res.status(200).json({ message: '2fa disabled' });
     }
 
     // // qrcodeを出力

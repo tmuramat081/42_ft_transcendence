@@ -6,6 +6,7 @@ import { Response, Request } from 'express';
 import * as bcrypt from 'bcrypt'
 import { UseGuards } from '@nestjs/common';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
+import { TwoFactorAuthGuard } from 'src/auth/guards/2fa-auth.guards';
 import { AuthGuard } from '@nestjs/passport';
 //Excludeを使うと、指定したプロパティを除外した型を作成できる
 import { classToPlain } from "class-transformer";
@@ -133,6 +134,7 @@ export class UsersController {
     // curl -X POST -H "Content-Type: application/json" -d '{"userName":"test","email":"test@example.com","password":"Test123!","passwordConfirm":"Test123!"}' http://localhost:3001/users/test/update
     //@UseGuards(AuthGuard('jwt'), JwtAuthGuard)
     @UseGuards(JwtAuthGuard)
+    //@UseGuards(JwtAuthGuard, TwoFactorAuthGuard)
     async UpdateUser(@Body () userData: UpdateUserDto, @Req() req,  @Res({ passthrough: true }) res: Response) {
         console.log("userData: ", userData)
         // リクエストハンドリング
@@ -176,6 +178,7 @@ export class UsersController {
     // curl -X GET -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInVzZXJOYW1lIjoidGVzdCIsImVtYWlsIjoidGVzdEB0ZXN0IiwiaWF0IjoxNzAzNzU5NjU5LCJleHAiOjE3MDM3NjMyNTl9.R1TfxoDLp5kTOAAfIEGrkplZquRACJltQv3oGEANKDU" http://localhost:3001/users/me
     // JWTからユーザーを取得する　API
     @UseGuards(JwtAuthGuard)
+    //@UseGuards(JwtAuthGuard, TwoFactorAuthGuard)
     @Get('/me')
     CurrentUser(@Req() req) : string {
         //throw new ForbiddenException("Invalid credentials");
@@ -184,12 +187,16 @@ export class UsersController {
         return JSON.stringify({"user": user});
     }
 
+    @UseGuards(JwtAuthGuard)
+    //@UseGuards(JwtAuthGuard, TwoFactorAuthGuard)
     @Get('/all')
     FindAllUsers() {
         // passwordを除外する
         return classToPlain(this.usersService.findAll());
     }
 
+    @UseGuards(JwtAuthGuard)
+    //@UseGuards(JwtAuthGuard, TwoFactorAuthGuard)
     @Get('/:id')
     FindOne(@Req() req) {
         // passwordを除外する
