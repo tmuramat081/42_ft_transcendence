@@ -14,8 +14,6 @@ interface User {
   icon: string;
 }
 
-const roomChatLogs: { [roomId: string]: ChatMessage[] } = {};
-
 interface ChatMessage {
   user: string;
   photo: string;
@@ -30,13 +28,7 @@ export class ChatGateway {
 
   private logger: Logger = new Logger('Gateway Log');
   private roomList: { [key: string]: string } = {};
-
-  // 初期接続時にroomListを送信
-  @SubscribeMessage('getRoomList')
-  handleConnection(@ConnectedSocket() socket: Socket) {
-    this.logger.log(`Client connected: ${socket.id}`);
-    socket.emit('roomList', this.roomList);
-  }
+  private roomChatLogs: { [roomId: string]: ChatMessage[] } = {};
 
   @SubscribeMessage('talk')
   handleMessage(
@@ -50,10 +42,10 @@ export class ChatGateway {
     const timestamp = new Date().toLocaleString();
 
     // チャットログを保存
-    if (!roomChatLogs[data.roomID]) {
-      roomChatLogs[data.roomID] = [];
+    if (!this.roomChatLogs[data.roomID]) {
+      this.roomChatLogs[data.roomID] = [];
     }
-    roomChatLogs[data.roomID].push({
+    this.roomChatLogs[data.roomID].push({
       user: data.sender.ID,
       photo: data.sender.icon,
       text: data.message,
@@ -109,10 +101,7 @@ export class ChatGateway {
   }
 
   @SubscribeMessage('deleteRoom')
-  handleDeleteRoom(
-    @MessageBody() delet: { sender: User; room: string },
-    // @ConnectedSocket() socket: Socket,
-  ) {
+  handleDeleteRoom(@MessageBody() delet: { sender: User; room: string }) {
     this.logger.log(`${delet.sender.name} deleteRoom: ${delet.room}`);
     const updatedRoomList = Object.fromEntries(
       Object.entries(this.roomList).filter(([key]) => key !== delet.room),
@@ -121,12 +110,23 @@ export class ChatGateway {
     this.server.emit('roomList', this.roomList);
   }
 
-  @SubscribeMessage('getChatLogs')
-  handleGetChatLogs(
-    @MessageBody() data: { roomID: string },
+  @SubscribeMessage('getRoomList')
+  handleGetLoomList(
+    @MessageBody() SocketId: string,
     @ConnectedSocket() socket: Socket,
   ) {
-    const logs = roomChatLogs[data.roomID] || [];
-    socket.emit('chatLogs', { roomID: data.roomID, logs });
+    this.logger.log(`Client connected: ${socket.id}`);
+    this.server.emit('roomList', this.roomList);
   }
+
+  // @SubscribeMessage('getChatLogs')
+  // handleGetChatLogs(
+  //   @MessageBody() log: { roomID: string },
+  //   @ConnectedSocket() socket: Socket,
+  // ) {
+  //   console.log('getChatLogs: ', log.roomID);
+  //   this.logger.log(`getChatLogs: ${log.roomID}`);
+  //   const logs = this.roomChatLogs[log.roomID] || [];
+  //   socket.emit('chatLogs', { roomID: log.roomID, logs });
+  // }
 }

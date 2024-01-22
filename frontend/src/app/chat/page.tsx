@@ -38,13 +38,13 @@ const ChatPage = () => {
 
     socket.on("connect", () => {
       console.log("connection ID : ", socket.id);
-      socket.emit("getRoomList", socket.id);
       setSender({
         // ここでログイン情報を取得して設定する
         ID: socket.id,
         name: "kshima",
         icon: "https://cdn.intra.42.fr/users/b9712d0534942eacfb43c2b0b031ae76/kshima.jpg",
       });
+      socket.emit("getRoomList", socket.id);
     });
 
     // コンポーネントがアンマウントされるときに切断
@@ -89,7 +89,6 @@ const ChatPage = () => {
           },
         ],
       }));
-      // setMessage("");
     });
 
     return () => {
@@ -124,7 +123,7 @@ const ChatPage = () => {
 
   const handleRoomChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
     const newRoomID = event.target.value;
-    console.log("newRoomID:", newRoomID); // 追加
+    console.log("newRoomID:", newRoomID); // debug
     setRoomID(newRoomID);
     setSelectedRoom(roomList[newRoomID]);
     setMessage(""); // ルームが変更されたら新しいメッセージもリセット
