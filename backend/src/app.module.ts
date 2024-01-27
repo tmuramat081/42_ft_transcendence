@@ -11,6 +11,8 @@ import { User } from './users/entities/user.entity';
 import { UsersModule } from './users/users.module';
 import { ChatModule } from './chat/chat.module';
 import { ChatGateway } from './chat/chat.gateway';
+import { Room } from './chat/entities/room.entity';
+import { ChatLog } from './chat/entities/chatlog.entity';
 
 // .envを読み込む
 dotenv.config();
@@ -40,7 +42,7 @@ dotenv.config();
         username: config.get<string>('POSTGRESS_USER'),
         password: config.get<string>('POSTGRESS_PASSWORD'),
         database: config.get<string>('POSTGRESS_DB'),
-        entities: [User],
+        entities: [User, Room, ChatLog],
         synchronize: true,
       }),
     }),
