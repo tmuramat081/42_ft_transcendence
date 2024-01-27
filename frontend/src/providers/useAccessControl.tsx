@@ -13,6 +13,8 @@ import {User} from "../types/user"
 import { usePrivateRoute } from '@/hooks/usePrivateRouter'
 import { usePublicRoute } from "@/hooks/usePublicRoute";
 
+import { useAuth } from "./useAuth";
+
 type AccessControlContextType = {
 
 };
@@ -22,6 +24,8 @@ const accessControlContext = createContext<AccessControlContextType>({} as Acces
 export const AccessControlProvider = (props: {children: ReactNode}) => {
 
     const { children } = props
+    const { loading } = useAuth()
+    
     usePrivateRoute()
     usePublicRoute()
 

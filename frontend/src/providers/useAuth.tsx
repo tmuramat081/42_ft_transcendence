@@ -134,6 +134,7 @@ export const LoginUserProvider = (props: {children: ReactNode}) => {
             return null;
             // redirect
         });
+        setLoading(false);
     }
 
     const twoFactorAuth = async (code: string) => {

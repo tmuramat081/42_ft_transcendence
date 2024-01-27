@@ -97,6 +97,10 @@ export default function Form() {
         setPassword('');
         setPasswordConfirm('');
     };
+
+    if (loading || loginUser) {
+        return <p>loading...</p>
+    }
     
     return (
         <div>

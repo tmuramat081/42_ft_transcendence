@@ -150,6 +150,10 @@ export default function Form() {
         setUserName('');
         setPassword('');
     };
+
+    if (loading || loginUser) {
+        return <p>loading...</p>
+    }
     
     return (
         <div>

@@ -23,7 +23,7 @@ export default function Form() {
     const [qrCodeUrl, setQrCodeUrl] = useState('');
     const [code, setCode] = useState('');
 
-    const {loginUser, getCurrentUser} = useAuth();
+    const {loginUser, getCurrentUser, loading} = useAuth();
 
     const router = useRouter();
 
@@ -247,6 +247,10 @@ export default function Form() {
           });
       }
     };
+
+    if (loading || !loginUser) {
+        return <p>loading...</p>
+    }
     
     return (
         <div>
