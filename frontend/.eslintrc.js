@@ -23,6 +23,7 @@ module.exports = {
     '@typescript-eslint/interface-name-prefix': 'off', // インターフェースの接頭辞はチェックしない
     '@typescript-eslint/explicit-function-return-type': 'off', // 返り値の型指定はチェックしない
     '@typescript-eslint/explicit-module-boundary-types': 'off', // エクスポートされる関数の型指定はチェックしない
+    '@typescript-eslint/no-explicit-any': 1, // 明示的なany型を許可しない（警告のみ）
     indent: ['error', 2, { SwitchCase: 1 }], // インデントは2スペース
     semi: ['error', 'always'], // セミコロン必須
     quotes: ['error', 'single'], // シングルクォートのみ許可

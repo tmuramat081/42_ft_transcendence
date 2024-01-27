@@ -34,11 +34,11 @@ import { Exclude } from "class-transformer";
 export class User {
     // @PrimaryGeneratedColumn()は主キーを自動生成する
     @PrimaryGeneratedColumn({ name: 'user_id', type: 'integer', unsigned: true})
-    userId: number;
+    userId!: number;
 
     @Column({ name: 'user_name', type: 'varchar', length: 20, unique: true })
     //@Factory(faker => faker.internet.userName())
-    @Factory((faker) => faker.helpers.unique(faker.word.noun))
+    @Factory((faker) => faker?.helpers.unique(faker.word.noun))
     @IsNotEmpty()
     @MinLength(4)
     @MaxLength(20)
@@ -46,15 +46,15 @@ export class User {
     @Matches(/^[a-zA-Z0-]+$/,
         { message: 'ユーザー名は英数字のみ使用できます' }
     )
-    userName: string;
+    userName!: string;
 
     @Column({ name: 'email', type: 'varchar', length: 100, unique: true})
-    @Factory((faker) => faker.helpers.unique(faker.internet.email))
+    @Factory((faker) => faker?.helpers.unique(faker.internet.email))
     @IsEmail()
-    email: string;
+    email!: string;
 
     @Column({ name: 'password', type: 'varchar'})
-    @Factory((faker) => faker.internet.password())
+    @Factory((faker) => faker?.internet.password())
     @IsNotEmpty()
     @MinLength(4)
     @MaxLength(20)
@@ -66,28 +66,28 @@ export class User {
         { message: 'パスワードは大文字、小文字、数字、記号を含めてください' }
     )
     @Exclude()
-    password: string;
+    password!: string;
 
     @Column({ name: 'icon', type: 'text', default: ''})
-    @Factory((faker) => faker.image.people())
-    icon: string;
+    @Factory((faker) => faker?.image.people())
+    icon!: string;
 
     @CreateDateColumn({ name: 'created_at', type: 'timestamp', default: () => 'CURRENT_TIMESTAMP'})
-    createdAt: Date;
+    createdAt!: Date;
 
     @DeleteDateColumn({ name: 'deleted_at', type: 'timestamp', nullable: true})
-    @Factory((faker) => faker.helpers.arrayElement([null, faker.date.future()]))
-    deletedAt: Date;
+    @Factory((faker) => faker?.helpers.arrayElement([null, faker.date.future()]))
+    deletedAt!: Date;
 
     @Column({ type: 'varchar', length: 20,  default: ''})
-    name42: string;
+    name42!: string;
 
     @Column({ name: 'two_factor_auth', type: 'boolean', default: false, nullable: false})
-    @Factory((faker) => faker.datatype.boolean())
+    @Factory((faker) => faker?.datatype.boolean())
     @Exclude()
-    twoFactorAuth: boolean;
+    twoFactorAuth!: boolean;
 
     @Column({ name: 'two_factor_auth_secret', type: 'text', nullable: true})
     @Exclude()
-    twoFactorAuthSecret: string;
+    twoFactorAuthSecret!: string;
 }

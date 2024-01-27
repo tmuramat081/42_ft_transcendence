@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { HttpException, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, Connection } from 'typeorm';
 import { User } from './entities/user.entity';
@@ -51,11 +51,14 @@ export class UsersService {
     return accessToken;
   }
 
-  async signIn(userData: UserDto): Promise<string> {
+  async signIn(userData: UserDto): Promise<string | null> {
     // ユーザーの検索
-    const user: User = await this.userRepository.findOneByName(
+    const user = await this.userRepository.findOneByName(
       userData.userName,
     );
+    if (!user) {
+      return null;
+    }
 
     // パスワードをハッシュ化
     // これでは確認できない
@@ -82,7 +85,7 @@ export class UsersService {
 
             この方法により、セキュリティを確保しつつ、ユーザーが正しいパスワードを入力したかどうかを確認できます。重要なのは、実際のパスワード自体がデータベースに保存されることはなく、そのハッシュ値のみが保存されることです。これにより、もしデータベースが何らかの方法で漏洩した場合でも、実際のパスワードは保護されます。
         */
-    if (user && bcrypt.compare(userData.password, user.password)) {
+    if (user && await bcrypt.compare(userData.password, user.password)) {
       // JWTを返す？
       const payload: JwtPayload = {
         userId: user.userId,
@@ -100,9 +103,12 @@ export class UsersService {
   // Partial<User> は User の一部のプロパティを表す
   async currentUser(userData: UserDto): Promise<Partial<User>> {
     // ユーザーの検索
-    const user: User = await this.userRepository.findOneByName(
+    const user = await this.userRepository.findOneByName(
       userData.userName,
     );
+    if (!user) {
+      throw new HttpException('User not found', 404);
+    }
     const { password, ...result } = user;
     return result;
     //return user

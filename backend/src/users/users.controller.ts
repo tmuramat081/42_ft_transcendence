@@ -8,6 +8,7 @@ import {
   InternalServerErrorException,
   ForbiddenException,
   UnauthorizedException,
+  HttpException,
 } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { UserDto } from './dto/user.dto';
@@ -83,13 +84,16 @@ export class UsersController {
 
       //return accessToken;
       return JSON.stringify({ accessToken: accessToken });
-    } catch (error) {
-      if (error.code === 'ER_DUP_ENTRY') {
-        throw new InternalServerErrorException('User already exists');
+    } catch (error: unknown) {
+      if (error instanceof HttpException) {
+        throw error
+      } else if (error instanceof Error && error.message === 'ER_DUP_ENTRY') {
+          throw new InternalServerErrorException('User already exists');
+          //return res.status(400).json({ message: 'User already exists' });
+      } else {
+        throw new InternalServerErrorException('access token error');
         //return res.status(400).json({ message: 'User already exists' });
       }
-      throw new InternalServerErrorException('access token error');
-      //return res.status(400).json({ message: 'User already exists' });
     }
   }
 
@@ -130,7 +134,7 @@ export class UsersController {
     // }
 
     // findは例外を投げない為、try-catchで囲まない
-    const accessToken: string = await this.usersService.signIn(userData);
+    const accessToken: string | null = await this.usersService.signIn(userData);
     if (accessToken === null) {
       //console.log("Invalid credentials");
       throw new ForbiddenException('Invalid credentials');
@@ -150,7 +154,7 @@ export class UsersController {
   // JWTからユーザーを取得する　API
   @UseGuards(JwtAuthGuard)
   @Get('/me')
-  currentUser(@Req() req): string {
+  currentUser(@Req() req: Request & { user: User }): string {
     //throw new ForbiddenException("Invalid credentials");
     const { password, ...user } = req.user;
     //const user: User = req.user;
@@ -163,7 +167,8 @@ export class UsersController {
   }
 
   @Get('/:id')
-  findOne(@Req() req) {
-    return classToPlain(this.usersService.findOne(req.params.id));
+  findOne(@Req() req: Request) {
+    const id = Number(req.params.id);
+    return classToPlain(this.usersService.findOne(id));
   }
 }

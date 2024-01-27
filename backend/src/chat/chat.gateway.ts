@@ -24,7 +24,7 @@ interface ChatMessage {
 @WebSocketGateway({ cors: { origin: '*' } })
 export class ChatGateway {
   @WebSocketServer()
-  server: Server;
+  server!: Server;
 
   private logger: Logger = new Logger('Gateway Log');
   private roomList: { [key: string]: string } = {};

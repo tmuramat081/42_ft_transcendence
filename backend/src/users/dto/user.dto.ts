@@ -8,7 +8,7 @@ export class UserDto {
 
     @IsNotEmpty()
     @IsEmail()
-    email: string;
+    email!: string;
 
     @IsNotEmpty()
     @MinLength(4)
@@ -20,7 +20,7 @@ export class UserDto {
     @Matches(/((?=.*\d)|(?=.*\W+))(?![.\n])(?=.*[A-Z])(?=.*[a-z]).*$/,
         { message: 'パスワードは大文字、小文字、数字、記号を含めてください' }
     )
-    password: string;
+    password!: string;
 
     @IsNotEmpty()
     @MinLength(4)
@@ -28,13 +28,13 @@ export class UserDto {
     @Match('password',
         { message: 'パスワードが一致しません' }
     )
-    passwordConfirm: string;
+    passwordConfirm!: string;
 
     @IsNotEmpty()
     @MinLength(4)
     @MaxLength(20)
     @IsAlphanumeric()
-    userName: string;
+    userName!: string;
 }
 
 export function toUserDto(user: User): UserDto {

@@ -2,10 +2,13 @@
   "trailingComma": "all",
   "singleQuote": true,
   "bracketSpacing": true,
-  "printWidth": 80,
+  "printWidth": 100,
   "tabWidth": 2,
+  "useTabs": false,
   "semi": true,
   "bracketSameLine": false,
   "proseWrap": "never",
-  "endOfLine": "auto"
+  "endOfLine": "auto",
+  "htmlWhitespaceSensitivity": "css",
+  "singleAttributePerLine": true
 }

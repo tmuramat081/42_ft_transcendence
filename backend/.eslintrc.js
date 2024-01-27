@@ -21,8 +21,7 @@ module.exports = {
     '@typescript-eslint/interface-name-prefix': 'off', // インターフェースの接頭辞はチェックしない
     '@typescript-eslint/explicit-function-return-type': 'off', // 返り値の型指定はチェックしない
     '@typescript-eslint/explicit-module-boundary-types': 'off', // エクスポートされる関数の型指定はチェックしない
-    '@typescript-eslint/no-explicit-any': 'on', // 明示的なany型を許可しない
-    '@typescript-eslint/no-non-null-assertion', // 非nullアサーションを許可しない
+    '@typescript-eslint/no-explicit-any': 1, // 明示的なany型を許可しない（警告)
     "indent": ["error", 2, { "SwitchCase": 1 }], // インデントは2スペース
     "semi": ["error", "always"], // セミコロンは必須
     "quotes": ["error", "single"], // シングルクォートのみ許可

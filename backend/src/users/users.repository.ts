@@ -37,12 +37,20 @@ export class UserRepository {
 
     async findOne(id: number): Promise<User | undefined> {
         //return this.connection.getRepository(User).findOne({ where: { user_id: id } });
-        return this.userRepository.findOne({ where: { userId: id }});
+        try {
+           return await this.userRepository.findOneOrFail({ where: { userId: id }}); 
+        } catch (error) {
+            console.log(error);
+        }
     }
 
-    async findOneByName(name: string): Promise<User | undefined> {
+    async findOneByName(name: string): Promise<User | undefined | null> {
         //return this.connection.getRepository(User).findOne({ where: { user_name: name } });
-        return this.userRepository.findOne({ where: { userName: name } });
+        try {
+            return await this.userRepository.findOne({ where: { userName: name } });
+        } catch (error) {
+            console.log(error);
+        }
     }
 
     // async findOne(username: string): Promise<User | undefined> {

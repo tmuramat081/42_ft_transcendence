@@ -12,7 +12,6 @@
     "prepare": "cd ../ && husky install"
   },
   "dependencies": {
-    "@types/socket.io-client": "^3.0.0",
     "next": "^14.0.4",
     "react": "^18",
     "react-dom": "^18",
@@ -24,6 +23,7 @@
     "@types/react-dom": "^18",
     "@typescript-eslint/eslint-plugin": "^5.59.8",
     "@typescript-eslint/parser": "^5.59.8",
+    "@types/socket.io-client": "^3.0.0",
     "eslint-config-prettier": "^8.8.0",
     "eslint-plugin-react": "^7.32.2",
     "eslint": "^8",
