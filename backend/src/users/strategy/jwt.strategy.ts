@@ -49,6 +49,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
 
     if (user) {
       console.log("user: ", user)
+      console.log("userが見つかりました")
       return user;
     }
     // ユーザーが見つからない場合はエラー

@@ -2,10 +2,12 @@
 import { useState, useEffect } from 'react';
 import axios from 'axios';
 //import { useHistory, useLocation } from 'react-router-dom';
-import { Router, useRouter } from 'next/router';
 
 import styles from  "./toggleSwitch.module.css"
 import Modal from './2fa/modal'; // Modalコンポーネントをインポート
+import { usePrivateRoute } from '@/hooks/usePrivateRouter';
+import { useAuth } from '@/providers/useAuth';
+import { useRouter } from 'next/navigation';
 
 export default function Form() {
     const [userName, setUserName] = useState('');
@@ -21,39 +23,61 @@ export default function Form() {
     const [qrCodeUrl, setQrCodeUrl] = useState('');
     const [code, setCode] = useState('');
 
-    const getCurrentUser = () => {
-        fetch('http://localhost:3001/users/me', {
-            method: 'GET',
-            credentials: 'include',
-            // headers: {
-            //     "Authorization": `Bearer ${token}`
-            // }
-        })
-        .then((res) => {
-            //console.log(res.data);
-            return res.json();
-        })
-        .then((data) => {
-            console.log('Success:', data);
-            setUser(data.user);
-            setUserName(data.user.userName);
-            setEmail(data.user.email);
-            setTwoFactorAuth(data.user.twoFactorAuth);
-            //Router.push('/');
-        })
-        .catch((error) => {
-            console.error('Error:', error);
+    const {loginUser, getCurrentUser} = useAuth();
 
-            // redirect
-        });
-    }
+    const router = useRouter();
+
+
+    // const getCurrentUser = () => {
+    //     fetch('http://localhost:3001/users/me', {
+    //         method: 'GET',
+    //         credentials: 'include',
+    //         // headers: {
+    //         //     "Authorization": `Bearer ${token}`
+    //         // }
+    //     })
+    //     .then((res) => {
+    //         //console.log(res.data);
+    //         return res.json();
+    //     })
+    //     .then((data) => {
+    //         console.log('Success:', data);
+    //         setUser(data.user);
+    //         setUserName(data.user.userName);
+    //         setEmail(data.user.email);
+    //         setTwoFactorAuth(data.user.twoFactorAuth);
+    //         //Router.push('/');
+    //     })
+    //     .catch((error) => {
+    //         console.error('Error:', error);
+
+    //         // redirect
+    //     });
+    // }
+
+
+    console.log("update")
 
 
     useEffect(() => {
         //if (token == '' || token === undefined) return;
+        // const callback = () => {
+        //     router.push('/auth/signin')
+        // }
+        //getCurrentUser(callback);
         getCurrentUser();
     }, []);
 
+    //getCurrentUser();
+
+    //usePrivateRoute();
+
+    // useEffect(() => {
+    //     console.log(loginUser)
+    //     if (!loginUser) {
+    //         router.push('/auth/signin')
+    //     }
+    // }, [loginUser])
 
     
     const handleSubmit = (e) => {
@@ -202,7 +226,7 @@ export default function Form() {
           // const data = await response.json();
           // console.log('2FA無効化:', data);
           fetch('http://localhost:3001/auth/2fa/disable', {
-              method: 'GET',
+              method: 'POST',
               credentials: 'include',
               // headers: {
               //     "Authorization": `Bearer ${token}`

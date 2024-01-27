@@ -2,6 +2,8 @@
 import styles from './page.module.css'
 
 import Link from 'next/link'
+
+import { LoginUserProvider } from '@/providers/useAuth'
 /**
  * TOPページ
  * [TODO] 画面設計後に実装する

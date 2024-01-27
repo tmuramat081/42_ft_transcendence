@@ -2,9 +2,11 @@
 import { useState, useEffect } from 'react';
 import axios from 'axios';
 //import { useHistory, useLocation } from 'react-router-dom';
-import { useRouter } from 'next/router';
 // import Router from 'next/router'
 import { useRouter } from 'next/navigation'
+import { useAuth } from '@/providers/useAuth';
+import { usePublicRoute } from '@/hooks/usePublicRoute';
+
 
 export default function Form() {
     const [userName, setUserName] = useState('');
@@ -16,43 +18,51 @@ export default function Form() {
     const [token, setToken] = useState('');
 
     const router = useRouter();
+    const {signin, loginUser, getCurrentUser, loading} = useAuth();
+
+    console.log("signup")
 
     //const router = useRouter();
 
-    const getCurrentUser = () => {
-        fetch('http://localhost:3001/users/me', {
-            method: 'GET',
-            credentials: 'include',
-            // headers: {
-            //     "Authorization": `Bearer ${token}`
-            // }
-        })
-        .then((res) => {
-            //console.log(res.data);
-            return res.json();
-        })
-        .then((data) => {
-            console.log('Success:', data);
-            setUser(data.user);
-            //router.push('/');
-            if (user !== undefined) {
-                router.push('/');
-            }
-        })
-        .catch((error) => {
-            console.error('Error:', error);
+    // const getCurrentUser = () => {
+    //     fetch('http://localhost:3001/users/me', {
+    //         method: 'GET',
+    //         credentials: 'include',
+    //         // headers: {
+    //         //     "Authorization": `Bearer ${token}`
+    //         // }
+    //     })
+    //     .then((res) => {
+    //         //console.log(res.data);
+    //         return res.json();
+    //     })
+    //     .then((data) => {
+    //         console.log('Success:', data);
+    //         setUser(data.user);
+    //         //router.push('/');
+    //         if (user !== undefined) {
+    //             router.push('/');
+    //         }
+    //     })
+    //     .catch((error) => {
+    //         console.error('Error:', error);
 
-            // redirect
-        });
-    }
+    //         // redirect
+    //     });
+    // }
 
 
+
+    // クライアントレンダリング
     useEffect(() => {
         //if (token == '' || token === undefined) return;
         getCurrentUser();
     }, []);
 
+    // サーバーサイドレンダリング
+    //getCurrentUser();
 
+    //usePublicRoute();
     
     const handleSubmit = (e) => {
         e.preventDefault();
@@ -136,7 +146,7 @@ export default function Form() {
 
         </form>
 
-        <button onClick={() => Router.push('/auth/signin')}>signin</button>
+        <button onClick={() => router.push('/auth/signin')}>signin</button>
 
         <button>
             <a href="http://localhost:3001/auth/callback/42">42ログイン</a>

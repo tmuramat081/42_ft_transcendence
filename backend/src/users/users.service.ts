@@ -9,7 +9,7 @@ import { JwtPayload } from './interfaces/jwt_payload';
 import * as bcrypt from 'bcrypt';
 import { UserDto42 } from './dto/user42.dto';
 
-import jwt_decode from 'jwt-decode'
+//import jwt_decode from 'jwt-decode'
 
 /*
 Service

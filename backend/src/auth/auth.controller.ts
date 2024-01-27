@@ -33,7 +33,7 @@ export class AuthController {
         // strategyでuserを受け取る
 
         console.log(req.user)
-        const userName = req.user['username']
+        const userName = req.user['userName']
 		const userId = req.user['userId']
         const email = req.user['email']
 		const payload: JwtPayload = { userId: userId, userName: userName, email: email, twoFactorAuth: false };
@@ -132,6 +132,7 @@ export class AuthController {
     @Post("/2fa/disable")
     async disable2fa(@Req() req, @Res({ passthrough: true }) res) {
         const user = req.user
+        console.log("disable")
         const resultUser = await this.authService.disable2fa(user)
         res.status(200).json({ message: '2fa disabled' });
     }

@@ -1,15 +1,72 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Modal from './2fa/modal'; // Modalコンポーネントをインポート
 // ... その他のインポート
 import styles from  "./toggleSwitch.module.css"
 import { useRouter } from 'next/navigation'
+import { jwtDecode } from 'jwt-decode';
+
 
 const TwoFactor = () => {
     //const [qrCodeUrl, setQrCodeUrl] = useState('');
+    const [user, setUser] = useState({});
+    const [token, setToken] = useState('');
     const [code, setCode] = useState('');
     //const [twoFactorAuth, setTwoFactorAuth] = useState(false);
     const router = useRouter()
+
+    const getCurrentUser = () => {
+        fetch('http://localhost:3001/users/me', {
+            method: 'GET',
+            credentials: 'include',
+            // headers: {
+            //     "Authorization": `Bearer ${token}`
+            // }
+        })
+        .then((res) => {
+            //console.log(res.data);
+            return res.json();
+        })
+        .then((data) => {
+            console.log('Success:', data);
+            setUser(data.user);
+            //router.push('/');
+            //Router.push('/');
+            //redirect('/');
+        })
+        .catch((error) => {
+            console.error('Error:', error);
+            
+            // redirect
+        });
+    }
+
+    useEffect(() => {
+        //if (token == '' || token === undefined) return;
+        getCurrentUser();
+    }, []);
+    
+    useEffect(() => {
+        //if (token == '' || token === undefined) return;
+        //console.log('user: ', user);
+        if (!user || token == '' || token === undefined) {
+            return
+        }
+    
+        // console.log('user: ', user);
+        // console.log('token: ', token);
+        const decode = jwtDecode(token);
+        // console.log('decode: ', decode['twoFactorAuth']);
+        // console.log(user.twoFactorAuth)
+        // console.log("if: ", decode['twoFactorAuth'] === false && user.twoFactorAuth === true)
+        if (decode['twoFactorAuth'] === false && user.twoFactorAuth === true) {
+            console.log('2FAページにリダイレクト')
+            router.push('/users/2fa')
+            return
+        }
+        console.log('ホームページにリダイレクト')
+        router.push('/');
+    })
 
     const handleSubmit = (e) => {
       e.preventDefault();
@@ -29,7 +86,9 @@ const TwoFactor = () => {
         })
         .then((data) => {
             console.log('Success:', data.accessToken);
+            setToken(data.accessToken);
             //router.push('/');
+            getCurrentUser();
 
         })
         .catch((error) => {

@@ -1,5 +1,7 @@
 import type { Metadata } from 'next'
 import './globals.css'
+import { LoginUserProvider } from '@/providers/useAuth'
+import { AccessControlProvider } from '@/providers/useAccessControl'
 
 export const metadata: Metadata = {
   title: 'ft_transcendence',
@@ -12,8 +14,16 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   return (
-    <html lang="en">
-      <body>{children}</body>
-    </html>
+    <>
+    <LoginUserProvider>
+      <AccessControlProvider>
+        <html lang="en">
+          <body>
+            {children}
+          </body>
+        </html>
+      </AccessControlProvider>
+    </LoginUserProvider>
+    </>
   )
 }

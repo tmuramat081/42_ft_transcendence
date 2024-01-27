@@ -8,6 +8,19 @@ import axios from 'axios';
 //https://nextjs.org/docs/app/building-your-application/routing/linking-and-navigating
 import { useRouter } from 'next/navigation'
 import { jwtDecode } from "jwt-decode";
+import { useAuth } from '@/providers/useAuth';
+
+import { usePublicRoute } from '@/hooks/usePublicRoute';
+
+
+// SSRならできる。useEffectは使えなくなる
+//import { cookies } from 'next/headers'
+// export async function getSessionData(req) {
+//     const encryptedSessionData = cookies().get('jwt')?.value
+//     console.log("encryptedSessionData: ", encryptedSessionData)
+//     return encryptedSessionData ? JSON.parse(jwtDecode(encryptedSessionData)) : null
+// }
+
 
 type User = {
     userId: number,
@@ -20,9 +33,18 @@ type User = {
 export default function Form() {
     const [userName, setUserName] = useState('');
     const [password, setPassword] = useState('');
-    const [user, setUser] = useState({});
+    //const [user, setUser] = useState(null);
     const [token, setToken] = useState('');
     const router = useRouter();
+
+    //const {signin} = useLoginUser();
+    const {signin, loginUser, getCurrentUser, loading} = useAuth();
+
+    console.log("signin")
+
+    // const isEmpty = (obj) => {
+    //     return Object.keys(obj).length === 0;
+    // }
 
     useEffect(() => {
         //if (token == '' || token === undefined) return;
@@ -30,79 +52,100 @@ export default function Form() {
     }, []);
 
     useEffect(() => {
+        //if (loading) return;
         //if (token == '' || token === undefined) return;
         //console.log('user: ', user);
-        if (!user || token == '' || token === undefined) {
-            return
-        }
 
-        // console.log('user: ', user);
-        // console.log('token: ', token);
-        const decode = jwtDecode(token);
-        // console.log('decode: ', decode['twoFactorAuth']);
-        // console.log(user.twoFactorAuth)
-        // console.log("if: ", decode['twoFactorAuth'] === false && user.twoFactorAuth === true)
-        if (decode['twoFactorAuth'] === false && user.twoFactorAuth === true) {
-            router.push('/users/2fa')
-            return
-        }
-        router.push('/');
-    })
+        console.log("リダイレクト判定")
+        console.log("user: ", loginUser)
+        console.log("token: ", token)
+        // console.log(user === null)
+        // console.log((token !== '' && token !== undefined))
+        console.log(loginUser !== null || (token !== '' && token !== undefined))
+        if (loginUser !== null || (token !== '' && token !== undefined)) {
+            console.log("リダイレクト判定2")
+            if (token != '' && token !== undefined && loginUser) {
+                // console.log('user: ', user);
+                // console.log('token: ', token);
+                const decode = jwtDecode(token);
+                // console.log('decode: ', decode['twoFactorAuth']);
+                // console.log(user.twoFactorAuth)
+                // console.log("if: ", decode['twoFactorAuth'] === false && user.twoFactorAuth === true)
+                if (decode['twoFactorAuth'] === false && loginUser.twoFactorAuth === true) {
+                    router.push('/users/2fa')
+                    return
+                }
+            }
 
-    const getCurrentUser = () => {
-        fetch('http://localhost:3001/users/me', {
-            method: 'GET',
-            credentials: 'include',
-            // headers: {
-            //     "Authorization": `Bearer ${token}`
+            // ここはprivateRouteでやればいいかも
+            // if (loginUser !== null) {
+            //     console.log("リダイレクト判定3")
+            //     router.push('/');
             // }
-        })
-        .then((res) => {
-            //console.log(res.data);
-            return res.json();
-        })
-        .then((data) => {
-            console.log('Success:', data);
-            setUser(data.user);
-            //router.push('/');
-            //Router.push('/');
-            //redirect('/');
-        })
-        .catch((error) => {
-            console.error('Error:', error);
+        }
+    }, [loginUser, token])
+
+    //微妙な実装
+    //usePublicRoute();
+
+    // const getCurrentUser = () => {
+    //     fetch('http://localhost:3001/users/me', {
+    //         method: 'GET',
+    //         credentials: 'include',
+    //         // headers: {
+    //         //     "Authorization": `Bearer ${token}`
+    //         // }
+    //     })
+    //     .then((res) => {
+    //         //console.log(res.data);
+    //         return res.json();
+    //     })
+    //     .then((data) => {
+    //         console.log('Success:', data);
+    //         setUser(data.user);
+    //         //router.push('/');
+    //         //Router.push('/');
+    //         //redirect('/');
+    //     })
+    //     .catch((error) => {
+    //         console.error('Error:', error);
             
-            // redirect
-        });
-    }
+    //         // redirect
+    //     });
+    // }
 
     // mfnyuを参考にしてloginをさんこう　 if res.status == 200 でtokenをsetToken
     const handleSubmit = (e) => {
         e.preventDefault();
         // ここでフォームのデータを処理します
         // axios.post('localhost:3001/users/login', { username, email });
-        fetch('http://localhost:3001/users/signin', {
-            method: 'POST',
-            credentials: 'include',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ userName, password }),
-        })
-        .then ((res) => {
-            // /console.log(res.json());
-            return res.json();
-        })
-        //.then((res) => res.json())
-        .then((data) => {
-            console.log('Success:', data.accessToken);
-            setToken(data.accessToken);
-            getCurrentUser();
-        })
-        .catch((error) => {
-            console.error('Error:', error);
-        });
+        // fetch('http://localhost:3001/users/signin', {
+        //     method: 'POST',
+        //     credentials: 'include',
+        //     headers: {
+        //         'Content-Type': 'application/json',
+        //     },
+        //     body: JSON.stringify({ userName, password }),
+        // })
+        // .then ((res) => {
+        //     // /console.log(res.json());
+        //     return res.json();
+        // })
+        // //.then((res) => res.json())
+        // .then((data) => {
+        //     console.log('Success:', data.accessToken);
+        //     setToken(data.accessToken);
+        //     getCurrentUser();
+        // })
+        // .catch((error) => {
+        //     console.error('Error:', error);
+        // });
 
-        console.log('送信されたデータ:', { userName, password });
+        // console.log('送信されたデータ:', { userName, password });
+
+
+        signin( userName, password );
+        //getCurrentUser();
         // 送信後の処理（例: フォームをクリアする）
         setUserName('');
         setPassword('');
@@ -129,17 +172,17 @@ export default function Form() {
     
             <button type="submit">送信</button>
 
-            <p>AccessToken: {token}</p>
+            {/* <p>AccessToken: {token}</p> */}
             
-            { user && 
-                <p>user: {user.userName}</p>
-            } { !user && 
+            { loginUser && 
+                <p>user: {loginUser.userName}</p>
+            } { !loginUser && 
                 <p>user: </p>
             }
 
         </form>
 
-        <button onClick={() => Router.push('/auth/signup')}>signup</button>
+        <button onClick={() => router.push('/auth/signup')}>signup</button>
 
         <button>
             <a href="http://localhost:3001/auth/callback/42">42ログイン</a>
