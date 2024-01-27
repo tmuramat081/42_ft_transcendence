@@ -1,35 +1,37 @@
 "use client";
-import React, { useState, useEffect, useCallback, use } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import io from "socket.io-client";
 import ChatLayout from "./layout";
 import "./ChatPage.css"; // スタイルシートの追加
 import Image from "next/image";
 
+interface Sender {
+  ID: string;
+  name: string;
+  icon: string;
+}
+
+interface ChatMessage {
+  user: string;
+  photo: string;
+  text: string;
+  timestamp: string;
+}
+
 const socket = io("http://localhost:3001");
 
-const ChatPage = () => {
+const ChatPage: React.FC = () => {
   const [message, setMessage] = useState("");
   const [roomID, setRoomID] = useState("");
   const [newRoomName, setNewRoomName] = useState("");
   const [roomList, setRoomList] = useState<{ [key: string]: string }>({});
   const [selectedRoom, setSelectedRoom] = useState<string | null>(null);
-  const [sender, setSender] = useState<{
-    ID: string;
-    name: string;
-    icon: string;
-  }>({
+  const [sender, setSender] = useState<Sender>({
     ID: "",
     name: "",
     icon: "",
   });
-  const [roomchatLogs, setRoomChatLogs] = useState<{
-    [roomId: string]: {
-      user: string;
-      photo: string;
-      text: string;
-      timestamp: string;
-    }[];
-  }>({});
+  const [roomchatLogs, setRoomChatLogs] = useState<{[roomId: string]: ChatMessage[];}>({});
   const [isDeleteButtonVisible, setDeleteButtonVisible] = useState(false);
 
   // コンポーネントがマウントされたときのみ接続
