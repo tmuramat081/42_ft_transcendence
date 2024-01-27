@@ -2,4 +2,4 @@
 . "$(dirname -- "$0")/_/husky.sh"
 
 # コミット時のスクリプトを実行
-sh pre-commit.sh
+npm run lint-staged

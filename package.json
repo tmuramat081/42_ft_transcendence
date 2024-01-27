@@ -1,14 +1,34 @@
 {
-  "dependencies": {
-    "bootstrap": "^5.3.2",
-    "next": "^14.0.4",
-    "react-bootstrap": "^2.9.2",
-    "socket.io-client": "^4.7.2"
+  "name": "42_ft_transcendence",
+  "version": "1.0.0",
+  "description": "School 42 project",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "lint-staged": "lint-staged"
   },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
   "devDependencies": {
-    "@types/next": "^9.0.0",
-    "@types/node": "^20.10.5",
-    "@types/react": "^18.2.45",
-    "typescript": "^5.3.3"
+    "@typescript-eslint/eslint-plugin": "^6.0.0",
+    "@typescript-eslint/parser": "^6.0.0",
+    "eslint": "^8",
+    "eslint-config-next": "14.0.4",
+    "eslint-config-prettier": "^8.8.0",
+    "eslint-plugin-prettier": "^5.0.0",
+    "eslint-plugin-react": "^7.32.2",
+    "husky": "^9.0.6",
+    "lint-staged": "^15.2.0",
+    "prettier": "^3.1.1"
+  },
+  "lint-staged": {
+    "*.{ts,tsx}": [
+      "eslint --fix"
+    ]
+  },
+  "dependencies": {
+    "eslit": "^6.0.0",
+    "exlint": "^0.1.6"
   }
 }
