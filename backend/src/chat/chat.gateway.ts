@@ -118,15 +118,4 @@ export class ChatGateway {
     this.logger.log(`Client connected: ${socket.id}`);
     this.server.emit('roomList', this.roomList);
   }
-
-  // @SubscribeMessage('getChatLogs')
-  // handleGetChatLogs(
-  //   @MessageBody() log: { roomID: string },
-  //   @ConnectedSocket() socket: Socket,
-  // ) {
-  //   console.log('getChatLogs: ', log.roomID);
-  //   this.logger.log(`getChatLogs: ${log.roomID}`);
-  //   const logs = this.roomChatLogs[log.roomID] || [];
-  //   socket.emit('chatLogs', { roomID: log.roomID, logs });
-  // }
 }

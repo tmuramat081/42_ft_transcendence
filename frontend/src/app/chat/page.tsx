@@ -98,21 +98,6 @@ const ChatPage: React.FC = () => {
     };
   }, []);
 
-  // useEffect(() => {
-  //   socket.on('chatLogs', ({ roomID, logs }) => {
-  //     console.log(`Received chatLogs for room ${roomID}:`, logs);
-  //     setRoomChatLogs((prevRoomChatLogs) => ({
-  //       ...prevRoomChatLogs,
-  //       [roomID]: logs,
-  //     }));
-  //   });
-  
-  //   return () => {
-  //     socket.off('chatLogs');
-  //   };
-  // }, []);
-  
-
   const onClickSubmit = useCallback(() => {
     socket.emit("talk", { roomID, sender, message });
     setMessage("");
