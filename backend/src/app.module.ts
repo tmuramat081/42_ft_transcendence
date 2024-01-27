@@ -9,9 +9,9 @@ import * as Joi from 'joi';
 
 import { User } from './users/entities/user.entity';
 import { UsersModule } from './users/users.module';
-import { AuthModule } from './auth/auth.module';
+import { ChatModule } from './chat/chat.module';
 
- // .envを読み込む
+// .envを読み込む
 dotenv.config();
 @Module({
   imports: [
@@ -44,7 +44,7 @@ dotenv.config();
       }),
     }),
     UsersModule,
-    AuthModule,
+    ChatModule,
   ],
   controllers: [AppController],
   providers: [AppService],
