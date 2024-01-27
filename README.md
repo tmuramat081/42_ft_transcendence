@@ -11,8 +11,6 @@ School 42 project
 
 * [Visual Studio Code](https://code.visualstudio.com/download)
  
-* [Dev Containers](https://marketplace.visualstudio.com/items?itemName=ms-vscode-remote.remote-containers)
-
 ## 初回セットアップ
 
 リモートリポジトリの `git clone` 後、 `git checkout develop` にて、 `develop` ブランチのチェックアウトを行ってください。
