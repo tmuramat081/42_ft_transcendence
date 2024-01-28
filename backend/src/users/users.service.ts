@@ -227,4 +227,19 @@ export class UsersService {
         newUser  = await this.userRepository.createUser42(newUser)
 		return newUser
     }
+
+
+    async signInReturnUser(userData: SignInUserDto): Promise<User> {
+        // ユーザーの検索
+        //const user: User = await this.userRepository.findOneByName(userData.userName);
+        const user: User = await this.userRepository.findOne({ where: { userName: userData.userName }});
+
+        if (user && bcrypt.compare(userData.password, user.password)) {
+            return user
+        } else {
+            //console.log("error")
+            return null
+        }
+    }
 }
+

@@ -15,15 +15,13 @@ export default function RootLayout({
 }) {
   return (
     <>
-    <LoginUserProvider>
-      <AccessControlProvider>
+
         <html lang="en">
           <body>
             {children}
           </body>
         </html>
-      </AccessControlProvider>
-    </LoginUserProvider>
+
     </>
   )
 }

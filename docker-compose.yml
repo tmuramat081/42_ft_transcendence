@@ -4,6 +4,8 @@ services:
   frontend:
     build:
       context: ./frontend
+    env_file:
+      - .env
     # tty: true
     volumes:
       - ./frontend:/frontend

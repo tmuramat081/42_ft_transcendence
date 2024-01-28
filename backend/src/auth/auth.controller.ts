@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Res, Req, Param,  UseGuards, UnauthorizedException } from '@nestjs/common';
+import { Controller, Get, Post, Res, Req, Param,  UseGuards, UnauthorizedException, Body, ForbiddenException } from '@nestjs/common';
 import { Response, Request } from 'express'
 import { AuthService } from './auth.service';
 import { IntraAuthGuard } from './guards/42auth.guards';
@@ -6,6 +6,8 @@ import { HttpService } from '@nestjs/axios';
 import { JwtService } from '@nestjs/jwt';
 import { JwtPayload } from '../users/interfaces/jwt_payload';
 import { JwtAuthGuard } from '../users/guards/jwt-auth.guard';
+import { UserDto42 } from '../users/dto/user42.dto';
+import { SignInUserDto } from '../users/dto/user.dto';
 
 // mfnyu 15, 16
 
@@ -110,6 +112,36 @@ export class AuthController {
     //     const secret = await this.authService.verify2fa(user)
     //     return secret
     // }
+
+    // signin/42
+    @Post("/signin42")
+    async SignIn42(@Body () userData: UserDto42, @Res({ passthrough: true }) res: Response) {
+        //アクセストークンを返す
+        //console.log(userData)
+        // if (!userData.userName || !userData.password) {
+        //     //return res.status(400).json({ message: 'Please enter all fields' });
+        //     throw new ForbiddenException("Please enter all fields");
+        // }
+        // const user = await this.usersService.signInReturnUser(userData);
+
+        const user = await this.authService.validateUser(userData);
+
+        console.log("user: ", user)
+        return JSON.stringify({"user": user});
+    }
+
+    @Post('/signin')
+    async SignInReturnUser(@Body () userData: SignInUserDto, @Res({ passthrough: true }) res: Response) {
+        //アクセストークンを返す
+        //console.log(userData)
+        if (!userData.userName || !userData.password) {
+            //return res.status(400).json({ message: 'Please enter all fields' });
+            throw new ForbiddenException("Please enter all fields");
+        }
+        const user = await this.authService.signIn(userData);
+        console.log("user: ", user)
+        return JSON.stringify({"user": user});
+    }
 
     //@Param() code: string
     @UseGuards(JwtAuthGuard)

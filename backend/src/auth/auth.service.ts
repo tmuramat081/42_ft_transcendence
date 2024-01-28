@@ -7,6 +7,7 @@ import { JwtService } from '@nestjs/jwt'
 
 import * as QRCode from 'qrcode';
 import * as speakeasy from 'speakeasy';
+import { SignInUserDto } from 'src/users/dto/user.dto';
 
 // mfnyu 15, 16
 
@@ -18,6 +19,11 @@ export class AuthService {
         //return await this.usersService.findOneById(id);
         //return await this.usersService.findOneByName42(username);
         return await this.usersService.validateUser42(user);
+    }
+
+    async signIn(userData: SignInUserDto): Promise<User> {
+        const user = await this.usersService.signInReturnUser(userData);
+        return user;
     }
 
     // // JWT
