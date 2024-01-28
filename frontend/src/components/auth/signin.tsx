@@ -151,6 +151,8 @@ export default function Form() {
         setPassword('');
     };
 
+    // 読み込み中はローディングを表示
+    // 一瞬見れる問題を解決
     if (loading || loginUser) {
         return <p>loading...</p>
     }
