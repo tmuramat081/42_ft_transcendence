@@ -49,4 +49,42 @@ describe('AllExceptionFilter', () => {
       HttpStatus.BAD_REQUEST,
     );
   });
+
+  it('should handle 404 NOT FOUND exception correctly', () => {
+    const mockNotFoundException = new HttpException(
+      'Not Found',
+      HttpStatus.NOT_FOUND,
+    );
+
+    filter.catch(
+      mockNotFoundException,
+      mockArgumentsHost as unknown as ArgumentsHost,
+    );
+
+    expect(mockHttpAdapterHost.httpAdapter.reply).toHaveBeenCalledWith(
+      expect.anything(),
+      expect.objectContaining({
+        statusCode: HttpStatus.NOT_FOUND,
+      }),
+      HttpStatus.NOT_FOUND,
+    );
+  });
+
+  it('should handle non-HTTP exception correctly', () => {
+    const mockNonHttpException = new Error('Non-HTTP error');
+
+    filter.catch(
+      mockNonHttpException,
+      mockArgumentsHost as unknown as ArgumentsHost,
+    );
+
+    expect(mockHttpAdapterHost.httpAdapter.getRequestUrl).toHaveBeenCalled();
+    expect(mockHttpAdapterHost.httpAdapter.reply).toHaveBeenCalledWith(
+      expect.anything(),
+      expect.objectContaining({
+        statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
+      }),
+      HttpStatus.INTERNAL_SERVER_ERROR,
+    );
+  });
 });
