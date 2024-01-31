@@ -6,6 +6,7 @@ import {
   HttpStatus,
 } from '@nestjs/common';
 import { HttpAdapterHost } from '@nestjs/core';
+import { CustomLogger } from 'src/logger/customLogger.service';
 
 /**
  * カスタム例外フィルター
@@ -13,6 +14,7 @@ import { HttpAdapterHost } from '@nestjs/core';
  */
 @Catch()
 export class AllExceptionFilter implements ExceptionFilter {
+  private readonly logger = new CustomLogger();
   constructor(private readonly httpAdapterHost: HttpAdapterHost) {}
 
   /**
@@ -23,16 +25,23 @@ export class AllExceptionFilter implements ExceptionFilter {
     const { httpAdapter } = this.httpAdapterHost;
 
     const ctx = host.switchToHttp();
-
-    // 開発環境ではアプリケーションログを出力 TODO: 本番環境ではエラーIDを生成？
-    if (process.env.NODE_ENV === 'development') {
-      console.error(exception);
-    }
-
+    const request = ctx.getRequest<Request>();
     const httpStatus =
       exception instanceof HttpException
-        ? exception.getStatus() // 標準のエラークラスである場合はステータスコードを取得
+        ? exception.getStatus() // 標準のエラークラスはステータスコードを取得
         : HttpStatus.INTERNAL_SERVER_ERROR; // それ以外は500として扱う
+    const requestMethodAndUrl = `${httpAdapter.getRequestMethod(request)} ${httpAdapter.getRequestUrl(request)}`;
+
+    const errorLog = this.logger.setErrorLog(exception, requestMethodAndUrl, httpStatus)
+
+    // アプリケーションログを出力 TODO: 本番環境ではエラーIDを生成？
+    if (process.env.NODE_ENV === 'development') {
+      if (httpStatus >= 500) {
+        this.logger.warn(errorLog);
+      } else {
+        this.logger.error(errorLog);
+      }
+    }
 
     // エラーレスポンスを返却
     const responseBody = {
@@ -43,12 +52,3 @@ export class AllExceptionFilter implements ExceptionFilter {
     httpAdapter.reply(ctx.getResponse(), responseBody, httpStatus);
   }
 }
-
-// TODO: 以下はエラー設計が決まったら実装
-// class ErrorResponse {
-//   /** ステータスコード */
-//   statusCode: number;
-//   /** タイムスタンプ */
-//   occurrenceTime: string;
-//   /** ログID */
-// }
