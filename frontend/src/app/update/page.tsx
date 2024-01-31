@@ -1,0 +1,345 @@
+"use client";
+
+import { useState } from 'react';
+import { useSession, signIn, signOut } from "next-auth/react";
+import {getServerSession} from "next-auth/next"
+import {options} from "../options"
+import { useRouter } from 'next/navigation';
+import styles from  "./toggleSwitch.module.css"
+import Modal from '@/components/users/2fa/modal';
+
+export default  function Profile() {
+  const { data: session } = useSession();
+    // const session = getServerSession(options)
+  const user = session?.user
+
+  console.log("session: ", session)
+
+  const [userName, setUserName] = useState(session?.user?.name || '');
+  const [email, setEmail] = useState(session?.user?.email || '');
+  const [password, setPassword] = useState('');
+  const [passwordConfirm, setPasswordConfirm] = useState('');
+  const [file, setFile] = useState(null);
+  //const [twoFactorAuth, setTwoFactorAuth] = useState(false);
+  const [twoFactorAuth, setTwoFactorAuth] = useState(user.twoFactorAuth);
+  const [qrCodeUrl, setQrCodeUrl] = useState('');
+  const [code, setCode] = useState('');
+
+  const router = useRouter();
+
+
+//   if (session) {
+//     return (
+//       <>
+//         <h1>プロフィール</h1>
+//         <p>名前: {session.user.name}</p>
+//         <p>Email: {session.user.email}</p>
+//         {/* <button onClick={() => signOut()}>サインアウト</button> */}
+//         <button style={{marginRight: 10}} onClick={() => signOut()}>
+//             SignOut
+//         </button>
+//       </>
+//     );
+//   }
+//   return (
+//     <>
+//       <h1>プロフィール</h1>
+//       <button onClick={() => signIn()}>サインイン</button>
+//     </>
+//   );
+
+const handleSubmit = (e) => {
+    e.preventDefault();
+    // ここでフォームのデータを処理します
+    // axios.post('localhost:3001/users/login', { username, email });
+
+    // ここにフォームデータの送信ロジックを追加します
+    // console.log('ファイル:', file);
+    // console.log('2FA有効:', is2FAEnabled);
+
+    // fetch('http://localhost:3001/users/signup', {
+    //     method: 'POST',
+    //     credentials: 'include',
+    //     headers: {
+    //         'Content-Type': 'application/json',
+    //     },
+    //     body: JSON.stringify({ userName, email, password, passwordConfirm }),
+    // })
+    // .then ((res) => {
+    //     // /console.log(res.json());
+    //     return res.json();
+    // })
+    // //.then((res) => res.json())
+    // .then((data) => {
+    //     console.log('Success:', data.accessToken);
+    //     setToken(data.accessToken);
+    //     getCurrentUser();
+    // })
+    // .catch((error) => {
+    //     console.error('Error:', error);
+    // });
+
+    // var formData = new FormData()
+    // formData.append('userName', userName)
+    // formData.append('email', email)
+
+
+    fetch("http://localhost:3001/users/update", {
+        method: 'POST',
+        credentials: 'include',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ userName, email, password, passwordConfirm, twoFactorAuth }),
+    })
+    .then ((res) => {
+        // /console.log(res.json());
+        return res.json();
+    })
+    //.then((res) => res.json())
+    .then((data) => {
+        console.log('Success:', data.accessToken);
+        setToken(data.accessToken);
+        getCurrentUser();
+    })
+    .catch((error) => {
+        console.error('Error:', error);
+    });
+
+
+
+    // console.log('送信されたデータ:', { userName, password });
+    // // 送信後の処理（例: フォームをクリアする）
+    setUserName('');
+    setEmail('');
+    setPassword('');
+    setPasswordConfirm('');
+    setFile(null);
+    setTwoFactorAuth(false);
+};
+
+const handleFileChange = (e) => {
+    setFile(e.target.files[0]);
+};
+
+const handle2FAToggle = (e) => {
+    setTwoFactorAuth(e.target.checked);
+};
+
+const handleSubmit2Fa = (e) => {
+    e.preventDefault();
+    // ここに2FAコードを検証するロジックを追加
+    console.log('Submitted 2FA code:', code);
+
+    fetch('http://localhost:3001/auth/2fa/verify/' + code, {
+      method: 'POST',
+      credentials: 'include',
+      // headers: {
+      //     "Authorization": `Bearer ${token}`
+      // }
+      })
+      .then((res) => {
+          //console.log(res.data);
+          return res.json();
+      })
+      .then((data) => {
+          console.log('Success:', data.accessToken);
+          setShowModal(false)
+      })
+      .catch((error) => {
+          console.error('Error:', error);
+
+          // redirect
+      });
+  };
+
+const [showModal, setShowModal] = useState(false);
+
+// 2FA有効化時にモーダルを表示
+const enableTwoFactorAuth = (e) => {
+  setTwoFactorAuth(e.target.checked);
+  if (e.target.checked) {
+      setShowModal(true);
+      // ここに2FA有効化のロジックを追加
+      // const response = await fetch('http://localhost:3001/auth/2fa/generate');
+      // const data = await response.json();
+      // setQrCodeUrl(data.qrCode);
+
+      fetch('http://localhost:3001/auth/2fa/generate', {
+          method: 'GET',
+          credentials: 'include',
+          // headers: {
+          //     "Authorization": `Bearer ${token}`
+          // }
+      })
+      .then((res) => {
+          //console.log(res.data);
+          return res.json();
+      })
+      .then((data) => {
+          console.log('Success:', data.qrCord);
+          setQrCodeUrl(data.qrCord);
+          //setShowModal(false)
+          //console.log('QRコード:', qrCodeUrl);
+          //Router.push('/');
+      })
+      .catch((error) => {
+          console.error('Error:', error);
+
+          // redirect
+      });
+  } else {
+      // ここに2FA無効化のロジックを追加
+      // const response = await fetch('http://localhost:3001/auth/2fa/disable');
+      // const data = await response.json();
+      // console.log('2FA無効化:', data);
+      fetch('http://localhost:3001/auth/2fa/disable', {
+          method: 'POST',
+          credentials: 'include',
+          // headers: {
+          //     "Authorization": `Bearer ${token}`
+          // }
+      })
+      .then((res) => {
+          //console.log(res.data);
+          return res.json();
+      })
+      .then((data) => {
+          console.log('Success:', data);
+          //Router.push('/');
+      })
+      .catch((error) => {
+          console.error('Error:', error);
+
+          // redirect
+      });
+  }
+};
+    if (!session) {
+        return (
+        <>
+            <h1>プロフィール</h1>
+            <button onClick={() => signIn()}>サインイン</button>
+        </>
+        );
+    }
+
+    return (
+        <>
+        {/* <h1>プロフィール</h1>
+        <form onSubmit={handleSubmit}>
+            <input type="text" value={name} onChange={(e) => setName(e.target.value)} />
+            <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} />
+            <button type="submit">更新</button>
+            <button onClick={() => signOut()}>サインアウト</button>
+        </form> */}
+
+<div>
+        <form onSubmit={()=>{}}>
+            <div>
+            <label htmlFor="fileInput">画像ファイル：</label>
+            <input type="file" id="fileInput" onChange={handleFileChange} />
+            </div>
+            <button type="submit">送信</button>
+        </form>
+        <form onSubmit={handleSubmit}>
+            <label htmlFor="username">名前:</label>
+            <input
+            type="text"
+            id="userName"
+            value={userName}
+            onChange={(e) => setUserName(e.target.value)}
+            />
+
+            <label htmlFor="email">email:</label>
+            <input
+            type="email"
+            id="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            />
+    
+            <label htmlFor="password">パスワード:</label>
+            <input
+            type="password"
+            id="password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            />
+
+            <label htmlFor="password">パスワード確認:</label>
+            <input
+            type="passwordConfirm"
+            id="passwordConfirm"
+            value={passwordConfirm}
+            onChange={(e) => setPasswordConfirm(e.target.value)}
+            />
+
+            {/* <div>
+            <label htmlFor="2faToggle">2FA：</label>
+            <input type="checkbox" id="2faToggle" checked={is2FAEnabled} onChange={handle2FAToggle} />
+            <span>{is2FAEnabled ? '有効' : '無効'}</span>
+            </div>
+     */}
+    
+            <button type="submit">送信</button>
+            </form>
+
+            {/* <p>AccessToken: {token}</p> */}
+            
+            { user && 
+                <p>user: {user.userName}</p>
+            } { !user && 
+                <p>user: </p>
+            }
+
+            {/* <div>
+            <label className={styles.switch}>
+            <input
+              type="checkbox"
+              checked={twoFactorAuth}
+              onChange={handle2FAToggle}
+            />
+            <span className={styles.slider}></span>
+            </label>
+            <span>{twoFactorAuth ? '2FA有効' : '2FA無効'}</span>
+            </div> */}
+
+        <div>
+            <label className={styles.switch}>
+            <input
+              type="checkbox"
+              checked={twoFactorAuth}
+              onChange={enableTwoFactorAuth}
+            />
+            <span className={styles.slider}></span>
+            </label>
+            <span>{twoFactorAuth ? '2FA有効' : '2FA無効'}</span>
+        </div>
+
+
+      <Modal show={showModal} onClose={() => {
+        setShowModal(false)
+        setTwoFactorAuth(false)
+
+        // 無効リクエストを送る
+       }}>
+        {/* 2FAフォームコンポーネント */}
+        <form onSubmit={handleSubmit2Fa}>
+
+        {qrCodeUrl && <img src={qrCodeUrl} alt="QR Code" />}
+          <input
+            type="text"
+            value={code}
+            onChange={(e) => setCode(e.target.value)}
+            placeholder="6桁のコード"
+            maxLength="6"
+          />
+          <button type="submit">確認</button>
+        </form>
+      </Modal>
+
+        </div>
+        </>
+    );
+}

@@ -38,6 +38,7 @@
     "dotenv": "^16.3.1",
     "joi": "^17.11.0",
     "nestjs-seeder": "^0.3.2",
+    "next-auth": "^4.24.5",
     "passport": "^0.7.0",
     "passport-42": "^1.2.6",
     "passport-jwt": "^4.0.1",
