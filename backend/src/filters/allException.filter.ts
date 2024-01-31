@@ -6,7 +6,7 @@ import {
   HttpStatus,
 } from '@nestjs/common';
 import { HttpAdapterHost } from '@nestjs/core';
-import { CustomLogger } from 'src/logger/customLogger.service';
+import { CustomLogger } from '../logger/customLogger.service';
 
 /**
  * カスタム例外フィルター

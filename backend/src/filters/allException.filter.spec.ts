@@ -11,6 +11,7 @@ describe('AllExceptionFilter', () => {
     // httpAdapterHostをモック化
     const mockHttpAdapter = {
       getRequestUrl: jest.fn().mockReturnValue('mock-url'),
+      getRequestMethod: jest.fn().mockReturnValue('GET'),
       reply: jest.fn(),
     } as unknown as AbstractHttpAdapter;
     mockHttpAdapterHost = { httpAdapter: mockHttpAdapter } as HttpAdapterHost;

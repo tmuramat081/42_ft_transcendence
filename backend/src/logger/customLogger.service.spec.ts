@@ -3,11 +3,18 @@ import { CustomLogger } from './customLogger.service';
 
 describe('CustomLoggerService', () => {
   let customLogger: CustomLogger;
-  let loggerSpy: jest.SpyInstance;
+  let logSpy: jest.SpyInstance;
+  let errorSpy: jest.SpyInstance;
+  let warnSpy: jest.SpyInstance;
+  let debugSpy: jest.SpyInstance;
 
   beforeEach(() => {
     customLogger = new CustomLogger();
-    loggerSpy = jest.spyOn(Logger.prototype, 'log');
+    logSpy = jest.spyOn(Logger.prototype, 'log').mockImplementation(() => {});
+    errorSpy = jest.spyOn(Logger.prototype, 'error').mockImplementation(() => {});
+    warnSpy = jest.spyOn(Logger.prototype, 'warn').mockImplementation(() => {});
+    debugSpy = jest.spyOn(Logger.prototype, 'debug').mockImplementation(() => {});
+
   });
 
   afterEach(() => {
@@ -16,22 +23,22 @@ describe('CustomLoggerService', () => {
 
   it('should log messages', () => {
     customLogger.log('Test message');
-    expect(loggerSpy).toHaveBeenCalledWith(expect.stringContaining('Test message'));
+    expect(logSpy).toHaveBeenCalledWith(expect.stringContaining('Test message'));
   });
 
   it('should log errors', () => {
     const testError = new Error('Test error');
     customLogger.error(testError);
-    expect(loggerSpy).toHaveBeenCalledWith(expect.stringContaining('Test error'));
+    expect(errorSpy).toHaveBeenCalledWith(expect.stringContaining('Test error'));
   });
 
   it('should log warnings', () => {
     customLogger.warn('Test warning');
-    expect(loggerSpy).toHaveBeenCalledWith(expect.stringContaining('Test warning'));
+    expect(warnSpy).toHaveBeenCalledWith(expect.stringContaining('Test warning'));
   });
 
   it('should log debug messages', () => {
     customLogger.debug('Test debug');
-    expect(loggerSpy).toHaveBeenCalledWith(expect.stringContaining('Test debug'));
+    expect(debugSpy).toHaveBeenCalledWith(expect.stringContaining('Test debug'));
   });
 });
