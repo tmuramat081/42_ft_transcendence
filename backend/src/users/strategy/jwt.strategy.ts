@@ -21,26 +21,36 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
       // cookieからJWTを取得
       jwtFromRequest: ExtractJwt.fromExtractors([
         async (request: Request) => {
-            const jwtService: JwtService = new JwtService({ secret: process.env.NEXTAUTH_SECRET });
-            //const accessToken = request?.cookies['jwt']
-            const accessToken = request?.cookies['next-auth.session-token']
+            const accessToken = request?.cookies['jwt']
+            console.log("accessToken: ", accessToken)
+            return accessToken
 
-            const secret = process.env.NEXTAUTH_SECRET
-            const token = accessToken
+            // const jwtService: JwtService = new JwtService({ secret: process.env.NEXTAUTH_SECRET });
 
-            const decoded = await decode({ token, secret })
+            // const accessToken = request?.cookies['next-auth.session-token']
 
-            console.log("decoded: ", decoded)
+            // const secret = process.env.NEXTAUTH_SECRET
+            // const token = accessToken
 
-            //console.log(decoded.name)
+            // const decoded = await decode({ token, secret })
 
-            const t = jwtService.sign(decoded)
-            console.log("t: ", t)
+            // console.log("decoded: ", decoded)
 
-            const {name, email, image} = decoded
-            console.log("name: ", name)
-            //return accessToken
-            return t
+            // //console.log(decoded.name)
+
+            // const payload = {
+            //   userId: 0,
+            //   userName: decoded.name,
+            //   email: decoded.email,
+            //   twoFactorAuth: decoded.twoFactorAuth,
+            // }
+
+            // const t = await jwtService.sign(payload)
+            // console.log("t: ", t)
+
+            // const {name, email, image} = decoded
+            // console.log("name: ", name)
+            // return t
         },
       ]),
 
@@ -49,14 +59,14 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
       // 有効期限の検証を行う
       ignoreExpiration: false,
       // JWTの署名に使う秘密鍵
-      //secretOrKey: 'secretKey123',
-      secretOrKey: process.env.NEXTAUTH_SECRET,
+      secretOrKey: 'secretKey123',
+      //secretOrKey: process.env.NEXTAUTH_SECRET,
     });
   }
 
   // 認証処理
   // validateはPassportStrategyに定義されているメソッド
-  async validate(payload: any): Promise<User> {
+  async validate(payload: JwtPayload): Promise<User> {
     // // ペイロードからユーザーIDとユーザー名を取得 自動で検証される
     // const { userName } = payload;
 
@@ -79,12 +89,13 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
 
     console.log("payload: ", payload)
 
-    const {name, email, image} = payload;
+    //const {name, email, image} = payload;
+    const {userName} = payload;
 
     console.log("payload: ", payload)
 
     // ユーザーの検索
-    const user = await this.userRepository.findOneByName( name );
+    const user = await this.userRepository.findOneByName( userName );
 
     //console.log("user: ", user)
 

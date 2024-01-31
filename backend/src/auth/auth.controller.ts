@@ -140,6 +140,16 @@ export class AuthController {
         }
         const user = await this.authService.signIn(userData);
         console.log("user: ", user)
+
+        const userName = user.userName
+        const userId = user.userId
+        const email = user.email
+
+        const payload: JwtPayload = { userId: userId, userName: userName, email: email, twoFactorAuth: false };
+		//console.log(payload)
+		const accessToken: string = await this.jwtService.sign(payload)
+        console.log("accessToken: " + accessToken);
+		res.cookie('jwt', accessToken, { httpOnly: true })
         return JSON.stringify({"user": user});
     }
 

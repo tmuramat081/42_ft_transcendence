@@ -218,6 +218,8 @@ export const options: NextAuthOptions = {
                 // if (user) {
                 //     token.user = user;
                 // }
+
+
             return token;
         },
         // jwtにuser情報を追加

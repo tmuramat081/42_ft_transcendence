@@ -29,6 +29,29 @@ export const LoginButton = () => {
         } else {
           // 通常のエラーハンドリング
 
+          // setcookie
+            await fetch(`http://localhost:3001/users/set-jwt`, {
+                method: 'GET',
+                credentials: 'include',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+            }).then((res) => {
+                if (res.ok) {
+                    return res.json()
+                }
+                return null
+            }).then((data) => {
+                console.log(data)
+                // if (data.user) {
+                //     return data.user
+                // }
+                // return null
+            }).catch((error) => {
+                console.log(error)
+                return null
+            });
+
           // リダイレクトなど？
           //router.push('/');
         }

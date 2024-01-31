@@ -103,6 +103,13 @@ export class UsersService {
         //return user
     }
 
+    async generateJwtToken(user: User) : Promise<string>{
+        console.log(user)
+        const payload: JwtPayload = { userId: user.userId, userName: user.userName, email: user.email, twoFactorAuth: false };
+        const accessToken: string = this.jwtService.sign(payload);
+        return accessToken
+    }
+
     async updateUser(userName: string, updateUser: UpdateUserDto): Promise<string> {
         const user = await this.userRepository.findOne({ where : { userName: userName }});
         if (!user) {
@@ -195,6 +202,10 @@ export class UsersService {
 
     async findOne(id: number): Promise<User | undefined> {
         return await this.userRepository.findOne(id);
+    }
+
+    async findOneByName(userName: string): Promise<User | undefined> {
+        return await this.userRepository.findOne({ where: { userName: userName } });
     }
 
     async validateUser42(userData: UserDto42): Promise<User> {

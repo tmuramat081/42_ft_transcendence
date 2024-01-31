@@ -1,6 +1,6 @@
 import { Controller, Get, Post, Put, Body, Req, Res, Param, InternalServerErrorException, ForbiddenException, UnauthorizedException } from '@nestjs/common';
 import { UsersService } from './users.service';
-import { SignUpUserDto, SignInUserDto, UpdateUserDto } from './dto/user.dto';
+import { SignUpUserDto, SignInUserDto, UpdateUserDto, setCookieUserDto } from './dto/user.dto';
 import { User } from './entities/user.entity';
 import { Response, Request } from 'express';
 import * as bcrypt from 'bcrypt'
@@ -11,6 +11,8 @@ import { AuthGuard } from '@nestjs/passport';
 //Excludeを使うと、指定したプロパティを除外した型を作成できる
 import { classToPlain } from "class-transformer";
 //import { jwt_decode } from 'jwt-decode';
+import { decode } from "next-auth/jwt"
+
 
 /*
 分離のポイント
@@ -195,6 +197,40 @@ export class UsersController {
         const { password, ...user } = req.user;
         //const user: User = req.user;
         return JSON.stringify({"user": user});
+    }
+
+    @Get("/set-jwt")
+    async setCookie(@Body () userData: setCookieUserDto, @Req() req, @Res({ passthrough: true }) res: Response) {
+
+        console.log("setCookie")
+        // console.log(req)
+
+        const sessionToken = req?.cookies['next-auth.session-token']
+
+        console.log(sessionToken)
+
+        const secret = process.env.NEXTAUTH_SECRET
+        const token = sessionToken
+
+        const decoded = await decode({ token, secret })
+
+        console.log("decoded: ", decoded)
+
+        const {name} = decoded;
+        //console.log("name: ", userData.userName)
+
+        //const user = await this.usersService.findOneByName(userData.userName);
+
+        const user = await this.usersService.findOneByName(name);
+
+        //console.log(decoded.name)
+
+        const accessToken = await this.usersService.generateJwtToken(user);
+
+        console.log("token: ", accessToken)
+        res.cookie('jwt', accessToken, { httpOnly: true })
+
+        return JSON.stringify({"accessToken": accessToken});
     }
 
     @UseGuards(JwtAuthGuard)

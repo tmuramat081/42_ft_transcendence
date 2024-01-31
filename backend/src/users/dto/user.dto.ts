@@ -101,3 +101,9 @@ export class UpdateUserDto {
 //     userDto.userName = userName;
 //     return userDto;
 // }
+
+export class setCookieUserDto {
+    // @IsNotEmpty()
+    // @IsString()
+    userName: string;
+}
