@@ -12,6 +12,8 @@ import { useAuth } from '@/providers/useAuth';
 
 import { usePublicRoute } from '@/hooks/usePublicRoute';
 
+import { getCurrentUser, signin } from '../../hooks/auth/useAuth';
+
 
 // SSRならできる。useEffectは使えなくなる
 //import { cookies } from 'next/headers'
@@ -37,53 +39,61 @@ export default function Form() {
     const [token, setToken] = useState('');
     const router = useRouter();
 
+    const { loading, user } = getCurrentUser();
+
     //const {signin} = useLoginUser();
-    const {signin, loginUser, getCurrentUser, loading} = useAuth();
+    //const {signin, loginUser, getCurrentUser, loading} = useAuth();
 
     console.log("signin")
+
+    useEffect(() => {
+        if (user) {
+            router.push('/');
+        }
+    }, [user, loading])
 
     // const isEmpty = (obj) => {
     //     return Object.keys(obj).length === 0;
     // }
 
-    useEffect(() => {
-        //if (token == '' || token === undefined) return;
-        getCurrentUser();
-    }, []);
+    // useEffect(() => {
+    //     //if (token == '' || token === undefined) return;
+    //     getCurrentUser();
+    // }, []);
 
-    useEffect(() => {
-        //if (loading) return;
-        //if (token == '' || token === undefined) return;
-        //console.log('user: ', user);
+    // useEffect(() => {
+    //     //if (loading) return;
+    //     //if (token == '' || token === undefined) return;
+    //     //console.log('user: ', user);
 
-        console.log("リダイレクト判定")
-        console.log("user: ", loginUser)
-        console.log("token: ", token)
-        // console.log(user === null)
-        // console.log((token !== '' && token !== undefined))
-        console.log(loginUser !== null || (token !== '' && token !== undefined))
-        if (loginUser !== null || (token !== '' && token !== undefined)) {
-            console.log("リダイレクト判定2")
-            if (token != '' && token !== undefined && loginUser) {
-                // console.log('user: ', user);
-                // console.log('token: ', token);
-                const decode = jwtDecode(token);
-                // console.log('decode: ', decode['twoFactorAuth']);
-                // console.log(user.twoFactorAuth)
-                // console.log("if: ", decode['twoFactorAuth'] === false && user.twoFactorAuth === true)
-                if (decode['twoFactorAuth'] === false && loginUser.twoFactorAuth === true) {
-                    router.push('/users/2fa')
-                    return
-                }
-            }
+    //     console.log("リダイレクト判定")
+    //     console.log("user: ", loginUser)
+    //     console.log("token: ", token)
+    //     // console.log(user === null)
+    //     // console.log((token !== '' && token !== undefined))
+    //     console.log(loginUser !== null || (token !== '' && token !== undefined))
+    //     if (loginUser !== null || (token !== '' && token !== undefined)) {
+    //         console.log("リダイレクト判定2")
+    //         if (token != '' && token !== undefined && loginUser) {
+    //             // console.log('user: ', user);
+    //             // console.log('token: ', token);
+    //             const decode = jwtDecode(token);
+    //             // console.log('decode: ', decode['twoFactorAuth']);
+    //             // console.log(user.twoFactorAuth)
+    //             // console.log("if: ", decode['twoFactorAuth'] === false && user.twoFactorAuth === true)
+    //             if (decode['twoFactorAuth'] === false && loginUser.twoFactorAuth === true) {
+    //                 router.push('/users/2fa')
+    //                 return
+    //             }
+    //         }
 
-            // ここはprivateRouteでやればいいかも
-            // if (loginUser !== null) {
-            //     console.log("リダイレクト判定3")
-            //     router.push('/');
-            // }
-        }
-    }, [loginUser, token])
+    //         // ここはprivateRouteでやればいいかも
+    //         // if (loginUser !== null) {
+    //         //     console.log("リダイレクト判定3")
+    //         //     router.push('/');
+    //         // }
+    //     }
+    // }, [loginUser, token])
 
     //微妙な実装
     //usePublicRoute();
@@ -153,7 +163,7 @@ export default function Form() {
 
     // 読み込み中はローディングを表示
     // 一瞬見れる問題を解決
-    if (loading || loginUser) {
+    if (loading || user) {
         return <p>loading...</p>
     }
     
