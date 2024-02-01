@@ -15,65 +15,67 @@ export const LoginButton = () => {
         e.preventDefault();
         // userが帰ってくる？
         const result = await signIn('credentials', {
-          redirect: false,
+          //redirect: false,
           username,
           password,
+          callbackUrl: 'http://localhost:3000/auth_redirect',
         });
 
         // sessionが設定される
         console.log("result: ", result)
 
     
-        if (result.status === 200 && result.error === '2FA Code is required') {
-          setShowTwoFactorModal(true);
-        } else {
-          // 通常のエラーハンドリング
+        // if (result.status === 200 && result.error === '2FA Code is required') {
+        //   setShowTwoFactorModal(true);
+        // } else {
+        //   // 通常のエラーハンドリング
 
-          // setcookie
-            await fetch(`http://localhost:3001/users/set-jwt`, {
-                method: 'GET',
-                credentials: 'include',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-            }).then((res) => {
-                if (res.ok) {
-                    return res.json()
-                }
-                return null
-            }).then((data) => {
-                console.log(data)
-                // if (data.user) {
-                //     return data.user
-                // }
-                // return null
-            }).catch((error) => {
-                console.log(error)
-                return null
-            });
+        //   // setcookie
+        //     await fetch(`http://localhost:3001/users/set-jwt`, {
+        //         method: 'GET',
+        //         credentials: 'include',
+        //         headers: {
+        //             'Content-Type': 'application/json',
+        //         },
+        //     }).then((res) => {
+        //         if (res.ok) {
+        //             return res.json()
+        //         }
+        //         return null
+        //     }).then((data) => {
+        //         console.log(data)
+        //         // if (data.user) {
+        //         //     return data.user
+        //         // }
+        //         // return null
+        //     }).catch((error) => {
+        //         console.log(error)
+        //         return null
+        //     });
 
-          // リダイレクトなど？
-          //router.push('/');
-        }
+        //   // リダイレクトなど？
+        //   //router.push('/');
+        // }
       };
     
-      const handleTwoFactorSubmit = async (e) => {
-        e.preventDefault();
-        const result = await signIn('credentials', {
-          redirect: false,
-          username,
-          password,
-          twoFactorCode,
-        });
+    //   const handleTwoFactorSubmit = async (e) => {
+    //     e.preventDefault();
+    //     const result = await signIn('credentials', {
+    //       //redirect: false,
+    //       callbackUrl: 'http://localhost:3000/',
+    //       username,
+    //       password,
+    //       twoFactorCode,
+    //     });
 
-        console.log("result: ", result)
+    //     console.log("result: ", result)
     
-        // 2FA認証結果に基づく処理
+    //     // 2FA認証結果に基づく処理
 
-        if (result.status === 200) {
-          // リダイレクトなど
-        }
-      };
+    //     if (result.status === 200) {
+    //       // リダイレクトなど
+    //     }
+    //   };
     return (
         <>
         {/* <div className="flex flex-col items-center justify-center mt-10">
@@ -143,7 +145,7 @@ export const LoginButton42 = () => {
                 <div className="text-2xl font-bold">Login</div>
             </div>
             <div className="flex flex-row items-center justify-center">
-                <button className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded" onClick={() => signIn("42-school")}>
+                <button className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded" onClick={() => signIn("42-school", {callbackUrl: "http://localhost:3000/auth_redirect"})}>
                     Sign In
                 </button>
             </div>

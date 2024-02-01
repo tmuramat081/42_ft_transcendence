@@ -15,6 +15,8 @@ export default  function Profile() {
 
   console.log("session: ", session)
 
+  // sessionがあれば、userを取得
+
   const [userName, setUserName] = useState(session?.user?.name || '');
   const [email, setEmail] = useState(session?.user?.email || '');
   const [password, setPassword] = useState('');
@@ -99,8 +101,8 @@ const handleSubmit = (e) => {
     //.then((res) => res.json())
     .then((data) => {
         console.log('Success:', data.accessToken);
-        setToken(data.accessToken);
-        getCurrentUser();
+        //setToken(data.accessToken);
+        //getCurrentUser();
     })
     .catch((error) => {
         console.error('Error:', error);
@@ -144,6 +146,7 @@ const handleSubmit2Fa = (e) => {
       })
       .then((data) => {
           console.log('Success:', data.accessToken);
+          user.twoFactorAuth = true
           setShowModal(false)
       })
       .catch((error) => {
@@ -164,6 +167,8 @@ const enableTwoFactorAuth = (e) => {
       // const response = await fetch('http://localhost:3001/auth/2fa/generate');
       // const data = await response.json();
       // setQrCodeUrl(data.qrCode);
+
+      console.log("enableTwoFactorAuth")
 
       fetch('http://localhost:3001/auth/2fa/generate', {
           method: 'GET',

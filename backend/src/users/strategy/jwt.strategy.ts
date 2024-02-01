@@ -20,7 +20,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     super({
       // cookieからJWTを取得
       jwtFromRequest: ExtractJwt.fromExtractors([
-        async (request: Request) => {
+        (request: Request) => {
             const accessToken = request?.cookies['jwt']
             console.log("accessToken: ", accessToken)
             return accessToken
@@ -59,8 +59,8 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
       // 有効期限の検証を行う
       ignoreExpiration: false,
       // JWTの署名に使う秘密鍵
-      secretOrKey: 'secretKey123',
-      //secretOrKey: process.env.NEXTAUTH_SECRET,
+      //secretOrKey: 'secretKey123',
+      secretOrKey: process.env.NEXTAUTH_SECRET,
     });
   }
 

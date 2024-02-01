@@ -49,54 +49,6 @@ export const options: NextAuthOptions = {
                     console.log(error)
                     return null
                 });
-
-                // twoFactorAuthがtrueの場合は2段階認証
-                // フォームに入力された2faコードを使って、apiにアクセス
-                // verify2fa
-                if (user && user.twoFactorAuth) {
-                    // １回目はfaコードがないので、エラーを返し、再送させる
-                    if (!credentials.twoFactorCode) {
-                        return new Error('2FA Code is required');
-                    }
-
-                    if (!user.twoFactorAuthSecret) {
-                        return new Error('2FA Secret is required');
-                    }
-
-                    const verified = await fetch('http://backend:3000/auth/verify2fa', {
-                        method: 'POST',
-                        credentials: 'include',
-                        headers: {
-                            'Content-Type': 'application/json',
-                        },
-                        body: JSON.stringify({ twoFactorCode: credentials.twoFactorCode }),
-                    }).then((res) => {
-                        console.log(res)
-
-                        if (res.ok) {
-                            return res.json()
-                        }
-                        return null
-                    }
-                    ).then((data) => {
-                        console.log(data)
-                        if (data.verified) {
-                            return data.verified
-                        }
-                        return null
-                    }
-                    ).catch((error) => {
-                        console.log(error)
-                        return null
-                    }
-                    );
-
-                    console.log("in authorize2", verified)
-                    if (!verified) {
-                        return new Error('2FA Code is invalid');
-                    }
-                }
-
                 
                 // ここ変更
                 //const user = {"username": credentials.username, "password": credentials.password}
@@ -109,8 +61,14 @@ export const options: NextAuthOptions = {
     ],
     callbacks: {
         // signin時の処理
+        // カスタム認証の場合はここで処理　特殊な処理が必要な場合はここで
         signIn: async (user, account, profile) => {
             console.log("in signIn", {user, account, profile})
+
+            // if (user == Error('2FA Code is required')) {
+            //     false
+            // }
+
             return true
         },
         // 認証成功時の処理
@@ -123,47 +81,44 @@ export const options: NextAuthOptions = {
             if (account?.provider === '42-school') {
                 console.log("in 42")
 
-                console.log(profile.email, profile.login, profile.image.link)
+                //console.log(profile.email, profile.login, profile.image.link)
 
-                //
-                //const salt = await bcrypt.genSalt();
-                const user2 = await fetch(`http://backend:3000/auth/signin42`, {
-                    method: 'POST',
-                    credentials: 'include',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({
-                        email: profile.email,
-                        //password: bcrypt.hash(profile.login, salt),
-                        password: "42OAUTH!" + profile.login,
-                        userName: profile.login,
-                        name42: profile.login,
-                        icon: profile.image.link,
-                    }),
-                }).then((res) => {
-                    if (res.ok) {
-                        return res.json()
-                    }
-                    return null
-                }).then((data) => {
-                    console.log(data)
-                    if (data.user) {
-                        return data.user
-                    }
-                    return null
-                }).catch((error) => {
-                    console.log(error)
-                    return null
-                });
+                // //
+                // //const salt = await bcrypt.genSalt();
+                // const user2 = await fetch(`http://backend:3000/auth/signin42`, {
+                //     method: 'POST',
+                //     credentials: 'include',
+                //     headers: {
+                //         'Content-Type': 'application/json',
+                //     },
+                //     body: JSON.stringify({
+                //         email: profile.email,
+                //         //password: bcrypt.hash(profile.login, salt),
+                //         password: "42OAUTH!" + profile.login,
+                //         userName: profile.login,
+                //         name42: profile.login,
+                //         icon: profile.image.link,
+                //     }),
+                // }).then((res) => {
+                //     if (res.ok) {
+                //         return res.json()
+                //     }
+                //     return null
+                // }).then((data) => {
+                //     console.log(data)
+                //     if (data.user) {
+                //         return data.user
+                //     }
+                //     return null
+                // }).catch((error) => {
+                //     console.log(error)
+                //     return null
+                // });
 
-                console.log("in jwt2", user2)
+                //console.log("in jwt2", user2)
 
                 // tokenにはname, email, imageが入るが、userNameのままだと変換されないので、nameに変更
-                token.name = user2.userName;
-                // 追加情報
-                token.twoFactorAuth = user2.twoFactorAuth;
-                token.twoFactorAuthNow = false;
+                //token.name = user2.userName;
 
                 //token.user = user2;
 
@@ -173,41 +128,40 @@ export const options: NextAuthOptions = {
                 token.accessToken = account.accessToken;
             // ログインの場合はuserが存在する
             } else if (user) {
-                console.log("???:", user)
+                // console.log("???:", user)
 
-                //
-                const user2 = await fetch(`http://backend:3000/auth/signin`, {
-                    method: 'POST',
-                    credentials: 'include',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({ userName: user.userName, password: user.password }),
-                }).then((res) => {
-                    if (res.ok) {
-                        return res.json()
-                    }
-                    return null
-                }).then((data) => {
-                    console.log(data)
-                    if (data.user) {
-                        return data.user
-                    }
-                    return null
-                }).catch((error) => {
-                    console.log(error)
-                    return null
-                });
+                // //
+                // const user2 = await fetch(`http://backend:3000/auth/signin`, {
+                //     method: 'POST',
+                //     credentials: 'include',
+                //     headers: {
+                //         'Content-Type': 'application/json',
+                //     },
+                //     body: JSON.stringify({ userName: user.userName, password: user.password }),
+                // }).then((res) => {
+                //     if (res.ok) {
+                //         return res.json()
+                //     }
+                //     return null
+                // }).then((data) => {
+                //     console.log(data)
+                //     if (data.user) {
+                //         return data.user
+                //     }
+                //     return null
+                // }).catch((error) => {
+                //     console.log(error)
+                //     return null
+                // });
 
-                console.log("in jwt2", user2)
+                // console.log("in jwt2", user2)
 
                 // tokenにはname, email, imageが入るが、userNameのままだと変換されないので、nameに変更
-                token.name = user2.userName;
-                token.email = user2.email;
-                token.image = user2.icon;
+                token.name = user.userName;
+                token.email = user.email;
+                token.image = user.icon;
                 // 追加情報
-                token.twoFactorAuth = user2.twoFactorAuth;
-                token.twoFactorAuthNow = false;
+
                 //token.user = user2;
             }
 
@@ -233,8 +187,8 @@ export const options: NextAuthOptions = {
                     ...session.user,
                     //user: token.user,
                     // 追加情報
-                    twoFactorAuth: token.twoFactorAuth,
-                    twoFactorAuthNow: token.twoFactorAuthNow,
+                    // twoFactorAuth: token.twoFactorAuth,
+                    // twoFactorAuthNow: token.twoFactorAuthNow,
                 },
                 // user2: {
                 //     ...token.user,
