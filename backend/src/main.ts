@@ -11,6 +11,6 @@ async function bootstrap() {
   // Helmet を使用（脆弱性対策）
   app.use(helmet());
 
-  await app.listen(3000);
+  await app.listen(process.env.PORT || 3000);
 }
 bootstrap();
