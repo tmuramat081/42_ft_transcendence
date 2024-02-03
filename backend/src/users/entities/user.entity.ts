@@ -1,3 +1,4 @@
+import { Match } from './../../games/entities/match.entity';
 
 /*
 Table user {
@@ -26,6 +27,8 @@ import { Factory } from "nestjs-seeder";
 // 出力フィールドを制御するために、class-transformerパッケージを使用する
 import { Exclude } from "class-transformer"; 
 import { MatchResult } from "src/games/entities/matchResult.entity";
+import { GameRoom } from 'src/games/entities/gameRoom.entity';
+import { GameEntry } from 'src/games/entities/gameEntry.entity';
 
 
 // entityはデータベースのテーブルを表す
@@ -92,9 +95,23 @@ export class User {
     @Exclude()
     twoFactorAuthSecret: string;
 
-    /**
-     * リレーション定義
-     */
+    /** リレーション定義 */
+    // ゲームルームテーブルと1対多の関係
+    @OneToMany(() => GameRoom, (gameRoom) => gameRoom.createdUser)
+    gameRooms: GameRoom[];
+
+    // ゲーム参加者テーブルと1対多の関係
+    @OneToMany(() => GameEntry, (gameEntry) => gameEntry.userId)
+    gameEntries: GameEntry[];
+
+    // 試合テーブルと1対多の関係
+    @OneToMany(() => Match, (match) => match.player1)
+    matchesAsPlayer1: Match[];
+    @OneToMany(() => Match, (match) => match.player2)
+    matchesAsPlayer2: Match[];
+    
+    // 試合結果テーブルと1対多の関係
     @OneToMany(() => MatchResult, (matchResult) => matchResult.userId)
-    MatchResult: MatchResult[];
+    matchResults: MatchResult[];
+
 }

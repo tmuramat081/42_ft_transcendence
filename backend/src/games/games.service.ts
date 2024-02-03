@@ -1,23 +1,12 @@
+import { GameRoomRepository } from './gameRoom.repository';
 
 export class GamesService {
-  constructor(private gameRepository: GameRepository) {}
+  constructor(private gameRoomRepository: GameRoomRepository) {}
 
   /**
-   * 試合結果 登録
+   * ゲームルーム取得
    */
-  async createMatchResult(game: Game): Promise<Game> {
-    
+  async findOneGameRoom(gameRoomId: number) {
+    return this.gameRoomRepository.findOneGameRoom(gameRoomId);
   }
-
-  /**
-   * 試合結果 詳細取得
-   */
-  async findOneMatchResult(gameId: number): Promise<Game> {
-
-  }
-
-  /**
-   * 試合結果 一覧取得
-   */
-  async listMatchResult
 }
