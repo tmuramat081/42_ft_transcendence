@@ -43,7 +43,6 @@ export class MatchResult {
     name: 'score',
     type: 'integer',
     unsigned: true,
-    length: 100,
     comment: 'スコア',
   })
   score?: number | null;
@@ -52,7 +51,6 @@ export class MatchResult {
   @Column({
     name: 'result',
     type: 'integer',
-    length: 20,
     nullable: true,
     comment: '結果',
   })

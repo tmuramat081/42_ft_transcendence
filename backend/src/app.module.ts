@@ -1,6 +1,4 @@
 import { Module } from '@nestjs/common';
-import { AppController } from './app.controller';
-import { AppService } from './app.service';
 //
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ConfigModule, ConfigService } from '@nestjs/config';
@@ -10,6 +8,7 @@ import * as Joi from 'joi';
 import { User } from './users/entities/user.entity';
 import { UsersModule } from './users/users.module';
 import { ChatModule } from './chat/chat.module';
+import { GameModule } from './games/games.module';
 
 // .envを読み込む
 dotenv.config();
@@ -39,14 +38,15 @@ dotenv.config();
         username: config.get<string>('POSTGRESS_USER'),
         password: config.get<string>('POSTGRESS_PASSWORD'),
         database: config.get<string>('POSTGRESS_DB'),
-        entities: [User],
+        entities: [`${__dirname}/**/*.entity{.ts,.js}`],
         synchronize: true,
       }),
     }),
     UsersModule,
     ChatModule,
+    GameModule,
   ],
-  controllers: [AppController],
-  providers: [AppService],
+  controllers: [],
+  providers: [],
 })
 export class AppModule {}

@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, InternalServerErrorException } from '@nestjs/common';
 import { GameRoom } from './entities/gameRoom.entity';
 import { DataSource, Repository } from 'typeorm';
 
@@ -15,7 +15,7 @@ export class GameRoomRepository extends Repository<GameRoom> {
         gameRoomId: gameRoomId,
       });
     } catch (error) {
-      throw new Error(`Error: ${error}`);
+      throw new InternalServerErrorException();
     }
   }
 }
