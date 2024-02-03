@@ -3,6 +3,7 @@ import {
   Column,
   CreateDateColumn,
   Entity,
+  JoinColumn,
   ManyToOne,
   PrimaryGeneratedColumn,
 } from 'typeorm';
@@ -66,11 +67,13 @@ export class MatchResult {
 
   /** リレーション定義 */
   // 試合テーブルと多対1の関係
-  @ManyToOne(() => MatchResult, (matchResult) => matchResult.matchResultId)
+  @ManyToOne(() => Match, (match) => match.matchResults)
+  @JoinColumn({ name: 'match_id' })
   match: Match;
 
   // ユーザーテーブルと多対1の関係
-  @ManyToOne(() => User, (user) => user.userId)
+  @ManyToOne(() => User, (user) => user.matchResults)
+  @JoinColumn({ name: 'user_id' })
   user: User;
 
   constructor(partial: Partial<MatchResult>) {

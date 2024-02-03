@@ -4,11 +4,13 @@ import {
   Entity,
   JoinColumn,
   ManyToOne,
+  OneToMany,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
 import { GameRoom } from './gameRoom.entity';
 import { User } from 'src/users/entities/user.entity';
+import { MatchResult } from './matchResult.entity';
 
 /** 試合テーブル */
 @Entity('match')
@@ -86,6 +88,10 @@ export class Match {
   updated_at?: Date;
 
   /** リレーション */
+  // 試合結果テーブルと1対多の関係
+  @OneToMany(() => MatchResult, (matchResult) => matchResult.match)
+  matchResults!: MatchResult[];
+
   // ゲームルームテーブルと多対1の関係
   @ManyToOne(() => GameRoom, (gameRoom) => gameRoom.matches)
   @JoinColumn({ name: 'game_room_id' })
