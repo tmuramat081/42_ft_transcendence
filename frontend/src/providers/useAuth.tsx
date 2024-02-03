@@ -153,53 +153,74 @@ export const LoginUserProvider = (props: {children: ReactNode}) => {
         console.log('送信されたデータ:', { userName, password });
     }
 
-    // user, loadingを更新する
+    // // user, loadingを更新する
+    // const getCurrentUser = async (): Promise<User | null>  => {
+    //     setLoading(true);
+    //     const user = await fetch('http://localhost:3001/users/me', {
+    //         method: 'GET',
+    //         credentials: 'include',
+    //         // headers: {
+    //         //     "Authorization": `Bearer ${token}`
+    //         // }
+    //     })
+    //     .then((res) => {
+    //         //console.log(res.data);
+    //         if (res.status === 200) {
+    //             return res.json();
+    //         }
+    //     })
+    //     .then((data) => {
+    //         console.log('Success:', data);
+    //         if (data !== undefined) {
+    //             setLoginUser(data.user);
+    //             setLoading(false);
+    //             return data.user;
+    //         } else { 
+    //             // if (failCallback !== undefined) {
+    //             //     failCallback();
+    //             // }
+    //             setLoading(false);
+    //             return null;
+    //         }
+    //         //router.push('/');
+    //         // if (user !== undefined) {
+    //         //     router.push('/');
+    //         // }
+    //     })
+    //     .catch((error) => {
+    //         console.error('Error:', error);
+    //         // if (failCallback !== undefined) {
+    //         //     failCallback();
+    //         // }
+    //         setLoading(false);
+    //         return null;
+    //         // redirect
+    //     });
+    //     setLoading(false);
+    //     return user;
+    // }
+    
     const getCurrentUser = async (): Promise<User | null>  => {
         setLoading(true);
-        const user = await fetch('http://localhost:3001/users/me', {
-            method: 'GET',
-            credentials: 'include',
-            // headers: {
-            //     "Authorization": `Bearer ${token}`
-            // }
-        })
-        .then((res) => {
-            //console.log(res.data);
-            if (res.status === 200) {
-                return res.json();
-            }
-        })
-        .then((data) => {
-            console.log('Success:', data);
-            if (data !== undefined) {
+        try {
+            const response = await fetch('http://localhost:3001/users/me', {
+                method: 'GET',
+                credentials: 'include',
+            });
+    
+            if (response.status === 200) {
+                const data = await response.json();
+                console.log('Success:', data);
                 setLoginUser(data.user);
-                setLoading(false);
                 return data.user;
-            } else { 
-                // if (failCallback !== undefined) {
-                //     failCallback();
-                // }
-                setLoading(false);
-                return null;
             }
-            //router.push('/');
-            // if (user !== undefined) {
-            //     router.push('/');
-            // }
-        })
-        .catch((error) => {
+        } catch (error) {
             console.error('Error:', error);
-            // if (failCallback !== undefined) {
-            //     failCallback();
-            // }
+        } finally {
             setLoading(false);
-            return null;
-            // redirect
-        });
-        setLoading(false);
-        return user;
+        }
+        return null;
     }
-
     const twoFactorAuth = async (code: string) => {
         await fetch('http://localhost:3001/auth/2fa/verify/' + code, {
             method: 'POST',

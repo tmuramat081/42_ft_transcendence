@@ -14,11 +14,11 @@ export default function Form() {
 
     const [userName, setUserName] = useState("");
     const [email, setEmail] = useState("");
-    const [password, setPassword] = useState('');
-    const [passwordConfirm, setPasswordConfirm] = useState('');
+    const [password, setPassword] = useState("");
+    const [passwordConfirm, setPasswordConfirm] = useState("");
     const [file, setFile] = useState(null);
     const [twoFactorAuth, setTwoFactorAuth] = useState(false);
-    const [user, setUser] = useState({});
+    //const [user, setUser] = useState({});
 
     const [token, setToken] = useState('');
 
@@ -27,6 +27,16 @@ export default function Form() {
 
 
     const router = useRouter();
+
+    // console.log(userName)
+    // console.log(email)
+    // console.log(password)
+    // console.log(passwordConfirm)
+    // console.log(file)
+    // console.log(twoFactorAuth)
+    // console.log(token)
+    // console.log(qrCodeUrl)
+    // console.log(code)
 
 
     // const getCurrentUser = () => {
@@ -71,9 +81,12 @@ export default function Form() {
     }, []);
 
     useEffect(() => {
-        setUserName(loginUser?.userName);
-        setEmail(loginUser?.email);
-        setTwoFactorAuth(loginUser?.twoFactorAuth);
+        if (loginUser) {
+            setUserName(loginUser.userName);
+            setEmail(loginUser.email);
+            setTwoFactorAuth(loginUser.twoFactorAuth);
+            //setUser(loginUser);
+        }
     }, [loginUser]);
 
 
@@ -319,13 +332,13 @@ export default function Form() {
             <button type="submit">送信</button>
             </form>
 
-            <p>AccessToken: {token}</p>
+            {/* <p>AccessToken: {token}</p> */}
             
-            { user && 
+            {/* { user && 
                 <p>user: {loginUser.userName}</p>
             } { !user && 
                 <p>user: </p>
-            }
+            } */}
 
             {/* <div>
             <label className={styles.switch}>
@@ -345,6 +358,7 @@ export default function Form() {
               type="checkbox"
               checked={twoFactorAuth}
               onChange={enableTwoFactorAuth}
+
             />
             <span className={styles.slider}></span>
             </label>
