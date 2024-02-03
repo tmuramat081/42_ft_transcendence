@@ -4,6 +4,8 @@ import { useEffect, useState } from 'react'
 import { usePathname, useRouter } from 'next/navigation';
 import { useAuth } from '@/providers/useAuth'
 
+//使っていない
+
 // ユーザーの認証状態をチェックし、認証されていなければリダイレクトするカスタムフック
 export const usePrivateRoute = () => {
     const router = useRouter();

@@ -3,6 +3,8 @@ import { useEffect } from 'react'
 import { usePathname, useRouter } from 'next/navigation'
 import { useAuth } from '@/providers/useAuth'
 
+//使っていない
+
 // ユーザーの認証状態をチェックし、認証されていなければリダイレクトするカスタムフック
 export const usePublicRoute = () => {
     const router = useRouter();
