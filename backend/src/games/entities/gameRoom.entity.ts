@@ -10,7 +10,8 @@ import {
 import { GameEntry } from './gameEntry.entity';
 import { Match } from './match.entity';
 import { User } from 'src/users/entities/user.entity';
-import { GAME_ROOM_STATUS } from '../game.contant';
+import { GAME_ROOM_STATUS } from '../game.constant';
+import { Valueof } from 'src/types/global';
 
 /**
  * ゲームルームテーブル
@@ -68,13 +69,13 @@ export class GameRoom {
 
   // 作成ユーザー
   @Column({
-    name: 'created_user',
+    name: 'created_by',
     type: 'integer',
     unsigned: true,
     nullable: false,
     comment: '作成者',
   })
-  readonly createdUser!: number;
+  readonly createdBy!: number;
 
   // 作成日時
   @CreateDateColumn({

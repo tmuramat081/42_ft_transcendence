@@ -97,7 +97,7 @@ export class User {
 
     /** リレーション定義 */
     // ゲームルームテーブルと1対多の関係
-    @OneToMany(() => GameRoom, (gameRoom) => gameRoom.createdUser)
+    @OneToMany(() => GameRoom, (gameRoom) => gameRoom.createdBy)
     gameRooms: GameRoom[];
 
     // ゲーム参加者テーブルと1対多の関係
