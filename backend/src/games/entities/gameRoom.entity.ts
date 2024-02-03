@@ -9,9 +9,9 @@ import {
 } from 'typeorm';
 import { GameEntry } from './gameEntry.entity';
 import { Match } from './match.entity';
-import { User } from 'src/users/entities/user.entity';
+import { User } from '../../users/entities/user.entity';
 import { GAME_ROOM_STATUS } from '../game.constant';
-import { Valueof } from 'src/types/global';
+import { Valueof } from '../../types/global';
 
 /**
  * ゲームルームテーブル

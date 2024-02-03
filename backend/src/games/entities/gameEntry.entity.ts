@@ -6,7 +6,7 @@ import {
   PrimaryGeneratedColumn,
 } from 'typeorm';
 import { GameRoom } from './gameRoom.entity';
-import { User } from 'src/users/entities/user.entity';
+import { User } from '../../users/entities/user.entity';
 
 /** ゲーム参加者テーブル */
 @Entity('game_entry')

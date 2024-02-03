@@ -40,6 +40,10 @@ export class GameRoomSeeder implements Seeder {
   }
 
   drop(): Promise<DeleteResult> {
+    // reset auto-increment
+    this.gameRoomRepository.query(
+      `SELECT SETVAL ('game_room_game_room_id_seq', 1, false)`,
+    );
     return this.gameRoomRepository.delete({});
   }
 }

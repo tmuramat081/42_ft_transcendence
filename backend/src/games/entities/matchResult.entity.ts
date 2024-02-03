@@ -1,4 +1,3 @@
-import { User } from 'src/users/entities/user.entity';
 import {
   Column,
   CreateDateColumn,
@@ -8,6 +7,7 @@ import {
   PrimaryGeneratedColumn,
 } from 'typeorm';
 import { Match } from './match.entity';
+import { User } from '../../users/entities/user.entity';
 
 // 試合結果テーブル
 @Entity('match_result')

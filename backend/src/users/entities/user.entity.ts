@@ -97,11 +97,11 @@ export class User {
 
     /** リレーション定義 */
     // ゲームルームテーブルと1対多の関係
-    @OneToMany(() => GameRoom, (gameRoom) => gameRoom.createdBy)
+    @OneToMany(() => GameRoom, (gameRoom) => gameRoom.user)
     gameRooms: GameRoom[];
 
     // ゲーム参加者テーブルと1対多の関係
-    @OneToMany(() => GameEntry, (gameEntry) => gameEntry.userId)
+    @OneToMany(() => GameEntry, (gameEntry) => gameEntry.user)
     gameEntries: GameEntry[];
 
     // 試合テーブルと1対多の関係
@@ -111,7 +111,7 @@ export class User {
     matchesAsPlayer2: Match[];
     
     // 試合結果テーブルと1対多の関係
-    @OneToMany(() => MatchResult, (matchResult) => matchResult.userId)
+    @OneToMany(() => MatchResult, (matchResult) => matchResult.user)
     matchResults: MatchResult[];
 
 }
