@@ -5,7 +5,7 @@ import axios from 'axios';
 
 import styles from  "./toggleSwitch.module.css"
 import Modal from './2fa/modal'; // Modalコンポーネントをインポート
-import { usePrivateRoute } from '@/hooks/usePrivateRouter';
+import { usePrivateRoute } from '@/hooks/routes/usePrivateRouter';
 import { useAuth } from '@/providers/useAuth';
 import { useRouter } from 'next/navigation';
 

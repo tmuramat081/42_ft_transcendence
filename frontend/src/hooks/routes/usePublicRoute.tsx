@@ -20,7 +20,7 @@ export const usePublicRoute = () => {
     //   console.log("public route: " , user)
 
       // 特定のページでのみ認証チェックを行う
-      const protectedRoutes = [
+      const publicRoutes = [
         '/auth/signin',
         '/auth/signin-oauth',
         '/auth/signup', 
@@ -29,7 +29,7 @@ export const usePublicRoute = () => {
 
       // ユーザー認証状態をチェックするロジック  
       //if (protectedRoutes.includes(pathname) && user != null) {
-      if (protectedRoutes.includes(pathname) && loginUser) {
+      if (publicRoutes.includes(pathname) && loginUser) {
         // ユーザーが認証されていなければ、/loginにリダイレクト
         //router.push('/');
         router.replace('/');

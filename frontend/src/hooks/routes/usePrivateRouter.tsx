@@ -25,7 +25,7 @@ export const usePrivateRoute = () => {
       // const user = getCurrentUser();
       // console.log("private route: " , user)
       // 特定のページでのみ認証チェックを行う
-      const protectedRoutes = [
+      const privateRoutes = [
         '/users/update', 
       ];
 
@@ -33,7 +33,7 @@ export const usePrivateRoute = () => {
       // ユーザー認証状態をチェックするロジック
   
       //if (protectedRoutes.includes(pathname) && user == null) {
-      if (protectedRoutes.includes(pathname) && !loginUser) {
+      if (privateRoutes.includes(pathname) && !loginUser) {
         // ユーザーが認証されていなければ、/loginにリダイレクト
         //router.push('/auth/signin');
         router.replace('/auth/signin');

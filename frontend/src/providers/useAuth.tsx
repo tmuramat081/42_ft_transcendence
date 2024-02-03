@@ -10,8 +10,8 @@ import React, {
 
 import {User} from "../types/user"
 
-import { usePrivateRoute } from '@/hooks/usePrivateRouter'
-import { usePublicRoute } from "@/hooks/usePublicRoute";
+import { usePrivateRoute } from '@/hooks/routes/usePrivateRouter'
+import { usePublicRoute } from "@/hooks/routes/usePublicRoute";
 
 import { useRouter } from 'next/navigation'
 
@@ -27,7 +27,6 @@ type LoginUserContextType = {
     signup: () => void;
     signin: (userName: string, password: string) => void;
     getCurrentUser: (() => Promise<User | null>);
-    twoFactorAuth: (code: string) => void;
 };
 
 const LoginUserContext = createContext<LoginUserContextType>({} as LoginUserContextType)
@@ -41,7 +40,7 @@ export const LoginUserProvider = (props: {children: ReactNode}) => {
     const [isLoggetIn, setIsLoggedIn] = useState<boolean>(false)
     const [loading, setLoading] = useState<boolean>(true)
 
-    // 一個ずつ実装していく
+    // 不要かも
     const signup = async (userName: string, email: string, password: string, passwordConfirm: string) => {
         const {router} = useRouter();
         await fetch('http://localhost:3001/users/signup', {
@@ -78,6 +77,7 @@ export const LoginUserProvider = (props: {children: ReactNode}) => {
         });
     }
 
+    // 不要かも
     // const signin = async (userName: string, password: string) => {
     //     await fetch('http://localhost:3001/users/signin', {
     //         method: 'POST',
@@ -113,6 +113,7 @@ export const LoginUserProvider = (props: {children: ReactNode}) => {
     //     console.log('送信されたデータ:', { userName, password });
     // }
 
+    // 不要かも
     const signin = async (userName: string, password: string) => {
         await fetch('http://localhost:3001/users/signin', {
             method: 'POST',
@@ -201,6 +202,8 @@ export const LoginUserProvider = (props: {children: ReactNode}) => {
     // }
     
     const getCurrentUser = async (): Promise<User | null>  => {
+        if (loginUser)
+            return loginUser;
         setLoading(true);
         try {
             const response = await fetch('http://localhost:3001/users/me', {
@@ -221,51 +224,6 @@ export const LoginUserProvider = (props: {children: ReactNode}) => {
         }
         return null;
     }
-    const twoFactorAuth = async (code: string) => {
-        await fetch('http://localhost:3001/auth/2fa/verify/' + code, {
-            method: 'POST',
-            credentials: 'include',
-            // headers: {
-            //     "Authorization": `Bearer ${token}`
-            // }
-            })
-            .then((res) => {
-                //console.log(res.data);
-                if (res.status === 200) {
-                    return res.json();
-                }
-            })
-            .then((data) => {
-                console.log('Success:', data.accessToken);
-                //setToken(data.accessToken);
-                //router.push('/');
-                getCurrentUser();
-
-            })
-            .catch((error) => {
-                console.error('Error:', error);
-
-                // redirect
-            });
-    }
-
-    const logout = () => {
-
-    }
-
-    const verify2FA = (code: string, callback: () => {}) => {
-
-    }
-
-    const enable2FA = (code: string, callback: () => {}) => {
-    }
-
-    const disable2FA = (code: string, callback: () => {}) => {
-
-    }
-
-    // usePrivateRoute();
-    // usePublicRoute();
 
     return (
         <LoginUserContext.Provider value={{ 
@@ -277,7 +235,6 @@ export const LoginUserProvider = (props: {children: ReactNode}) => {
             signup,
             signin,
             getCurrentUser,
-            twoFactorAuth
         }}>
             {children}
         </LoginUserContext.Provider>

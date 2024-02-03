@@ -10,7 +10,7 @@ import { useRouter } from 'next/navigation'
 import { jwtDecode } from "jwt-decode";
 import { useAuth } from '@/providers/useAuth';
 
-import { usePublicRoute } from '@/hooks/usePublicRoute';
+import { usePublicRoute } from '@/hooks/routes/usePublicRoute';
 import Modal from '../../components/users/2fa/modal'; // Modalコンポーネントをインポート
 
 
@@ -302,7 +302,7 @@ export default function Form() {
 
     // 読み込み中はローディングを表示
     // 一瞬見れる問題を解決
-    if (loading || loginUser) {
+    if (loading || !loginUser) {
         return <p>loading...</p>
     }
 

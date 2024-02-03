@@ -1,0 +1,44 @@
+// import { NextRequest, NextResponse } from 'next/server'
+// import { useAuth } from './providers/useAuth';
+// import { useEffect } from 'react';
+// import { publicRoutes, protectedRoutes } from './routes';
+
+// export function middleware(request: NextRequest) {
+//   const { getCurrentUser } = useAuth();
+//   // if (request.nextUrl.pathname === '/about') {
+//   //   return NextResponse.redirect(new URL('/redirected', request.url))
+//   // }
+//   // if (request.nextUrl.pathname === '/another') {
+//   //   return NextResponse.rewrite(new URL('/rewrite', request.url))
+//   // }
+
+//   const user = getCurrentUser();
+
+//   if (publicRoutes.includes(request.nextUrl.pathname) && user !== null) {
+//     // ユーザーが認証されていなければ、/loginにリダイレクト
+//     //router.push('/');
+//     return NextResponse.redirect(new URL('/', request.url))
+//   }
+
+//   if (protectedRoutes.includes(request.nextUrl.pathname) && user === null) {
+//     // ユーザーが認証されていなければ、/loginにリダイレクト
+//     return NextResponse.redirect(new URL('/auth/signin', request.url))
+//   }
+
+
+//   console.log('middleware')
+//   return NextResponse.next()  
+// }
+
+
+// /*
+// 総合すると、この正規表現は以下のルールに従ってURLパスをマッチングします：
+
+// 拡張子を持つファイル名や、_nextを含むパスを除外します。
+// ルートパス（/）にマッチします。
+// /apiや/trpcで始まるパスにマッチし、それに続く任意のパスもマッチします。
+// */
+// export const config = {
+//   matcher: ["/((?!.+\\.[\\w]+$|_next).*)", "/", "/(api|trpc)(.*)"],
+//   //matcher: ["*"]
+// };

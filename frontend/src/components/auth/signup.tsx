@@ -5,7 +5,7 @@ import axios from 'axios';
 // import Router from 'next/router'
 import { useRouter } from 'next/navigation'
 import { useAuth } from '@/providers/useAuth';
-import { usePublicRoute } from '@/hooks/usePublicRoute';
+import { usePublicRoute } from '@/hooks/routes/usePublicRoute';
 
 
 export default function Form() {
@@ -98,7 +98,7 @@ export default function Form() {
         setPasswordConfirm('');
     };
 
-    if (loading || loginUser) {
+    if (loading || !loginUser) {
         return <p>loading...</p>
     }
     
