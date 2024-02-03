@@ -10,8 +10,10 @@ import { useAuth } from '@/providers/useAuth';
 import { useRouter } from 'next/navigation';
 
 export default function Form() {
-    const [userName, setUserName] = useState('');
-    const [email, setEmail] = useState('');
+    const {loginUser, getCurrentUser, loading} = useAuth();
+
+    const [userName, setUserName] = useState("");
+    const [email, setEmail] = useState("");
     const [password, setPassword] = useState('');
     const [passwordConfirm, setPasswordConfirm] = useState('');
     const [file, setFile] = useState(null);
@@ -23,7 +25,6 @@ export default function Form() {
     const [qrCodeUrl, setQrCodeUrl] = useState('');
     const [code, setCode] = useState('');
 
-    const {loginUser, getCurrentUser, loading} = useAuth();
 
     const router = useRouter();
 
@@ -65,8 +66,16 @@ export default function Form() {
         //     router.push('/auth/signin')
         // }
         //getCurrentUser(callback);
+
         getCurrentUser();
     }, []);
+
+    useEffect(() => {
+        setUserName(loginUser?.userName);
+        setEmail(loginUser?.email);
+        setTwoFactorAuth(loginUser?.twoFactorAuth);
+    }, [loginUser]);
+
 
     //getCurrentUser();
 
@@ -162,10 +171,16 @@ export default function Form() {
         e.preventDefault();
         // ここに2FAコードを検証するロジックを追加
         console.log('Submitted 2FA code:', code);
+        console.log('loginUser: ', loginUser.userId);
   
-        fetch('http://localhost:3001/auth/2fa/verify/' + code, {
+        fetch("http://localhost:3001/auth/2fa/verify", {
           method: 'POST',
           credentials: 'include',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+
+          body: JSON.stringify({ userId: loginUser.userId, code: code }),
           // headers: {
           //     "Authorization": `Bearer ${token}`
           // }
@@ -307,7 +322,7 @@ export default function Form() {
             <p>AccessToken: {token}</p>
             
             { user && 
-                <p>user: {user.userName}</p>
+                <p>user: {loginUser.userName}</p>
             } { !user && 
                 <p>user: </p>
             }

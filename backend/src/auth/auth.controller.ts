@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Res, Req, Param,  UseGuards, UnauthorizedException } from '@nestjs/common';
+import { Controller, Get, Post, Res, Req, Body,  Param,  UseGuards, UnauthorizedException } from '@nestjs/common';
 import { Response, Request } from 'express'
 import { AuthService } from './auth.service';
 import { IntraAuthGuard } from './guards/42auth.guards';
@@ -6,6 +6,10 @@ import { HttpService } from '@nestjs/axios';
 import { JwtService } from '@nestjs/jwt';
 import { JwtPayload } from '../users/interfaces/jwt_payload';
 import { JwtAuthGuard } from '../users/guards/jwt-auth.guard';
+import { UserDto42 } from 'src/users/dto/user42.dto';
+import { Validate2FACodeDto } from './dto/2fa';
+//import { jwtDecode } from "jwt-decode";
+import { UsersService } from 'src/users/users.service';
 
 // mfnyu 15, 16
 
@@ -16,6 +20,7 @@ export class AuthController {
 		private httpService: HttpService,
 		private jwtService: JwtService,
         private authService: AuthService,
+        private usersService: UsersService,
 	) {}
 
 
@@ -32,15 +37,23 @@ export class AuthController {
         // userを受け取って、jwtを返す
         // strategyでuserを受け取る
 
+        // 1
+        // console.log(req.user)
+        // const userName = req.user['userName']
+		// const userId = req.user['userId']
+        // const email = req.user['email']
+		// const payload: JwtPayload = { userId: userId, userName: userName, email: email, twoFactorAuth: false };
+		// //console.log(payload)
+		// const accessToken: string = await this.jwtService.sign(payload)
+		// res.cookie('jwt', accessToken, { httpOnly: true })
+
+        // 2 
         console.log(req.user)
-        const userName = req.user['userName']
-		const userId = req.user['userId']
-        const email = req.user['email']
-		const payload: JwtPayload = { userId: userId, userName: userName, email: email, twoFactorAuth: false };
-		//console.log(payload)
-		const accessToken: string = await this.jwtService.sign(payload)
-		res.cookie('jwt', accessToken, { httpOnly: true })
-        res.redirect(process.env.FRONTEND_URL)
+        const jwtPayload = {userId: req.user.userId, userName: req.user.userName, email: req.user.email, icon: req.user.icon}
+
+        const accessToken: string = await this.jwtService.sign(jwtPayload)
+        res.cookie('login42', accessToken, { httpOnly: true })
+        res.redirect(process.env.FRONTEND_URL + "/auth/signin-oauth")
     }
 
     // passportを使わない場合
@@ -111,16 +124,74 @@ export class AuthController {
     //     return secret
     // }
 
+    @Get("/login42")
+    async login42(@Req() req, @Res({ passthrough: true }) res: Response) {
+        const accessToken = req?.cookies['login42']
+
+        // アクセストークンを解析
+        const payload = this.jwtService.decode(accessToken)
+
+        const userData: UserDto42 = {
+            email: payload.email,
+            password: payload.userName,
+            userName: payload.userName,
+            name42: payload.userName,
+            icon: payload.icon,
+        } 
+
+        // ユーザーを検証
+        const user = await this.authService.validateUser(userData)
+
+        if (!user) {
+            throw new UnauthorizedException("Invalid credentials")
+        }
+
+        // 2faの検証
+        if (user.twoFactorAuth) {
+            return {userId: user.userId, status: "2FA_REQUIRED"}
+        }
+
+        const payload2: JwtPayload = { userId: user.userId, userName: user.userName, email: user.email, twoFactorAuth: false };
+        const accessToken2: string = this.jwtService.sign(payload2);
+        res.cookie('jwt', accessToken2, { httpOnly: true })
+
+        // cookie削除
+        res.clearCookie('login42')
+
+        return {userId: undefined, status: "SUCCESS"}
+    } 
+
+    // idからuserを取得するようにする
     //@Param() code: string
-    @UseGuards(JwtAuthGuard)
-    @Post("/2fa/verify/:code")
-    async verify2fa(@Req() req, @Res({ passthrough: true }) res: Response) {
-        const user = req.user
-        const code = req.params.code
-        const verified = await this.authService.verify2fa(user, code)
+    //@UseGuards(JwtAuthGuard)
+    @Post("/2fa/verify")
+    async verify2fa(@Body() dto: Validate2FACodeDto, @Req() req, @Res({ passthrough: true }) res: Response) {
+        // const user = req.user
+        // const code = req.params.code
+        // const verified = await this.authService.verify2fa(user, code)
+        // if (!verified) {
+        //     throw new UnauthorizedException("Invalid code")
+        // }
+
+        // const payload: JwtPayload = { userId: user.userId, userName: user.userName, email: user.email, twoFactorAuth: true };
+        // const accessToken: string = this.jwtService.sign(payload);
+        // res.cookie('jwt', accessToken, { httpOnly: true })
+        // return JSON.stringify({"accessToken": accessToken});
+
+        console.log("verify")
+        console.log(dto)
+
+        const user = await this.usersService.findOne(dto.userId)
+
+        console.log(user)
+
+        // dtowを渡すように変更する？ userを渡すようにする？
+        const verified = await this.authService.verify2fa(dto.userId, dto.code)
         if (!verified) {
             throw new UnauthorizedException("Invalid code")
         }
+
+        console.log("verified")
 
         const payload: JwtPayload = { userId: user.userId, userName: user.userName, email: user.email, twoFactorAuth: true };
         const accessToken: string = this.jwtService.sign(payload);

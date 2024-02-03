@@ -33,7 +33,24 @@ export class UsersService {
 
     //asyncは非同期処理
     //awaitを使うと、その行の処理が終わるまで次の行には進まない
-    async signUp(userData: SignUpUserDto): Promise<string> {
+    // async signUp(userData: SignUpUserDto): Promise<string> {
+    //     var user: User = new User();
+    //     user.userName = userData.userName;
+    //     user.email = userData.email;
+    //     user.password = userData.password;
+
+    //     // ユーザーの作成
+    //     const resultUser: User = await this.userRepository.createUser(user);
+    //     //return resultUser;
+    //     //return await this.userRepository.createUser(user);
+
+    //     //JWTを返す？
+    //     const payload: JwtPayload = { userId: resultUser.userId, userName: resultUser.userName, email: resultUser.email, twoFactorAuth: false };
+    //     const accessToken: string = this.jwtService.sign(payload);
+    //     return accessToken
+    // }
+
+    async signUp(userData: SignUpUserDto): Promise<User> {
         var user: User = new User();
         user.userName = userData.userName;
         user.email = userData.email;
@@ -41,16 +58,95 @@ export class UsersService {
 
         // ユーザーの作成
         const resultUser: User = await this.userRepository.createUser(user);
-        //return resultUser;
+        return resultUser;
         //return await this.userRepository.createUser(user);
-
-        //JWTを返す？
-        const payload: JwtPayload = { userId: resultUser.userId, userName: resultUser.userName, email: resultUser.email, twoFactorAuth: false };
-        const accessToken: string = this.jwtService.sign(payload);
-        return accessToken
     }
 
-    async signIn(userData: SignInUserDto): Promise<string> {
+    // async signIn(userData: SignInUserDto): Promise<string> {
+    //     // ユーザーの検索
+    //     //const user: User = await this.userRepository.findOneByName(userData.userName);
+    //     const user: User = await this.userRepository.findOne({ where: { userName: userData.userName }});
+
+
+    //     // パスワードをハッシュ化
+    //     // これでは確認できない
+    //     // const salt = await bcrypt.genSalt();
+    //     // const hashedPassword = await bcrypt.hash(userData.password, salt);
+
+    //     // console.log("user.password: " + user.password)
+    //     // console.log("userData.password: " + hashedPassword)
+
+    //     // パスワードの検証
+    //     // bcrypt.compare(userData.password, user.password) は、true or false を返す　ハッシュ値を比較している
+    //     /*
+    //         bcrypt.compare(userData.password, user.password) というコードが true を返す理由は、bcrypt ライブラリの比較メカニズムの仕組みにあります。bcrypt は、生のパスワード（ハッシュされていないパスワード）と、そのパスワードから生成されたハッシュ値を比較するために設計されています。
+
+    //         ここでの動作は以下の通りです：
+
+    //         ハッシュ生成: ユーザーがアカウントを作成する際、生のパスワード（userData.password）は bcrypt によってハッシュ化され、このハッシュ値がデータベースに保存されます（この例では user.password として参照されます）。
+
+    //         パスワード検証: ユーザーがログインする際、入力された生のパスワード（userData.password）と、データベースに保存されたハッシュ値（user.password）が bcrypt.compare 関数に渡されます。
+
+    //         ハッシュの比較: bcrypt.compare 関数は、入力された生のパスワードを同じハッシュ化プロセスで処理します。その後、この新しいハッシュ値をデータベースに保存されたハッシュ値と比較します。
+
+    //         結果: もし入力されたパスワードが正しければ、同じハッシュ化プロセスによって同じハッシュ値が生成されるため、比較結果は true になります。パスワードが異なれば、異なるハッシュ値が生成され、結果は false になります。
+
+    //         この方法により、セキュリティを確保しつつ、ユーザーが正しいパスワードを入力したかどうかを確認できます。重要なのは、実際のパスワード自体がデータベースに保存されることはなく、そのハッシュ値のみが保存されることです。これにより、もしデータベースが何らかの方法で漏洩した場合でも、実際のパスワードは保護されます。
+    //     */
+    //     if (user && bcrypt.compare(userData.password, user.password)) {
+    //         // JWTを返す？ userを返すように変更
+    //         const payload: JwtPayload = { userId: user.userId, userName: user.userName, email: user.email, twoFactorAuth: false };
+    //         const accessToken: string = this.jwtService.sign(payload);
+    //         return accessToken
+    //     } else {
+    //         //console.log("error")
+    //         return null
+    //     }
+    // }
+
+    // async signIn(userData: SignInUserDto): Promise<string> {
+    //     // ユーザーの検索
+    //     //const user: User = await this.userRepository.findOneByName(userData.userName);
+    //     const user: User = await this.userRepository.findOne({ where: { userName: userData.userName }});
+
+
+    //     // パスワードをハッシュ化
+    //     // これでは確認できない
+    //     // const salt = await bcrypt.genSalt();
+    //     // const hashedPassword = await bcrypt.hash(userData.password, salt);
+
+    //     // console.log("user.password: " + user.password)
+    //     // console.log("userData.password: " + hashedPassword)
+
+    //     // パスワードの検証
+    //     // bcrypt.compare(userData.password, user.password) は、true or false を返す　ハッシュ値を比較している
+    //     /*
+    //         bcrypt.compare(userData.password, user.password) というコードが true を返す理由は、bcrypt ライブラリの比較メカニズムの仕組みにあります。bcrypt は、生のパスワード（ハッシュされていないパスワード）と、そのパスワードから生成されたハッシュ値を比較するために設計されています。
+
+    //         ここでの動作は以下の通りです：
+
+    //         ハッシュ生成: ユーザーがアカウントを作成する際、生のパスワード（userData.password）は bcrypt によってハッシュ化され、このハッシュ値がデータベースに保存されます（この例では user.password として参照されます）。
+
+    //         パスワード検証: ユーザーがログインする際、入力された生のパスワード（userData.password）と、データベースに保存されたハッシュ値（user.password）が bcrypt.compare 関数に渡されます。
+
+    //         ハッシュの比較: bcrypt.compare 関数は、入力された生のパスワードを同じハッシュ化プロセスで処理します。その後、この新しいハッシュ値をデータベースに保存されたハッシュ値と比較します。
+
+    //         結果: もし入力されたパスワードが正しければ、同じハッシュ化プロセスによって同じハッシュ値が生成されるため、比較結果は true になります。パスワードが異なれば、異なるハッシュ値が生成され、結果は false になります。
+
+    //         この方法により、セキュリティを確保しつつ、ユーザーが正しいパスワードを入力したかどうかを確認できます。重要なのは、実際のパスワード自体がデータベースに保存されることはなく、そのハッシュ値のみが保存されることです。これにより、もしデータベースが何らかの方法で漏洩した場合でも、実際のパスワードは保護されます。
+    //     */
+    //     if (user && bcrypt.compare(userData.password, user.password)) {
+    //         // JWTを返す？ userを返すように変更
+    //         const payload: JwtPayload = { userId: user.userId, userName: user.userName, email: user.email, twoFactorAuth: false };
+    //         const accessToken: string = this.jwtService.sign(payload);
+    //         return accessToken
+    //     } else {
+    //         //console.log("error")
+    //         return null
+    //     }
+    // }
+
+    async signIn(userData: SignInUserDto): Promise<User> {
         // ユーザーの検索
         //const user: User = await this.userRepository.findOneByName(userData.userName);
         const user: User = await this.userRepository.findOne({ where: { userName: userData.userName }});
@@ -83,13 +179,20 @@ export class UsersService {
         */
         if (user && bcrypt.compare(userData.password, user.password)) {
             // JWTを返す？ userを返すように変更
-            const payload: JwtPayload = { userId: user.userId, userName: user.userName, email: user.email, twoFactorAuth: false };
-            const accessToken: string = this.jwtService.sign(payload);
-            return accessToken
+            // const payload: JwtPayload = { userId: user.userId, userName: user.userName, email: user.email, twoFactorAuth: false };
+            // const accessToken: string = this.jwtService.sign(payload);
+            // return accessToken
+            return user
         } else {
             //console.log("error")
             return null
         }
+    }
+
+    async generateJwt(user: User): Promise<string> {
+        const payload: JwtPayload = { userId: user.userId, userName: user.userName, email: user.email, twoFactorAuth: false };
+        const accessToken: string = this.jwtService.sign(payload);
+        return accessToken
     }
 
     // Partial<User> は User の一部のプロパティを表す
@@ -144,9 +247,11 @@ export class UsersService {
             return null;
         }
         user.twoFactorAuth = twoFactorAuth;
-        if (twoFactorAuth) {
-            user.twoFactorAuthSecret = user.userName
-        }
+
+        // これはいらない
+        // if (twoFactorAuth) {
+        //     user.twoFactorAuthSecret = user.userName
+        // }
         const resultUser: User = await this.userRepository.saveUser(user);
 
         return resultUser
@@ -194,7 +299,7 @@ export class UsersService {
     }
 
     async findOne(id: number): Promise<User | undefined> {
-        return await this.userRepository.findOne(id);
+        return await this.userRepository.findOne({ where: { userId: id } });
     }
 
     async validateUser42(userData: UserDto42): Promise<User> {

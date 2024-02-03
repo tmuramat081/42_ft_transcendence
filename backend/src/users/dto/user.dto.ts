@@ -94,6 +94,15 @@ export class UpdateUserDto {
     twoFactorAuth: boolean;
 }
 
+export class ReturnUserDto {
+    userId: number;
+    email: string;
+    userName: string;
+    icon: string;
+    twoFactorAuth: boolean;
+    twoFactorAuthNow: boolean;
+}
+
 // export function toUserDto(user: User): UserDto {
 //     const { email, userName } = user;
 //     var userDto: UserDto = new UserDto();

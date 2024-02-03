@@ -22,10 +22,11 @@ export const usePublicRoute = () => {
       // 特定のページでのみ認証チェックを行う
       const protectedRoutes = [
         '/auth/signin',
+        '/auth/signin-oauth',
         '/auth/signup', 
         '/auth/2fa', 
       ];
-      
+
       // ユーザー認証状態をチェックするロジック  
       //if (protectedRoutes.includes(pathname) && user != null) {
       if (protectedRoutes.includes(pathname) && loginUser) {

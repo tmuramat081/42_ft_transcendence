@@ -13,6 +13,9 @@ import {User} from "../types/user"
 import { usePrivateRoute } from '@/hooks/usePrivateRouter'
 import { usePublicRoute } from "@/hooks/usePublicRoute";
 
+import { useRouter } from 'next/navigation'
+
+// API毎回呼び出すのは非効率なので、contextに保存しておく
 
 
 type LoginUserContextType = {
@@ -23,7 +26,7 @@ type LoginUserContextType = {
     loading: boolean;
     signup: () => void;
     signin: (userName: string, password: string) => void;
-    getCurrentUser: (() => void);
+    getCurrentUser: (() => Promise<User | null>);
     twoFactorAuth: (code: string) => void;
 };
 
@@ -32,12 +35,15 @@ const LoginUserContext = createContext<LoginUserContextType>({} as LoginUserCont
 export const LoginUserProvider = (props: {children: ReactNode}) => {
 
     const { children } = props
+    // 使わないかも
     const [loginUser, setLoginUser] = useState<User | null>(null)
+    // 使わないかも
     const [isLoggetIn, setIsLoggedIn] = useState<boolean>(false)
     const [loading, setLoading] = useState<boolean>(true)
 
     // 一個ずつ実装していく
     const signup = async (userName: string, email: string, password: string, passwordConfirm: string) => {
+        const {router} = useRouter();
         await fetch('http://localhost:3001/users/signup', {
             method: 'POST',
             credentials: 'include',
@@ -54,14 +60,58 @@ export const LoginUserProvider = (props: {children: ReactNode}) => {
         })
         //.then((res) => res.json())
         .then((data) => {
+            // userId, resultStatus, accessTokenを返すようにする
             console.log('Success:', data.accessToken);
             //setToken(data.accessToken);
+
+
+            // resultStatusがSUCCESSならユーザー情報を取得
+            //ユーザー情報を取得
             getCurrentUser();
+
+            // signinにリダイレクト
+            //router.push('/auth/signin');
+
         })
         .catch((error) => {
             console.error('Error:', error);
         });
     }
+
+    // const signin = async (userName: string, password: string) => {
+    //     await fetch('http://localhost:3001/users/signin', {
+    //         method: 'POST',
+    //         credentials: 'include',
+    //         headers: {
+    //             'Content-Type': 'application/json',
+    //         },
+    //         body: JSON.stringify({ userName, password }),
+    //     })
+    //     .then ((res) => {
+    //         // /console.log(res.json());
+    //         console.log(res.status);
+    //         if (res.status === 201) {
+    //             return res.json();
+    //         }
+    //     })
+    //     //.then((res) => res.json())
+    //     .then((data) => {
+    //         // userId, resultStatus, accessTokenを返すようにする
+    //         console.log('Success:', data.accessToken);
+    //         //setToken(data.accessToken);
+
+    //         // resultStatusがNEED2FAでuserIdがあれば2faページにリダイレクト
+
+
+    //         // resultStatusがSUCCESSならユーザー情報を取得
+    //         getCurrentUser();
+    //     })
+    //     .catch((error) => {
+    //         console.error('Error:', error);
+    //     });
+
+    //     console.log('送信されたデータ:', { userName, password });
+    // }
 
     const signin = async (userName: string, password: string) => {
         await fetch('http://localhost:3001/users/signin', {
@@ -81,8 +131,19 @@ export const LoginUserProvider = (props: {children: ReactNode}) => {
         })
         //.then((res) => res.json())
         .then((data) => {
-            console.log('Success:', data.accessToken);
+            // userId, resultStatus, accessTokenを返すようにする
+            console.log('Success:', data.userId, data.status)
             //setToken(data.accessToken);
+
+            // resultStatusがNEED2FAでuserIdがあれば2faページにリダイレクト
+            if (data.status === 'NEED2FA') {
+                //router.push('/auth/2fa');
+
+                // userIdをstateにセットするだけ？
+                return;
+            }
+            
+            // resultStatusがSUCCESSならユーザー情報を取得
             getCurrentUser();
         })
         .catch((error) => {
@@ -92,9 +153,10 @@ export const LoginUserProvider = (props: {children: ReactNode}) => {
         console.log('送信されたデータ:', { userName, password });
     }
 
-    const getCurrentUser = async () => {
+    // user, loadingを更新する
+    const getCurrentUser = async (): Promise<User | null>  => {
         setLoading(true);
-        await fetch('http://localhost:3001/users/me', {
+        const user = await fetch('http://localhost:3001/users/me', {
             method: 'GET',
             credentials: 'include',
             // headers: {
@@ -135,6 +197,7 @@ export const LoginUserProvider = (props: {children: ReactNode}) => {
             // redirect
         });
         setLoading(false);
+        return user;
     }
 
     const twoFactorAuth = async (code: string) => {

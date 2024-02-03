@@ -29,12 +29,38 @@ export class AuthService {
     //     return await this.usersService.updateUser(user.userName, );
     // }
 
-    async verify2fa(user: User, code: string): Promise<boolean> {
+    // async verify2fa(user: User, code: string): Promise<boolean> {
+    //     const verified = speakeasy.totp.verify({
+    //         secret: user.twoFactorAuthSecret,
+    //         encoding: 'base32',
+    //         token: code,
+    //     })
+
+    //     // first time
+    //     // update2fa
+    //     if (verified && !user.twoFactorAuth) {
+    //         user.twoFactorAuth = true
+    //         await this.usersService.updateUser2fa(user.userName, true);
+    //     }
+    //     return verified;
+    // }
+
+    async verify2fa(userId: number, code: string): Promise<boolean> {
+        const user = await this.usersService.findOne(userId);
+
+        if (!user) {
+            return (false)
+        }
+
+        console.log("user: ", user)
+
         const verified = speakeasy.totp.verify({
             secret: user.twoFactorAuthSecret,
             encoding: 'base32',
             token: code,
         })
+
+        console.log("verified: ", verified)
 
         // first time
         // update2fa
