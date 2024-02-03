@@ -4,7 +4,7 @@ import { Repository, Connection } from 'typeorm';
 import { User } from './entities/user.entity';
 import { UserRepository } from './users.repository';
 import { UserDto } from './dto/user.dto';
-import { JwtService } from '@nestjs/jwt'
+import { JwtService } from '@nestjs/jwt';
 import { JwtPayload } from './interfaces/jwt_payload';
 import * as bcrypt from 'bcrypt';
 
@@ -18,50 +18,56 @@ Service
 
 @Injectable()
 export class UsersService {
-    constructor(
-        // 依存性注入
-        //@InjectRepository(User)
-        //private userRepository: Repository<User>,
-        //private connection: Connection,
+  constructor(
+    // 依存性注入
+    //@InjectRepository(User)
+    //private userRepository: Repository<User>,
+    //private connection: Connection,
 
-        private userRepository: UserRepository,
-        private jwtService: JwtService,
-    ) {}
+    private userRepository: UserRepository,
+    private jwtService: JwtService,
+  ) {}
 
-    //asyncは非同期処理
-    //awaitを使うと、その行の処理が終わるまで次の行には進まない
-    async signUp(userData: UserDto): Promise<string> {
-        var user: User = new User();
-        user.userName = userData.userName;
-        user.email = userData.email;
-        user.password = userData.password;
+  //asyncは非同期処理
+  //awaitを使うと、その行の処理が終わるまで次の行には進まない
+  async signUp(userData: UserDto): Promise<string> {
+    const user: User = new User();
+    user.userName = userData.userName;
+    user.email = userData.email;
+    user.password = userData.password;
 
-        // ユーザーの作成
-        const resultUser: User = await this.userRepository.createUser(user);
-        //return resultUser;
-        //return await this.userRepository.createUser(user);
+    // ユーザーの作成
+    const resultUser: User = await this.userRepository.createUser(user);
+    //return resultUser;
+    //return await this.userRepository.createUser(user);
 
-        //JWTを返す？
-        const payload: JwtPayload = { userId: resultUser.userId, userName: resultUser.userName, email: resultUser.email };
-        const accessToken: string = this.jwtService.sign(payload);
-        return accessToken
-    }
+    //JWTを返す？
+    const payload: JwtPayload = {
+      userId: resultUser.userId,
+      userName: resultUser.userName,
+      email: resultUser.email,
+    };
+    const accessToken: string = this.jwtService.sign(payload);
+    return accessToken;
+  }
 
-    async signIn(userData: UserDto): Promise<string> {
-        // ユーザーの検索
-        const user: User = await this.userRepository.findOneByName(userData.userName);
+  async signIn(userData: UserDto): Promise<string> {
+    // ユーザーの検索
+    const user: User = await this.userRepository.findOneByName(
+      userData.userName,
+    );
 
-        // パスワードをハッシュ化
-        // これでは確認できない
-        // const salt = await bcrypt.genSalt();
-        // const hashedPassword = await bcrypt.hash(userData.password, salt);
+    // パスワードをハッシュ化
+    // これでは確認できない
+    // const salt = await bcrypt.genSalt();
+    // const hashedPassword = await bcrypt.hash(userData.password, salt);
 
-        // console.log("user.password: " + user.password)
-        // console.log("userData.password: " + hashedPassword)
+    // console.log("user.password: " + user.password)
+    // console.log("userData.password: " + hashedPassword)
 
-        // パスワードの検証
-        // bcrypt.compare(userData.password, user.password) は、true or false を返す　ハッシュ値を比較している
-        /*
+    // パスワードの検証
+    // bcrypt.compare(userData.password, user.password) は、true or false を返す　ハッシュ値を比較している
+    /*
             bcrypt.compare(userData.password, user.password) というコードが true を返す理由は、bcrypt ライブラリの比較メカニズムの仕組みにあります。bcrypt は、生のパスワード（ハッシュされていないパスワード）と、そのパスワードから生成されたハッシュ値を比較するために設計されています。
 
             ここでの動作は以下の通りです：
@@ -76,31 +82,37 @@ export class UsersService {
 
             この方法により、セキュリティを確保しつつ、ユーザーが正しいパスワードを入力したかどうかを確認できます。重要なのは、実際のパスワード自体がデータベースに保存されることはなく、そのハッシュ値のみが保存されることです。これにより、もしデータベースが何らかの方法で漏洩した場合でも、実際のパスワードは保護されます。
         */
-        if (user && bcrypt.compare(userData.password, user.password)) {
-            // JWTを返す？
-            const payload: JwtPayload = { userId: user.userId, userName: user.userName, email: user.email };
-            const accessToken: string = this.jwtService.sign(payload);
-            return accessToken
-        } else {
-            //console.log("error")
-            return null
-        }
+    if (user && bcrypt.compare(userData.password, user.password)) {
+      // JWTを返す？
+      const payload: JwtPayload = {
+        userId: user.userId,
+        userName: user.userName,
+        email: user.email,
+      };
+      const accessToken: string = this.jwtService.sign(payload);
+      return accessToken;
+    } else {
+      //console.log("error")
+      return null;
     }
+  }
 
-    // Partial<User> は User の一部のプロパティを表す
-    async currentUser(userData: UserDto): Promise<Partial<User>> {
-        // ユーザーの検索
-        const user: User = await this.userRepository.findOneByName(userData.userName);
-        const { password, ...result } = user;
-        return result
-        //return user
-    }
+  // Partial<User> は User の一部のプロパティを表す
+  async currentUser(userData: UserDto): Promise<Partial<User>> {
+    // ユーザーの検索
+    const user: User = await this.userRepository.findOneByName(
+      userData.userName,
+    );
+    const { password, ...result } = user;
+    return result;
+    //return user
+  }
 
-    async findAll(): Promise<User[]> {
-        return await this.userRepository.findAll();
-    }
+  async findAll(): Promise<User[]> {
+    return await this.userRepository.findAll();
+  }
 
-    async findOne(id: number): Promise<User | undefined> {
-        return await this.userRepository.findOne(id);
-    }
+  async findOne(id: number): Promise<User | undefined> {
+    return await this.userRepository.findOne(id);
+  }
 }

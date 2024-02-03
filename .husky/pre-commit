@@ -1,0 +1,5 @@
+#!/usr/bin/env sh
+. "$(dirname -- "$0")/_/husky.sh"
+
+# TODO: コミット時のテストを実行
+# sh pre-commit.sh
