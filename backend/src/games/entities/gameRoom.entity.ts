@@ -10,6 +10,7 @@ import {
 import { GameEntry } from './gameEntry.entity';
 import { Match } from './match.entity';
 import { User } from 'src/users/entities/user.entity';
+import { GAME_ROOM_STATUS } from '../game.contant';
 
 /**
  * ゲームルームテーブル
@@ -58,12 +59,12 @@ export class GameRoom {
   // ルーム状態
   @Column({
     name: 'room_status',
-    type: 'integer',
-    unsigned: true,
+    type: 'enum',
+    enum: GAME_ROOM_STATUS,
     nullable: false,
     comment: 'ルーム状態',
   })
-  roomStatus!: number;
+  roomStatus!: Valueof<typeof GAME_ROOM_STATUS>;
 
   // 作成ユーザー
   @Column({
