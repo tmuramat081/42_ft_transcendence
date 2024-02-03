@@ -31,7 +31,7 @@ export class UsersService {
   //asyncは非同期処理
   //awaitを使うと、その行の処理が終わるまで次の行には進まない
   async signUp(userData: UserDto): Promise<string> {
-    const user: User = new User();
+    const user: User = new User({});
     user.userName = userData.userName;
     user.email = userData.email;
     user.password = userData.password;

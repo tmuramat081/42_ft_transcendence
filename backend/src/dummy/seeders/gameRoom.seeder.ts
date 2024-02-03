@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Seeder } from 'nestjs-seeder';
-import { GameRoom } from '../..//games/entities/gameRoom.entity';
+import { GameRoom } from '../../games/entities/gameRoom.entity';
 import { GAME_ROOM_STATUS } from '../../games/game.constant';
 import { DeleteResult, Repository } from 'typeorm';
 

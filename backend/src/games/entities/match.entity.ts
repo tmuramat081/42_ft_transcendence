@@ -9,8 +9,8 @@ import {
   UpdateDateColumn,
 } from 'typeorm';
 import { GameRoom } from './gameRoom.entity';
-import { User } from 'src/users/entities/user.entity';
 import { MatchResult } from './matchResult.entity';
+import { User } from '../../users/entities/user.entity';
 
 /** 試合テーブル */
 @Entity('match')

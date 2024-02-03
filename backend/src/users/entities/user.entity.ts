@@ -21,15 +21,14 @@ import { IsAlphanumeric, IsEmail, IsNotEmpty, IsString, Length, Matches, MinLeng
 
 // 14 seeder
 // ダミーデータを作成するために、nest-seederパッケージを使用する
-import { Factory } from "nestjs-seeder";
+import { Factory } from 'nestjs-seeder';
 
 // 16
 // 出力フィールドを制御するために、class-transformerパッケージを使用する
-import { Exclude } from "class-transformer"; 
-import { MatchResult } from "src/games/entities/matchResult.entity";
-import { GameRoom } from 'src/games/entities/gameRoom.entity';
-import { GameEntry } from 'src/games/entities/gameEntry.entity';
-
+import { Exclude } from 'class-transformer'; 
+import { MatchResult } from '../../games/entities/matchResult.entity';
+import { GameRoom } from '../../games/entities/gameRoom.entity';
+import { GameEntry } from '../../games/entities/gameEntry.entity';
 
 // entityはデータベースのテーブルを表す
 // Uniqueはユニーク制約
@@ -98,20 +97,23 @@ export class User {
     /** リレーション定義 */
     // ゲームルームテーブルと1対多の関係
     @OneToMany(() => GameRoom, (gameRoom) => gameRoom.user)
-    gameRooms: GameRoom[];
+    gameRooms!: GameRoom[];
 
     // ゲーム参加者テーブルと1対多の関係
     @OneToMany(() => GameEntry, (gameEntry) => gameEntry.user)
-    gameEntries: GameEntry[];
+    gameEntries!: GameEntry[];
 
     // 試合テーブルと1対多の関係
     @OneToMany(() => Match, (match) => match.player1)
-    matchesAsPlayer1: Match[];
+    matchesAsPlayer1!: Match[];
     @OneToMany(() => Match, (match) => match.player2)
-    matchesAsPlayer2: Match[];
+    matchesAsPlayer2!: Match[];
     
     // 試合結果テーブルと1対多の関係
     @OneToMany(() => MatchResult, (matchResult) => matchResult.user)
-    matchResults: MatchResult[];
+    matchResults!: MatchResult[];
 
+    constructor(partial: Partial<User>) {
+      Object.assign(this, partial);
+    }
 }

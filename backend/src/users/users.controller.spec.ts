@@ -31,6 +31,11 @@ const mockUser1: User = {
   name42: "",
   twoFactorAuth: false,
   twoFactorAuthSecret: "",
+  gameRooms: [],
+  matchResults: [],
+  gameEntries: [],
+  matchesAsPlayer1: [],
+  matchesAsPlayer2: [],
 };
 
 // serviceをモックする
@@ -76,7 +81,7 @@ describe('UsersController', () => {
             username: config.get<string>('POSTGRESS_USER'),
             password: config.get<string>('POSTGRESS_PASSWORD'),
             database: config.get<string>('POSTGRESS_DB'),
-            entities: [User],
+            entities: [__dirname + '/../**/*.entity.{js,ts}'],
             synchronize: true,
           }),
         }),
