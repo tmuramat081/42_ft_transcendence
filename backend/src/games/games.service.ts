@@ -33,13 +33,11 @@ export class GamesService {
       whereInput,
       paginationInput,
     );
-    // ゲームルームの取得件数を取得
-    const totalCount = await this.gameRoomRepository.countGameRooms(whereInput);
     // ページネーション情報を作成
     const pagination: IPaginationEnvelope = {
       total: count,
       currentPage: requestDto['page-number'],
-      perPage: totalCount,
+      perPage: result.length,
     };
     // 取得結果を返却
     return { result, pagination };

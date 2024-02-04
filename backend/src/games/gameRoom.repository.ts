@@ -39,6 +39,7 @@ export class GameRoomRepository extends Repository<GameRoom> {
         where: whereCondition,
         take: paginationInput?.take,
         skip: paginationInput?.skip,
+        order: { createdAt: 'DESC', gameRoomId: 'ASC' },
       });
     } catch (error) {
       throw new InternalServerErrorException();

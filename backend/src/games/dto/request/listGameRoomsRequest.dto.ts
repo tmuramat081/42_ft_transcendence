@@ -10,6 +10,7 @@ import {
   Min,
   Max,
 } from 'class-validator';
+import { TransformToNumber } from '@/common/decorator/transformToNumber.decorator';
 
 export class ListGameRoomsRequestDto {
   @IsOptional()
@@ -27,11 +28,13 @@ export class ListGameRoomsRequestDto {
   @IsInt()
   @Min(1)
   @Max(100)
+  @TransformToNumber()
   readonly 'page-number'?: number = 1;
 
   @IsOptional()
   @IsInt()
   @Min(1)
   @Max(100)
+  @TransformToNumber()
   readonly 'take-count'?: number = 10;
 }
