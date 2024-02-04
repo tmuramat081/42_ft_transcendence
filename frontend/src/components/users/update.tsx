@@ -276,7 +276,7 @@ export default function Form() {
       }
     };
 
-    if (loading || !loginUser) {
+    if (loading && !loginUser) {
         return <p>loading...</p>
     }
     

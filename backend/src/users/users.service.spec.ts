@@ -155,9 +155,12 @@ describe('UsersService', () => {
       //expect(result).toEqual(expected);
 
       // JWT Tokenの検証
-      const verifyResult = jwtService.verify(result);
-      const payload: JwtPayload = { userId: verifyResult.userId, userName: verifyResult.userName, email: verifyResult.email };
-      expect(payload).toEqual({ userId: expected.userId, userName: expected.userName, email: expected.email });
+      // const verifyResult = jwtService.verify(result);
+      // const payload: JwtPayload = { userId: verifyResult.userId, userName: verifyResult.userName, email: verifyResult.email };
+      // expect(payload).toEqual({ userId: expected.userId, userName: expected.userName, email: expected.email });
+
+      expect(result).toEqual(expected);
+
     });
   });
 
@@ -179,9 +182,11 @@ describe('UsersService', () => {
       //expect(result).toEqual(expected);
 
       // JWT Tokenの検証
-      const verifyResult = jwtService.verify(result);
-      const payload: JwtPayload = { userId: verifyResult.userId, userName: verifyResult.userName, email: verifyResult.email };
-      expect(payload).toEqual({ userId: expected.userId, userName: expected.userName, email: expected.email });
+      // const verifyResult = jwtService.verify(result);
+      // const payload: JwtPayload = { userId: verifyResult.userId, userName: verifyResult.userName, email: verifyResult.email };
+      // expect(payload).toEqual({ userId: expected.userId, userName: expected.userName, email: expected.email });
+
+      expect(result).toEqual(expected);
     });
   });
 

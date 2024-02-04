@@ -16,6 +16,8 @@ import { User } from '../users/entities/user.entity';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import * as dotenv from 'dotenv'; 
 import * as Joi from 'joi';
+import { JwtService } from '@nestjs/jwt';
+
 
 
 dotenv.config();
@@ -69,7 +71,7 @@ describe('AuthController', () => {
         }),
       ],
       controllers: [AuthController],
-      providers: [AuthService, UsersService, IntraStrategy, IntraAuthGuard],
+      providers: [AuthService, UsersService, IntraStrategy, IntraAuthGuard, JwtService],
     }).compile();
 
     controller = module.get<AuthController>(AuthController);

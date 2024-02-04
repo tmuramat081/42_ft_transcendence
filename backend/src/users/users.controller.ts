@@ -105,6 +105,8 @@ export class UsersController {
             // saveは例外を投げる為、try-catchで囲む
             const user: User = await this.usersService.signUp(userData);
 
+            //console.log("user: ", user);
+
             const accessToken: string = await this.usersService.generateJwt(user);
             
             //cookieにアクセストークンを保存

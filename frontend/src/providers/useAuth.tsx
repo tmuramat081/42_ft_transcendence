@@ -38,6 +38,8 @@ export const LoginUserProvider = (props: {children: ReactNode}) => {
     const [loginUser, setLoginUser] = useState<User | null>(null)
     // 使わないかも
     const [isLoggetIn, setIsLoggedIn] = useState<boolean>(false)
+    // 読み込み状態
+    // 最初にアクセスした段階では読み込み中にする
     const [loading, setLoading] = useState<boolean>(true)
 
     // 不要かも
@@ -202,8 +204,8 @@ export const LoginUserProvider = (props: {children: ReactNode}) => {
     // }
     
     const getCurrentUser = async (): Promise<User | null>  => {
-        if (loginUser)
-            return loginUser;
+        // if (loginUser)
+        //     return loginUser;
         setLoading(true);
         try {
             const response = await fetch('http://localhost:3001/users/me', {

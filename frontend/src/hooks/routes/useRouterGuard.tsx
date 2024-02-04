@@ -22,10 +22,15 @@ export const useRouterGuard = () => {
 
   
     useEffect(() => {
+    //   if (!loginUser) {
+    //     getCurrentUser();
+    //   }
       //console.log("loading: ", loading)
       if (loading) return;
 
       console.log("useRouterGuard: ", loginUser)
+
+
 
       // ユーザー認証状態をチェックするロジック  
       //if (protectedRoutes.includes(pathname) && user != null) {

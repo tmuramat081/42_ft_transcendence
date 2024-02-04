@@ -9,7 +9,7 @@ import { JwtAuthGuard } from '../users/guards/jwt-auth.guard';
 import { UserDto42 } from 'src/users/dto/user42.dto';
 import { Validate2FACodeDto } from './dto/2fa';
 //import { jwtDecode } from "jwt-decode";
-import { UsersService } from 'src/users/users.service';
+import { UsersService } from '../users/users.service';
 
 // mfnyu 15, 16
 

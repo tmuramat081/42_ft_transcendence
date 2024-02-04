@@ -98,7 +98,7 @@ export default function Form() {
         setPasswordConfirm('');
     };
 
-    if (loading || !loginUser) {
+    if (loading && !loginUser) {
         return <p>loading...</p>
     }
     
@@ -140,13 +140,13 @@ export default function Form() {
     
             <button type="submit">送信</button>
 
-            <p>AccessToken: {token}</p>
+            {/* <p>AccessToken: {token}</p>
             
             { user && 
                 <p>user: {user.userName}</p>
             } { !user && 
                 <p>user: </p>
-            }
+            } */}
 
         </form>
 
