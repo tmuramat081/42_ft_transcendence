@@ -6,13 +6,14 @@ import { Match } from 'src/users/dto/match.decorator';
 import { MatchResult } from './entities/matchResult.entity';
 import { GamesController } from './games.controller';
 import { GamesService } from './games.service';
+import { GameRoomRepository } from './gameRoom.repository';
 
 @Module({
   imports: [
     TypeOrmModule.forFeature([GameRoom, GameEntry, Match, MatchResult]),
   ],
   controllers: [GamesController],
-  providers: [GamesService],
+  providers: [GamesService, GameRoomRepository],
   exports: [GamesService],
 })
 export class GameModule {}

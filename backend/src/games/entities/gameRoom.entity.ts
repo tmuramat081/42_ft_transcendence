@@ -11,7 +11,7 @@ import { GameEntry } from './gameEntry.entity';
 import { Match } from './match.entity';
 import { User } from '../../users/entities/user.entity';
 import { GAME_ROOM_STATUS } from '../game.constant';
-import { Valueof } from '../../types/global';
+import { Valueof } from '../../common/types/global';
 
 /**
  * ゲームルームテーブル
@@ -93,7 +93,7 @@ export class GameRoom {
     nullable: true,
     comment: '更新日時',
   })
-  updated_at?: Date | null = null;
+  updatedAt?: Date | null = null;
 
   /** リレーション */
   // ゲーム参加者テーブルと1対多の関係
