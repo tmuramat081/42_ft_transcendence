@@ -13,30 +13,24 @@ export class GameRoomSeeder implements Seeder {
   ) {}
 
   seed(): Promise<GameRoom[]> {
-    const gameRooms = this.gameRoomRepository.create([
-      {
-        roomName: 'ゲームルーム1',
-        note: 'テスト用ゲームルーム1',
+    const dummyData = [];
+    for (let i = 0; i < 10; i++) {
+      const status =
+        i % 3 === 0
+          ? GAME_ROOM_STATUS.WAITING
+          : i % 3 === 1
+            ? GAME_ROOM_STATUS.STARTED
+            : GAME_ROOM_STATUS.FINISHED;
+      const datum = this.gameRoomRepository.create({
+        roomName: `ゲームルーム${i + 1}`,
+        note: `テスト用ゲームルーム${i + 1}`,
         maxPlayers: 2,
-        roomStatus: GAME_ROOM_STATUS.WAITING,
+        roomStatus: status,
         createdBy: 1,
-      },
-      {
-        roomName: 'ゲームルーム2',
-        note: 'テスト用ゲームルーム2',
-        maxPlayers: 2,
-        roomStatus: GAME_ROOM_STATUS.STARTED,
-        createdBy: 1,
-      },
-      {
-        roomName: 'ゲームルーム3',
-        note: 'テスト用ゲームルーム3',
-        maxPlayers: 2,
-        roomStatus: GAME_ROOM_STATUS.FINISHED,
-        createdBy: 1,
-      },
-    ]);
-    return this.gameRoomRepository.save(gameRooms);
+      });
+      dummyData.push(datum);
+    }
+    return this.gameRoomRepository.save(dummyData);
   }
 
   drop(): Promise<DeleteResult> {

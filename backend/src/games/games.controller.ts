@@ -1,6 +1,6 @@
 import { Controller, Get, Query } from '@nestjs/common';
 import { GamesService } from './games.service';
-import { ListGameRoomsRequestDto } from './dto/request/listGameRoomRequest.dto';
+import { ListGameRoomsRequestDto } from './dto/request/listGameRoomsRequest.dto';
 import { ListGameRoomsResponseDto } from './dto/response/listGameRoomResponse.dto';
 
 // TODO: JWTガード追加
@@ -10,7 +10,7 @@ export class GamesController {
 
   // ゲームルーム一覧取得API
   @Get('')
-  async listGameRoom(
+  async listGameRooms(
     @Query() listGameRoomsRequestDto: ListGameRoomsRequestDto,
   ) {
     const { result, pagination } = await this.gamesService.listGameRooms(

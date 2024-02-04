@@ -1,5 +1,5 @@
 import { IPaginationEnvelope } from '@/common/interface/pagination';
-import { ListGameRoomsRequestDto } from './dto/request/listGameRoomRequest.dto';
+import { ListGameRoomsRequestDto } from './dto/request/listGameRoomsRequest.dto';
 import { GameRoom } from './entities/gameRoom.entity';
 import {
   FindGameRoomWhereInput,
