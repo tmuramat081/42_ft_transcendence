@@ -98,7 +98,7 @@ export default function Form() {
         setPasswordConfirm('');
     };
 
-    if (loading && !loginUser) {
+    if (loading || loginUser) {
         return <p>loading...</p>
     }
     
