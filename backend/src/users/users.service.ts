@@ -206,39 +206,75 @@ export class UsersService {
         //return user
     }
 
-    async updateUser(userName: string, updateUser: UpdateUserDto): Promise<string> {
-        const user = await this.userRepository.findOne({ where : { userName: userName }});
-        if (!user) {
-            // 例外を投げる
-            return null;
-        }
-        // user.userName ? updateUser.userName : user.userName;
-        // user.email ?  updateUser.email : user.email;
-        // user.password ? updateUser.password: user.password;
-        // user.twoFactorAuth ? updateUser.twoFactorAuth : user.twoFactorAuth;
+    // async updateUser(userName: string, updateUser: UpdateUserDto): Promise<string> {
+    //     const user = await this.userRepository.findOne({ where : { userName: userName }});
+    //     if (!user) {
+    //         // 例外を投げる
+    //         return null;
+    //     }
+    //     // user.userName ? updateUser.userName : user.userName;
+    //     // user.email ?  updateUser.email : user.email;
+    //     // user.password ? updateUser.password: user.password;
+    //     // user.twoFactorAuth ? updateUser.twoFactorAuth : user.twoFactorAuth;
 
-        user.userName = updateUser.userName ? updateUser.userName : user.userName;
-        user.email = updateUser.email ? updateUser.email : user.email;
-        user.password = updateUser.password ? updateUser.password : user.password;
-        //user.twoFactorAuth = updateUser.twoFactorAuth ? updateUser.twoFactorAuth : user.twoFactorAuth;
+    //     user.userName = updateUser.userName ? updateUser.userName : user.userName;
+    //     user.email = updateUser.email ? updateUser.email : user.email;
+    //     user.password = updateUser.password ? updateUser.password : user.password;
+    //     //user.twoFactorAuth = updateUser.twoFactorAuth ? updateUser.twoFactorAuth : user.twoFactorAuth;
 
-        console.log("updateUser1: ", updateUser)
-        console.log("updateUser2: ", user)
+    //     console.log("updateUser1: ", updateUser)
+    //     console.log("updateUser2: ", user)
 
-        // if (user.twoFactorAuth) {
-        //     user.twoFactorAuthSecret = user.userName
-        // }
+    //     // if (user.twoFactorAuth) {
+    //     //     user.twoFactorAuthSecret = user.userName
+    //     // }
 
-        // if (updateUser.icon) {
-        //     user.icon = updateUser.icon;
-        //     //画像を保存する
-        // }
-        const resultUser: User = await this.userRepository.saveUser(user);
+    //     // if (updateUser.icon) {
+    //     //     user.icon = updateUser.icon;
+    //     //     //画像を保存する
+    //     // }
+    //     const resultUser: User = await this.userRepository.saveUser(user);
 
-        const payload: JwtPayload = { userId: resultUser.userId, userName: resultUser.userName, email: resultUser.email, twoFactorAuth: true  };
-        const accessToken: string = this.jwtService.sign(payload);
-        return accessToken
-    }
+    //     const payload: JwtPayload = { userId: resultUser.userId, userName: resultUser.userName, email: resultUser.email, twoFactorAuth: true  };
+    //     const accessToken: string = this.jwtService.sign(payload);
+    //     return accessToken
+    // }
+
+    async updateUser(userName: string, updateUser: UpdateUserDto): Promise<User> {
+      const user = await this.userRepository.findOne({ where : { userName: userName }});
+      if (!user) {
+          // 例外を投げる
+          return null;
+      }
+      // user.userName ? updateUser.userName : user.userName;
+      // user.email ?  updateUser.email : user.email;
+      // user.password ? updateUser.password: user.password;
+      // user.twoFactorAuth ? updateUser.twoFactorAuth : user.twoFactorAuth;
+
+      user.userName = updateUser.userName ? updateUser.userName : user.userName;
+      user.email = updateUser.email ? updateUser.email : user.email;
+      user.password = updateUser.password ? updateUser.password : user.password;
+      //user.twoFactorAuth = updateUser.twoFactorAuth ? updateUser.twoFactorAuth : user.twoFactorAuth;
+
+      console.log("updateUser1: ", updateUser)
+      console.log("updateUser2: ", user)
+
+      // if (user.twoFactorAuth) {
+      //     user.twoFactorAuthSecret = user.userName
+      // }
+
+      // if (updateUser.icon) {
+      //     user.icon = updateUser.icon;
+      //     //画像を保存する
+      // }
+      const resultUser: User = await this.userRepository.saveUser(user);
+
+      // const payload: JwtPayload = { userId: resultUser.userId, userName: resultUser.userName, email: resultUser.email, twoFactorAuth: true  };
+      // const accessToken: string = this.jwtService.sign(payload);
+      // return accessToken
+
+      return resultUser;
+  }
 
     async updateUser2fa(userName: string, twoFactorAuth: boolean): Promise<User> {
         const user = await this.userRepository.findOne({ where : { userName: userName }});

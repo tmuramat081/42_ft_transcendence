@@ -95,15 +95,20 @@ export class UsersController {
             //return res.status(400).json({ message: 'Passwords do not match' });
         }
 
-        if (await bcrypt.compare(userData.password, userData.passwordConfirm) === false) {
-            throw new ForbiddenException("Passwords do not match");
-            //return res.status(400).json({ message: 'Passwords do not match' });
-        }
+        //console.log("userData: ", userData)
 
         // アクセストークンを作成
         try {
             // saveは例外を投げる為、try-catchで囲む
             const user: User = await this.usersService.signUp(userData);
+
+            // console.log("user: ", user);
+            // console.log("userData: ", userData);
+
+            if (await bcrypt.compare(userData.password, user.password) === false) {
+                throw new ForbiddenException("Passwords do not match");
+                //return res.status(400).json({ message: 'Passwords do not match' });
+            }
 
             //console.log("user: ", user);
 
@@ -271,19 +276,34 @@ export class UsersController {
             //return res.status(400).json({ message: 'Passwords do not match' });
         }
 
-        if (await bcrypt.compare(userData.password, userData.passwordConfirm) === false) {
+        // アクセストークンを更新
+        // idにした方がいい
+        // var accessToken: string = await this.usersService.updateUser(req.user.userName, userData);
+        // if (accessToken === null) {
+        //     //console.log("Invalid credentials");
+        //     throw new ForbiddenException("Invalid credentials");
+        //     //return res.status(400).json({ message: 'Invalid credentials' });
+        // }
+
+        const user: User = await this.usersService.updateUser(req.user.userId, userData);
+        if (user === null) {
+            throw new ForbiddenException("Invalid credentials");
+            //return res.status(400).json({ message: 'Invalid credentials' });
+        }
+
+        if (await bcrypt.compare(userData.password, user.password) === false) {
             throw new ForbiddenException("Passwords do not match");
             //return res.status(400).json({ message: 'Passwords do not match' });
         }
 
-        // アクセストークンを更新
-        // idにした方がいい
-        var accessToken: string = await this.usersService.updateUser(req.user.userName, userData);
+        const accessToken: string = await this.usersService.generateJwt(user);
+        
         if (accessToken === null) {
             //console.log("Invalid credentials");
             throw new ForbiddenException("Invalid credentials");
             //return res.status(400).json({ message: 'Invalid credentials' });
         }
+
         //cookieにアクセストークンを保存
         res.cookie('jwt', accessToken, { httpOnly: true })
 

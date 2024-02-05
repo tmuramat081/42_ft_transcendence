@@ -17,6 +17,7 @@ import * as dotenv from 'dotenv';
 import * as Joi from 'joi';
 import { Column, CreateDateColumn, DeleteDateColumn, Entity, OneToMany, PrimaryGeneratedColumn, Timestamp, Unique } from "typeorm";
 import { Response } from 'express';
+import * as bcrypt from 'bcrypt';
 
 
 dotenv.config();
@@ -119,6 +120,9 @@ describe('UsersController', () => {
         password: mockUser1.password,
         passwordConfirm: mockUser1.password,
       };
+
+      const salt = await bcrypt.genSalt();
+      result.password = await bcrypt.hash(result.password, salt);
 
 
       const mockResponse = {
