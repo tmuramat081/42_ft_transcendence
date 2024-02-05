@@ -7,6 +7,7 @@ import {
 } from '@nestjs/websockets';
 import { Logger } from '@nestjs/common';
 import { Server, Socket } from 'socket.io';
+import { ChatService } from './chat.service';
 
 interface User {
   ID: string;
@@ -23,6 +24,7 @@ interface ChatMessage {
 
 @WebSocketGateway({ cors: { origin: '*' } })
 export class ChatGateway {
+  constructor(private chatService: ChatService) {}
   @WebSocketServer()
   server: Server;
 
