@@ -1,10 +1,11 @@
 import { PassportStrategy } from '@nestjs/passport'
 import { Injectable } from '@nestjs/common'
-import { Strategy, Profile } from 'passport-42'
 import { AuthService } from '../auth.service'
 import { UserDto42 } from 'src/users/dto/user42.dto'
 import { User } from '../../users/entities/user.entity'
-
+import * as passport42 from 'passport-42';
+import { Profile } from 'passport'
+const { Strategy } = passport42;
 
 // 11スクラッチ 15  mfnyu
 // 両方バージョンで実装してみる
@@ -42,11 +43,11 @@ export class IntraStrategy extends PassportStrategy(Strategy, '42') {
         // }
 
         const user: UserDto42 = {
-            email: emails[0].value,
-            password: username,
-            userName: username,
-            name42: username,
-            icon: photos[0].value,
+            email: emails?.[0].value ?? '',
+            password: username ?? '',
+            userName: username ?? '',
+            name42: username ?? '',
+            icon: photos?.[0].value ?? '',
         }
 
         console.log("IntraStrategy validate")
