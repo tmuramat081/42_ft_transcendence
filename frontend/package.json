@@ -8,8 +8,7 @@
     "start": "next start -p 3000",
     "format": "prettier --write . src/",
     "lint": "eslint \"src/**/*.{ts,tsx}\" --fix",
-    "lint-staged": "lint-staged",
-    "prepare": "cd ../ && husky install"
+    "lint-staged": "lint-staged"
   },
   "dependencies": {
     "jwt-decode": "^4.0.0",
