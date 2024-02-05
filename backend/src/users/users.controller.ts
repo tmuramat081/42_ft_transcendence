@@ -105,10 +105,11 @@ export class UsersController {
             // console.log("user: ", user);
             // console.log("userData: ", userData);
 
-            if (await bcrypt.compare(userData.password, user.password) === false) {
-                throw new ForbiddenException("Passwords do not match");
-                //return res.status(400).json({ message: 'Passwords do not match' });
-            }
+            // signupの中でやっている
+            // if (await bcrypt.compare(userData.password, user.password) === false) {
+            //     throw new ForbiddenException("Passwords do not match");
+            //     //return res.status(400).json({ message: 'Passwords do not match' });
+            // }
 
             //console.log("user: ", user);
 

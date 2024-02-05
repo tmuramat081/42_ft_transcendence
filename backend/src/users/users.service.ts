@@ -58,8 +58,15 @@ export class UsersService {
 
         // ユーザーの作成
         const resultUser: User = await this.userRepository.createUser(user);
-        return resultUser;
-        //return await this.userRepository.createUser(user);
+
+        if (user && bcrypt.compare(userData.password, user.password)) {
+            //throw new ForbiddenException("Passwords do not match");
+            //return res.status(400).json({ message: 'Passwords do not match' });
+          return resultUser;
+        } else { 
+          return null;
+          //return await this.userRepository.createUser(user);
+        }
     }
 
     // async signIn(userData: SignInUserDto): Promise<string> {
