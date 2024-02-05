@@ -27,6 +27,12 @@ export class UserRepository {
         return await this.userRepository.save(user);
     }
 
+    // idからUserを取得して、Userを更新する
+    // 二つのUserを渡す方法もある
+    async saveUser(user: User): Promise<User> {
+        return await this.userRepository.save(user);
+    }
+
      // 他のカスタムメソッドをここに追加できます
     async findAll(): Promise<User[]> {
         // リポジトリパターンの方がいい？
@@ -35,13 +41,13 @@ export class UserRepository {
         return this.userRepository.find();
     }
 
-    async findOne(id: number): Promise<User | undefined> {
-        //return this.connection.getRepository(User).findOne({ where: { user_id: id } });
-        try {
-           return await this.userRepository.findOneOrFail({ where: { userId: id }}); 
-        } catch (error) {
-            console.log(error);
-        }
+    // async findOne(id: number): Promise<User | undefined> {
+    //     //return this.connection.getRepository(User).findOne({ where: { user_id: id } });
+    //     return this.userRepository.findOne({ where: { userId: id }});
+    // }
+
+    async findOne(params: any): Promise<User | undefined> {
+        return this.userRepository.findOne(params);
     }
 
     async findOneByName(name: string): Promise<User | undefined | null> {
@@ -80,4 +86,11 @@ export class UserRepository {
     // async remove(user: User): Promise<User> {
     //     return this.userRepository.remove(user);
     // }
+
+    async createUser42(user: User): Promise<User> {
+        const salt = await bycrypt.genSalt();
+        // パスワードのハッシュ化
+        user.password = await bycrypt.hash(user.password, salt);
+        return this.userRepository.save(user);
+    }
 }

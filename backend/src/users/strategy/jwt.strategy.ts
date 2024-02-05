@@ -17,15 +17,15 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     // 親クラスのコンストラクタに渡す 親クラス=PassportStrategy
     super({
       // cookieからJWTを取得
-    //   jwtFromRequest: ExtractJwt.fromExtractors([
-    //     (request: Request) => {
-    //         const accessToken = request?.cookies['jwt']
-    //         return accessToken
-    //     },
-    //   ]),
+      jwtFromRequest: ExtractJwt.fromExtractors([
+        (request: Request) => {
+            const accessToken = request?.cookies['jwt']
+            return accessToken
+        },
+      ]),
 
     //Authorization: Bearer <token> からJWTを取得
-      jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
+      //jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
       // 有効期限の検証を行う
       ignoreExpiration: false,
       // JWTの署名に使う秘密鍵
@@ -38,10 +38,18 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
   async validate(payload: JwtPayload): Promise<User> {
     // ペイロードからユーザーIDとユーザー名を取得 自動で検証される
     const { userName } = payload;
+
+    console.log("payload: ", payload)
+    console.log("userName: ", userName)
+
     // ユーザーの検索
     const user = await this.userRepository.findOneByName( userName );
 
+    //console.log("user: ", user)
+
     if (user) {
+      console.log("user: ", user)
+      console.log("userが見つかりました")
       return user;
     }
     // ユーザーが見つからない場合はエラー

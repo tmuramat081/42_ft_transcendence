@@ -1,7 +1,8 @@
 "use client";
 import styles from "./page.module.css";
 
-import Link from "next/link";
+import Link from 'next/link'
+
 /**
  * TOPページ
  * [TODO] 画面設計後に実装する
@@ -20,6 +21,21 @@ export default function Home() {
           {/* chatページを追加 */}
           <li>
             <Link href="./chat">チャット</Link>
+          </li>
+          <li>
+            <Link href="./auth/signup">
+              サインアップ
+            </Link>
+          </li>
+          <li>
+            <Link href="./auth/signin">
+              サインイン
+            </Link>
+          </li>
+          <li>
+            <Link href="./users/update">
+              ユーザー情報更新
+            </Link>
           </li>
         </ul>
       </main>

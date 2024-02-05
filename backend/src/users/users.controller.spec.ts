@@ -11,7 +11,7 @@ import { JwtAuthGuard } from './guards/jwt-auth.guard';
 import { JwtPayload } from './interfaces/jwt_payload';
 import { JwtService } from '@nestjs/jwt'
 import { User } from './entities/user.entity';
-import { UserDto } from './dto/user.dto';
+import { SignUpUserDto, SignInUserDto } from './dto/user.dto';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import * as dotenv from 'dotenv'; 
 import * as Joi from 'joi';
@@ -41,6 +41,7 @@ const mockUsersService = () => ({
   findOne: jest.fn(),
   findOneByName: jest.fn(),
   currentUser: jest.fn(),
+  generateJwt: jest.fn(),
 });
 
 dotenv.config();
@@ -108,14 +109,17 @@ describe('UsersController', () => {
 
   describe('signUp', () => {
     it('should return a jwt token', async () => {
-      const result = 'testToken';
+      const resultToken = 'testToken';
+      const result: User = mockUser1;
+
       const userDto = {
         userId: 1,
-        userName: 'testUser',
-        email: 'test@test.com',
-        password: 'testPassword',
-        passwordConfirm: 'testPassword',
+        userName: mockUser1.userName,
+        email: mockUser1.email,
+        password: mockUser1.password,
+        passwordConfirm: mockUser1.password,
       };
+
 
       const mockResponse = {
         status: jest.fn().mockReturnThis(),
@@ -126,6 +130,9 @@ describe('UsersController', () => {
       } as unknown as Response;
 
       jest.spyOn(service, 'signUp').mockImplementation(async () => result);
+      jest.spyOn(service, 'generateJwt').mockImplementation(async () => resultToken);
+
+      //console.log(await controller.SignUp(userDto, mockResponse));
 
       expect(await controller.SignUp(userDto, mockResponse)).toBe("{\"accessToken\":\"testToken\"}");
     }); 
@@ -133,7 +140,9 @@ describe('UsersController', () => {
 
   describe('signIn', () => {
     it('should return a jwt token', async () => {
-      const result = 'testToken';
+      const resultToken = 'testToken';
+      const result: User = mockUser1;
+
       const userDto = {
         userId: 1,
         userName: 'testUser',
@@ -151,8 +160,10 @@ describe('UsersController', () => {
       } as unknown as Response;
 
       jest.spyOn(service, 'signIn').mockImplementation(async () => result);
+      jest.spyOn(service, 'generateJwt').mockImplementation(async () => resultToken);
 
-      expect(await controller.SignIn(userDto, mockResponse)).toBe("{\"accessToken\":\"testToken\"}");
+
+      expect(await controller.SignIn(userDto, mockResponse)).toBe( "{\"status\":\"SUCCESS\"}");
     }); 
   }); 
 
@@ -172,11 +183,11 @@ describe('UsersController', () => {
         },
       };
 
-      const result = await controller.currentUser(mockRequest);
+      const result = await controller.CurrentUser(mockRequest);
       //const {password, ...expected2} = expected;
 
 
-      expect(result).toEqual("{\"user\":{\"userId\":1,\"userName\":\"test\",\"email\":\"test@test\",\"passwordConfirm\":\"test\"}}");
+      expect(result).toEqual("{\"user\":{\"userId\":1,\"userName\":\"test\",\"email\":\"test@test\",\"twoFactorAuthNow\":false}}");
     });
   });
 
