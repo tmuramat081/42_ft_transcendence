@@ -8,10 +8,10 @@ import {
   export class Validate2FACodeDto {
     @IsNumber()
     @IsNotEmpty()
-    userId: number;
+    userId!: number;
   
     @IsString()
     @IsNotEmpty()
     @IsNumberString()
-    code: string;
+    code!: string;
   }

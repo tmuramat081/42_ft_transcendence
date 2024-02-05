@@ -49,7 +49,7 @@ export class TwoFactorAuthStrategy extends PassportStrategy(Strategy, '2fa') {
     //console.log("user: ", user)
 
     // 2faが違う場合はエラー
-    if (user.twoFactorAuth && twoFactorAuth != user.twoFactorAuth) {
+    if (user?.twoFactorAuth && twoFactorAuth != user.twoFactorAuth) {
         console.log("twoFactorAuth: ", twoFactorAuth)
         console.log("twoFactorAuth: ", user.twoFactorAuth)
         throw new UnauthorizedException();

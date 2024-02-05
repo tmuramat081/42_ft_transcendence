@@ -1,3 +1,4 @@
+import { ErrorLog } from './../logger/dto/errorLog.dto';
 import { Controller, Get, Post, Put, Body, Req, Res, Param, InternalServerErrorException, ForbiddenException, UnauthorizedException } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { SignUpUserDto, SignInUserDto, UpdateUserDto, ReturnUserDto } from './dto/user.dto';
@@ -119,6 +120,7 @@ export class UsersController {
             //return accessToken;
             return JSON.stringify({"accessToken": accessToken});
         } catch (error) {
+            
             if (error.code === 'ER_DUP_ENTRY') {
                 throw new InternalServerErrorException('User already exists');
                 //return res.status(400).json({ message: 'User already exists' });
@@ -219,7 +221,7 @@ export class UsersController {
         // }
         
         // findは例外を投げない為、try-catchで囲まない
-        const user: User = await this.usersService.signIn(userData);
+        const user: User | null = await this.usersService.signIn(userData);
 
         // 2faの判定 signInをuserを返す様に修正する
         // accessTokenからtwoFactorAuthを取得する
@@ -229,11 +231,11 @@ export class UsersController {
 		// }
 
         // 2faの検証
-        if (user.twoFactorAuth) {
-            return JSON.stringify({"userId": user.userId, "status": "2FA_REQUIRED"});
+        if (user?.twoFactorAuth) {
+            return JSON.stringify({"userId": user?.userId ?? '', "status": "2FA_REQUIRED"});
         }
 
-        const accessToken: string = await this.usersService.generateJwt(user);
+        const accessToken: string = await this.usersService.generateJwt(user as User);
         
 
         if (accessToken === null) {
@@ -257,7 +259,7 @@ export class UsersController {
     //@UseGuards(AuthGuard('jwt'), JwtAuthGuard)
     @UseGuards(JwtAuthGuard)
     //@UseGuards(JwtAuthGuard, TwoFactorAuthGuard)
-    async UpdateUser(@Body () userData: UpdateUserDto, @Req() req,  @Res({ passthrough: true }) res: Response) {
+    async UpdateUser(@Body () userData: UpdateUserDto, @Req() req: Request & { user: User },  @Res({ passthrough: true }) res: Response) {
         console.log("userData: ", userData)
         // リクエストハンドリング
         if (!userData.userName || !userData.email) {
@@ -278,7 +280,7 @@ export class UsersController {
 
         // アクセストークンを更新
         // idにした方がいい
-        var accessToken: string = await this.usersService.updateUser(req.user.userName, userData);
+        var accessToken: string = await this.usersService.updateUser(req.user.userName, userData) as string;
         if (accessToken === null) {
             //console.log("Invalid credentials");
             throw new ForbiddenException("Invalid credentials");
@@ -302,7 +304,7 @@ export class UsersController {
     @UseGuards(JwtAuthGuard)
     //@UseGuards(JwtAuthGuard, TwoFactorAuthGuard)
     @Get('/me')
-    CurrentUser(@Req() req) : string {
+    CurrentUser(@Req() req: Request & { user: User}) : string {
         //throw new ForbiddenException("Invalid credentials");
         //const { password, ...user } = req.user;
         //const user: User = req.user;
@@ -330,8 +332,8 @@ export class UsersController {
     @UseGuards(JwtAuthGuard)
     //@UseGuards(JwtAuthGuard, TwoFactorAuthGuard)
     @Get('/:id')
-    FindOne(@Req() req) {
+    FindOne(@Req() req: Request) {
         // passwordを除外する
-        return classToPlain(this.usersService.findOne(req.params.id));
+        return classToPlain(this.usersService.findOne(Number(req.params.id)));
     }
 }

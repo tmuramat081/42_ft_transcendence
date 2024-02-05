@@ -8,7 +8,7 @@ export class UserDto42 {
 
     @IsNotEmpty()
     @IsEmail()
-    email: string;
+    email!: string;
 
     // ログイン時に42nameがある場合は、パスワードのログインは不可
     @IsNotEmpty()
@@ -21,23 +21,23 @@ export class UserDto42 {
     @Matches(/((?=.*\d)|(?=.*\W+))(?![.\n])(?=.*[A-Z])(?=.*[a-z]).*$/,
         { message: 'パスワードは大文字、小文字、数字、記号を含めてください' }
     )
-    password: string;
+    password!: string;
 
     @IsNotEmpty()
     @MinLength(4)
     @MaxLength(20)
     @IsAlphanumeric()
-    userName: string;
+    userName!: string;
 
     @IsNotEmpty()
     @MinLength(4)
     @MaxLength(20)
     @IsAlphanumeric()
-    name42: string;
+    name42!: string;
 
     @IsNotEmpty()
     @IsUrl()
-    icon: string;
+    icon!: string;
 
 }
 

@@ -146,10 +146,10 @@ export class UsersService {
     //     }
     // }
 
-    async signIn(userData: SignInUserDto): Promise<User> {
+    async signIn(userData: SignInUserDto): Promise<User | null> {
         // ユーザーの検索
         //const user: User = await this.userRepository.findOneByName(userData.userName);
-        const user: User = await this.userRepository.findOne({ where: { userName: userData.userName }});
+        const user: User = await this.userRepository.findOne({ where: { userName: userData.userName }}) as User;
 
 
         // パスワードをハッシュ化
@@ -177,7 +177,7 @@ export class UsersService {
 
             この方法により、セキュリティを確保しつつ、ユーザーが正しいパスワードを入力したかどうかを確認できます。重要なのは、実際のパスワード自体がデータベースに保存されることはなく、そのハッシュ値のみが保存されることです。これにより、もしデータベースが何らかの方法で漏洩した場合でも、実際のパスワードは保護されます。
         */
-        if (user && bcrypt.compare(userData.password, user.password)) {
+        if (user && await bcrypt.compare(userData.password, user.password)) {
             // JWTを返す？ userを返すように変更
             // const payload: JwtPayload = { userId: user.userId, userName: user.userName, email: user.email, twoFactorAuth: false };
             // const accessToken: string = this.jwtService.sign(payload);
@@ -199,14 +199,14 @@ export class UsersService {
     async currentUser(userData: SignUpUserDto): Promise<Partial<User>> {
         // ユーザーの検索
         //const user: User = await this.userRepository.findOneByName(userData.userName);
-        const user: User = await this.userRepository.findOne({ where: { userName: userData.userName }});
+        const user: User = await this.userRepository.findOne({ where: { userName: userData.userName }}) as User;
 
         const { password, ...result } = user;
         return result
         //return user
     }
 
-    async updateUser(userName: string, updateUser: UpdateUserDto): Promise<string> {
+    async updateUser(userName: string, updateUser: UpdateUserDto): Promise<string | null> {
         const user = await this.userRepository.findOne({ where : { userName: userName }});
         if (!user) {
             // 例外を投げる
@@ -240,7 +240,7 @@ export class UsersService {
         return accessToken
     }
 
-    async updateUser2fa(userName: string, twoFactorAuth: boolean): Promise<User> {
+    async updateUser2fa(userName: string, twoFactorAuth: boolean): Promise<User | null> {
         const user = await this.userRepository.findOne({ where : { userName: userName }});
         if (!user) {
             // 例外を投げる
@@ -261,7 +261,7 @@ export class UsersService {
         // return accessToken
     }
 
-    async updateUser2faSecret(userName: string, twoFactorAuthSecret: string): Promise<User> {
+    async updateUser2faSecret(userName: string, twoFactorAuthSecret: string): Promise<User | null> {
         const user = await this.userRepository.findOne({ where : { userName: userName }});
         if (!user) {
             // 例外を投げる
@@ -298,14 +298,14 @@ export class UsersService {
         return await this.userRepository.findAll();
     }
 
-    async findOne(id: number): Promise<User | undefined> {
+    async findOne(id: number): Promise<User | undefined | null> {
         return await this.userRepository.findOne({ where: { userId: id } });
     }
 
     async validateUser42(userData: UserDto42): Promise<User> {
         // ユーザーの検索
         const { name42 } = userData;
-        let user: User = await this.userRepository.findOne({ where: { name42: name42 } });
+        let user: User = await this.userRepository.findOne({ where: { name42: name42 } }) as User;
         
         // ユーザーが存在する場合
         if (user) {
@@ -315,7 +315,7 @@ export class UsersService {
         // ユーザーが存在しない場合
         let { userName } = userData
         // ユーザー名のコンフリクトを避ける
-        user = await this.userRepository.findOne({ where: { userName: name42 } });
+        user = await this.userRepository.findOne({ where: { userName: name42 } }) as User;
         if (user) {
             // ユーザー名が既に存在する場合、ユーザー名を変更する
 			const rand = Math.random().toString(16).substr(2, 5)

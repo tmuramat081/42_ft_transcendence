@@ -46,7 +46,7 @@ export class UserRepository {
     //     return this.userRepository.findOne({ where: { userId: id }});
     // }
 
-    async findOne(params: any): Promise<User | undefined> {
+    async findOne(params: any): Promise<User | undefined | null> {
         return this.userRepository.findOne(params);
     }
 

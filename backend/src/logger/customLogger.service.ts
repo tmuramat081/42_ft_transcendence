@@ -49,7 +49,6 @@ export class CustomLogger implements LoggerService {
       return new ErrorLog({
         statusCode: httpStatus,
         requestUrl: requestMethodAndUrl,
-        functionName: exception.constructor.name,
         message: error.message ?? error.stack,
       });
     }

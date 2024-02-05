@@ -8,5 +8,14 @@
     "sourceMap": true,
     "baseUrl": "./",
     "noFallthroughCasesInSwitch": false,
+    "removeComments": true,
+    "emitDecoratorMetadata": true,
+    "experimentalDecorators": true,
+    "target": "ES2021",
+    "incremental": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": false,
+    "strict": true,
+    "esModuleInterop": true,
   }
 }

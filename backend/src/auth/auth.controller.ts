@@ -10,6 +10,7 @@ import { UserDto42 } from 'src/users/dto/user42.dto';
 import { Validate2FACodeDto } from './dto/2fa';
 //import { jwtDecode } from "jwt-decode";
 import { UsersService } from '../users/users.service';
+import { User } from '../users/entities/user.entity';
 
 // mfnyu 15, 16
 
@@ -33,7 +34,7 @@ export class AuthController {
     // アクセストークンを返す 16を参考
     @Get('/callback/42')
     @UseGuards(IntraAuthGuard)
-    async callback42(@Res({ passthrough: true }) res: Response, @Req() req) {
+    async callback42(@Res({ passthrough: true }) res: Response, @Req() req: Request & { user: User }) {
         // userを受け取って、jwtを返す
         // strategyでuserを受け取る
 
@@ -48,7 +49,6 @@ export class AuthController {
 		// res.cookie('jwt', accessToken, { httpOnly: true })
 
         // 2 
-        console.log(req.user)
         const jwtPayload = {userId: req.user.userId, userName: req.user.userName, email: req.user.email, icon: req.user.icon}
 
         const accessToken: string = await this.jwtService.sign(jwtPayload)
@@ -125,7 +125,7 @@ export class AuthController {
     // }
 
     @Get("/login42")
-    async login42(@Req() req, @Res({ passthrough: true }) res: Response) {
+    async login42(@Req() req: Request, @Res({ passthrough: true }) res: Response) {
         const accessToken = req?.cookies['login42']
 
         // アクセストークンを解析
@@ -165,7 +165,7 @@ export class AuthController {
     //@Param() code: string
     //@UseGuards(JwtAuthGuard)
     @Post("/2fa/verify")
-    async verify2fa(@Body() dto: Validate2FACodeDto, @Req() req, @Res({ passthrough: true }) res: Response) {
+    async verify2fa(@Body() dto: Validate2FACodeDto, @Req() req: Request, @Res({ passthrough: true }) res: Response) {
         // const user = req.user
         // const code = req.params.code
         // const verified = await this.authService.verify2fa(user, code)
@@ -182,7 +182,9 @@ export class AuthController {
         console.log(dto)
 
         const user = await this.usersService.findOne(dto.userId)
-
+        if (!user) {
+            throw new UnauthorizedException("Invalid user")
+        }
         console.log(user)
 
         // dtowを渡すように変更する？ userを渡すようにする？
@@ -192,7 +194,6 @@ export class AuthController {
         }
 
         console.log("verified")
-
         const payload: JwtPayload = { userId: user.userId, userName: user.userName, email: user.email, twoFactorAuth: true };
         const accessToken: string = this.jwtService.sign(payload);
         res.cookie('jwt', accessToken, { httpOnly: true })
@@ -201,7 +202,7 @@ export class AuthController {
 
     @UseGuards(JwtAuthGuard)
     @Post("/2fa/disable")
-    async disable2fa(@Req() req, @Res({ passthrough: true }) res) {
+    async disable2fa(@Req() req: Request & { user: User }, @Res({ passthrough: true }) res: Response) {
         const user = req.user
         console.log("disable")
         const resultUser = await this.authService.disable2fa(user)
@@ -214,7 +215,7 @@ export class AuthController {
     // 資料確認
     @UseGuards(JwtAuthGuard)
     @Get("/2fa/generate")
-    async get2faCode(@Req() req) {
+    async get2faCode(@Req() req: Request & { user: User }) {
         const user = req.user
 
         console.log("generate")

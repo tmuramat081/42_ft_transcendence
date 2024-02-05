@@ -1,6 +1,6 @@
 export class ErrorLog {
   /** ログID */
-  logId: string;
+  logId?: string;
   /** タイムスタンプ */
   readonly occurrenceTime: string;
   /** ステータスコード */
