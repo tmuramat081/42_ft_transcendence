@@ -1,16 +1,16 @@
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { PassportStrategy } from '@nestjs/passport';
 import { ExtractJwt, Strategy } from 'passport-jwt';
-import { User } from '../entities/user.entity';
-import { UserRepository } from '../users.repository';
+import { User } from '../../users/entities/user.entity';
+import { UserRepository } from '../../users/users.repository';
 import { Request } from 'express'
-import { JwtPayload } from '../interfaces/jwt_payload';
+import { JwtPayload } from '../../users/interfaces/jwt_payload';
 
 // 認証処理を実装
 @Injectable()
 // PassportStrategyを継承
 // jwtのStrategyをを引数に渡す
-export class JwtStrategy extends PassportStrategy(Strategy) {
+export class TwoFactorAuthStrategy extends PassportStrategy(Strategy, '2fa') {
   // UserRepositoryをインジェクション
   constructor(private userRepository: UserRepository) {
     // jwtの設定
@@ -37,19 +37,26 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
   // validateはPassportStrategyに定義されているメソッド
   async validate(payload: JwtPayload): Promise<User> {
     // ペイロードからユーザーIDとユーザー名を取得 自動で検証される
-    const { userName } = payload;
+    const { userName, twoFactorAuth } = payload;
 
     console.log("payload: ", payload)
     console.log("userName: ", userName)
+    console.log("twoFactorAuth: ", twoFactorAuth)
 
     // ユーザーの検索
     const user = await this.userRepository.findOneByName( userName );
 
     //console.log("user: ", user)
 
+    // 2faが違う場合はエラー
+    if (user.twoFactorAuth && twoFactorAuth != user.twoFactorAuth) {
+        console.log("twoFactorAuth: ", twoFactorAuth)
+        console.log("twoFactorAuth: ", user.twoFactorAuth)
+        throw new UnauthorizedException();
+    }
+
     if (user) {
       console.log("user: ", user)
-      console.log("userが見つかりました")
       return user;
     }
     // ユーザーが見つからない場合はエラー
