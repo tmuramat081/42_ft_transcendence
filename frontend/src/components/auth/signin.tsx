@@ -222,7 +222,7 @@ export default function Form() {
 
     console.log(show2Fa)
 
-    const handleSubmit = (e) => {
+    const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
         // ここでフォームのデータを処理します
         fetch('http://localhost:3001/users/signin', {
@@ -262,7 +262,7 @@ export default function Form() {
         setPassword('');
     };
 
-    const handleSubmit2fa = (e) => {
+    const handleSubmit2fa = (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
         // ここに2FAコードを検証するロジックを追加
         console.log('Submitted 2FA code:', code);
@@ -329,9 +329,8 @@ export default function Form() {
             <button type="submit">送信</button>
 
             {/* <p>AccessToken: {token}</p> */}
-            
             { loginUser && 
-                <p>user: {loginUser.userName}</p>
+                <p>user: {(loginUser as User).userName}</p>
             } { !loginUser && 
                 <p>user: </p>
             }
@@ -350,7 +349,7 @@ export default function Form() {
                 value={code}
                 onChange={(e) => setCode(e.target.value)}
                 placeholder="6桁のコード"
-                maxLength="6"
+                maxLength={6}
             />
             <button type="submit">確認</button>
             </form>
