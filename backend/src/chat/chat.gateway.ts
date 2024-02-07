@@ -24,7 +24,7 @@ interface ChatMessage {
 
 @WebSocketGateway({ cors: { origin: '*' } })
 export class ChatGateway {
-  constructor(private chatService: ChatService) {}
+  // constructor(private chatService: ChatService) {}
   @WebSocketServer()
   server: Server;
 
