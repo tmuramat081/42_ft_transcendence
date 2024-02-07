@@ -1,7 +1,13 @@
 import React from 'react';
 import styles from './Modal.module.css';
 
-const Modal = ({ show, children, onClose }) => {
+interface Props {
+  show: boolean;
+  children: React.ReactNode;
+  onClose: () => void;
+}
+
+const Modal = ({ show, children, onClose }: Props) => {
   if (!show) {
     return null;
   }

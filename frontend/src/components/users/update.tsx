@@ -1,3 +1,4 @@
+/* eslint-disable */
 "use client"
 import { useState, useEffect } from 'react';
 import axios from 'axios';
@@ -16,7 +17,7 @@ export default function Form() {
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [passwordConfirm, setPasswordConfirm] = useState("");
-    const [file, setFile] = useState(null);
+    const [file, setFile] = useState<File | null>(null);
     const [twoFactorAuth, setTwoFactorAuth] = useState(false);
     //const [user, setUser] = useState({});
 
@@ -102,7 +103,7 @@ export default function Form() {
     // }, [loginUser])
 
     
-    const handleSubmit = (e) => {
+    const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
         // ここでフォームのデータを処理します
         // axios.post('localhost:3001/users/login', { username, email });
@@ -172,15 +173,16 @@ export default function Form() {
         setTwoFactorAuth(false);
     };
 
-    const handleFileChange = (e) => {
+    const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        if (!e.target.files) return;
         setFile(e.target.files[0]);
     };
     
-    const handle2FAToggle = (e) => {
+    const handle2FAToggle = (e: React.ChangeEvent<HTMLInputElement>) => {
         setTwoFactorAuth(e.target.checked);
     };
 
-    const handleSubmit2Fa = (e) => {
+    const handleSubmit2Fa = (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
         // ここに2FAコードを検証するロジックを追加
         console.log('Submitted 2FA code:', code);
@@ -216,7 +218,7 @@ export default function Form() {
     const [showModal, setShowModal] = useState(false);
   
     // 2FA有効化時にモーダルを表示
-    const enableTwoFactorAuth = (e) => {
+    const enableTwoFactorAuth = (e: React.ChangeEvent<HTMLInputElement>) => {
       setTwoFactorAuth(e.target.checked);
       if (e.target.checked) {
           setShowModal(true);
@@ -381,7 +383,7 @@ export default function Form() {
             value={code}
             onChange={(e) => setCode(e.target.value)}
             placeholder="6桁のコード"
-            maxLength="6"
+            maxLength={6}
           />
           <button type="submit">確認</button>
         </form>

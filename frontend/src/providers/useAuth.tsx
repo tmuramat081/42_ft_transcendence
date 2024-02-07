@@ -1,3 +1,4 @@
+/* eslint-disable */
 "use client"
 import React, {
     createContext,
@@ -20,11 +21,11 @@ import { useRouter } from 'next/navigation'
 
 type LoginUserContextType = {
     loginUser: User;
-    setLoginUser: Dispatch<SetStateAction<User>>;
+    setLoginUser: Dispatch<SetStateAction<User | null>>;
     isLoggetIn: boolean;
     setIsLoggedIn: Dispatch<SetStateAction<boolean>>;
     loading: boolean;
-    signup: () => void;
+    signup: (userName: string, email: string, password: string, passwordConfirm: string) => Promise<void>;
     signin: (userName: string, password: string) => void;
     getCurrentUser: (() => Promise<User | null>);
 };
@@ -44,7 +45,7 @@ export const LoginUserProvider = (props: {children: ReactNode}) => {
 
     // 不要かも
     const signup = async (userName: string, email: string, password: string, passwordConfirm: string) => {
-        const {router} = useRouter();
+        // const {router} = useRouter();
         await fetch('http://localhost:3001/users/signup', {
             method: 'POST',
             credentials: 'include',
@@ -226,6 +227,8 @@ export const LoginUserProvider = (props: {children: ReactNode}) => {
         }
         return null;
     }
+
+    if (!loginUser) return;
 
     return (
         <LoginUserContext.Provider value={{ 

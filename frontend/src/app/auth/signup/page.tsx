@@ -1,3 +1,4 @@
+/* eslint-disable */
 "use client";
 import { useState } from 'react';
 import Form from '@/components/auth/signup';

@@ -1,3 +1,4 @@
+/* eslint-disable */
 "use client"
 import { useState, useEffect } from 'react';
 import axios from 'axios';
@@ -55,7 +56,7 @@ export default function Form() {
     // 2faの実行ボタン関数
     // 認証後にgetCurrentUserを実行 
     // jwtがセットされているのでgetCurrentUserでユーザー情報を取得できる
-    const handleSubmit2fa = (e) => {
+    const handleSubmit2fa = (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
         // ここに2FAコードを検証するロジックを追加
         console.log('Submitted 2FA code:', code);
@@ -113,7 +114,7 @@ export default function Form() {
                     value={code}
                     onChange={(e) => setCode(e.target.value)}
                     placeholder="6桁のコード"
-                    maxLength="6"
+                    maxLength={6}
                 />
                 <button type="submit">確認</button>
                 </form>

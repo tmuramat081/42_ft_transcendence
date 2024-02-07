@@ -65,7 +65,7 @@ export default function Form() {
 
     //usePublicRoute();
     
-    const handleSubmit = (e) => {
+    const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
         // ここでフォームのデータを処理します
         // axios.post('localhost:3001/users/login', { username, email });
