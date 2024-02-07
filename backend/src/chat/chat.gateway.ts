@@ -7,7 +7,10 @@ import {
 } from '@nestjs/websockets';
 import { Logger } from '@nestjs/common';
 import { Server, Socket } from 'socket.io';
-import { ChatService } from './chat.service';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
+import { ChatLog } from './entities/chatlog.entity';
+import { Room } from './entities/room.entity';
 
 interface User {
   ID: string;
@@ -24,7 +27,14 @@ interface ChatMessage {
 
 @WebSocketGateway({ cors: { origin: '*' } })
 export class ChatGateway {
-  // constructor(private chatService: ChatService) {}
+  constructor(
+    @InjectRepository(ChatLog)
+    private chatLogRepository: Repository<ChatLog>,
+
+    @InjectRepository(Room) // Room リポジトリを注入
+    private roomRepository: Repository<Room>, // Room エンティティのリポジトリ
+  ) {}
+
   @WebSocketServer()
   server: Server;
 
@@ -33,7 +43,7 @@ export class ChatGateway {
   private roomChatLogs: { [roomId: string]: ChatMessage[] } = {};
 
   @SubscribeMessage('talk')
-  handleMessage(
+  async handleMessage(
     @MessageBody() data: { roomID: string; sender: User; message: string },
     @ConnectedSocket() socket: Socket,
   ) {
@@ -44,15 +54,12 @@ export class ChatGateway {
     const timestamp = new Date().toLocaleString();
 
     // チャットログを保存
-    if (!this.roomChatLogs[data.roomID]) {
-      this.roomChatLogs[data.roomID] = [];
-    }
-    this.roomChatLogs[data.roomID].push({
-      user: data.sender.ID,
-      photo: data.sender.icon,
-      text: data.message,
-      timestamp,
-    });
+    const chatLog = new ChatLog();
+    chatLog.roomID = data.roomID;
+    chatLog.userID = data.sender.ID;
+    chatLog.message = data.message;
+    chatLog.timestamp = timestamp;
+    await this.chatLogRepository.save(chatLog); // チャットログをデータベースに保存
 
     // 送信者の部屋IDを取得
     const rooms = [...socket.rooms].slice(0);
@@ -66,7 +73,7 @@ export class ChatGateway {
   }
 
   @SubscribeMessage('createRoom')
-  handleCreateRoom(
+  async handleCreateRoom(
     @MessageBody() create: { sender: User; roomID: string },
     @ConnectedSocket() socket: Socket,
   ) {
@@ -79,8 +86,14 @@ export class ChatGateway {
     }
 
     // 同じ名前のルームが存在しないか確認
-    if (!this.roomList[create.roomID]) {
-      this.roomList[create.roomID] = create.roomID; // 一意なキーとしてルーム名を使用
+    const existingRoom = await this.roomRepository.findOne({
+      roomID: create.roomID,
+    });
+    if (!existingRoom) {
+      const room = new Room();
+      room.roomID = create.roomID;
+      room.roomName = create.roomID; // ルーム名として入力された値を使用
+      await this.roomRepository.save(room); // 新しいルームをデータベースに保存
       socket.join(create.roomID);
       console.log('Room created. Emitting updated roomList:', this.roomList);
       this.server.emit('roomList', this.roomList); // ルームリストを更新して全クライアントに通知
