@@ -30,6 +30,12 @@ function Copyright(props: any) {
 const defaultTheme = createTheme();
 
 export default function SignUp() {
+
+    //field修正
+
+    // handleSubmit修正
+
+    
     // ボタンを押した時の処理
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
