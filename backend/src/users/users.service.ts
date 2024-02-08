@@ -51,7 +51,7 @@ export class UsersService {
     // }
 
     async signUp(userData: SignUpUserDto): Promise<User> {
-        var user: User = new User();
+        var user: User = new User({});
         user.userName = userData.userName;
         user.email = userData.email;
         user.password = userData.password;
@@ -364,7 +364,7 @@ export class UsersService {
 			const rand = Math.random().toString(16).substr(2, 5)
 			userName = userName + '-' + rand
         }
-        let newUser = new User()
+        let newUser = new User({})
         newUser.userName = userName
         newUser.name42 = name42
         newUser.email = userData.email

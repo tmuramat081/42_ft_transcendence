@@ -4,6 +4,7 @@ import { ValidationPipe } from '@nestjs/common';
 import * as cookieParser from 'cookie-parser';
 import { AllExceptionFilter } from './filters/allException.filter';
 import helmet from 'helmet';
+import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -26,8 +27,18 @@ async function bootstrap() {
   // 例外フィルターを適用
   const httpAdapterHost = app.get(HttpAdapterHost);
   app.useGlobalFilters(new AllExceptionFilter(httpAdapterHost));
-  // Helmet を使用（脆弱性対策）
+
+  // Helmetを使用（脆弱性対策）
   app.use(helmet());
+
+  // Swagger設定
+  const config = new DocumentBuilder()
+    .setTitle('ft_transcendence API')
+    .setDescription('API description')
+    .setVersion('1.0')
+    .build();
+  const document = SwaggerModule.createDocument(app, config);
+  SwaggerModule.setup('api', app, document);
   
   await app.listen(process.env.PORT || 3000);
 }

@@ -1,11 +1,64 @@
 name: unit-test
 
-on: [push]
+on: 
+  push:
+    branches:
+    - main
+    - develop
+    - feature/*
+    paths:
+      - 'frontend/**'
+      - 'backend/**'
+  pull_request:
+    branches:
+      - main
+      - develop
+    paths:
+      - 'frontend/**'
+      - 'backend/**'
+
+env:
+  FRONT_END: frontend
+  BACK_END: backend
 
 jobs:
-  Explore-GitHub-Actions:
+  frontend:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
-      - name: Run echo
-        run: echo "🎉 The job was automatically triggered by a ${{ github.event_name }} event."
+      - uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install dependencies (frontend)
+        run: |
+          cd ${{ env.FRONT_END }}
+          npm install
+
+      - name: Build (frontend)
+        run: |
+          cd ${{ env.FRONT_END }}
+          npm run build
+
+  backend:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Node.js (backend)
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install dependencies (backend)
+        run: |
+          cd ${{ env.BACK_END }}
+          npm install
+
+      - name: Build (backend)
+        run: |
+          cd ${{ env.BACK_END }}
+          npm run build
+
