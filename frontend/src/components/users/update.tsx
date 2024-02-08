@@ -186,7 +186,7 @@ export default function Form() {
         e.preventDefault();
         // ここに2FAコードを検証するロジックを追加
         console.log('Submitted 2FA code:', code);
-        console.log('loginUser: ', loginUser.userId);
+        console.log('loginUser: ', loginUser?.userId);
   
         fetch("http://localhost:3001/auth/2fa/verify", {
           method: 'POST',
