@@ -195,7 +195,7 @@ export default function Form() {
                 'Content-Type': 'application/json',
             },
 
-          body: JSON.stringify({ userId: loginUser.userId, code: code }),
+          body: JSON.stringify({ userId: loginUser?.userId, code: code }),
           // headers: {
           //     "Authorization": `Bearer ${token}`
           // }
