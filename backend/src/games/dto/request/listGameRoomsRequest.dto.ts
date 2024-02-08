@@ -10,8 +10,8 @@ import {
   Min,
   Max,
 } from 'class-validator';
-import { TransformToNumber } from '@/common/decorator/transformToNumber.decorator';
 import { ApiProperty } from '@nestjs/swagger';
+import { TransformToNumber } from '@/common/decorator/transformToNumber.decorator';
 
 export class ListGameRoomsRequestDto {
   @ApiProperty({ example: '', required: false, description: 'ゲームルーム名' })

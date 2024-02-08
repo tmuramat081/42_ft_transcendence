@@ -2,6 +2,7 @@ import {
   Column,
   CreateDateColumn,
   Entity,
+  JoinColumn,
   ManyToOne,
   OneToMany,
   PrimaryGeneratedColumn,
@@ -106,6 +107,7 @@ export class GameRoom {
 
   // ユーザーテーブルと多対1の関係
   @ManyToOne(() => User, (user) => user.gameRooms)
+  @JoinColumn({ name: 'user_id' })
   user!: User;
 
   /** コンストラクタ */

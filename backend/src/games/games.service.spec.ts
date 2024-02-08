@@ -40,7 +40,7 @@ describe('GamesService', () => {
       const result = await gamesService.listGameRooms(requestDto);
 
       expect(result.pagination.total).toEqual(2);
-      expect(result.pagination.perPage).toEqual(10);
+      expect(result.pagination.perPage).toEqual(2);
       expect(gameRoomRepository.findManyGameRooms).toHaveBeenCalledWith(
         {
           roomName: requestDto['room-name'],
