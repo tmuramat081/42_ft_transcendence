@@ -42,13 +42,14 @@ jobs:
           cd ${{ env.FRONT_END }}
           npm run build
 
-      - name: Run tests (frontend)
-        run: |
-          cd ${{ env.FRONT_END }}
-          npm test
-
   backend:
     runs-on: ubuntu-latest
+    env:
+      POSTGRESS_HOST: ${{ secrets.POSTGRESS_HOST }}
+      POSTGRESS_PORT: ${{ secrets.POSTGRESS_PORT }}
+      POSTGRESS_USER: ${{ secrets.POSTGRESS_USER }}
+      POSTGRESS_PASSWORD: ${{ secrets.POSTGRESS_PASSWORD }}
+      POSTGRESS_DB: ${{ secrets.POSTGRESS_DB }}
     steps:
       - uses: actions/checkout@v4
 
@@ -70,4 +71,4 @@ jobs:
       - name: Run tests (backend)
         run: |
           cd ${{ env.BACK_END }}
-          npm test
+          npm run test
