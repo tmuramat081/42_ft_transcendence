@@ -11,7 +11,7 @@ import { JwtAuthGuard } from './guards/jwt-auth.guard';
 import { JwtPayload } from './interfaces/jwt_payload';
 import { JwtService } from '@nestjs/jwt'
 import { User } from './entities/user.entity';
-import { UserDto } from './dto/user.dto';
+import { SignUpUserDto, SignInUserDto } from './dto/user.dto';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import * as dotenv from 'dotenv'; 
 import * as Joi from 'joi';
@@ -145,7 +145,7 @@ describe('UsersService', () => {
     it('should return a user', async () => {
       const expected = mockUser1;
 
-      const dto: UserDto  = {
+      const dto: SignUpUserDto  = {
         userName: mockUser1.userName,
         email: mockUser1.email,
         password: mockUser1.password,
@@ -160,9 +160,12 @@ describe('UsersService', () => {
       //expect(result).toEqual(expected);
 
       // JWT Tokenの検証
-      const verifyResult = jwtService.verify(result);
-      const payload: JwtPayload = { userId: verifyResult.userId, userName: verifyResult.userName, email: verifyResult.email };
-      expect(payload).toEqual({ userId: expected.userId, userName: expected.userName, email: expected.email });
+      // const verifyResult = jwtService.verify(result);
+      // const payload: JwtPayload = { userId: verifyResult.userId, userName: verifyResult.userName, email: verifyResult.email };
+      // expect(payload).toEqual({ userId: expected.userId, userName: expected.userName, email: expected.email });
+
+      expect(result).toEqual(expected);
+
     });
   });
 
@@ -170,11 +173,9 @@ describe('UsersService', () => {
     it('should return a user', async () => {
       const expected = mockUser1;
 
-      const dto: UserDto  = {
+      const dto: SignInUserDto  = {
         userName: mockUser1.userName,
-        email: mockUser1.email,
         password: mockUser1.password,
-        passwordConfirm: mockUser1.password,
       };
 
       // signupメソッドのモックを設定（もし必要な場合）
@@ -186,9 +187,11 @@ describe('UsersService', () => {
       //expect(result).toEqual(expected);
 
       // JWT Tokenの検証
-      const verifyResult = jwtService.verify(result);
-      const payload: JwtPayload = { userId: verifyResult.userId, userName: verifyResult.userName, email: verifyResult.email };
-      expect(payload).toEqual({ userId: expected.userId, userName: expected.userName, email: expected.email });
+      // const verifyResult = jwtService.verify(result);
+      // const payload: JwtPayload = { userId: verifyResult.userId, userName: verifyResult.userName, email: verifyResult.email };
+      // expect(payload).toEqual({ userId: expected.userId, userName: expected.userName, email: expected.email });
+
+      expect(result).toEqual(expected);
     });
   });
 
@@ -196,7 +199,7 @@ describe('UsersService', () => {
     it('should return a user', async () => {
       const expected = mockUser1;
 
-      const dto: UserDto  = {
+      const dto: SignUpUserDto  = {
         userName: mockUser1.userName,
         email: mockUser1.email,
         password: mockUser1.password,

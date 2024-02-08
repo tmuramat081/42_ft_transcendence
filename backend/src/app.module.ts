@@ -7,6 +7,7 @@ import * as Joi from 'joi';
 
 import { User } from './users/entities/user.entity';
 import { UsersModule } from './users/users.module';
+import { AuthModule } from './auth/auth.module';
 import { ChatModule } from './chat/chat.module';
 import { GameModule } from './games/games.module';
 
@@ -43,6 +44,7 @@ dotenv.config();
       }),
     }),
     UsersModule,
+    AuthModule,
     ChatModule,
     GameModule,
   ],
