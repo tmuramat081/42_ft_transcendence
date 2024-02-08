@@ -228,8 +228,6 @@ export const LoginUserProvider = (props: {children: ReactNode}) => {
         return null;
     }
 
-    if (!loginUser) return;
-
     return (
         <LoginUserContext.Provider value={{ 
             loginUser, 
