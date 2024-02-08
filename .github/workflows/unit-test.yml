@@ -34,17 +34,17 @@ jobs:
 
       - name: Install dependencies (frontend)
         run: |
-          cd env.FRONT_END
+          cd ${{ env.FRONT_END }}
           npm install
 
       - name: Build (frontend)
         run: |
-          cd env.FRONT_END
+          cd ${{ env.FRONT_END }}
           npm run build
 
       - name: Run tests (frontend)
         run: |
-          cd env.FRONT_END
+          cd ${{ env.FRONT_END }}
           npm test
 
   backend:
@@ -59,15 +59,15 @@ jobs:
 
       - name: Install dependencies (backend)
         run: |
-          cd env.BACK_END
+          cd ${{ env.BACK_END }}
           npm install
 
       - name: Build (backend)
         run: |
-          cd env.BACK_END
+          cd ${{ env.BACK_END }}
           npm run build
 
       - name: Run tests (backend)
         run: |
-          cd env.BACK_END
+          cd ${{ env.BACK_END }}
           npm test
