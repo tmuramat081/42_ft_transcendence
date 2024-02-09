@@ -9,7 +9,7 @@ module.exports = {
   extends: [
     'plugin:@typescript-eslint/recommended',
     "plugin:@typescript-eslint/recommended-requiring-type-checking",
-    'plugin:prettier/recommended', // Prettierのextendsは一番最後に記述する
+    'plugin:prettier/recommended', // Prettierとの競合を防ぐ
   ],
   root: true,
   env: {
