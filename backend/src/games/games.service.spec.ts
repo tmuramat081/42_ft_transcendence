@@ -1,14 +1,17 @@
 import { Test } from '@nestjs/testing';
 import { GamesService } from './games.service';
-import { GameRoomRepository } from './gameRoom.repository';
+import { FindGameRoomWhereInput, GameRoomRepository } from './gameRoom.repository';
 import { ListGameRoomsRequestDto } from './dto/request/listGameRoomsRequest.dto';
 import { GAME_ROOM_STATUS } from './game.constant';
 import { InternalServerErrorException } from '@nestjs/common';
 import { GameRoom } from './entities/gameRoom.entity';
 
 const mockGameRoomRepository = (): Partial<GameRoomRepository> => ({
-  findManyGameRooms: jest.fn() as jest.Mock<Promise<[GameRoom[], number]>>,
-  countGameRooms: jest.fn() as jest.Mock<Promise<number>>,
+  findManyGameRooms: jest.fn() as jest.Mock<
+    Promise<[GameRoom[], number]>,
+    [FindGameRoomWhereInput, { take?: number; skip?: number }]
+  >,
+  countGameRooms: jest.fn() as jest.Mock<Promise<number>, [FindGameRoomWhereInput]>,
 });
 
 describe('GamesService', () => {
@@ -29,8 +32,8 @@ describe('GamesService', () => {
 
   describe('listGameRooms', () => {
     it('ゲームルーム一覧を取得して返却する', async () => {
-      gameRoomRepository.findManyGameRooms.mockResolvedValue([[{}, {}], 2]);
-      gameRoomRepository.countGameRooms.mockResolvedValue(10);
+      (gameRoomRepository.findManyGameRooms as jest.Mock).mockResolvedValue([[{}, {}], 2]);
+      (gameRoomRepository.countGameRooms as jest.Mock).mockResolvedValue(10);
 
       const requestDto: ListGameRoomsRequestDto = {
         'room-name': 'test',
@@ -54,8 +57,8 @@ describe('GamesService', () => {
       );
     });
     it('ゲームルームの取得結果が空の場合', async () => {
-      gameRoomRepository.findManyGameRooms.mockResolvedValue([[], 0]);
-      gameRoomRepository.countGameRooms.mockResolvedValue(0);
+      (gameRoomRepository.findManyGameRooms as jest.Mock).mockResolvedValue([[], 0]);
+      (gameRoomRepository.countGameRooms as jest.Mock).mockResolvedValue(0);
 
       const requestDto: ListGameRoomsRequestDto = {
         'room-name': 'test',
@@ -70,7 +73,9 @@ describe('GamesService', () => {
       expect(result.pagination.perPage).toEqual(0);
     });
     it('データベース接続エラー', async () => {
-      gameRoomRepository.findManyGameRooms.mockRejectedValue(new InternalServerErrorException());
+      (gameRoomRepository.findManyGameRooms as jest.Mock).mockRejectedValue(
+        new InternalServerErrorException(),
+      );
 
       const requestDto: ListGameRoomsRequestDto = {
         'room-name': 'test',
