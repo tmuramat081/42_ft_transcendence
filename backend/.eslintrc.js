@@ -32,7 +32,6 @@ module.exports = {
       "files": ["*.spec.ts"],
       "rules": {
         '@typescript-eslint/no-unsafe-call': 'off',
-        '@typescript-eslint/typescript-eslint/unbound-method': 'off',
         '@typescript-eslint/unbound-method': 'off',
         '@typescript-eslint/require-await': 'off',
       }
