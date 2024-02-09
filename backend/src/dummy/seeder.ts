@@ -44,7 +44,7 @@ seeder({
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule],
       inject: [ConfigService],
-      useFactory: async (config: ConfigService) => ({
+      useFactory: (config: ConfigService) => ({
         type: 'postgres',
         host: config.get<string>('POSTGRESS_HOST'),
         port: config.get<number>('POSTGRESS_PORT'),

@@ -18,12 +18,8 @@ export class GamesController {
     description: '登録されているゲームルームの一覧を取得する。',
   })
   @ApiResponse({ status: 200, type: ListGameRoomsResponseDto })
-  async listGameRooms(
-    @Query() listGameRoomsRequestDto: ListGameRoomsRequestDto,
-  ) {
-    const { result, pagination } = await this.gamesService.listGameRooms(
-      listGameRoomsRequestDto,
-    );
+  async listGameRooms(@Query() listGameRoomsRequestDto: ListGameRoomsRequestDto) {
+    const { result, pagination } = await this.gamesService.listGameRooms(listGameRoomsRequestDto);
     return new ListGameRoomsResponseDto(result, pagination);
   }
 }

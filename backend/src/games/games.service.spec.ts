@@ -4,15 +4,16 @@ import { GameRoomRepository } from './gameRoom.repository';
 import { ListGameRoomsRequestDto } from './dto/request/listGameRoomsRequest.dto';
 import { GAME_ROOM_STATUS } from './game.constant';
 import { InternalServerErrorException } from '@nestjs/common';
+import { GameRoom } from './entities/gameRoom.entity';
 
-const mockGameRoomRepository = () => ({
-  findManyGameRooms: jest.fn(),
-  countGameRooms: jest.fn(),
+const mockGameRoomRepository = (): Partial<GameRoomRepository> => ({
+  findManyGameRooms: jest.fn() as jest.Mock<Promise<[GameRoom[], number]>>,
+  countGameRooms: jest.fn() as jest.Mock<Promise<number>>,
 });
 
 describe('GamesService', () => {
   let gamesService: GamesService;
-  let gameRoomRepository;
+  let gameRoomRepository: GameRoomRepository;
 
   beforeEach(async () => {
     const module = await Test.createTestingModule({
@@ -69,9 +70,7 @@ describe('GamesService', () => {
       expect(result.pagination.perPage).toEqual(0);
     });
     it('データベース接続エラー', async () => {
-      gameRoomRepository.findManyGameRooms.mockRejectedValue(
-        new InternalServerErrorException(),
-      );
+      gameRoomRepository.findManyGameRooms.mockRejectedValue(new InternalServerErrorException());
 
       const requestDto: ListGameRoomsRequestDto = {
         'room-name': 'test',

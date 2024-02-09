@@ -31,12 +31,7 @@ export class MatchResult {
   matchId!: number;
 
   // ユーザーID
-  @Column({
-    name: 'user_id',
-    type: 'integer',
-    unsigned: true,
-    comment: 'ユーザーID',
-  })
+  @Column({ name: 'user_id', type: 'integer', unsigned: true, comment: 'ユーザーID' })
   userId!: number;
 
   // スコア

@@ -40,6 +40,19 @@ describe('GamesController', () => {
     await expect(controller.listGameRooms(requestDto)).resolves.toBeInstanceOf(
       ListGameRoomsResponseDto,
     );
+
+    jest.spyOn(service, 'listGameRooms').mockImplementation(async () => ({
+      result: [],
+      pagination: {
+        total: 0,
+        currentPage: 1,
+        perPage: 0,
+      },
+    }));
+
+    await expect(controller.listGameRooms(requestDto)).resolves.toBeInstanceOf(
+      ListGameRoomsResponseDto,
+    );
     expect(service.listGameRooms).toHaveBeenCalledWith(requestDto);
   });
 });

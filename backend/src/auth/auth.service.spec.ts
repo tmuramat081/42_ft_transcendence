@@ -1,6 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { HttpModule } from '@nestjs/axios'
-import { forwardRef, Module } from '@nestjs/common';
+import { HttpModule } from '@nestjs/axios';
+import { forwardRef } from '@nestjs/common';
 import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
 import { IntraAuthGuard } from './guards/42auth.guards';
@@ -14,7 +14,7 @@ import { JwtModule } from '@nestjs/jwt';
 import { PassportModule } from '@nestjs/passport';
 import { User } from '../users/entities/user.entity';
 import { ConfigModule, ConfigService } from '@nestjs/config';
-import * as dotenv from 'dotenv'; 
+import * as dotenv from 'dotenv';
 import * as Joi from 'joi';
 
 dotenv.config();
@@ -24,8 +24,9 @@ describe('AuthService', () => {
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       //forwardRefは循環参照を解決するために使われる
-      imports:[
-        forwardRef(() => UsersModule), HttpModule,
+      imports: [
+        forwardRef(() => UsersModule),
+        HttpModule,
         ConfigModule.forRoot({
           isGlobal: true,
           envFilePath: '.env',
@@ -43,7 +44,7 @@ describe('AuthService', () => {
         TypeOrmModule.forRootAsync({
           imports: [ConfigModule],
           inject: [ConfigService],
-          useFactory: async (config: ConfigService) => ({
+          useFactory: (config: ConfigService) => ({
             type: 'postgres',
             host: config.get<string>('POSTGRESS_HOST'),
             port: config.get<number>('POSTGRESS_PORT'),

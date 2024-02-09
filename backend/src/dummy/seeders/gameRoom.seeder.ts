@@ -30,14 +30,14 @@ export class GameRoomSeeder implements Seeder {
       });
       dummyData.push(datum);
     }
-    return this.gameRoomRepository.save(dummyData);
+    return this.gameRoomRepository.save(dummyData as GameRoom[]);
   }
 
   drop(): Promise<DeleteResult> {
     // reset auto-increment
-    this.gameRoomRepository.query(
-      `SELECT SETVAL ('game_room_game_room_id_seq', 1, false)`,
-    );
+    void this.gameRoomRepository.query(`
+      SELECT SETVAL ('game_room_game_room_id_seq', 1, false)
+    `);
     return this.gameRoomRepository.delete({});
   }
 }

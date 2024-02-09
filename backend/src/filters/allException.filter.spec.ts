@@ -33,15 +33,9 @@ describe('AllExceptionFilter', () => {
   });
 
   it('should handle HTTP exception correctly', () => {
-    const mockHttpException = new HttpException(
-      'Test error',
-      HttpStatus.BAD_REQUEST,
-    );
+    const mockHttpException = new HttpException('Test error', HttpStatus.BAD_REQUEST);
 
-    filter.catch(
-      mockHttpException,
-      mockArgumentsHost as unknown as ArgumentsHost,
-    );
+    filter.catch(mockHttpException, mockArgumentsHost as unknown as ArgumentsHost);
 
     expect(mockHttpAdapterHost.httpAdapter.getRequestUrl).toHaveBeenCalled();
     expect(mockHttpAdapterHost.httpAdapter.reply).toHaveBeenCalledWith(
@@ -52,15 +46,9 @@ describe('AllExceptionFilter', () => {
   });
 
   it('should handle 404 NOT FOUND exception correctly', () => {
-    const mockNotFoundException = new HttpException(
-      'Not Found',
-      HttpStatus.NOT_FOUND,
-    );
+    const mockNotFoundException = new HttpException('Not Found', HttpStatus.NOT_FOUND);
 
-    filter.catch(
-      mockNotFoundException,
-      mockArgumentsHost as unknown as ArgumentsHost,
-    );
+    filter.catch(mockNotFoundException, mockArgumentsHost as unknown as ArgumentsHost);
 
     expect(mockHttpAdapterHost.httpAdapter.reply).toHaveBeenCalledWith(
       expect.anything(),
@@ -74,10 +62,7 @@ describe('AllExceptionFilter', () => {
   it('should handle non-HTTP exception correctly', () => {
     const mockNonHttpException = new Error('Non-HTTP error');
 
-    filter.catch(
-      mockNonHttpException,
-      mockArgumentsHost as unknown as ArgumentsHost,
-    );
+    filter.catch(mockNonHttpException, mockArgumentsHost as unknown as ArgumentsHost);
 
     expect(mockHttpAdapterHost.httpAdapter.getRequestUrl).toHaveBeenCalled();
     expect(mockHttpAdapterHost.httpAdapter.reply).toHaveBeenCalledWith(

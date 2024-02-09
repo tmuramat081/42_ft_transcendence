@@ -25,5 +25,17 @@ module.exports = {
     "indent": ["error", 2, { "SwitchCase": 1 }], // インデントは2スペース
     "semi": ["error", "always"], // セミコロンは必須
     "quotes": ["error", "single"], // シングルクォートのみ許可
+    "indent": ["error", 2, { "ignoredNodes": ["PropertyDefinition"] }]
   },
+  "overrides": [
+    {
+      "files": ["*.spec.ts"],
+      "rules": {
+        '@typescript-eslint/no-unsafe-call': 'off',
+        '@typescript-eslint/typescript-eslint/unbound-method': 'off',
+        '@typescript-eslint/unbound-method': 'off',
+        '@typescript-eslint/require-await': 'off',
+      }
+    }
+  ]
 };

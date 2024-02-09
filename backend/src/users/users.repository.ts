@@ -1,3 +1,4 @@
+/* eslint-disable */
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, Connection } from 'typeorm';
@@ -14,79 +15,79 @@ Repository
 
 @Injectable()
 export class UserRepository {
-    constructor(
-        @InjectRepository(User)
-        private userRepository: Repository<User>,
-    ) {}
+  constructor(
+    @InjectRepository(User)
+    private userRepository: Repository<User>,
+  ) {}
 
-    async createUser(user: User): Promise<User> {
-        const salt = await bycrypt.genSalt();
-        // パスワードのハッシュ化
-        user.password = await bycrypt.hash(user.password, salt);
+  async createUser(user: User): Promise<User> {
+    const salt = await bycrypt.genSalt();
+    // パスワードのハッシュ化
+    user.password = await bycrypt.hash(user.password, salt);
 
-        return await this.userRepository.save(user);
-    }
+    return await this.userRepository.save(user);
+  }
 
-    // idからUserを取得して、Userを更新する
-    // 二つのUserを渡す方法もある
-    async saveUser(user: User): Promise<User> {
-        return await this.userRepository.save(user);
-    }
+  // idからUserを取得して、Userを更新する
+  // 二つのUserを渡す方法もある
+  async saveUser(user: User): Promise<User> {
+    return await this.userRepository.save(user);
+  }
 
-     // 他のカスタムメソッドをここに追加できます
-    async findAll(): Promise<User[]> {
-        // リポジトリパターンの方がいい？
-        // return this.userRepository.find();
-        //return this.connection.getRepository(User).find();
-        return this.userRepository.find();
-    }
+  // 他のカスタムメソッドをここに追加できます
+  async findAll(): Promise<User[]> {
+    // リポジトリパターンの方がいい？
+    // return this.userRepository.find();
+    //return this.connection.getRepository(User).find();
+    return this.userRepository.find();
+  }
 
-    // async findOne(id: number): Promise<User | undefined> {
-    //     //return this.connection.getRepository(User).findOne({ where: { user_id: id } });
-    //     return this.userRepository.findOne({ where: { userId: id }});
-    // }
+  // async findOne(id: number): Promise<User | undefined> {
+  //     //return this.connection.getRepository(User).findOne({ where: { user_id: id } });
+  //     return this.userRepository.findOne({ where: { userId: id }});
+  // }
 
-    async findOne(params: any): Promise<User | undefined> {
-        return this.userRepository.findOne(params);
-    }
+  async findOne(params: any): Promise<User | undefined> {
+    return this.userRepository.findOne(params);
+  }
 
-    async findOneByName(name: string): Promise<User | undefined> {
-        //return this.connection.getRepository(User).findOne({ where: { user_name: name } });
-        return this.userRepository.findOne({ where: { userName: name } });
-    }
+  async findOneByName(name: string): Promise<User | undefined> {
+    //return this.connection.getRepository(User).findOne({ where: { user_name: name } });
+    return this.userRepository.findOne({ where: { userName: name } });
+  }
 
-    // async findOne(username: string): Promise<User | undefined> {
-    //     return this.userRepository.findOne({ user_name: username });
-    // }
+  // async findOne(username: string): Promise<User | undefined> {
+  //     return this.userRepository.findOne({ user_name: username });
+  // }
 
-    // async findOneById(id: number): Promise<User | undefined> {
-    //     return this.userRepository.findOne({ user_id: id });
-    // }
+  // async findOneById(id: number): Promise<User | undefined> {
+  //     return this.userRepository.findOne({ user_id: id });
+  // }
 
-    // async findOneByEmail(email: string): Promise<User | undefined> {
-    //     return this.userRepository.findOne({ email: email });
-    // }
+  // async findOneByEmail(email: string): Promise<User | undefined> {
+  //     return this.userRepository.findOne({ email: email });
+  // }
 
-    // async findOneByName42(name42: string): Promise<User | undefined> {
-    //     return this.userRepository.findOne({ name42: name42 });
-    // }
+  // async findOneByName42(name42: string): Promise<User | undefined> {
+  //     return this.userRepository.findOne({ name42: name42 });
+  // }
 
-    // async findOneByTwoFactorAuthSecret(secret: string): Promise<User | undefined> {
-    //     return this.userRepository.findOne({ two_factor_auth_secret: secret });
-    // }
+  // async findOneByTwoFactorAuthSecret(secret: string): Promise<User | undefined> {
+  //     return this.userRepository.findOne({ two_factor_auth_secret: secret });
+  // }
 
-    // async save(user: User): Promise<User> {
-    //     return this.userRepository.save(user);
-    // }
+  // async save(user: User): Promise<User> {
+  //     return this.userRepository.save(user);
+  // }
 
-    // async remove(user: User): Promise<User> {
-    //     return this.userRepository.remove(user);
-    // }
+  // async remove(user: User): Promise<User> {
+  //     return this.userRepository.remove(user);
+  // }
 
-    async createUser42(user: User): Promise<User> {
-        const salt = await bycrypt.genSalt();
-        // パスワードのハッシュ化
-        user.password = await bycrypt.hash(user.password, salt);
-        return this.userRepository.save(user);
-    }
+  async createUser42(user: User): Promise<User> {
+    const salt = await bycrypt.genSalt();
+    // パスワードのハッシュ化
+    user.password = await bycrypt.hash(user.password, salt);
+    return this.userRepository.save(user);
+  }
 }

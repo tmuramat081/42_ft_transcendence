@@ -45,4 +45,3 @@ export class ListGameRoomsResponseDto {
     this.pagination = pagination;
   }
 }
-

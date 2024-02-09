@@ -1,15 +1,7 @@
 import { IsString } from 'class-validator';
 import { Valueof } from '@/common/types/global';
 import { GAME_ROOM_STATUS } from '../../game.constant';
-import {
-  IsOptional,
-  MinLength,
-  MaxLength,
-  IsEnum,
-  IsInt,
-  Min,
-  Max,
-} from 'class-validator';
+import { IsOptional, MinLength, MaxLength, IsEnum, IsInt, Min, Max } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 import { TransformToNumber } from '@/common/decorator/transformToNumber.decorator';
 

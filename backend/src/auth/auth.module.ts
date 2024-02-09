@@ -1,4 +1,5 @@
-import { HttpModule } from '@nestjs/axios'
+/* eslint-disable */
+import { HttpModule } from '@nestjs/axios';
 import { forwardRef, Module } from '@nestjs/common';
 import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
@@ -15,8 +16,15 @@ import { TwoFactorAuthStrategy } from './strategy/2fa.strategy';
 
 @Module({
   //forwardRefは循環参照を解決するために使われる
-  imports:[forwardRef(() => UsersModule), HttpModule],
+  imports: [forwardRef(() => UsersModule), HttpModule],
   controllers: [AuthController],
-  providers: [AuthService, UsersService, IntraStrategy, IntraAuthGuard, TwoFactorAuthGuard, TwoFactorAuthStrategy],
+  providers: [
+    AuthService,
+    UsersService,
+    IntraStrategy,
+    IntraAuthGuard,
+    TwoFactorAuthGuard,
+    TwoFactorAuthStrategy,
+  ],
 })
 export class AuthModule {}

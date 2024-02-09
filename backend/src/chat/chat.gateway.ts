@@ -1,3 +1,4 @@
+/* eslint-disable */
 import {
   SubscribeMessage,
   WebSocketGateway,
@@ -35,9 +36,7 @@ export class ChatGateway {
     @MessageBody() data: { roomID: string; sender: User; message: string },
     @ConnectedSocket() socket: Socket,
   ) {
-    this.logger.log(
-      `message received: ${data.roomID} ${data.sender.ID} ${data.message}`,
-    );
+    this.logger.log(`message received: ${data.roomID} ${data.sender.ID} ${data.message}`);
 
     const timestamp = new Date().toLocaleString();
 
@@ -111,10 +110,7 @@ export class ChatGateway {
   }
 
   @SubscribeMessage('getRoomList')
-  handleGetLoomList(
-    @MessageBody() SocketId: string,
-    @ConnectedSocket() socket: Socket,
-  ) {
+  handleGetLoomList(@MessageBody() SocketId: string, @ConnectedSocket() socket: Socket) {
     this.logger.log(`Client connected: ${socket.id}`);
     this.server.emit('roomList', this.roomList);
   }

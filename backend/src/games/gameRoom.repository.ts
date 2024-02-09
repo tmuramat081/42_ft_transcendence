@@ -29,9 +29,7 @@ export class GameRoomRepository extends Repository<GameRoom> {
     paginationInput?: { take?: number; skip?: number },
   ): Promise<[GameRoom[], number]> {
     const whereCondition = {
-      roomName: whereInput.roomName
-        ? Like(`%${whereInput.roomName}%`)
-        : undefined,
+      roomName: whereInput.roomName ? Like(`%${whereInput.roomName}%`) : undefined,
       roomStatus: whereInput.roomStatus,
     };
     try {

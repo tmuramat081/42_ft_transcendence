@@ -1,10 +1,7 @@
 import { IPaginationEnvelope } from '@/common/interface/pagination';
 import { ListGameRoomsRequestDto } from './dto/request/listGameRoomsRequest.dto';
 import { GameRoom } from './entities/gameRoom.entity';
-import {
-  FindGameRoomWhereInput,
-  GameRoomRepository,
-} from './gameRoom.repository';
+import { FindGameRoomWhereInput, GameRoomRepository } from './gameRoom.repository';
 import { InjectRepository } from '@nestjs/typeorm';
 
 export class GamesService {
