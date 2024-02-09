@@ -20,7 +20,7 @@ import { useRouter } from 'next/navigation'
 
 
 type LoginUserContextType = {
-    loginUser: User;
+    loginUser: User | null;
     setLoginUser: Dispatch<SetStateAction<User | null>>;
     isLoggetIn: boolean;
     setIsLoggedIn: Dispatch<SetStateAction<boolean>>;
@@ -227,8 +227,6 @@ export const LoginUserProvider = (props: {children: ReactNode}) => {
         }
         return null;
     }
-
-    if (!loginUser) return;
 
     return (
         <LoginUserContext.Provider value={{ 
