@@ -38,7 +38,7 @@ dotenv.config();
         username: config.get<string>('POSTGRESS_USER'),
         password: config.get<string>('POSTGRESS_PASSWORD'),
         database: config.get<string>('POSTGRESS_DB'),
-        entities: [__dirname + '/../**/*.entity.{js,ts}'],
+        entities: [__dirname + '/**/*.entity.{js,ts}'],
         synchronize: true,
       }),
     }),
