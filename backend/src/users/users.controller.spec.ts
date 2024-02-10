@@ -1,3 +1,4 @@
+/* eslint-disable */
 import { Test, TestingModule } from '@nestjs/testing';
 import { UsersService } from './users.service';
 import { UsersController } from './users.controller';
@@ -9,29 +10,37 @@ import { PassportModule } from '@nestjs/passport';
 import { JwtStrategy } from './strategy/jwt.strategy';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
 import { JwtPayload } from './interfaces/jwt_payload';
-import { JwtService } from '@nestjs/jwt'
+import { JwtService } from '@nestjs/jwt';
 import { User } from './entities/user.entity';
 import { SignUpUserDto, SignInUserDto } from './dto/user.dto';
 import { ConfigModule, ConfigService } from '@nestjs/config';
-import * as dotenv from 'dotenv'; 
+import * as dotenv from 'dotenv';
 import * as Joi from 'joi';
-import { Column, CreateDateColumn, DeleteDateColumn, Entity, OneToMany, PrimaryGeneratedColumn, Timestamp, Unique } from "typeorm";
+import {
+  Column,
+  CreateDateColumn,
+  DeleteDateColumn,
+  Entity,
+  OneToMany,
+  PrimaryGeneratedColumn,
+  Timestamp,
+  Unique,
+} from 'typeorm';
 import { Response } from 'express';
 import * as bcrypt from 'bcrypt';
-
 
 dotenv.config();
 const mockUser1: User = {
   userId: 1,
-  userName: "test",
-  email: "test@test",
-  password: "test",
-  icon: "",
+  userName: 'test',
+  email: 'test@test',
+  password: 'test',
+  icon: '',
   createdAt: new Date('2023-01-01T00:00:00Z'),
   deletedAt: new Date('2023-01-01T00:00:00Z'),
-  name42: "",
+  name42: '',
   twoFactorAuth: false,
-  twoFactorAuthSecret: "",
+  twoFactorAuthSecret: '',
   gameRooms: [],
   matchResults: [],
   gameEntries: [],
@@ -101,7 +110,12 @@ describe('UsersController', () => {
         }),
       ],
       controllers: [UsersController],
-      providers: [UserRepository, JwtStrategy, JwtAuthGuard, { provide: UsersService, useFactory: mockUsersService }],
+      providers: [
+        UserRepository,
+        JwtStrategy,
+        JwtAuthGuard,
+        { provide: UsersService, useFactory: mockUsersService },
+      ],
       exports: [JwtStrategy, JwtAuthGuard],
     }).compile();
 
@@ -129,7 +143,6 @@ describe('UsersController', () => {
       const salt = await bcrypt.genSalt();
       result.password = await bcrypt.hash(result.password, salt);
 
-
       const mockResponse = {
         status: jest.fn().mockReturnThis(),
         json: jest.fn().mockReturnThis(),
@@ -143,9 +156,9 @@ describe('UsersController', () => {
 
       //console.log(await controller.SignUp(userDto, mockResponse));
 
-      expect(await controller.SignUp(userDto, mockResponse)).toBe("{\"accessToken\":\"testToken\"}");
-    }); 
-  }); 
+      expect(await controller.SignUp(userDto, mockResponse)).toBe('{"accessToken":"testToken"}');
+    });
+  });
 
   describe('signIn', () => {
     it('should return a jwt token', async () => {
@@ -171,15 +184,14 @@ describe('UsersController', () => {
       jest.spyOn(service, 'signIn').mockImplementation(async () => result);
       jest.spyOn(service, 'generateJwt').mockImplementation(async () => resultToken);
 
-
-      expect(await controller.SignIn(userDto, mockResponse)).toBe( "{\"status\":\"SUCCESS\"}");
-    }); 
-  }); 
+      expect(await controller.SignIn(userDto, mockResponse)).toBe('{"status":"SUCCESS"}');
+    });
+  });
 
   describe('currentUser', () => {
     it('should return a user', async () => {
       const expected = mockUser1;
-      
+
       jest.spyOn(service, 'currentUser').mockResolvedValue(expected);
 
       const mockRequest = {
@@ -195,17 +207,17 @@ describe('UsersController', () => {
       const result = await controller.CurrentUser(mockRequest);
       //const {password, ...expected2} = expected;
 
-
-      expect(result).toEqual("{\"user\":{\"userId\":1,\"userName\":\"test\",\"email\":\"test@test\",\"twoFactorAuthNow\":false}}");
+      expect(result).toEqual(
+        '{"user":{"userId":1,"userName":"test","email":"test@test","twoFactorAuthNow":false}}',
+      );
     });
   });
-
 
   describe('findAll', () => {
     it('should return an array of users', async () => {
       const result = [mockUser1];
       jest.spyOn(service, 'findAll').mockResolvedValue(result);
       expect(await controller.findAll()).toBe(result);
-    }); 
+    });
   });
 });
