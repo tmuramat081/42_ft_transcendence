@@ -16,8 +16,24 @@ import { createTheme, ThemeProvider } from '@mui/material/styles';
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation'
 import { useAuth } from '@/providers/useAuth';
-import Modal from '../../components/users/2fa/modal'; // Modalコンポーネントをインポート
+//import Modal from '../../components/users/2fa/modal'; // Modalコンポーネントをインポート
 import CircularProgress from '@mui/material/CircularProgress';
+import { MuiOtpInput } from 'mui-one-time-password-input'
+import Modal from '@mui/material/Modal';
+
+const style = {
+    position: 'absolute' as 'absolute',
+    top: '50%',
+    left: '50%',
+    transform: 'translate(-50%, -50%)',
+    width: '70%',
+    bgcolor: 'background.paper',
+    border: '2px solid #000',
+    boxShadow: 24,
+    pt: 2,
+    px: 4,
+    pb: 3,
+  };
 
 function Copyright(props: any) {
   return (
@@ -138,6 +154,13 @@ export default function SignIn() {
           });
       };
 
+      const handleOpen = () => {
+        setShow2Fa(true);
+      };
+      const handleClose = () => {
+        setShow2Fa(false);
+      };
+
 
 
 //   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
@@ -220,6 +243,34 @@ export default function SignIn() {
               </Grid>
             </Grid>
           </Box>
+
+      <Modal
+        open={!show2Fa}
+        onClose={ () => {}}
+        aria-labelledby="child-modal-title"
+        aria-describedby="child-modal-description"
+      >
+
+
+        <Box sx={{ ...style }}>
+                <h2 id="child-modal-title">Text in a child modal</h2>
+                <p id="child-modal-description">
+                    Lorem ipsum, dolor sit amet consectetur adipisicing elit.
+                </p>
+                <MuiOtpInput
+                    value={code}
+                    onChange={setCode}
+                    length={6}
+                />
+                <Button onClick={handleSubmit2fa}>Submit</Button>
+        </Box>
+      </Modal>
+
+
+          <Button onClick={ () => { router.push('/auth/signup') } } variant="contained" color="primary">SignUp</Button>
+
+          <Button variant="contained" color="primary" onClick={() => { router.push('http://localhost:3001/auth/callback/42')}}>42ログイン</Button>
+
         </Box>
         <Copyright sx={{ mt: 8, mb: 4 }} />
       </Container>
