@@ -1,7 +1,6 @@
 import { Injectable, InternalServerErrorException } from '@nestjs/common';
 import { GameRoom } from './entities/gameRoom.entity';
-import { Repository, Like, EntityManager } from 'typeorm';
-import { InjectRepository } from '@nestjs/typeorm';
+import { Repository, Like, EntityManager, DataSource } from 'typeorm';
 
 export type FindGameRoomWhereInput = Partial<
   Omit<GameRoom, 'gameRoomId' | 'createdAt' | 'updatedAt'>
@@ -10,16 +9,15 @@ export type FindGameRoomWhereInput = Partial<
 export type CreateGameRoomInput = Partial<Omit<GameRoom, 'gameRoomId' | 'createdAt' | 'updatedAt'>>;
 
 @Injectable()
-export class GameRoomRepository {
-  constructor(
-    @InjectRepository(GameRoom)
-    private repository: Repository<GameRoom>,
-  ) {}
+export class GameRoomRepository extends Repository<GameRoom> {
+  constructor(private dataSource: DataSource) {
+    super(GameRoom, dataSource.createEntityManager());
+  }
 
   // ゲームルームを一件取得
   async findOneGameRoom(gameRoomId: number): Promise<GameRoom | undefined> {
     try {
-      return await this.repository.findOneBy({
+      return await this.findOneBy({
         gameRoomId: gameRoomId,
       });
     } catch (error) {
@@ -37,7 +35,7 @@ export class GameRoomRepository {
       roomStatus: whereInput.roomStatus,
     };
     try {
-      return await this.repository.findAndCount({
+      return await this.findAndCount({
         where: whereCondition,
         take: paginationInput?.take,
         skip: paginationInput?.skip,
@@ -51,7 +49,7 @@ export class GameRoomRepository {
   // ゲームルームの件数を取得
   async countGameRooms(whereInput: FindGameRoomWhereInput): Promise<number> {
     try {
-      return await this.repository.count({
+      return await this.count({
         where: whereInput,
       });
     } catch (error) {
@@ -61,7 +59,7 @@ export class GameRoomRepository {
 
   // ゲームルームを1件登録（[INFO] トランザクションを張る場合は、managerを引数に指定する）
   async createGameRoom(inputData: GameRoom, manager?: EntityManager): Promise<GameRoom> {
-    const repository = manager ? manager.getRepository(GameRoom) : this.repository;
+    const repository = manager ? manager.getRepository(GameRoom) : this;
     try {
       return await repository.save(inputData);
     } catch (error) {

@@ -13,6 +13,7 @@ export class GamesService {
   constructor(
     private gameRoomRepository: GameRoomRepository,
     private gameEntryRepository: GameEntryRepository,
+    private dataSource: DataSource,
   ) {}
   /**
    * ゲームルーム一覧取得
@@ -49,11 +50,10 @@ export class GamesService {
    * ゲームルーム登録
    */
   async createGameRoom(requestDto: CreateGameRoomRequestDto): Promise<void> {
-    // ユーザーの存在チェックはJWT認証で行っているため、ここでは省略
+    // ユーザーの存在チェックはJWT認証で行っているため、ここでは省く
 
-    const dataSource = new DataSource({ type: 'postgres' });
     /** トランザクション処理 */
-    await dataSource.transaction(async (manager: EntityManager) => {
+    await this.dataSource.transaction(async (manager: EntityManager) => {
       // ゲームルームを作成
       const gameRoom = manager.create(GameRoom, {
         roomName: requestDto.roomName,
