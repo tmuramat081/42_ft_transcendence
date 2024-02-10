@@ -14,10 +14,10 @@ import { User } from '@/users/entities/user.entity';
 
 export class GamesService {
   constructor(
-    private gameRoomRepository: GameRoomRepository,
-    private gameEntryRepository: GameEntryRepository,
     @InjectRepository(User)
     private userRepository: UserRepository,
+    private gameRoomRepository: GameRoomRepository,
+    private gameEntryRepository: GameEntryRepository,
     private dataSource: DataSource,
   ) {}
   /**
@@ -65,7 +65,7 @@ export class GamesService {
 
     /** トランザクション処理 */
     await this.dataSource.transaction(async (manager: EntityManager) => {
-      // ゲームルームのエンティティを作成
+      // ゲームルームを作成
       const gameRoom = manager.create(GameRoom, {
         roomName: requestDto.roomName,
         note: requestDto.note,

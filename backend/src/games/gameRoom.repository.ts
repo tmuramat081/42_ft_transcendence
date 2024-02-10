@@ -13,13 +13,13 @@ export type CreateGameRoomInput = Partial<Omit<GameRoom, 'gameRoomId' | 'created
 export class GameRoomRepository {
   constructor(
     @InjectRepository(GameRoom)
-    private gameRoomRepository: Repository<GameRoom>,
+    private readonly repository: Repository<GameRoom>,
   ) {}
 
   // ゲームルームを一件取得
   async findOneGameRoom(gameRoomId: number): Promise<GameRoom | undefined> {
     try {
-      return await this.gameRoomRepository.findOneBy({
+      return await this.repository.findOneBy({
         gameRoomId: gameRoomId,
       });
     } catch (error) {
@@ -37,7 +37,7 @@ export class GameRoomRepository {
       roomStatus: whereInput.roomStatus,
     };
     try {
-      return await this.gameRoomRepository.findAndCount({
+      return await this.repository.findAndCount({
         where: whereCondition,
         take: paginationInput?.take,
         skip: paginationInput?.skip,
@@ -51,7 +51,7 @@ export class GameRoomRepository {
   // ゲームルームの件数を取得
   async countGameRooms(whereInput: FindGameRoomWhereInput): Promise<number> {
     try {
-      return await this.gameRoomRepository.count({
+      return await this.repository.count({
         where: whereInput,
       });
     } catch (error) {
@@ -61,7 +61,7 @@ export class GameRoomRepository {
 
   // ゲームルームを1件登録（[INFO] トランザクションを張る場合は、managerを引数に指定する）
   async createGameRoom(inputData: GameRoom, manager?: EntityManager): Promise<GameRoom> {
-    const repository = manager ? manager.getRepository(GameRoom) : this.gameRoomRepository;
+    const repository = manager ? manager.getRepository(GameRoom) : this.repository;
     try {
       return await repository.save(inputData);
     } catch (error) {

@@ -5,8 +5,6 @@ import { ListGameRoomsResponseDto } from './dto/response/listGameRoomResponse.dt
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { CreateGameRoomRequestDto } from './dto/request/createGameRoomRequest.dto';
 
-// TODO: JWTガード追加
-
 @ApiTags('GameRoom')
 @Controller('game-room')
 export class GamesController {
