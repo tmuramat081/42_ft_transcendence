@@ -1,13 +1,26 @@
+import { UserRepository } from './../users/users.repository';
 import { IPaginationEnvelope } from '@/common/interface/pagination';
 import { ListGameRoomsRequestDto } from './dto/request/listGameRoomsRequest.dto';
 import { GameRoom } from './entities/gameRoom.entity';
 import { FindGameRoomWhereInput, GameRoomRepository } from './gameRoom.repository';
 import { InjectRepository } from '@nestjs/typeorm';
+import { CreateGameRoomRequestDto } from './dto/request/createGameRoomRequest.dto';
+import { GAME_ROOM_STATUS } from './game.constant';
+import { InternalServerErrorException, NotFoundException } from '@nestjs/common';
+import { GameEntryRepository } from './gameEntry.repository';
+import { DataSource, EntityManager } from 'typeorm';
+import { User } from '@/users/entities/user.entity';
+import { GameEntry } from './entities/gameEntry.entity';
 
 export class GamesService {
   constructor(
-    @InjectRepository(GameRoomRepository)
+    @InjectRepository(GameRoom)
     private gameRoomRepository: GameRoomRepository,
+    @InjectRepository(GameEntry)
+    private gameEntryRepository: GameEntryRepository,
+    @InjectRepository(User)
+    private userRepository: UserRepository,
+    private dataSource: DataSource,
   ) {}
   /**
    * ゲームルーム一覧取得
@@ -38,5 +51,42 @@ export class GamesService {
     };
     // 取得結果を返却
     return { result, pagination };
+  }
+
+  /**
+   * ゲームルーム登録
+   */
+  async createGameRoom(requestDto: CreateGameRoomRequestDto): Promise<void> {
+    // 登録者の存在チェック（TODO: JWTから取得するなら不要）
+    const user = await this.userRepository.findOne(requestDto.createUserId);
+    if (!user) {
+      throw new NotFoundException();
+    }
+
+    /** トランザクション処理 */
+    await this.dataSource.transaction(async (manager: EntityManager) => {
+      // ゲームルームのエンティティを作成
+      const gameRoom = manager.create(GameRoom, {
+        roomName: requestDto.roomName,
+        note: requestDto.note,
+        maxPlayers: requestDto.maxPlayers,
+        roomStatus: GAME_ROOM_STATUS.WAITING,
+      });
+      // ゲームルームを登録
+      const created = await this.gameRoomRepository.createGameRoom(gameRoom, manager);
+      if (!created) {
+        throw new InternalServerErrorException();
+      }
+
+      // ゲーム参加者を作成
+      const gameEntry = manager.create(GameEntry, {
+        gameRoomId: created.gameRoomId,
+        userId: user.userId,
+        playerName: requestDto.playerName,
+        administratorFlag: true,
+      });
+      // ゲーム参加者を登録
+      await this.gameEntryRepository.createGameEntry(gameEntry, manager);
+    });
   }
 }
