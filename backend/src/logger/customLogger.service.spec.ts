@@ -14,7 +14,6 @@ describe('CustomLoggerService', () => {
     errorSpy = jest.spyOn(Logger.prototype, 'error').mockImplementation(() => {});
     warnSpy = jest.spyOn(Logger.prototype, 'warn').mockImplementation(() => {});
     debugSpy = jest.spyOn(Logger.prototype, 'debug').mockImplementation(() => {});
-
   });
 
   afterEach(() => {

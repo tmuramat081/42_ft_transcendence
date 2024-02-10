@@ -11,7 +11,7 @@ module.exports = {
     'plugin:@typescript-eslint/recommended', // 推奨ルール
     'plugin:@typescript-eslint/recommended-requiring-type-checking', // 型情報のルール
     'plugin:react/recommended', // React用ルール
-    'prettier', // Prettierとの競合を防ぐ
+    'plugin:prettier/recommended', // Prettierとの競合を防ぐ
   ],
   root: true,
   env: {

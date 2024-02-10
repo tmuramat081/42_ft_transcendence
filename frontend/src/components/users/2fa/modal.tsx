@@ -13,9 +13,20 @@ const Modal = ({ show, children, onClose }: Props) => {
   }
 
   return (
-    <div className={styles.modal} onClick={onClose}>
-      <div className={styles.modalContent} onClick={e => e.stopPropagation()}>
-        <span className={styles.closeButton} onClick={onClose}>&times;</span>
+    <div
+      className={styles.modal}
+      onClick={onClose}
+    >
+      <div
+        className={styles.modalContent}
+        onClick={(e) => e.stopPropagation()}
+      >
+        <span
+          className={styles.closeButton}
+          onClick={onClose}
+        >
+          &times;
+        </span>
         {children}
       </div>
     </div>

@@ -2,7 +2,7 @@ import { HttpException, Logger, LoggerService } from '@nestjs/common';
 import { ErrorLog } from './dto/errorLog.dto';
 
 export class CustomLogger implements LoggerService {
-  private readonly logger;
+  private readonly logger: Logger;
   constructor() {
     this.logger = new Logger(CustomLogger.name);
   }
@@ -17,7 +17,7 @@ export class CustomLogger implements LoggerService {
     } else if (error instanceof Error) {
       this.logger.error(`[Error] ${error.message ?? error.stack}`);
     } else {
-      this.logger.error(`[Error]`, error);
+      this.logger.error('[Error]', error);
     }
   }
 

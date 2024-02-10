@@ -9,9 +9,7 @@ import { GamesService } from './games.service';
 import { GameRoomRepository } from './gameRoom.repository';
 
 @Module({
-  imports: [
-    TypeOrmModule.forFeature([GameRoom, GameEntry, Match, MatchResult]),
-  ],
+  imports: [TypeOrmModule.forFeature([GameRoom, GameEntry, Match, MatchResult])],
   controllers: [GamesController],
   providers: [GamesService, GameRoomRepository],
   exports: [GamesService],

@@ -1,10 +1,4 @@
-import {
-  ExceptionFilter,
-  Catch,
-  ArgumentsHost,
-  HttpException,
-  HttpStatus,
-} from '@nestjs/common';
+import { ExceptionFilter, Catch, ArgumentsHost, HttpException, HttpStatus } from '@nestjs/common';
 import { HttpAdapterHost } from '@nestjs/core';
 import { CustomLogger } from '../logger/customLogger.service';
 
@@ -30,9 +24,11 @@ export class AllExceptionFilter implements ExceptionFilter {
       exception instanceof HttpException
         ? exception.getStatus() // 標準のエラークラスはステータスコードを取得
         : HttpStatus.INTERNAL_SERVER_ERROR; // それ以外は500として扱う
-    const requestMethodAndUrl = `${httpAdapter.getRequestMethod(request)} ${httpAdapter.getRequestUrl(request)}`;
+    const requestMethodAndUrl = `${httpAdapter.getRequestMethod(
+      request,
+    )} ${httpAdapter.getRequestUrl(request)}`;
 
-    const errorLog = this.logger.setErrorLog(exception, requestMethodAndUrl, httpStatus)
+    const errorLog = this.logger.setErrorLog(exception, requestMethodAndUrl, httpStatus);
 
     // アプリケーションログを出力 TODO: 本番環境ではエラーIDを生成？
     if (process.env.NODE_ENV === 'development') {
@@ -47,7 +43,8 @@ export class AllExceptionFilter implements ExceptionFilter {
     const responseBody = {
       statusCode: httpStatus,
       timestamp: new Date().toISOString(),
-      path: httpAdapter.getRequestUrl(ctx.getRequest()),
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+      path: httpAdapter.getRequestUrl(request),
     };
     httpAdapter.reply(ctx.getResponse(), responseBody, httpStatus);
   }

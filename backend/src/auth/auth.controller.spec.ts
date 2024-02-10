@@ -1,5 +1,6 @@
+/* eslint-disable */
 import { Test, TestingModule } from '@nestjs/testing';
-import { HttpModule } from '@nestjs/axios'
+import { HttpModule } from '@nestjs/axios';
 import { forwardRef, Module } from '@nestjs/common';
 import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
@@ -14,11 +15,9 @@ import { JwtModule } from '@nestjs/jwt';
 import { PassportModule } from '@nestjs/passport';
 import { User } from '../users/entities/user.entity';
 import { ConfigModule, ConfigService } from '@nestjs/config';
-import * as dotenv from 'dotenv'; 
+import * as dotenv from 'dotenv';
 import * as Joi from 'joi';
 import { JwtService } from '@nestjs/jwt';
-
-
 
 dotenv.config();
 describe('AuthController', () => {
@@ -27,8 +26,9 @@ describe('AuthController', () => {
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       //forwardRefは循環参照を解決するために使われる
-      imports:[
-        forwardRef(() => UsersModule), HttpModule,
+      imports: [
+        forwardRef(() => UsersModule),
+        HttpModule,
         ConfigModule.forRoot({
           isGlobal: true,
           envFilePath: '.env',

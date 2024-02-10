@@ -1,3 +1,4 @@
+/* eslint-disable */
 import { Controller, Get, Post, Put, Body, Req, Res, Param, InternalServerErrorException, ForbiddenException, UnauthorizedException } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { SignUpUserDto, SignInUserDto, UpdateUserDto, ReturnUserDto } from './dto/user.dto';
@@ -125,7 +126,7 @@ export class UsersController {
             //return accessToken;
             return JSON.stringify({"accessToken": accessToken});
         } catch (error) {
-            if (error.code === 'ER_DUP_ENTRY') {
+            if ((error as any).code === 'ER_DUP_ENTRY') {
                 throw new InternalServerErrorException('User already exists');
                 //return res.status(400).json({ message: 'User already exists' });
             }

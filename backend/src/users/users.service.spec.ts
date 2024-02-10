@@ -1,3 +1,4 @@
+/* eslint-disable */
 import { Test, TestingModule } from '@nestjs/testing';
 import { UsersService } from './users.service';
 import { UsersController } from './users.controller';
@@ -9,26 +10,35 @@ import { PassportModule } from '@nestjs/passport';
 import { JwtStrategy } from './strategy/jwt.strategy';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
 import { JwtPayload } from './interfaces/jwt_payload';
-import { JwtService } from '@nestjs/jwt'
+import { JwtService } from '@nestjs/jwt';
 import { User } from './entities/user.entity';
 import { SignUpUserDto, SignInUserDto } from './dto/user.dto';
 import { ConfigModule, ConfigService } from '@nestjs/config';
-import * as dotenv from 'dotenv'; 
+import * as dotenv from 'dotenv';
 import * as Joi from 'joi';
-import { Column, CreateDateColumn, DeleteDateColumn, Entity, OneToMany, PrimaryGeneratedColumn, Timestamp, Unique } from "typeorm";
+import {
+  Column,
+  CreateDateColumn,
+  DeleteDateColumn,
+  Entity,
+  OneToMany,
+  PrimaryGeneratedColumn,
+  Timestamp,
+  Unique,
+} from 'typeorm';
 
 dotenv.config();
 const mockUser1: User = {
   userId: 1,
-  userName: "test",
-  email: "test@test",
-  password: "test",
-  icon: "",
+  userName: 'test',
+  email: 'test@test',
+  password: 'test',
+  icon: '',
   createdAt: new Date('2023-01-01T00:00:00Z'),
   deletedAt: new Date('2023-01-01T00:00:00Z'),
-  name42: "",
+  name42: '',
   twoFactorAuth: false,
-  twoFactorAuthSecret: "",
+  twoFactorAuthSecret: '',
   gameRooms: [],
   matchResults: [],
   gameEntries: [],
@@ -57,7 +67,6 @@ const mockUserRepository = () => ({
   findOne: jest.fn().mockResolvedValue(mockUser1), // モックの戻り値を設定
   findOneByName: jest.fn(),
 });
-
 
 describe('UsersService', () => {
   let service: UsersService;
@@ -111,7 +120,12 @@ describe('UsersService', () => {
         }),
       ],
       controllers: [UsersController],
-      providers: [UsersService, JwtStrategy, JwtAuthGuard, { provide: UserRepository, useFactory: mockUserRepository }],
+      providers: [
+        UsersService,
+        JwtStrategy,
+        JwtAuthGuard,
+        { provide: UserRepository, useFactory: mockUserRepository },
+      ],
       //providers: [UserRepository, UsersService, JwtStrategy, JwtAuthGuard],
       //exports: [JwtStrategy, JwtAuthGuard],
     }).compile();
@@ -145,7 +159,7 @@ describe('UsersService', () => {
     it('should return a user', async () => {
       const expected = mockUser1;
 
-      const dto: SignUpUserDto  = {
+      const dto: SignUpUserDto = {
         userName: mockUser1.userName,
         email: mockUser1.email,
         password: mockUser1.password,
@@ -156,7 +170,7 @@ describe('UsersService', () => {
       jest.spyOn(repository, 'createUser').mockResolvedValue(expected);
 
       const result = await service.signUp(dto);
-      
+
       //expect(result).toEqual(expected);
 
       // JWT Tokenの検証
@@ -165,7 +179,6 @@ describe('UsersService', () => {
       // expect(payload).toEqual({ userId: expected.userId, userName: expected.userName, email: expected.email });
 
       expect(result).toEqual(expected);
-
     });
   });
 
@@ -173,7 +186,7 @@ describe('UsersService', () => {
     it('should return a user', async () => {
       const expected = mockUser1;
 
-      const dto: SignInUserDto  = {
+      const dto: SignInUserDto = {
         userName: mockUser1.userName,
         password: mockUser1.password,
       };
@@ -183,7 +196,7 @@ describe('UsersService', () => {
       jest.spyOn(repository, 'findOneByName').mockResolvedValue(expected);
 
       const result = await service.signIn(dto);
-      
+
       //expect(result).toEqual(expected);
 
       // JWT Tokenの検証
@@ -199,7 +212,7 @@ describe('UsersService', () => {
     it('should return a user', async () => {
       const expected = mockUser1;
 
-      const dto: SignUpUserDto  = {
+      const dto: SignUpUserDto = {
         userName: mockUser1.userName,
         email: mockUser1.email,
         password: mockUser1.password,
@@ -211,7 +224,7 @@ describe('UsersService', () => {
       // signupメソッドのモックを設定（もし必要な場合）
       const result = await service.currentUser(dto);
 
-      const {password, ...expected2} = expected;
+      const { password, ...expected2 } = expected;
 
       //expect(result).toEqual(expected);
       expect(result).toEqual(expected2);
@@ -230,7 +243,6 @@ describe('UsersService', () => {
       expect(result).toEqual(expected);
     });
   });
-
 
   describe('findOne', () => {
     it('should return a user', async () => {
