@@ -6,16 +6,11 @@ import { GamesController } from './games.controller';
 import { GamesService } from './games.service';
 import { GameRoomRepository } from './gameRoom.repository';
 import { GameEntryRepository } from './gameEntry.repository';
-import { UserRepository } from '@/users/users.repository';
-import { User } from '@/users/entities/user.entity';
-import { UsersModule } from '@/users/users.module';
-import { MatchResult } from './entities/matchResult.entity';
-import { Match } from '@/users/dto/match.decorator';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([User, GameRoom, GameEntry, Match, MatchResult]), UsersModule],
+  imports: [TypeOrmModule.forFeature([GameRoom, GameEntry])],
   controllers: [GamesController],
-  providers: [GamesService, GameRoomRepository, GameEntryRepository, UserRepository],
-  exports: [GamesService],
+  providers: [GamesService, GameRoomRepository, GameEntryRepository],
+  exports: [GamesService, GameRoomRepository, GameEntryRepository],
 })
 export class GameModule {}

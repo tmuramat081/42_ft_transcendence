@@ -13,7 +13,7 @@ export type CreateGameRoomInput = Partial<Omit<GameRoom, 'gameRoomId' | 'created
 export class GameRoomRepository {
   constructor(
     @InjectRepository(GameRoom)
-    private readonly repository: Repository<GameRoom>,
+    private repository: Repository<GameRoom>,
   ) {}
 
   // ゲームルームを一件取得

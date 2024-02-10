@@ -7,7 +7,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 export class GameEntryRepository {
   constructor(
     @InjectRepository(GameEntry)
-    private readonly repository: Repository<GameEntry>,
+    private repository: Repository<GameEntry>,
   ) {}
 
   // ゲーム参加者を1件登録（[INFO] トランザクションを張る場合は、managerを引数に指定する）

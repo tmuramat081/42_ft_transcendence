@@ -5,10 +5,11 @@ import { ListGameRoomsRequestDto } from './dto/request/listGameRoomsRequest.dto'
 import { GAME_ROOM_STATUS } from './game.constant';
 import { InternalServerErrorException } from '@nestjs/common';
 import { GameEntryRepository } from './gameEntry.repository';
-import { UserRepository } from '@/users/users.repository';
 import { JwtAuthGuard } from '@/users/guards/jwt-auth.guard';
 import { MockJwtAuthGuard } from '@/users/guards/mock-jwt-auth.guard';
 import { DataSource, EntityManager } from 'typeorm';
+import { getRepositoryToken } from '@nestjs/typeorm';
+import { User } from '@/users/entities/user.entity';
 
 const mockGameRoomRepository = (): Partial<GameRoomRepository> => ({
   findManyGameRooms: jest.fn(),
@@ -42,7 +43,6 @@ describe('GamesService', () => {
   let gamesService: GamesService;
   let gameRoomRepository: GameRoomRepository;
   let gameEntryRepository: GameEntryRepository;
-  let userRepository: UserRepository;
 
   beforeEach(async () => {
     const module = await Test.createTestingModule({
@@ -50,7 +50,7 @@ describe('GamesService', () => {
         GamesService,
         { provide: GameRoomRepository, useFactory: mockGameRoomRepository },
         { provide: GameEntryRepository, useFactory: mockGameEntryRepository },
-        { provide: UserRepository, useFactory: mockUserRepository },
+        { provide: getRepositoryToken(User), useFactory: mockUserRepository },
         { provide: DataSource, useValue: mockDataSource },
       ],
     })
@@ -61,7 +61,6 @@ describe('GamesService', () => {
     gamesService = module.get<GamesService>(GamesService);
     gameRoomRepository = module.get<GameRoomRepository>(GameRoomRepository);
     gameEntryRepository = module.get<GameEntryRepository>(GameEntryRepository);
-    userRepository = module.get<UserRepository>(UserRepository);
   });
 
   describe('listGameRooms', () => {
@@ -125,7 +124,6 @@ describe('GamesService', () => {
 
   describe('createGameRoom', () => {
     it('ゲームルームを登録する', async () => {
-      (userRepository.findOne as jest.Mock).mockResolvedValue({ userId: 1 });
       (gameRoomRepository.createGameRoom as jest.Mock).mockImplementation((gameRoom, _manager) =>
         Promise.resolve(gameRoom),
       );
