@@ -13,6 +13,12 @@ import Typography from '@mui/material/Typography';
 import Container from '@mui/material/Container';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
 
+import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation'
+import { useAuth } from '@/providers/useAuth';
+import Modal from '../../components/users/2fa/modal'; // Modalコンポーネントをインポート
+import CircularProgress from '@mui/material/CircularProgress';
+
 function Copyright(props: any) {
   return (
     <Typography variant="body2" color="text.secondary" align="center" {...props}>
@@ -31,20 +37,124 @@ const defaultTheme = createTheme();
 
 export default function SignIn() {
 
+    const [userName, setUserName] = useState<string>('');
+    const [password, setPassword] = useState<string>('');
+
+    const [validationUserId, setValidationUserId] = useState<number>(0);
+    const [show2Fa, setShow2Fa] = useState<boolean>(false);
+    const [code, setCode] = useState<string>('');
+
+    const router = useRouter();
+    const {signin, loginUser, getCurrentUser, loading} = useAuth();
+
+    // useEffect
+    useEffect(() => {
+        getCurrentUser();
+    }, []);
+
     //field修正
 
     // handleSubmit修正
 
-    
+    const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+        e.preventDefault();
+        const data = new FormData(e.currentTarget);
 
-  const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    const data = new FormData(event.currentTarget);
-    console.log({
-      email: data.get('email'),
-      password: data.get('password'),
-    });
-  };
+        
+        // ここでフォームのデータを処理します
+        fetch('http://localhost:3001/users/signin', {
+            method: 'POST',
+            credentials: 'include',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            //body: JSON.stringify({ userName, password }),
+            body: JSON.stringify({ userName: data.get('name'), password: data.get('password') }),
+        })
+        .then ((res) => {
+            // /console.log(res.json());
+            return res.json();
+        })
+        //.then((res) => res.json())
+        .then((data) => {
+            if (data.status === "SUCCESS" && data.userId === undefined) {
+                //console.log('Success:', data.accessToken);
+                getCurrentUser();
+                router.push('/');
+            } else if (data.status === "2FA_REQUIRED" && data.userId !== undefined) {
+                setValidationUserId(data.userId);
+                setShow2Fa(true);
+            }
+        })
+        .catch((error) => {
+            console.error('Error:', error);
+        });
+
+        //console.log('送信されたデータ:', { userName, password });
+
+
+        //signin( userName, password );
+        //getCurrentUser();
+        // 送信後の処理（例: フォームをクリアする）
+        // setUserName('');
+        // setPassword('');
+    };
+
+    const handleSubmit2fa = (e: React.FormEvent<HTMLFormElement>) => {
+        e.preventDefault();
+        const data = new FormData(e.currentTarget);
+        // ここに2FAコードを検証するロジックを追加
+        console.log('Submitted 2FA code:', code);
+        console.log('validationUserId:', validationUserId);
+  
+        fetch('http://localhost:3001/auth/2fa/verify', {
+          method: 'POST',
+          credentials: 'include',
+          headers: {
+                'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ userId: validationUserId, code: code }),
+          })
+          .then((res) => {
+              //console.log(res.data);
+              return res.json();
+          })
+          .then((data) => {
+            if (data.accessToken !== undefined) {
+                console.log('Success:', data.accessToken);
+                //setToken(data.accessToken);
+                //router.push('/');
+                getCurrentUser();
+            } else {
+                // errorメッセージを表示
+
+
+            }
+          })
+          .catch((error) => {
+              console.error('Error:', error);
+  
+              // redirect
+          });
+      };
+
+
+
+//   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+//     event.preventDefault();
+//     const data = new FormData(event.currentTarget);
+//     console.log({
+//       email: data.get('email'),
+//       password: data.get('password'),
+//     });
+//   };
+
+    // 読み込み中はローディングを表示
+    // 一瞬見れる問題を解決
+    if (loading || loginUser) {
+        // return <p>loading...</p>
+        return <CircularProgress color="secondary" />
+    }
 
   return (
     <ThemeProvider theme={defaultTheme}>
@@ -69,10 +179,10 @@ export default function SignIn() {
               margin="normal"
               required
               fullWidth
-              id="email"
-              label="Email Address"
-              name="email"
-              autoComplete="email"
+              id="name"
+              label="User Name"
+              name="name"
+              autoComplete="name"
               autoFocus
             />
             <TextField
