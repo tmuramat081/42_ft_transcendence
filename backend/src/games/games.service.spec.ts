@@ -1,5 +1,5 @@
 import { GamesService } from './games.service';
-import { FindGameRoomWhereInput, GameRoomRepository } from './gameRoom.repository';
+import { GameRoomRepository } from './gameRoom.repository';
 import { ListGameRoomsRequestDto } from './dto/request/listGameRoomsRequest.dto';
 import { GAME_ROOM_STATUS } from './game.constant';
 import { InternalServerErrorException } from '@nestjs/common';
