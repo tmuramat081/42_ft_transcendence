@@ -76,6 +76,7 @@ export default function SignIn() {
         e.preventDefault();
         const data = new FormData(e.currentTarget);
 
+        console.log('Submitted data:', data.get('name'), data.get('password'))
         
         // ここでフォームのデータを処理します
         fetch('http://localhost:3001/users/signin', {
@@ -107,6 +108,7 @@ export default function SignIn() {
         });
 
         //console.log('送信されたデータ:', { userName, password });
+        console.log('送信されたデータ:', { name: data.get('name'), password: data.get('password') });
 
 
         //signin( userName, password );
@@ -245,7 +247,7 @@ export default function SignIn() {
           </Box>
 
       <Modal
-        open={!show2Fa}
+        open={show2Fa}
         onClose={ () => {}}
         aria-labelledby="child-modal-title"
         aria-describedby="child-modal-description"
