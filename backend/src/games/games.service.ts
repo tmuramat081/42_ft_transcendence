@@ -8,11 +8,14 @@ import { InternalServerErrorException } from '@nestjs/common';
 import { GameEntryRepository } from './gameEntry.repository';
 import { DataSource, EntityManager } from 'typeorm';
 import { GameEntry } from './entities/gameEntry.entity';
+import { InjectRepository } from '@nestjs/typeorm';
 
 export class GamesService {
   constructor(
-    private gameRoomRepository: GameRoomRepository,
-    private gameEntryRepository: GameEntryRepository,
+    @InjectRepository(GameRoom)
+    private readonly gameRoomRepository: GameRoomRepository,
+    @InjectRepository(GameEntry)
+    private readonly gameEntryRepository: GameEntryRepository,
     private dataSource: DataSource,
   ) {}
   /**
