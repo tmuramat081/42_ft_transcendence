@@ -13,6 +13,12 @@ import Typography from '@mui/material/Typography';
 import Container from '@mui/material/Container';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
 
+import CircularProgress from '@mui/material/CircularProgress';
+
+import { useRouter } from 'next/navigation'
+import { useAuth } from '@/providers/useAuth';
+import { useState, useEffect } from 'react';
+
 function Copyright(props: any) {
   return (
     <Typography variant="body2" color="text.secondary" align="center" {...props}>
@@ -31,20 +37,83 @@ const defaultTheme = createTheme();
 
 export default function SignUp() {
 
+  const [userName, setUserName] = useState('');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [passwordConfirm, setPasswordConfirm] = useState('');
+  const [user, setUser] = useState({});
+
+  const [token, setToken] = useState('');
+
+  const router = useRouter();
+  const {signin, loginUser, getCurrentUser, loading} = useAuth();
+
+  useEffect(() => {
+    //if (token == '' || token === undefined) return;
+    getCurrentUser();
+  }, []);
+
+
     //field修正
 
     // handleSubmit修正
 
     
     // ボタンを押した時の処理
-  const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    const data = new FormData(event.currentTarget);
-    console.log({
-      email: data.get('email'),
-      password: data.get('password'),
+  // const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+  //   event.preventDefault();
+  //   const data = new FormData(event.currentTarget);
+  //   console.log({
+  //     email: data.get('email'),
+  //     password: data.get('password'),
+  //   });
+  // };
+
+  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+
+    const data = new FormData(e.currentTarget);
+
+    console.log('Submitted data:', data.get('name'), data.get('email'), data.get('password'), data.get('passwordConfirm'))
+
+    // // ここでフォームのデータを処理します
+    // // axios.post('localhost:3001/users/login', { username, email });
+    fetch('http://localhost:3001/users/signup', {
+        method: 'POST',
+        credentials: 'include',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        //body: JSON.stringify({ userName, email, password, passwordConfirm }),
+        body: JSON.stringify({userName: data.get('name'), email: data.get('email'), password: data.get('password'), passwordConfirm: data.get('passwordConfirm')}),
+    })
+    .then ((res) => {
+        // /console.log(res.json());
+        return res.json();
+    })
+    //.then((res) => res.json())
+    .then((data) => {
+        console.log('Success:', data.accessToken);
+        setToken(data.accessToken);
+        getCurrentUser();
+    })
+    .catch((error) => {
+        console.error('Error:', error);
     });
+
+    console.log('送信されたデータ:', { name: data.get('name'), email: data.get('email'), password: data.get('password'), passwordConfirm: data.get('passwordConfirm') });
+
+    // console.log('送信されたデータ:', { userName, password });
+    // // 送信後の処理（例: フォームをクリアする）
+    // setUserName('');
+    // setEmail('');
+    // setPassword('');
+    // setPasswordConfirm('');
   };
+
+  if (loading || loginUser) {
+    return <CircularProgress />;
+  }
 
   return (
     <ThemeProvider theme={defaultTheme}>
@@ -68,27 +137,19 @@ export default function SignUp() {
             <Grid container spacing={2}>
               <Grid item xs={12} sm={6}>
                 <TextField
-                  autoComplete="given-name"
-                  name="firstName"
+                  margin="normal"
                   required
                   fullWidth
-                  id="firstName"
-                  label="First Name"
+                  id="name"
+                  label="User Name"
+                  name="name"
+                  autoComplete="name"
                   autoFocus
                 />
               </Grid>
               <Grid item xs={12} sm={6}>
                 <TextField
-                  required
-                  fullWidth
-                  id="lastName"
-                  label="Last Name"
-                  name="lastName"
-                  autoComplete="family-name"
-                />
-              </Grid>
-              <Grid item xs={12}>
-                <TextField
+                  margin="normal"
                   required
                   fullWidth
                   id="email"
@@ -99,12 +160,24 @@ export default function SignUp() {
               </Grid>
               <Grid item xs={12}>
                 <TextField
+                  margin="normal"
                   required
                   fullWidth
                   name="password"
                   label="Password"
                   type="password"
                   id="password"
+                  autoComplete="current-password"
+                />
+              </Grid>
+              <Grid item xs={12}>
+                <TextField
+                  required
+                  fullWidth
+                  name="passwordConfirm"
+                  label="PasswordConfirm"
+                  type="passwordConfirm"
+                  id="passwordConfirm"
                   autoComplete="new-password"
                 />
               </Grid>
@@ -131,6 +204,10 @@ export default function SignUp() {
               </Grid>
             </Grid>
           </Box>
+
+          <Button onClick={ () => { router.push('/auth/signup') } } variant="contained" color="primary">SignUp</Button>
+
+          <Button variant="contained" color="primary" onClick={() => { router.push('http://localhost:3001/auth/callback/42')}}>42ログイン</Button>
         </Box>
         <Copyright sx={{ mt: 5 }} />
       </Container>

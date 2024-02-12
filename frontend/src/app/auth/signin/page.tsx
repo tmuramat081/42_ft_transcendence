@@ -6,7 +6,7 @@ import SignIn from '@/components/auth/signin_mui';
 
 export default function Page() {
     return (
-        <Form />
-        // <SignIn />
+        //<Form />
+        <SignIn />
     )
 }
