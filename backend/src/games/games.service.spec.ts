@@ -2,11 +2,12 @@ import { GamesService } from './games.service';
 import { GameRoomRepository } from './gameRoom.repository';
 import { ListGameRoomsRequestDto } from './dto/request/listGameRoomsRequest.dto';
 import { GAME_ROOM_STATUS } from './game.constant';
-import { InternalServerErrorException } from '@nestjs/common';
+import { BadRequestException, InternalServerErrorException } from '@nestjs/common';
 import { GameEntryRepository } from './gameEntry.repository';
 import { DataSource } from 'typeorm';
 
 const mockGameRoomRepository = {
+  findOneGameRoomForUpdate: jest.fn(),
   findManyGameRooms: jest.fn(),
   countGameRooms: jest.fn(),
   createGameRoom: jest.fn(),
@@ -14,6 +15,7 @@ const mockGameRoomRepository = {
 
 const mockGameEntryRepository = {
   createGameEntry: jest.fn(),
+  findManyGameEntries: jest.fn(),
 };
 
 const mockEntityManager = {
@@ -120,6 +122,58 @@ describe('GamesService', () => {
       };
 
       await expect(gamesService.createGameRoom(requestDto)).resolves.toBeUndefined();
+    });
+  });
+
+  describe('createGameEntry', () => {
+    it('ゲーム参加者を登録する', async () => {
+      mockGameRoomRepository.findOneGameRoomForUpdate.mockResolvedValue({
+        gameRoomId: 1,
+        maxPlayers: 2,
+      });
+      mockGameEntryRepository.findManyGameEntries.mockResolvedValue([]);
+      mockGameEntryRepository.createGameEntry.mockImplementation((gameRoom, _manager) =>
+        Promise.resolve(gameRoom),
+      );
+      const gameRoomId = 1;
+      const inputDto = {
+        gameRoomId: 1,
+        userId: 1,
+        playerName: 'test',
+        administratorFlag: false,
+      };
+      await expect(gamesService.createGameEntry(inputDto)).resolves.toBeUndefined();
+      expect(mockGameRoomRepository.findOneGameRoomForUpdate).toHaveBeenCalledWith(
+        gameRoomId,
+        expect.anything(),
+      );
+      expect(mockGameEntryRepository.findManyGameEntries).toHaveBeenCalledWith(
+        gameRoomId,
+        expect.anything(),
+      );
+    });
+    it('ゲーム参加者を登録（最大人数に達している場合）', async () => {
+      mockGameRoomRepository.findOneGameRoomForUpdate({
+        gameRoomId: 1,
+        maxPlayers: 2,
+      });
+      mockGameEntryRepository.findManyGameEntries.mockResolvedValue([{}, {}]);
+      const gameRoomId = 1;
+      const inputDto = {
+        gameRoomId: 1,
+        userId: 1,
+        playerName: 'test',
+        administratorFlag: false,
+      };
+      await expect(gamesService.createGameEntry(inputDto)).rejects.toThrow(BadRequestException);
+      expect(mockGameRoomRepository.findOneGameRoomForUpdate).toHaveBeenCalledWith(
+        gameRoomId,
+        expect.anything(),
+      );
+      expect(mockGameEntryRepository.findManyGameEntries).toHaveBeenCalledWith(
+        gameRoomId,
+        expect.anything(),
+      );
     });
   });
 });

@@ -2,6 +2,12 @@ import { ExceptionFilter, Catch, ArgumentsHost, HttpException, HttpStatus } from
 import { HttpAdapterHost } from '@nestjs/core';
 import { CustomLogger } from '../logger/customLogger.service';
 
+type HttpExceptionResponse = {
+  statusCode: number;
+  message: string | string[];
+  error?: string;
+};
+
 /**
  * カスタム例外フィルター
  * cf. https://docs.nestjs.com/exception-filters
@@ -18,12 +24,24 @@ export class AllExceptionFilter implements ExceptionFilter {
   catch(exception: unknown, host: ArgumentsHost): void {
     const { httpAdapter } = this.httpAdapterHost;
 
+    let httpStatus = HttpStatus.INTERNAL_SERVER_ERROR as number; // デフォルトのステータスコード
+    let message = 'Internal Server Error'; // デフォルトのエラーメッセージ
+
     const ctx = host.switchToHttp();
     const request = ctx.getRequest<Request>();
-    const httpStatus =
-      exception instanceof HttpException
-        ? exception.getStatus() // 標準のエラークラスはステータスコードを取得
-        : HttpStatus.INTERNAL_SERVER_ERROR; // それ以外は500として扱う
+
+    if (exception instanceof HttpException) {
+      httpStatus = exception.getStatus(); // 標準のエラークラスはステータスコードを取得
+      const response = exception.getResponse();
+      if (typeof response === 'object' && response !== null) {
+        // オブジェクトのみで構成される場合
+        const errorMessage = (response as HttpExceptionResponse).message || exception.message;
+        message = Array.isArray(errorMessage) ? errorMessage.join(', ') : errorMessage;
+      } else if (typeof response === 'string') {
+        // メッセージのみで構成される場合
+        message = response;
+      }
+    }
     const requestMethodAndUrl = `${httpAdapter.getRequestMethod(
       request,
     )} ${httpAdapter.getRequestUrl(request)}`;
@@ -45,6 +63,7 @@ export class AllExceptionFilter implements ExceptionFilter {
       timestamp: new Date().toISOString(),
       // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
       path: httpAdapter.getRequestUrl(request),
+      message: message,
     };
     httpAdapter.reply(ctx.getResponse(), responseBody, httpStatus);
   }

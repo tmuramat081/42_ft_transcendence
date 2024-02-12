@@ -10,6 +10,10 @@ export type CreateGameRoomInput = Partial<Omit<GameRoom, 'gameRoomId' | 'created
 export interface GameRoomRepository extends Repository<GameRoom> {
   this: Repository<GameRoom>;
   findOneGameRoom(gameRoomId: number): Promise<GameRoom | undefined>;
+  findOneGameRoomForUpdate(
+    gameRoomId: number,
+    manager: EntityManager,
+  ): Promise<GameRoom | undefined>;
   findManyGameRooms(
     whereInput: FindGameRoomWhereInput,
     paginationInput?: { take?: number; skip?: number },
@@ -20,7 +24,11 @@ export interface GameRoomRepository extends Repository<GameRoom> {
 
 export const customGameRoomRepository: Pick<
   GameRoomRepository,
-  'findOneGameRoom' | 'findManyGameRooms' | 'countGameRooms' | 'createGameRoom'
+  | 'findOneGameRoom'
+  | 'findOneGameRoomForUpdate'
+  | 'findManyGameRooms'
+  | 'countGameRooms'
+  | 'createGameRoom'
 > = {
   // ゲームルームを一件取得
   async findOneGameRoom(
@@ -30,6 +38,23 @@ export const customGameRoomRepository: Pick<
     try {
       return await this.findOneBy({
         gameRoomId: gameRoomId,
+      });
+    } catch (error) {
+      throw new InternalServerErrorException();
+    }
+  },
+
+  // ゲームルームを一件取得（行ロック）
+  async findOneGameRoomForUpdate(
+    this: Repository<GameRoom>,
+    gameRoomId: number,
+    manager: EntityManager,
+  ): Promise<GameRoom | undefined> {
+    try {
+      const repository = manager.getRepository(GameRoom);
+      return await repository.findOne({
+        where: { gameRoomId: gameRoomId },
+        lock: { mode: 'pessimistic_write' },
       });
     } catch (error) {
       throw new InternalServerErrorException();
