@@ -13,6 +13,11 @@ import { GameEntryRepository } from './gameEntry.repository';
 import { DataSource, EntityManager } from 'typeorm';
 import { GameEntry } from './entities/gameEntry.entity';
 import { InjectRepository } from '@nestjs/typeorm';
+import {
+  API_ERROR_MESSAGE,
+  NotFoundMessage,
+  TABLE_NAME,
+} from '@/common/contant/errorMessage.constnat';
 
 export interface IGameEntry {
   gameRoomId: number;
@@ -107,7 +112,7 @@ export class GamesService {
       );
       if (!gameRoom) {
         // ゲームルームが存在しない場合はエラー
-        throw new NotFoundException();
+        throw new NotFoundException(NotFoundMessage(TABLE_NAME.GAME_ROOM));
       }
 
       // ゲーム参加者を取得
@@ -117,7 +122,7 @@ export class GamesService {
       );
       if (gameEntries?.length >= gameRoom.maxPlayers) {
         // 参加者が最大プレーヤー数に達している場合はエラー
-        throw new BadRequestException();
+        throw new BadRequestException(API_ERROR_MESSAGE.BUSINESS_LOGIC.MAX_GAME_ENTRY_REACHED);
       }
 
       // ゲーム参加者を作成

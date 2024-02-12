@@ -7,6 +7,7 @@ import { GameEntryRepository } from './gameEntry.repository';
 import { DataSource } from 'typeorm';
 
 const mockGameRoomRepository = {
+  findOneGameRoomForUpdate: jest.fn(),
   findManyGameRooms: jest.fn(),
   countGameRooms: jest.fn(),
   createGameRoom: jest.fn(),
@@ -14,6 +15,7 @@ const mockGameRoomRepository = {
 
 const mockGameEntryRepository = {
   createGameEntry: jest.fn(),
+  findManyGameEntries: jest.fn(),
 };
 
 const mockEntityManager = {
@@ -120,6 +122,26 @@ describe('GamesService', () => {
       };
 
       await expect(gamesService.createGameRoom(requestDto)).resolves.toBeUndefined();
+    });
+  });
+
+  describe('createGameEntry', () => {
+    it('ゲーム参加者を登録する', async () => {
+      mockGameRoomRepository.findOneGameRoomForUpdate.mockResolvedValue({
+        gameRoomId: 1,
+      });
+      mockGameEntryRepository.findManyGameEntries.mockResolvedValue([]);
+      mockGameEntryRepository.createGameEntry.mockImplementation((gameRoom, _manager) =>
+        Promise.resolve(gameRoom),
+      );
+
+      const inputDto = {
+        gameRoomId: 1,
+        userId: 1,
+        playerName: 'test',
+        administratorFlag: false,
+      };
+      await expect(gamesService.createGameEntry(inputDto)).resolves.toBeUndefined();
     });
   });
 });
