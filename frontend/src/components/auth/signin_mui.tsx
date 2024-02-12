@@ -120,7 +120,7 @@ export default function SignIn() {
 
     const handleSubmit2fa = (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
-        const data = new FormData(e.currentTarget);
+        //const data = new FormData(e.currentTarget);
         // ここに2FAコードを検証するロジックを追加
         console.log('Submitted 2FA code:', code);
         console.log('validationUserId:', validationUserId);
