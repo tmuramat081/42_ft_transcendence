@@ -1,9 +1,10 @@
-import { Body, Controller, Get, Post, Query } from '@nestjs/common';
+import { Body, Controller, Get, Param, ParseIntPipe, Post, Query } from '@nestjs/common';
 import { GamesService } from './games.service';
 import { ListGameRoomsRequestDto } from './dto/request/listGameRoomsRequest.dto';
 import { ListGameRoomsResponseDto } from './dto/response/listGameRoomResponse.dto';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { CreateGameRoomRequestDto } from './dto/request/createGameRoomRequest.dto';
+import { CreateGameEntryRequestDto } from './dto/request/createGameEntryRequest.dto';
 
 @ApiTags('GameRoom')
 @Controller('game-room')
@@ -31,5 +32,22 @@ export class GamesController {
   @ApiResponse({ status: 201 })
   async createGameRoom(@Body() createGameRoomRequestDto: CreateGameRoomRequestDto) {
     await this.gamesService.createGameRoom(createGameRoomRequestDto);
+  }
+
+  // ゲーム参加者登録API
+  @Post(':id/entry')
+  @ApiOperation({
+    summary: 'ゲームルーム参加API',
+    description: 'ログインユーザーをルームに参加させる。',
+  })
+  @ApiResponse({ status: 201 })
+  async createGameEntry(
+    @Param('id', ParseIntPipe) gameRoomId: number,
+    @Body() createGameEntryRequestDto: CreateGameEntryRequestDto,
+  ) {
+    await this.gamesService.createGameEntry({
+      gameRoomId,
+      ...createGameEntryRequestDto,
+    });
   }
 }

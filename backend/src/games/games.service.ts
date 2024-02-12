@@ -4,11 +4,22 @@ import { GameRoom } from './entities/gameRoom.entity';
 import { FindGameRoomWhereInput, GameRoomRepository } from './gameRoom.repository';
 import { CreateGameRoomRequestDto } from './dto/request/createGameRoomRequest.dto';
 import { GAME_ROOM_STATUS } from './game.constant';
-import { InternalServerErrorException } from '@nestjs/common';
+import {
+  BadRequestException,
+  InternalServerErrorException,
+  NotFoundException,
+} from '@nestjs/common';
 import { GameEntryRepository } from './gameEntry.repository';
 import { DataSource, EntityManager } from 'typeorm';
 import { GameEntry } from './entities/gameEntry.entity';
 import { InjectRepository } from '@nestjs/typeorm';
+
+export interface IGameEntry {
+  gameRoomId: number;
+  userId: number;
+  playerName: string;
+  administratorFlag: boolean;
+}
 
 export class GamesService {
   constructor(
@@ -80,6 +91,44 @@ export class GamesService {
       });
       // ゲーム参加者を登録
       await this.gameEntryRepository.createGameEntry(gameEntry, manager);
+    });
+  }
+
+  /**
+   * ゲーム参加者登録
+   */
+  async createGameEntry(gameEntry: IGameEntry): Promise<void> {
+    // トランザクション開始
+    await this.dataSource.transaction(async (manager: EntityManager) => {
+      // ゲームルームを取得（行ロック）
+      const gameRoom = await this.gameRoomRepository.findOneGameRoomForUpdate(
+        gameEntry.gameRoomId,
+        manager,
+      );
+      if (!gameRoom) {
+        // ゲームルームが存在しない場合はエラー
+        throw new NotFoundException();
+      }
+
+      // ゲーム参加者を取得
+      const gameEntries = await this.gameEntryRepository.findManyGameEntries(
+        gameEntry.gameRoomId,
+        manager,
+      );
+      if (gameEntries?.length >= gameRoom.maxPlayers) {
+        // 参加者が最大プレーヤー数に達している場合はエラー
+        throw new BadRequestException();
+      }
+
+      // ゲーム参加者を作成
+      const entry = manager.create(GameEntry, {
+        gameRoomId: gameEntry.gameRoomId,
+        userId: gameEntry.userId,
+        playerName: gameEntry.playerName,
+        administratorFlag: gameEntry.administratorFlag,
+      });
+      // ゲーム参加者を登録
+      await this.gameEntryRepository.createGameEntry(entry, manager);
     });
   }
 }
