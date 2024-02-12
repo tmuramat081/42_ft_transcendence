@@ -1,5 +1,8 @@
 /* eslint-disable */
 import { Match } from './../../games/entities/match.entity';
+import { MatchResult } from '../../games/entities/matchResult.entity';
+import { GameRoom } from '../../games/entities/gameRoom.entity';
+import { GameEntry } from '../../games/entities/gameEntry.entity';
 
 /*
 Table user {
@@ -45,9 +48,6 @@ import { Factory } from 'nestjs-seeder';
 // 16
 // 出力フィールドを制御するために、class-transformerパッケージを使用する
 import { Exclude } from 'class-transformer';
-import { MatchResult } from '../../games/entities/matchResult.entity';
-import { GameRoom } from '../../games/entities/gameRoom.entity';
-import { GameEntry } from '../../games/entities/gameEntry.entity';
 
 // entityはデータベースのテーブルを表す
 // Uniqueはユニーク制約

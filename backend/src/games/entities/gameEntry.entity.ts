@@ -1,4 +1,12 @@
-import { Column, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
+import {
+  Column,
+  CreateDateColumn,
+  Entity,
+  JoinColumn,
+  ManyToOne,
+  PrimaryGeneratedColumn,
+  UpdateDateColumn,
+} from 'typeorm';
 import { GameRoom } from './gameRoom.entity';
 import { User } from '../../users/entities/user.entity';
 
@@ -53,7 +61,7 @@ export class GameEntry {
   administratorFlag = false;
 
   // 作成日時
-  @Column({
+  @CreateDateColumn({
     name: 'created_at',
     type: 'timestamp',
     comment: '作成日時',
@@ -61,7 +69,7 @@ export class GameEntry {
   readonly createdAt!: Date;
 
   // 更新日時
-  @Column({
+  @UpdateDateColumn({
     name: 'updated_at',
     type: 'timestamp',
     comment: '更新日時',
