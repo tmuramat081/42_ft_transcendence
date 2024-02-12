@@ -37,7 +37,7 @@ export class GamesController {
   // ゲーム参加者登録API
   @Post(':id/entry')
   @ApiOperation({
-    summary: 'ゲームルーム参加API',
+    summary: 'ゲーム参加者登録API',
     description: 'ログインユーザーをルームに参加させる。',
   })
   @ApiResponse({ status: 201 })
