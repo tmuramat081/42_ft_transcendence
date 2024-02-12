@@ -52,7 +52,7 @@ export default function RoomList(_prop: Props) {
     }
   }, [listGameRooms]);
 
-  const totalPage = Math.ceil(pagination.total / pagination.perPage);
+  const totalPage = Math.ceil(pagination.total / GAME_ROOM_PAGE_COUNT);
 
   if (isLoading) return <p>loading...</p>;
 

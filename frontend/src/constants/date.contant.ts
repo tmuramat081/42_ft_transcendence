@@ -21,16 +21,16 @@ export const TO_LOCALE_STRING_OPTIONS = {
     hour: '2-digit',
     minute: '2-digit',
   },
-  'YYYY/MM':{
+  'YYYY/MM': {
     year: 'numeric',
     month: '2-digit',
   },
-  'YYYY/MM/DD':{
+  'YYYY/MM/DD': {
     year: 'numeric',
     month: '2-digit',
     day: '2-digit',
   },
-  'HH:mm':{
+  'HH:mm': {
     hour: '2-digit',
     minute: '2-digit',
     hour12: false,

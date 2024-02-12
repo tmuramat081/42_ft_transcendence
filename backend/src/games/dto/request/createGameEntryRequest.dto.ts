@@ -1,4 +1,4 @@
-import { DB_INT_MAX, DB_INT_MIN } from '@/common/contant/validator.constant';
+import { DB_INT_MAX, DB_INT_MIN } from '@/common/constant/validator.constant';
 import { ApiProperty } from '@nestjs/swagger';
 import {
   IsBoolean,

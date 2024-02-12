@@ -17,7 +17,7 @@ import {
   API_ERROR_MESSAGE,
   NotFoundMessage,
   TABLE_NAME,
-} from '@/common/contant/errorMessage.constnat';
+} from '@/common/constant/errorMessage.constant';
 
 export interface IGameEntry {
   gameRoomId: number;
