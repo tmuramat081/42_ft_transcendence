@@ -1,39 +1,52 @@
-import { Test } from '@nestjs/testing';
 import { GamesService } from './games.service';
-import { FindGameRoomWhereInput, GameRoomRepository } from './gameRoom.repository';
+import { GameRoomRepository } from './gameRoom.repository';
 import { ListGameRoomsRequestDto } from './dto/request/listGameRoomsRequest.dto';
 import { GAME_ROOM_STATUS } from './game.constant';
 import { InternalServerErrorException } from '@nestjs/common';
-import { GameRoom } from './entities/gameRoom.entity';
+import { GameEntryRepository } from './gameEntry.repository';
+import { DataSource } from 'typeorm';
 
-const mockGameRoomRepository = (): Partial<GameRoomRepository> => ({
-  findManyGameRooms: jest.fn() as jest.Mock<
-    Promise<[GameRoom[], number]>,
-    [FindGameRoomWhereInput, { take?: number; skip?: number }]
-  >,
-  countGameRooms: jest.fn() as jest.Mock<Promise<number>, [FindGameRoomWhereInput]>,
-});
+const mockGameRoomRepository = {
+  findManyGameRooms: jest.fn(),
+  countGameRooms: jest.fn(),
+  createGameRoom: jest.fn(),
+};
+
+const mockGameEntryRepository = {
+  createGameEntry: jest.fn(),
+};
+
+const mockEntityManager = {
+  save: jest.fn(),
+  create: jest.fn(),
+};
+
+const mockDataSource = {
+  getRepository: jest.fn(),
+  transaction: jest.fn(),
+};
 
 describe('GamesService', () => {
   let gamesService: GamesService;
-  let gameRoomRepository: GameRoomRepository;
 
   beforeEach(async () => {
-    const module = await Test.createTestingModule({
-      providers: [
-        GamesService,
-        { provide: GameRoomRepository, useFactory: mockGameRoomRepository },
-      ],
-    }).compile();
-
-    gamesService = module.get<GamesService>(GamesService);
-    gameRoomRepository = module.get<GameRoomRepository>(GameRoomRepository);
+    jest.clearAllMocks();
+    mockEntityManager.save.mockResolvedValue({});
+    mockEntityManager.create.mockReturnValue({});
+    mockDataSource.transaction.mockImplementation(async (callback) => {
+      await callback(mockEntityManager);
+    });
+    gamesService = new GamesService(
+      mockGameRoomRepository as unknown as GameRoomRepository,
+      mockGameEntryRepository as unknown as GameEntryRepository,
+      mockDataSource as unknown as DataSource,
+    );
   });
 
   describe('listGameRooms', () => {
     it('ゲームルーム一覧を取得して返却する', async () => {
-      (gameRoomRepository.findManyGameRooms as jest.Mock).mockResolvedValue([[{}, {}], 2]);
-      (gameRoomRepository.countGameRooms as jest.Mock).mockResolvedValue(10);
+      mockGameRoomRepository.findManyGameRooms.mockResolvedValue([[{}, {}], 2]);
+      mockGameRoomRepository.countGameRooms.mockResolvedValue(10);
 
       const requestDto: ListGameRoomsRequestDto = {
         'room-name': 'test',
@@ -45,7 +58,7 @@ describe('GamesService', () => {
 
       expect(result.pagination.total).toEqual(2);
       expect(result.pagination.perPage).toEqual(2);
-      expect(gameRoomRepository.findManyGameRooms).toHaveBeenCalledWith(
+      expect(mockGameRoomRepository.findManyGameRooms).toHaveBeenCalledWith(
         {
           roomName: requestDto['room-name'],
           roomStatus: requestDto['room-status'],
@@ -56,9 +69,9 @@ describe('GamesService', () => {
         },
       );
     });
-    it('ゲームルームの取得結果が空の場合', async () => {
-      (gameRoomRepository.findManyGameRooms as jest.Mock).mockResolvedValue([[], 0]);
-      (gameRoomRepository.countGameRooms as jest.Mock).mockResolvedValue(0);
+    it('ゲームルーム一覧を取得（レコードが空）', async () => {
+      mockGameRoomRepository.findManyGameRooms.mockResolvedValue([[], 0]);
+      mockGameRoomRepository.countGameRooms.mockResolvedValue(0);
 
       const requestDto: ListGameRoomsRequestDto = {
         'room-name': 'test',
@@ -73,7 +86,7 @@ describe('GamesService', () => {
       expect(result.pagination.perPage).toEqual(0);
     });
     it('データベース接続エラー', async () => {
-      (gameRoomRepository.findManyGameRooms as jest.Mock).mockRejectedValue(
+      mockGameRoomRepository.findManyGameRooms.mockRejectedValue(
         new InternalServerErrorException(),
       );
 
@@ -85,7 +98,28 @@ describe('GamesService', () => {
       };
 
       await expect(gamesService.listGameRooms(requestDto)).rejects.toThrow();
-      expect(gameRoomRepository.findManyGameRooms).toHaveBeenCalled();
+      expect(mockGameRoomRepository.findManyGameRooms).toHaveBeenCalled();
+    });
+  });
+
+  describe('createGameRoom', () => {
+    it('ゲームルームを登録する', async () => {
+      mockGameRoomRepository.createGameRoom.mockImplementation((gameRoom, _manager) =>
+        Promise.resolve(gameRoom),
+      );
+      mockGameEntryRepository.createGameEntry.mockImplementation((gameEntry, _manager) =>
+        Promise.resolve(gameEntry),
+      );
+
+      const requestDto = {
+        roomName: 'room1',
+        note: 'note',
+        maxPlayers: 10,
+        createUserId: 1,
+        playerName: 'John Doe',
+      };
+
+      await expect(gamesService.createGameRoom(requestDto)).resolves.toBeUndefined();
     });
   });
 });

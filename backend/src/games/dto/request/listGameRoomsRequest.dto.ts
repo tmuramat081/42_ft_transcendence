@@ -5,6 +5,7 @@ import { IsOptional, MinLength, MaxLength, IsEnum, IsInt, Min, Max } from 'class
 import { ApiProperty } from '@nestjs/swagger';
 import { TransformToNumber } from '@/common/decorator/transformToNumber.decorator';
 
+// ゲームルーム一覧取得APIリクエスト型
 export class ListGameRoomsRequestDto {
   @ApiProperty({ example: '', required: false, description: 'ゲームルーム名' })
   @IsOptional()
