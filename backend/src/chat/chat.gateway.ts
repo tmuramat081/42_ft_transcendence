@@ -5,12 +5,13 @@ import {
   MessageBody,
   ConnectedSocket,
 } from '@nestjs/websockets';
-import { Logger } from '@nestjs/common';
+import { Logger, HttpException } from '@nestjs/common';
 import { Server, Socket } from 'socket.io';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { ChatLog } from './entities/chatlog.entity';
 import { Room } from './entities/room.entity';
+// import { Sender, ChatMessage } from '../frontend/src/chat/page';
 
 interface User {
   ID: string;
@@ -27,6 +28,13 @@ interface ChatMessage {
 
 @WebSocketGateway({ cors: { origin: '*' } })
 export class ChatGateway {
+  @WebSocketServer()
+  server: Server;
+
+  private logger: Logger = new Logger('Gateway Log');
+  private roomList: { [key: string]: string } = {};
+  private roomChatLogs: { [roomId: string]: ChatMessage[] } = {};
+
   constructor(
     @InjectRepository(ChatLog)
     private chatLogRepository: Repository<ChatLog>,
@@ -34,13 +42,6 @@ export class ChatGateway {
     @InjectRepository(Room) // Room リポジトリを注入
     private roomRepository: Repository<Room>, // Room エンティティのリポジトリ
   ) {}
-
-  @WebSocketServer()
-  server: Server;
-
-  private logger: Logger = new Logger('Gateway Log');
-  private roomList: { [key: string]: string } = {};
-  private roomChatLogs: { [roomId: string]: ChatMessage[] } = {};
 
   @SubscribeMessage('talk')
   async handleMessage(
@@ -61,6 +62,7 @@ export class ChatGateway {
     chatLog.timestamp = timestamp;
     await this.chatLogRepository.save(chatLog); // チャットログをデータベースに保存
 
+    // socket.broadcast.to(data.roomID).emit('update', {
     // 送信者の部屋IDを取得
     const rooms = [...socket.rooms].slice(0);
     // 送信者の部屋以外に送信
@@ -87,7 +89,7 @@ export class ChatGateway {
 
     // 同じ名前のルームが存在しないか確認
     const existingRoom = await this.roomRepository.findOne({
-      roomID: create.roomID,
+      where: { roomName: create.roomID },
     });
     if (!existingRoom) {
       const room = new Room();
