@@ -1,4 +1,5 @@
 import { Entity, PrimaryGeneratedColumn, Column } from 'typeorm';
+import { User } from '../../users/entities/user.entity';
 
 @Entity()
 export class ChatLog {
@@ -9,7 +10,7 @@ export class ChatLog {
   roomID: string;
 
   @Column()
-  userID: string;
+  sender: User;
 
   @Column()
   message: string;

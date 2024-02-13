@@ -11,20 +11,19 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { ChatLog } from './entities/chatlog.entity';
 import { Room } from './entities/room.entity';
-// import { Sender, ChatMessage } from '../frontend/src/chat/page';
+import { User } from '../users/entities/user.entity';
 
-interface User {
-  ID: string;
-  name: string;
-  icon: string;
+/*
+Table user {
+  user_id integer [pk]
+  user_name varchar
+  password varchar
+  email varchar
+  icon varchar
+  created_at date
+  updated_at date
 }
-
-interface ChatMessage {
-  user: string;
-  photo: string;
-  text: string;
-  timestamp: string;
-}
+*/
 
 @WebSocketGateway({ cors: { origin: '*' } })
 export class ChatGateway {
@@ -32,8 +31,6 @@ export class ChatGateway {
   server: Server;
 
   private logger: Logger = new Logger('Gateway Log');
-  private roomList: { [key: string]: string } = {};
-  private roomChatLogs: { [roomId: string]: ChatMessage[] } = {};
 
   constructor(
     @InjectRepository(ChatLog)
@@ -49,7 +46,7 @@ export class ChatGateway {
     @ConnectedSocket() socket: Socket,
   ) {
     this.logger.log(
-      `message received: ${data.roomID} ${data.sender.ID} ${data.message}`,
+      `message received: ${data.roomID} ${data.sender} ${data.message}`,
     );
 
     const timestamp = new Date().toLocaleString();
@@ -57,7 +54,7 @@ export class ChatGateway {
     // チャットログを保存
     const chatLog = new ChatLog();
     chatLog.roomID = data.roomID;
-    chatLog.userID = data.sender.ID;
+    chatLog.sender = data.sender;
     chatLog.message = data.message;
     chatLog.timestamp = timestamp;
     await this.chatLogRepository.save(chatLog); // チャットログをデータベースに保存
@@ -68,7 +65,7 @@ export class ChatGateway {
     // 送信者の部屋以外に送信
     this.server.to(rooms[1]).emit('update', {
       roomID: data.roomID,
-      sender: data.sender,
+      sender: data.sender.userName,
       message: data.message,
       timestamp,
     });
@@ -76,29 +73,28 @@ export class ChatGateway {
 
   @SubscribeMessage('createRoom')
   async handleCreateRoom(
-    @MessageBody() create: { sender: User; roomID: string },
+    @MessageBody() create: { sender: User; roomName: string },
     @ConnectedSocket() socket: Socket,
   ) {
-    this.logger.log(`${create.sender.name} createRoom: ${create.roomID}`);
+    this.logger.log(`${create.sender.userName} createRoom: ${create.roomName}`);
 
     // ルーム名が空かどうかを確認
-    if (!create.roomID.trim()) {
+    if (!create.roomName.trim()) {
       socket.emit('roomError', 'Room name cannot be empty.');
       return; // 空の場合は処理を中断
     }
 
     // 同じ名前のルームが存在しないか確認
     const existingRoom = await this.roomRepository.findOne({
-      where: { roomName: create.roomID },
+      where: { roomName: create.roomName },
     });
     if (!existingRoom) {
       const room = new Room();
-      room.roomID = create.roomID;
-      room.roomName = create.roomID; // ルーム名として入力された値を使用
+      room.roomName = create.roomName; // ルーム名として入力された値を使用
       await this.roomRepository.save(room); // 新しいルームをデータベースに保存
-      socket.join(create.roomID);
-      console.log('Room created. Emitting updated roomList:', this.roomList);
-      this.server.emit('roomList', this.roomList); // ルームリストを更新して全クライアントに通知
+      socket.join(create.roomName);
+      console.log('Room created. Emitting updated roomList:', room);
+      this.server.emit('roomList', room); // ルームリストを更新して全クライアントに通知
     } else {
       socket.emit('roomError', 'Room with the same name already exists.');
     }
@@ -109,8 +105,8 @@ export class ChatGateway {
     @MessageBody() join: { sender: User; room: string },
     @ConnectedSocket() socket: Socket,
   ) {
-    this.logger.log(`joinRoom: ${join.sender.name} joined ${join.room}`);
-    console.log('joinRoom: ', join.sender.name, 'joined', join.room);
+    this.logger.log(`joinRoom: ${join.sender.userName} joined ${join.room}`);
+    console.log('joinRoom: ', join.sender.userName, 'joined', join.room);
     const rooms = [...socket.rooms].slice(0);
     // 既に部屋に入っている場合は退出
     if (rooms.length == 2) socket.leave(rooms[1]);
@@ -118,21 +114,33 @@ export class ChatGateway {
   }
 
   @SubscribeMessage('deleteRoom')
-  handleDeleteRoom(@MessageBody() delet: { sender: User; room: string }) {
-    this.logger.log(`${delet.sender.name} deleteRoom: ${delet.room}`);
-    const updatedRoomList = Object.fromEntries(
-      Object.entries(this.roomList).filter(([key]) => key !== delet.room),
-    );
-    this.roomList = updatedRoomList;
-    this.server.emit('roomList', this.roomList);
+  async handleDeleteRoom(@MessageBody() delet: { sender: User; room: string }) {
+    this.logger.log(`${delet.sender.userName} deleteRoom: ${delet.room}`);
+
+    // データベースから指定のルームを削除
+    const deletedRoom = await this.roomRepository.findOne({
+      where: { roomName: delet.room },
+    });
+    if (deletedRoom) {
+      await this.roomRepository.remove(deletedRoom);
+      this.logger.log(`Room ${delet.room} has been deleted from the database.`);
+    } else {
+      this.logger.error(`Room ${delet.room} not found in the database.`);
+    }
+
+    // 新しい roomList を取得してコンソールに出力
+    const updatedRoomList = await this.roomRepository.find();
+    this.logger.log('Updated roomList:', updatedRoomList);
+
+    this.server.emit('roomList', updatedRoomList);
   }
 
-  @SubscribeMessage('getRoomList')
-  handleGetLoomList(
-    @MessageBody() SocketId: string,
-    @ConnectedSocket() socket: Socket,
-  ) {
-    this.logger.log(`Client connected: ${socket.id}`);
-    this.server.emit('roomList', this.roomList);
-  }
+  // @SubscribeMessage('getRoomList')
+  // handleGetLoomList(
+  //   @MessageBody() SocketId: string,
+  //   @ConnectedSocket() socket: Socket,
+  // ) {
+  //   this.logger.log(`Client connected: ${socket.id}`);
+  //   this.server.emit('roomList', this.roomList);
+  // }
 }
