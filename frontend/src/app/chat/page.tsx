@@ -1,7 +1,6 @@
 'use client';
 import React, { useState, useEffect, useCallback } from 'react';
 import io from 'socket.io-client';
-// import ChatLayout from './layout';
 import './ChatPage.css'; // スタイルシートの追加
 import Image from 'next/image';
 
@@ -104,7 +103,7 @@ const ChatPage: React.FC = () => {
   }, [roomID, sender, message]);
 
   const onClickCreateRoom = useCallback(() => {
-    socket.emit('createRoom', { sender, roomID: newRoomName });
+    socket.emit('createRoom', { sender, roomName: newRoomName });
     setNewRoomName('');
   }, [sender, newRoomName]);
 
