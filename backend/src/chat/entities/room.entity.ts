@@ -2,10 +2,12 @@ import {
   Entity,
   PrimaryGeneratedColumn,
   Column,
+  OneToMany,
   ManyToMany,
   JoinTable,
 } from 'typeorm';
 import { User } from '../../users/entities/user.entity';
+import { ChatLog } from './chatlog.entity';
 
 @Entity()
 export class Room {
@@ -19,4 +21,8 @@ export class Room {
   @ManyToMany(() => User)
   @JoinTable()
   members: User[];
+
+  // OneToManyリレーションシップを定義する
+  @OneToMany(() => ChatLog, (chatLog) => chatLog.roomID)
+  chatLogs: ChatLog[];
 }
