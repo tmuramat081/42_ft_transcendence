@@ -13,6 +13,8 @@ import { ChatModule } from './chat/chat.module';
 import { ChatGateway } from './chat/chat.gateway';
 import { Room } from './chat/entities/room.entity';
 import { ChatLog } from './chat/entities/chatlog.entity';
+import { ChatLogRepository } from './chat/chatlog.repository'; // 追加
+import { RoomRepository } from './chat/room.repository'; // 追加
 
 // .envを読み込む
 dotenv.config();
@@ -50,6 +52,6 @@ dotenv.config();
     ChatModule,
   ],
   controllers: [AppController],
-  providers: [AppService, ChatGateway],
+  providers: [AppService, ChatGateway, ChatLogRepository, RoomRepository],
 })
 export class AppModule {}
