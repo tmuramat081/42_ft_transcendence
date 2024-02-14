@@ -35,7 +35,7 @@ const ChatPage: React.FC = () => {
 
   // コンポーネントがマウントされたときのみ接続
   useEffect(() => {
-    const socket = io('http://localhost:3001');
+    // const socket = io('http://localhost:3001');
 
     socket.on('connect', () => {
       console.log('connection ID : ', socket.id);
@@ -55,13 +55,19 @@ const ChatPage: React.FC = () => {
   }, []);
 
   useEffect(() => {
-    socket.on('roomList', (rooms) => {
+    const handleRoomList = (rooms: { [key: string]: string }) => {
       console.log('Received roomList from server:', rooms);
-      setRoomList(rooms as { [key: string]: string });
-    });
+      setRoomList(rooms);
+      // setRoomList((prevRoomList) => {
+      //   const newRoomList = { ...prevRoomList, [roomID]: roomName };
+      //   return newRoomList;
+      // });
+    };
+
+    socket.on('roomList', handleRoomList);
 
     return () => {
-      socket.off('roomList');
+      socket.off('roomList', handleRoomList);
     };
   }, []);
 
