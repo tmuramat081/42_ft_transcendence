@@ -54,7 +54,7 @@ export class ChatGateway {
     // チャットログを保存
     const chatLog = new ChatLog();
     chatLog.roomID = data.roomID;
-    chatLog.sender = data.sender;
+    chatLog.sender = data.sender.userName;
     chatLog.message = data.message;
     chatLog.timestamp = timestamp;
     await this.chatLogRepository.save(chatLog); // チャットログをデータベースに保存
