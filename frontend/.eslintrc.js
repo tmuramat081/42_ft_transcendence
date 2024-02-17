@@ -27,5 +27,15 @@ module.exports = {
     semi: ['error', 'always'], // セミコロン必須
     quotes: ['error', 'single'], // シングルクォートのみ許可
     'react/react-in-jsx-scope': 'off',
+    "@typescript-eslint/no-unused-vars": [
+      "error",
+      {
+        "argsIgnorePattern": "^_",
+        "varsIgnorePattern": "^_",
+        "caughtErrorsIgnorePattern": "^_",
+        "destructuredArrayIgnorePattern": "^_",
+        "ignoreRestSiblings": true
+      }
+    ],
   },
 };
