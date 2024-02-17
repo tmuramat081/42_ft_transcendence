@@ -9,8 +9,8 @@ import { UsersModule } from './users/users.module';
 import { AuthModule } from './auth/auth.module';
 import { ChatModule } from './chat/chat.module';
 import { ChatGateway } from './chat/chat.gateway';
-// import { Room } from './chat/entities/room.entity';
-// import { ChatLog } from './chat/entities/chatlog.entity';
+import { Room } from './chat/entities/room.entity';
+import { ChatLog } from './chat/entities/chatlog.entity';
 // import { ChatLogRepository } from './chat/chatlog.repository'; // 追加
 // import { RoomRepository } from './chat/room.repository'; // 追加
 import { GameModule } from './games/games.module';
@@ -34,7 +34,7 @@ dotenv.config();
     }),
     // forRootAsync()を使って非同期接続
     TypeOrmModule.forRootAsync({
-      imports: [ConfigModule],
+      imports: [TypeOrmModule.forFeature([Room, ChatLog]), ConfigModule],
       inject: [ConfigService],
       useFactory: (config: ConfigService) => ({
         type: 'postgres',
