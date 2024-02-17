@@ -7,12 +7,17 @@ import * as Joi from 'joi';
 import { UsersModule } from './users/users.module';
 import { AuthModule } from './auth/auth.module';
 import { ChatModule } from './chat/chat.module';
-import { ChatGateway } from './chat/chat.gateway';
+// import { ChatGateway } from './chat/chat.gateway';
 import { Room } from './chat/entities/room.entity';
+import { GameModule } from './games/games.module';
+import { User } from './users/entities/user.entity';
+import { GameRoom } from './games/entities/gameRoom.entity';
+import { GameEntry } from './games/entities/gameEntry.entity';
+import { MatchResult } from './games/entities/matchResult.entity';
+import { Match } from './games/entities/match.entity';
 import { ChatLog } from './chat/entities/chatlog.entity';
 // import { ChatLogRepository } from './chat/chatlog.repository'; // 追加
 // import { RoomRepository } from './chat/room.repository'; // 追加
-import { GameModule } from './games/games.module';
 
 // .envを読み込む
 dotenv.config();
@@ -42,7 +47,7 @@ dotenv.config();
         username: config.get<string>('POSTGRESS_USER'),
         password: config.get<string>('POSTGRESS_PASSWORD'),
         database: config.get<string>('POSTGRESS_DB'),
-        entities: [__dirname + '/../**/*.entity.{js,ts}'],
+        entities: [Room, User, ChatLog, GameRoom, GameEntry, MatchResult, Match], // 直接エンティティを指定
         synchronize: true,
       }),
     }),
@@ -52,6 +57,6 @@ dotenv.config();
     GameModule,
   ],
   controllers: [],
-  providers: [ChatGateway],
+  providers: [],
 })
 export class AppModule {}
