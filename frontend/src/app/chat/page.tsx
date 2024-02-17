@@ -2,25 +2,27 @@
 'use client';
 import React, { useState, useEffect, useCallback } from 'react';
 import io from 'socket.io-client';
+import ChatLayout from './layout';
 import './ChatPage.css'; // スタイルシートの追加
 import Image from 'next/image';
 
-interface Sender {
-  ID: string;
-  name: string;
-  icon: string;
-}
+// interface Sender {
+//   ID: string;
+//   name: string;
+//   icon: string;
+// }
 
-interface ChatMessage {
-  user: string;
-  photo: string;
-  text: string;
-  timestamp: string;
-}
+// interface ChatMessage {
+//   user: string;
+//   photo: string;
+//   text: string;
+//   timestamp: string;
+// }
 
 const socket = io('http://localhost:3001');
+console.log('connection ID : ', socket.id);
 
-const ChatPage: React.FC = () => {
+const ChatPage = () => {
   const [message, setMessage] = useState('');
   const [roomID, setRoomID] = useState('');
   const [newRoomName, setNewRoomName] = useState('');
@@ -36,7 +38,7 @@ const ChatPage: React.FC = () => {
 
   // コンポーネントがマウントされたときのみ接続
   useEffect(() => {
-    // const socket = io('http://localhost:3001');
+    const socket = io('http://localhost:3001');
 
     socket.on('connect', () => {
       console.log('connection ID : ', socket.id);
@@ -49,40 +51,15 @@ const ChatPage: React.FC = () => {
       socket.emit('getRoomList', socket.id);
     });
 
-    // コンポーネントがアンマウントされるときに切断
-    return () => {
-      socket.disconnect();
-    };
-  }, []);
-
-  useEffect(() => {
-    const handleRoomList = (rooms: { [key: string]: string }) => {
+    socket.on('roomList', (rooms: { [key: string]: string }) => {
       console.log('Received roomList from server:', rooms);
       setRoomList(rooms);
-      // setRoomList((prevRoomList) => {
-      //   const newRoomList = { ...prevRoomList, [roomID]: roomName };
-      //   return newRoomList;
-      // });
-    };
+    });
 
-    socket.on('roomList', handleRoomList);
-
-    return () => {
-      socket.off('roomList', handleRoomList);
-    };
-  }, []);
-
-  useEffect(() => {
     socket.on('roomError', (error) => {
       console.error(error);
     });
 
-    return () => {
-      socket.off('roomError');
-    };
-  }, []);
-
-  useEffect(() => {
     socket.on('update', ({ roomID, sender, message, time }): void => {
       console.log('recieved : ', roomID, (sender as Sender).ID, message);
       setRoomChatLogs((prevRoomChatLogs) => ({
@@ -99,8 +76,19 @@ const ChatPage: React.FC = () => {
       }));
     });
 
+    // コンポーネントがアンマウントされるときに切断
     return () => {
+      socket.off('connect');
+      socket.off('roomList');
+      socket.off('roomError');
       socket.off('update');
+    };
+  }, []);
+
+  useEffect(() => {
+    const handleRoomList = (rooms: { [key: string]: string }) => {
+      console.log('Received roomList from server:', rooms);
+      setRoomList(rooms);
     };
   }, []);
 
