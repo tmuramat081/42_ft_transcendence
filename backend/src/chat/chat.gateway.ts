@@ -46,9 +46,7 @@ export class ChatGateway {
     @MessageBody() data: { roomID: string; sender: User; message: string },
     @ConnectedSocket() socket: Socket,
   ) {
-    this.logger.log(
-      `message received: ${data.roomID} ${data.sender} ${data.message}`,
-    );
+    this.logger.log(`message received: ${data.roomID} ${data.sender} ${data.message}`);
 
     const timestamp = new Date().toLocaleString();
 
