@@ -1,19 +1,10 @@
 .container {
-  height: 80vh;
-  padding: 20px;
-}
-
-.header {
-  text-align: left;
-  margin-bottom: 20px;
-  font-weight: bold;
-}
-
-.roomList {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
+  height: 100vh;
+  padding: 20px;
 }
 
 .roomListGrid {
@@ -21,15 +12,4 @@
   grid-template-columns: repeat(3, 1fr);
   grid-gap: 20px;
   margin-bottom: 20px;
-}
-
-.roomListCard {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: 20px;
-  border: 1px solid #000;
-  border-radius: 5px;
-  cursor: pointer;
 }
