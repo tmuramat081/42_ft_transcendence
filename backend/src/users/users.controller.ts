@@ -12,6 +12,9 @@ import { AuthGuard } from '@nestjs/passport';
 //Excludeを使うと、指定したプロパティを除外した型を作成できる
 import { classToPlain } from "class-transformer";
 //import { jwt_decode } from 'jwt-decode';
+import { diskStorage } from 'multer';
+import { v4 as uuidv4 } from 'uuid';
+import * as path from 'path';
 
 /*
 分離のポイント
@@ -26,6 +29,21 @@ HTTPリクエストのハンドリング: コントローラは、クライア�
 レスポンスの整形: サービスからのデータをクライアントに返す形式に整形します。
 エラーハンドリング: HTTP リクエストの処理中に発生するエラーを捕捉し、適切な HTTP ステータスコードとエラーメッセージで応答します。
 */
+
+const storage = {
+    storage: diskStorage({
+      destination: process.env.AVATAR_IMAGE_DIR,
+      filename: (req, file, cb) => {
+        // ファイル名は拡張子のみ保持して、ファイル名自体はuuidに置換
+        const filename: string = uuidv4();
+        const extension: string = path.parse(file.originalname).ext;
+        // cbはコールバックの頭文字っぽい。第一引数はエラー、第二引数はファイル名を設定
+        cb(null, `${filename}${extension}`);
+      },
+    }),
+  };
+
+
 @Controller('users')
 export class UsersController {
     constructor(private readonly usersService: UsersService) {}
@@ -259,11 +277,13 @@ export class UsersController {
         return JSON.stringify({"userId": undefined, "status": "SUCCESS"});
     }
 
+    // 未完成
     //@Param('username') userName: string, 引数に追加する
     // curl -X POST -H "Content-Type: application/json" -d '{"userName":"test","email":"test@example.com","password":"Test123!","passwordConfirm":"Test123!"}' http://localhost:3001/users/test/update
     //@UseGuards(AuthGuard('jwt'), JwtAuthGuard)
     @UseGuards(JwtAuthGuard)
     //@UseGuards(JwtAuthGuard, TwoFactorAuthGuard)
+    @Put('/update')
     async UpdateUser(@Body () userData: UpdateUserDto, @Req() req,  @Res({ passthrough: true }) res: Response) {
         console.log("userData: ", userData)
         // リクエストハンドリング
@@ -272,6 +292,7 @@ export class UsersController {
             //return res.status(400).json({ message: 'Please enter all fields' });
         }
 
+        // パスワードの変更をした場合
         // リクエストの検証
         if (userData.password !== userData.passwordConfirm) {
             throw new ForbiddenException("Passwords do not match");
@@ -314,10 +335,10 @@ export class UsersController {
         return JSON.stringify({"accessToken": accessToken});
     }
 
-    // @Post('/:username/update')
-    // async updateUser() {
-    //     console.log("updateUser")
-    // }
+    @Put('/update/icon')
+    async updateUser() {
+        console.log("updateUser")
+    }
 
     // curl -X GET -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInVzZXJOYW1lIjoidGVzdCIsImVtYWlsIjoidGVzdEB0ZXN0IiwiaWF0IjoxNzAzNzU5NjU5LCJleHAiOjE3MDM3NjMyNTl9.R1TfxoDLp5kTOAAfIEGrkplZquRACJltQv3oGEANKDU" http://localhost:3001/users/me
     // JWTからユーザーを取得する　API
