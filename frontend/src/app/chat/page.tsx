@@ -6,21 +6,20 @@ import ChatLayout from './layout';
 import './ChatPage.css'; // スタイルシートの追加
 import Image from 'next/image';
 
-// interface Sender {
-//   ID: string;
-//   name: string;
-//   icon: string;
-// }
+interface Sender {
+  ID: string;
+  name: string;
+  icon: string;
+}
 
-// interface ChatMessage {
-//   user: string;
-//   photo: string;
-//   text: string;
-//   timestamp: string;
-// }
+interface ChatMessage {
+  user: string;
+  photo: string;
+  text: string;
+  timestamp: string;
+}
 
 const socket = io('http://localhost:3001');
-console.log('connection ID : ', socket.id);
 
 const ChatPage = () => {
   const [message, setMessage] = useState('');
