@@ -317,7 +317,7 @@ export class UsersService {
       });
     }
 
-    user.icon = icon.filename;
+    user.icon = `${process.env.FRONTEND_URL}/api/uploads/${icon.filename}`;
 
     const resultUser: User = await this.userRepository.saveUser(user);
 
