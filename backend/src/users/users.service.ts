@@ -1,5 +1,5 @@
 /* eslint-disable */
-import { Injectable } from '@nestjs/common';
+import { Injectable, StreamableFile } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, Connection } from 'typeorm';
 import { User } from './entities/user.entity';
@@ -9,6 +9,7 @@ import { JwtService } from '@nestjs/jwt';
 import { JwtPayload } from './interfaces/jwt_payload';
 import * as bcrypt from 'bcrypt';
 import { UserDto42 } from './dto/user42.dto';
+import * as path from 'path';
 
 //import jwt_decode from 'jwt-decode'
 
@@ -288,6 +289,62 @@ export class UsersService {
     // return accessToken
 
     return resultUser;
+  }
+
+  // manbaを参考にする
+  async updateUserIcon(userName: string, icon): Promise<User> {
+    const user = await this.userRepository.findOne({ where: { userName: userName } });
+    if (!user || !icon) {
+      return null
+    }
+
+    // delete Old Image
+    if (user.icon) {
+      const fs = require('fs');
+      const filePath = process.cwd() + process.env.AVATAR_IMAGE_DIR + user.icon;
+      fs.stat(filePath, (err: any, stats: any) => {
+        if (err) {
+          console.error(err);
+          return;
+        }
+        // 削除
+        fs.unlink(filePath, (err: any) => {
+          if (err) {
+            console.error(err);
+            return;
+          }
+        });
+      });
+    }
+
+    user.icon = icon.filename;
+
+    const resultUser: User = await this.userRepository.saveUser(user);
+
+    if (!resultUser) {
+      return null;
+    }
+
+    //console.log('resultUser: ', resultUser);
+    return resultUser;
+  }
+
+  async getUserIcon(iconName: string): Promise<StreamableFile> {
+    const fs = require('fs');
+    const filePath = path.join(process.cwd(), process.env.AVATAR_IMAGE_DIR, iconName)
+
+    console.log('filePath: ', filePath)
+
+    // ファイルが存在する場合
+    if (fs.existsSync(filePath)) {
+      const file = fs.createReadStream(filePath);
+      console.log('file: ', file);
+      return new StreamableFile(file);
+    } else {
+      const file = fs.createReadStream(path.join(process.cwd(), process.env.AVATAR_IMAGE_DIR, 'default.png'));
+      console.log('file: ', file);
+      return new StreamableFile(file);
+    }
   }
 
   async updateUser2fa(userName: string, twoFactorAuth: boolean): Promise<User> {

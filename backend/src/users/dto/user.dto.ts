@@ -106,6 +106,7 @@ export class ReturnUserDto {
   userName: string;
   icon: string;
   twoFactorAuth: boolean;
+  // 不要
   twoFactorAuthNow: boolean;
 }
 

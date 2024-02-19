@@ -1,5 +1,5 @@
 /* eslint-disable */
-import { Controller, Get, Post, Put, Body, Req, Res, Param, InternalServerErrorException, ForbiddenException, UnauthorizedException } from '@nestjs/common';
+import { Controller, Get, Post, Put, Body, Req, Res, Param, InternalServerErrorException, ForbiddenException, UnauthorizedException, StreamableFile, UploadedFile, UseInterceptors } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { SignUpUserDto, SignInUserDto, UpdateUserDto, ReturnUserDto } from './dto/user.dto';
 import { User } from './entities/user.entity';
@@ -15,6 +15,8 @@ import { classToPlain } from "class-transformer";
 import { diskStorage } from 'multer';
 import { v4 as uuidv4 } from 'uuid';
 import * as path from 'path';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { Observable, of } from 'rxjs'
 
 /*
 分離のポイント
@@ -30,17 +32,48 @@ HTTPリクエストのハンドリング: コントローラは、クライア�
 エラーハンドリング: HTTP リクエストの処理中に発生するエラーを捕捉し、適切な HTTP ステータスコードとエラーメッセージで応答します。
 */
 
+// 例外処理をサービスで発生させてcatchする方がいいかも
+
+// どれかの値
+type ValidMimeTypes = 'image/png' | 'image/jpg' | 'image/jpeg' | 'image/gif';
+
+// 有効なMIMEタイプの配列
+const validMimeTypes: ValidMimeTypes[] = ['image/png', 'image/jpg', 'image/jpeg', 'image/gif']; 
+
+// Iconの保存先
 const storage = {
     storage: diskStorage({
+      // ファイルの保存先
       destination: process.env.AVATAR_IMAGE_DIR,
+      // ファイル名の設定
       filename: (req, file, cb) => {
         // ファイル名は拡張子のみ保持して、ファイル名自体はuuidに置換
-        const filename: string = uuidv4();
+        //const filename: string = uuidv4();
+        // name.replace(/\s/g, '')  は、ファイル名にスペースが含まれている場合に、スペースを削除する
+        const filename: string = path.parse(file.originalname).name.replace(/\s/g, '') + uuidv4();
         const extension: string = path.parse(file.originalname).ext;
         // cbはコールバックの頭文字っぽい。第一引数はエラー、第二引数はファイル名を設定
         cb(null, `${filename}${extension}`);
       },
     }),
+
+    // ファイルフィルター
+    // MIMEタイプが許可されているかどうかを確認する
+    fileFIlter: (req, file, cb) => {
+        const allowedMimeType = validMimeTypes.includes(file.mimetype);
+        if (allowedMimeType) {
+            // 15の例外
+            cb(null, true);
+        }
+        else {
+            cb(null, false);
+        }
+    }, 
+
+    // ファイルサイズの制限
+    limits: {
+        fileSize: 1024 * 1024 * 5
+    },
   };
 
 
@@ -144,6 +177,12 @@ export class UsersController {
             //return accessToken;
             return JSON.stringify({"accessToken": accessToken});
         } catch (error) {
+            // 例外を振り分ける方法
+            // if (error instanceof InternalServerErrorException) {
+            //     throw new InternalServerErrorException('User already exists');
+            // }
+
+            // 重複エントリーの例外を投げる
             if ((error as any).code === 'ER_DUP_ENTRY') {
                 throw new InternalServerErrorException('User already exists');
                 //return res.status(400).json({ message: 'User already exists' });
@@ -283,7 +322,7 @@ export class UsersController {
     //@UseGuards(AuthGuard('jwt'), JwtAuthGuard)
     @UseGuards(JwtAuthGuard)
     //@UseGuards(JwtAuthGuard, TwoFactorAuthGuard)
-    @Put('/update')
+    @Post('/update')
     async UpdateUser(@Body () userData: UpdateUserDto, @Req() req,  @Res({ passthrough: true }) res: Response) {
         console.log("userData: ", userData)
         // リクエストハンドリング
@@ -335,9 +374,58 @@ export class UsersController {
         return JSON.stringify({"accessToken": accessToken});
     }
 
-    @Put('/update/icon')
-    async updateUser() {
-        console.log("updateUser")
+
+    // 11 manba 15 バック
+    // manba  mfny フロント
+    // swagger mfny
+    @UseGuards(JwtAuthGuard)
+    // iconはformData.appendで送信すると保存される
+    @UseInterceptors(FileInterceptor('icon', storage))
+    @Post('/update/icon')
+    async UpdateIcon(@UploadedFile() file, @Req() req): Promise<string> {
+        // console.log("updateUserIcon")
+        // console.log("file: ", file)
+        // console.log("req.user.userName: ", req.user.userName)
+
+        // 読み込み時にディレクトリを指定する
+        const user = await this.usersService.updateUserIcon(req.user.userName, file);
+
+        //例外を返す？
+        if (!user) {
+            throw new ForbiddenException("Invalid credentials");
+        }
+
+        return JSON.stringify({"status": "SUCCESS", "icon": user.icon});
+    }
+
+    //: Promise<Observable<StreamableFile>>
+    @UseGuards(JwtAuthGuard)
+    @Get('/icons/:iconName')
+    async getIcon(@Param('iconName') icon: string, @Res() res: Response) {
+        console.log("getIcon")
+        // ファイルの読み込み
+
+        // content-typeを設定する
+        //res.setHeader('Content-Type', 'image/png');
+
+        // corsを設定する
+        //res.setHeader('Access-Control-Allow-Origin', '*');
+
+        //return this.usersService.getUserIcon(icon);
+
+        //of は、Observableを返す
+        /*
+        Observable
+        Observableは、RxJSの中心的なクラスです。これはデータやイベントのストリームを表し、そのストリームを購読することで、ストリームに含まれるアイテムを非同期に受信して処理することができます。Observableは、時間の経過と共にゼロ個以上のデータアイテムを非同期に生成するプッシュベースのコレクションです。
+
+        of
+        ofは、与えられた引数から新しいObservableインスタンスを作成するための関数です。この関数は引数として受け取った値を順番に発行し、すぐに完了するObservableを返します。主にテストや簡単な値のストリームを作成する際に便利です。
+        */
+        return of(res.sendFile(icon, { root: process.env.AVATAR_IMAGE_DIR }));
+
+        // return of(res.sendFile(
+        //     path.join(process.env.AVATAR_IMAGE_DIR, icon),
+        // ))
     }
 
     // curl -X GET -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInVzZXJOYW1lIjoidGVzdCIsImVtYWlsIjoidGVzdEB0ZXN0IiwiaWF0IjoxNzAzNzU5NjU5LCJleHAiOjE3MDM3NjMyNTl9.R1TfxoDLp5kTOAAfIEGrkplZquRACJltQv3oGEANKDU" http://localhost:3001/users/me
@@ -356,6 +444,7 @@ export class UsersController {
             email: req.user.email,
             icon: req.user.icon,
             twoFactorAuth: req.user.twoFactorAuth,
+            // 不要なので削除
             twoFactorAuthNow: false
         }
 

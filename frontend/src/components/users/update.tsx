@@ -8,7 +8,8 @@ import styles from  "./toggleSwitch.module.css"
 import Modal from './2fa/modal'; // Modalコンポーネントをインポート
 import { usePrivateRoute } from '@/hooks/routes/usePrivateRouter';
 import { useAuth } from '@/providers/useAuth';
-import { useRouter } from 'next/navigation';
+import { useRouter } from 'next/navigation'; 
+import Avatar from '@mui/material/Avatar';
 
 export default function Form() {
     const {loginUser, getCurrentUser, loading} = useAuth();
@@ -174,9 +175,41 @@ export default function Form() {
     };
 
     const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        if (!e.target.files) return;
+
+        // URLに変換してプレビューを表示
+        // mfny参考
         setFile(e.target.files[0]);
+
+
     };
+
+    const handleSubmitIcon = (e: React.FormEvent<HTMLFormElement>) => {
+        e.preventDefault();
+        if (!file) return;
+
+        const formData = new FormData();
+        formData.append('icon', file as Blob);
+
+        console.log('formData:', formData.get('icon'));
+
+        fetch('http://localhost:3001/users/update/icon', { 
+            method: 'POST',
+            credentials: 'include',
+            body: formData,
+        })
+        .then((res) => {
+            // access response data here
+            return res.json();
+        })
+        .then((data) => {
+            console.log('Success:', data);
+            getCurrentUser();
+        })
+        .catch((error) => {
+            console.error('Error:', error);
+        });
+
+    }
     
     const handle2FAToggle = (e: React.ChangeEvent<HTMLInputElement>) => {
         setTwoFactorAuth(e.target.checked);
@@ -284,13 +317,20 @@ export default function Form() {
     
     return (
         <div>
-        <form onSubmit={()=>{}}>
+            <div>
+            <h1>ユーザー情報更新</h1>
+            <Avatar alt={loginUser.userName} src={"http://localhost:3001/users/icons/" + loginUser.icon} />
+            <img src={"http://localhost:3001/api/uploads/" + loginUser.icon} alt="icon" />
+            <img src={"http://localhost:3001/api/uploads/default.png"} alt="icon" />
+            </div>
+        <form onSubmit={handleSubmitIcon}>
             <div>
             <label htmlFor="fileInput">画像ファイル：</label>
             <input type="file" id="fileInput" onChange={handleFileChange} />
             </div>
             <button type="submit">送信</button>
         </form>
+
         <form onSubmit={handleSubmit}>
             <label htmlFor="username">名前:</label>
             <input
