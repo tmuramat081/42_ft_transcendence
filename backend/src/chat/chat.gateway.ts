@@ -26,6 +26,19 @@ Table user {
 }
 */
 
+interface Sender {
+  ID: string;
+  name: string;
+  icon: string;
+}
+
+interface ChatMessage {
+  user: string;
+  photo: string;
+  text: string;
+  timestamp: string;
+}
+
 @WebSocketGateway({ cors: { origin: '*' } })
 export class ChatGateway {
   @WebSocketServer()
@@ -77,12 +90,11 @@ export class ChatGateway {
 
   @SubscribeMessage('createRoom')
   async handleCreateRoom(
-    @MessageBody() create: { sender: User; roomName: string },
+    @MessageBody() create: { sender: Sender; roomName: string },
     @ConnectedSocket() socket: Socket,
   ) {
     try {
-      this.logger.log(`${create.sender.userName} createRoom: ${create.roomName}`);
-
+      this.logger.log(`${create.sender.name} createRoom: ${create.roomName}`);
       // ルーム名が空かどうかを確認
       if (!create.roomName.trim()) {
         socket.emit('roomError', 'Room name cannot be empty.');
@@ -98,7 +110,8 @@ export class ChatGateway {
         room.roomName = create.roomName; // ルーム名として入力された値を使用
         await this.roomRepository.save(room); // 新しいルームをデータベースに保存
         socket.join(create.roomName);
-        console.log('Room created. Emitting updated roomList:', room);
+        this.logger.log('Room created. Emitting updated roomList:', room);
+        // console.log('Room created. Emitting updated roomList:', room);
         this.server.emit('roomList', room); // ルームリストを更新して全クライアントに通知
       } else {
         socket.emit('roomError', 'Room with the same name already exists.');
@@ -155,17 +168,17 @@ export class ChatGateway {
     }
   }
 
-  @SubscribeMessage('getRoomList')
-  async handleGetRoomList(@MessageBody() socketId: string, @ConnectedSocket() socket: Socket) {
-    try {
-      this.logger.log(`Client connected: ${socket.id}`);
-      // データベースからルームリストを取得
-      const roomList = await this.roomRepository.find();
-      // ルームリストをクライアントに送信
-      socket.emit('roomList', roomList);
-    } catch (error) {
-      this.logger.error(`Error getting room list: ${(error as Error).message}`);
-      throw error;
-    }
-  }
+  // @SubscribeMessage('getRoomList')
+  // async handleGetRoomList(@MessageBody() socketId: string, @ConnectedSocket() socket: Socket) {
+  //   try {
+  //     this.logger.log(`Client connected: ${socket.id}`);
+  //     // データベースからルームリストを取得
+  //     const roomList = await this.roomRepository.find();
+  //     // ルームリストをクライアントに送信
+  //     socket.emit('roomList', roomList);
+  //   } catch (error) {
+  //     this.logger.error(`Error getting room list: ${(error as Error).message}`);
+  //     throw error;
+  //   }
+  // }
 }
