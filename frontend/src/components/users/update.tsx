@@ -319,9 +319,7 @@ export default function Form() {
         <div>
             <div>
             <h1>ユーザー情報更新</h1>
-            <Avatar alt={loginUser.userName} src={"http://localhost:3001/users/icons/" + loginUser.icon} />
-            <img src={"http://localhost:3001/api/uploads/" + loginUser.icon} alt="icon" />
-            <img src={"http://localhost:3001/api/uploads/default.png"} alt="icon" />
+            <Avatar alt={loginUser.userName} src={"http://localhost:3001/api/uploads/" + loginUser.icon} />
             </div>
         <form onSubmit={handleSubmitIcon}>
             <div>
