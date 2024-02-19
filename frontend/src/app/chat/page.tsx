@@ -5,6 +5,9 @@ import io from 'socket.io-client';
 import ChatLayout from './layout';
 import './ChatPage.css'; // スタイルシートの追加
 import Image from 'next/image';
+import { Room } from '../../../../backend/src/chat/entities/room.entity';
+import { ChatLog } from '../../../../backend/src/chat/entities/chatlog.entity';
+import { User } from '../../../../backend/src/users/entities/user.entity';
 
 interface Sender {
   ID: string;
@@ -25,7 +28,7 @@ const ChatPage = () => {
   const [message, setMessage] = useState('');
   const [roomID, setRoomID] = useState('');
   const [newRoomName, setNewRoomName] = useState('');
-  const [roomList, setRoomList] = useState<{ [key: string]: string }>({});
+  const [roomList, setRoomList] = useState<string[]>([]);
   const [selectedRoom, setSelectedRoom] = useState<string | null>(null);
   const [sender, setSender] = useState<Sender>({
     ID: '',
@@ -50,9 +53,10 @@ const ChatPage = () => {
       socket.emit('getRoomList', socket.id);
     });
 
-    socket.on('roomList', (rooms: { [key: string]: string }) => {
+    socket.on('roomList', (rooms: Room[]) => {
       console.log('Received roomList from server:', rooms);
-      setRoomList(Object.fromEntries(Object.entries(rooms)));
+      const roomNames = rooms.map((room) => room.roomName); // ルームオブジェクトのroomNameプロパティのみを取得
+      setRoomList(roomNames);
     });
 
     socket.on('roomError', (error) => {

@@ -108,11 +108,14 @@ export class ChatGateway {
       if (!existingRoom) {
         const room = new Room();
         room.roomName = create.roomName; // ルーム名として入力された値を使用
+        this.logger.log(`Creating room: ${room.roomName}`);
         await this.roomRepository.save(room); // 新しいルームをデータベースに保存
         socket.join(create.roomName);
-        this.logger.log('Room created. Emitting updated roomList:', room);
-        // console.log('Room created. Emitting updated roomList:', room);
-        this.server.emit('roomList', room); // ルームリストを更新して全クライアントに通知
+        const rooms = await this.roomRepository.find();
+        rooms.forEach((room) => {
+          this.logger.log(`Room: ${JSON.stringify(room)}`);
+        });
+        this.server.emit('roomList', rooms); // ルームリストを更新して全クライアントに通知
       } else {
         socket.emit('roomError', 'Room with the same name already exists.');
       }
