@@ -301,7 +301,7 @@ export class UsersService {
     // delete Old Image
     if (user.icon) {
       const fs = require('fs');
-      const filePath = process.cwd() + process.env.AVATAR_IMAGE_DIR + user.icon;
+      const filePath = path.join(process.cwd(), process.env.AVATAR_IMAGE_DIR, user.icon);
       fs.stat(filePath, (err: any, stats: any) => {
         if (err) {
           console.error(err);
@@ -317,7 +317,8 @@ export class UsersService {
       });
     }
 
-    user.icon = `${process.env.FRONTEND_URL}/api/uploads/${icon.filename}`;
+    user.icon = icon.filename;
+    //user.icon = `http://localhost:3001/api/uploads/${icon.filename}`;
 
     const resultUser: User = await this.userRepository.saveUser(user);
 
