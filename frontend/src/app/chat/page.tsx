@@ -87,7 +87,7 @@ const ChatPage = () => {
   useEffect(() => {
     const handleRoomList = (rooms: { [key: string]: string }) => {
       console.log('Received roomList from server:', rooms);
-      setRoomList(rooms);
+      setRoomList(Object.fromEntries(Object.entries(rooms)));
     };
   }, []);
 
