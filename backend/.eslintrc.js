@@ -25,7 +25,17 @@ module.exports = {
     "indent": ["error", 2, { "SwitchCase": 1 }], // インデントは2スペース
     "semi": ["error", "always"], // セミコロンは必須
     "quotes": ["error", "single"], // シングルクォートのみ許可
-    "indent": ["error", 2, { "ignoredNodes": ["PropertyDefinition"] }]
+    "indent": ["error", 2, { "ignoredNodes": ["PropertyDefinition"] }],
+    "@typescript-eslint/no-unused-vars": [
+      "error",
+      {
+        "argsIgnorePattern": "^_",
+        "varsIgnorePattern": "^_",
+        "caughtErrorsIgnorePattern": "^_",
+        "destructuredArrayIgnorePattern": "^_",
+        "ignoreRestSiblings": true
+      }
+    ],
   },
   "overrides": [
     {
