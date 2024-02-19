@@ -155,12 +155,17 @@ export class ChatGateway {
     }
   }
 
-  // @SubscribeMessage('getRoomList')
-  // handleGetLoomList(
-  //   @MessageBody() SocketId: string,
-  //   @ConnectedSocket() socket: Socket,
-  // ) {
-  //   this.logger.log(`Client connected: ${socket.id}`);
-  //   this.server.emit('roomList', this.roomList);
-  // }
+  @SubscribeMessage('getRoomList')
+  async handleGetRoomList(@MessageBody() socketId: string, @ConnectedSocket() socket: Socket) {
+    try {
+      this.logger.log(`Client connected: ${socket.id}`);
+      // データベースからルームリストを取得
+      const roomList = await this.roomRepository.find();
+      // ルームリストをクライアントに送信
+      socket.emit('roomList', roomList);
+    } catch (error) {
+      this.logger.error(`Error getting room list: ${(error as Error).message}`);
+      throw error;
+    }
+  }
 }
