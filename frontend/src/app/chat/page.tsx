@@ -52,7 +52,7 @@ const ChatPage = () => {
 
     socket.on('roomList', (rooms: { [key: string]: string }) => {
       console.log('Received roomList from server:', rooms);
-      setRoomList(rooms);
+      setRoomList(Object.fromEntries(Object.entries(rooms)));
     });
 
     socket.on('roomError', (error) => {
