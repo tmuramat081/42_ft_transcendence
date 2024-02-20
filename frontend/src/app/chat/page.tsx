@@ -65,17 +65,11 @@ const ChatPage = () => {
       console.error(error);
     });
 
-    socket.on('roomParticipants', (roomParticipants: string[]) => {
-      console.log('Received roomParticipants from server:', roomParticipants);
-      setParticipants(roomParticipants);
-    });
-
     // コンポーネントがアンマウントされるときに切断
     return () => {
-      socket.off('connect');
+      socket.disconnect();
       socket.off('roomList');
       socket.off('roomError');
-      socket.off('roomParticipants');
     };
   }, []);
 
@@ -99,7 +93,19 @@ const ChatPage = () => {
     return () => {
       socket.off('update');
     };
-  }, [selectedRoom, roomchatLogs]);
+  }, [roomID]);
+
+  useEffect(() => {
+    socket.on('roomParticipants', (roomParticipants: string[]) => {
+      console.log('Received roomParticipants from server:', roomParticipants);
+      setParticipants(roomParticipants);
+      console.log('participants:', participants);
+    });
+
+    return () => {
+      socket.off('roomParticipants');
+    };
+  }, []);
 
   const onClickSubmit = useCallback(() => {
     console.log(
@@ -124,7 +130,7 @@ const ChatPage = () => {
     setDeleteButtonVisible(true);
     socket.emit('joinRoom', { sender, room: roomList[Number(newRoomID)] });
     // 参加者リストを更新
-    socket.emit('getParticipants', roomList[Number(newRoomID)]);
+    // socket.emit('getParticipants', roomList[Number(newRoomID)]);
   };
 
   const onClickDeleteRoom = useCallback(() => {
@@ -177,18 +183,18 @@ const ChatPage = () => {
           ))}
         </select>
       </div>
-      {/* Delete Room ボタン */}
-      {isDeleteButtonVisible && <button onClick={onClickDeleteRoom}>Delete Room</button>}
       {/* 参加者リスト */}
       <div className="participants">
-        <h2>Participants:</h2>
+        <h3>Participants:</h3>
         <ul>
-          {participants.map((participant, index) => (
+          {Object.entries(participants).map((participant, index) => (
             <li key={index}>{participant}</li>
           ))}
         </ul>
       </div>
-      ;{/* チャットログ */}
+      {/* Delete Room ボタン */}
+      {isDeleteButtonVisible && <button onClick={onClickDeleteRoom}>Delete Room</button>}
+      {/* チャットログ */}
       <div className="chat-messages">
         {roomchatLogs[roomID]?.map((message, index) => (
           <div
