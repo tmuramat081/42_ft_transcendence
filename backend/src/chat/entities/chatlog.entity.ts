@@ -1,6 +1,6 @@
 import { Entity, PrimaryGeneratedColumn, Column, ManyToOne } from 'typeorm';
-import { Sender } from '../chat.gateway';
-import { User } from '../../users/entities/user.entity';
+// import { Sender } from '../chat.gateway';
+// import { User } from '../../users/entities/user.entity';
 // import { Room } from './room.entity';
 
 @Entity()
@@ -13,6 +13,9 @@ export class ChatLog {
 
   @Column()
   sender: string;
+
+  @Column()
+  icon: string;
 
   @Column()
   message: string;
