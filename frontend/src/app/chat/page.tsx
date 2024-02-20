@@ -66,8 +66,8 @@ const ChatPage = () => {
     socket.on('update', (chatLog: ChatLog): void => {
       console.log('Received chatLog from server:', chatLog);
       const newChatMessage: ChatMessage = {
-        user: chatLog.sender.name,
-        photo: chatLog.sender.icon,
+        user: chatLog.sender,
+        photo: chatLog.icon,
         text: chatLog.message,
         timestamp: chatLog.timestamp,
       };
@@ -101,7 +101,7 @@ const ChatPage = () => {
 
   const onClickSubmit = useCallback(() => {
     console.log(`${(sender as Sender).name} submitting message, '${message}'`);
-    socket.emit('talk', { selectedRoom, sender, message });
+    socket.emit('talk', { selectedRoom, sender: { ...sender, icon: sender.icon }, message });
     setMessage('');
   }, [selectedRoom, sender, message]);
 
