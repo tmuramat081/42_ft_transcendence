@@ -77,7 +77,7 @@ export class ChatGateway {
       // this.server.to(rooms[1]).emit('update', chatLog);
 
       const chatMessage: ChatMessage = {
-        user: data.sender.name,
+        user: data.sender.ID,
         photo: data.sender.icon,
         text: data.message,
         timestamp: chatLog.timestamp,

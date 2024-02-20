@@ -80,8 +80,8 @@ const ChatPage = () => {
         [roomID]: [
           ...(prevRoomChatLogs[roomID] || []),
           {
-            user: chatMessage.user,
-            photo: chatMessage.photo,
+            user: chatMessage.user, // 送信者のID
+            photo: chatMessage.photo, // 送信者のアイコン
             text: chatMessage.text,
             timestamp: chatMessage.timestamp,
           },
