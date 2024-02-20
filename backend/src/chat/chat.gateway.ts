@@ -75,7 +75,15 @@ export class ChatGateway {
       // const rooms = [...socket.rooms].slice(0);
       // 送信者の部屋以外に送信
       // this.server.to(rooms[1]).emit('update', chatLog);
-      this.server.to(data.selectedRoom).emit('update', chatLog);
+
+      const chatMessage: ChatMessage = {
+        user: data.sender.name,
+        photo: data.sender.icon,
+        text: data.message,
+        timestamp: chatLog.timestamp,
+      };
+
+      this.server.to(data.selectedRoom).emit('update', chatMessage);
     } catch (error) {
       this.logger.error(`Error handling message: ${(error as Error).message}`);
       throw error;

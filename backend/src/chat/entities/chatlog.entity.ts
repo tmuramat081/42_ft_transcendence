@@ -1,5 +1,4 @@
 import { Entity, PrimaryGeneratedColumn, Column } from 'typeorm';
-// import { Sender } from '../chat.gateway';
 // import { User } from '../../users/entities/user.entity';
 // import { Room } from './room.entity';
 

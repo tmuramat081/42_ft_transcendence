@@ -6,7 +6,8 @@ import ChatLayout from './layout';
 import './ChatPage.css'; // スタイルシートの追加
 import Image from 'next/image';
 import { Room } from '../../../../backend/src/chat/entities/room.entity';
-import { ChatLog } from '../../../../backend/src/chat/entities/chatlog.entity';
+import { Chat } from '@mui/icons-material';
+// import { ChatLog } from '../../../../backend/src/chat/entities/chatlog.entity';
 // import { User } from '../../../../backend/src/users/entities/user.entity';
 
 interface Sender {
@@ -72,21 +73,12 @@ const ChatPage = () => {
   }, []);
 
   useEffect(() => {
-    socket.on('update', (chatLog: ChatLog) => {
-      console.log('Received chatLog from server');
-      console.log('Received chatLog from server:', chatLog);
-      const newChatMessage: ChatMessage = {
-        user: chatLog.sender,
-        photo: chatLog.icon,
-        text: chatLog.message,
-        timestamp: chatLog.timestamp,
-      };
+    socket.on('update', (chatMessage: ChatMessage) => {
+      console.log('Received chatLog from server:', chatMessage);
       setRoomChatLogs((prevRoomChatLogs) => {
         const updatedLogs = { ...prevRoomChatLogs };
-        if (updatedLogs[chatLog.roomName]) {
-          updatedLogs[chatLog.roomName].push(newChatMessage);
-        } else {
-          updatedLogs[chatLog.roomName] = [newChatMessage];
+        if (chatMessage && selectedRoom) {
+          updatedLogs[selectedRoom] = [...(updatedLogs[selectedRoom] || []), chatMessage];
         }
         return updatedLogs;
       });
@@ -95,7 +87,7 @@ const ChatPage = () => {
     return () => {
       socket.off('update');
     };
-  }, [ChatLog]);
+  }, [selectedRoom]);
 
   // useEffect(() => {
   //   const handleRoomList = (rooms: Room[]) => {
@@ -114,6 +106,7 @@ const ChatPage = () => {
   }, [selectedRoom, sender, message]);
 
   const onClickCreateRoom = useCallback(() => {
+    console.log(`${(sender as Sender).name} creating new room: ${newRoomName}`);
     socket.emit('createRoom', { sender, roomName: newRoomName });
     setNewRoomName('');
   }, [sender, newRoomName]);
