@@ -111,7 +111,7 @@ export class ChatGateway {
       if (!existingRoom) {
         const room = new Room();
         room.roomName = create.roomName; // ルーム名として入力された値を使用
-        // this.logger.log(`Creating room: ${room.roomName}`);
+        room.roomParticipants = []; // 参加者リストを空の配列で初期化
         await this.roomRepository.save(room); // 新しいルームをデータベースに保存
         socket.join(create.roomName);
         const rooms = await this.roomRepository.find();
@@ -153,6 +153,7 @@ export class ChatGateway {
       // 参加者リストを取得してクライアントに送信
       const updatedRoom = await this.roomRepository.findOne({ where: { roomName: join.room } });
       if (updatedRoom) {
+        this.logger.log(`Updated room: ${JSON.stringify(updatedRoom)}`);
         this.server.to(join.room).emit('roomParticipants', updatedRoom.roomParticipants);
       } else {
         this.logger.error(`Error getting updated room.`);
