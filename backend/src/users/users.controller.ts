@@ -491,9 +491,11 @@ export class UsersController {
         return JSON.stringify({"user": user});
     }
 
-    @UseGuards(JwtAuthGuard)
+    // サーバーサイドからアクセスする場合はjwtは不要
+    //@UseGuards(JwtAuthGuard)
     @Get("/:name")
     async FindOneByName(@Param('name') name: string): Promise<string> {
+        console.log("FindOneByName")
         const resultUser =  await this.usersService.findOneByName(name);
 
 

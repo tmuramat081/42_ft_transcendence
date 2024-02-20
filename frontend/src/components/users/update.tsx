@@ -334,6 +334,7 @@ export default function Form() {
 
         <form onSubmit={handleSubmit}>
             <div>
+            <p>{loginUser.userName}</p>
             <label htmlFor="username">名前:</label>
             <input
             type="text"
@@ -344,6 +345,7 @@ export default function Form() {
             </div>
 
             <div>
+            <p>{loginUser.email}</p>
             <label htmlFor="emaile">email:</label>
             <input
             type="email"
