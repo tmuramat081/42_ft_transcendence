@@ -63,20 +63,23 @@ const ChatPage = () => {
       console.error(error);
     });
 
-    socket.on('update', ({ roomID, sender, message, time }): void => {
-      console.log('recieved : ', roomID, (sender as Sender).ID, message);
-      setRoomChatLogs((prevRoomChatLogs) => ({
-        ...prevRoomChatLogs,
-        [roomID]: [
-          ...(prevRoomChatLogs[roomID as string] || []),
-          {
-            user: (sender as Sender).ID,
-            photo: (sender as Sender).icon,
-            text: message as string,
-            timestamp: time as string,
-          },
-        ],
-      }));
+    socket.on('update', (chatLog: ChatLog): void => {
+      console.log('Received chatLog from server:', chatLog);
+      const newChatMessage: ChatMessage = {
+        user: chatLog.sender.name,
+        photo: chatLog.sender.icon,
+        text: chatLog.message,
+        timestamp: chatLog.timestamp,
+      };
+      setRoomChatLogs((prevRoomChatLogs) => {
+        const updatedLogs = { ...prevRoomChatLogs };
+        if (updatedLogs[chatLog.roomName]) {
+          updatedLogs[chatLog.roomName].push(newChatMessage);
+        } else {
+          updatedLogs[chatLog.roomName] = [newChatMessage];
+        }
+        return updatedLogs;
+      });
     });
 
     // コンポーネントがアンマウントされるときに切断
@@ -88,17 +91,19 @@ const ChatPage = () => {
     };
   }, []);
 
-  useEffect(() => {
-    const handleRoomList = (rooms: { [key: string]: string }) => {
-      console.log('Received roomList from server:', rooms);
-      setRoomList(Object.fromEntries(Object.entries(rooms)));
-    };
-  }, []);
+  // useEffect(() => {
+  //   const handleRoomList = (rooms: Room[]) => {
+  //     console.log('Received roomList from server:', rooms);
+  //     const roomNames = rooms.map((room) => room.roomName); // ルームオブジェクトのroomNameプロパティのみを取得
+  //     setRoomList(roomNames);
+  //   };
+  // }, []);
 
   const onClickSubmit = useCallback(() => {
-    socket.emit('talk', { roomID, sender, message });
+    console.log(`${(sender as Sender).name} submitting message, '${message}'`);
+    socket.emit('talk', { selectedRoom, sender, message });
     setMessage('');
-  }, [roomID, sender, message]);
+  }, [selectedRoom, sender, message]);
 
   const onClickCreateRoom = useCallback(() => {
     socket.emit('createRoom', { sender, roomName: newRoomName });
@@ -107,16 +112,17 @@ const ChatPage = () => {
 
   const handleRoomChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
     const newRoomID = event.target.value;
-    console.log('newRoomID:', newRoomID); // debug
+    console.log(`${(sender as Sender).name} joined ${roomList[Number(newRoomID)]}`);
     setRoomID(newRoomID);
-    setSelectedRoom(roomList[newRoomID]);
+    setSelectedRoom(roomList[Number(newRoomID)]);
     setMessage(''); // ルームが変更されたら新しいメッセージもリセット
     setDeleteButtonVisible(true);
-    socket.emit('joinRoom', { sender, room: roomList[newRoomID] });
+    socket.emit('joinRoom', { sender, room: roomList[Number(newRoomID)] });
   };
 
   const onClickDeleteRoom = useCallback(() => {
     if (selectedRoom) {
+      console.log(`${(sender as Sender).name} deleted Room: ${selectedRoom}`);
       socket.emit('deleteRoom', { sender, room: selectedRoom });
       setSelectedRoom(null);
       setDeleteButtonVisible(false); // ボタンが押されたら非表示にする
@@ -127,9 +133,7 @@ const ChatPage = () => {
         return updatedLogs;
       });
       // ルームリストから削除する
-      const newRoomList = Object.fromEntries(
-        Object.entries(roomList).filter(([key]) => key !== selectedRoom),
-      );
+      const newRoomList = roomList.filter((room) => room !== selectedRoom);
       setRoomList(newRoomList);
     }
   }, [selectedRoom, roomList, sender]);
@@ -172,6 +176,7 @@ const ChatPage = () => {
       {/* Delete Room ボタン */}
       {isDeleteButtonVisible && <button onClick={onClickDeleteRoom}>Delete Room</button>}
 
+      {/* チャットログ */}
       <div className="chat-messages">
         {roomchatLogs[roomID]?.map((message, index) => (
           <div
@@ -193,6 +198,7 @@ const ChatPage = () => {
         ))}
       </div>
 
+      {/* チャット入力欄 */}
       <div className="chat-input">
         <input
           id="message"

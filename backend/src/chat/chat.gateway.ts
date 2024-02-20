@@ -26,13 +26,13 @@ Table user {
 }
 */
 
-interface Sender {
+export interface Sender {
   ID: string;
   name: string;
   icon: string;
 }
 
-interface ChatMessage {
+export interface ChatMessage {
   user: string;
   photo: string;
   text: string;
@@ -56,32 +56,31 @@ export class ChatGateway {
 
   @SubscribeMessage('talk')
   async handleMessage(
-    @MessageBody() data: { roomID: string; sender: User; message: string },
+    @MessageBody() data: { selectedRoom: string; sender: Sender; message: string },
     @ConnectedSocket() socket: Socket,
   ) {
     try {
-      this.logger.log(`message received: ${data.roomID} ${data.sender} ${data.message}`);
-
+      this.logger.log(`${data.selectedRoom} received ${data.message} from ${data.sender.name}`);
       const timestamp = new Date().toLocaleString();
 
       // チャットログを保存
       const chatLog = new ChatLog();
-      chatLog.roomID = data.roomID;
-      chatLog.sender = data.sender.userName;
+      chatLog.roomName = data.selectedRoom;
+      chatLog.sender = data.sender.name;
       chatLog.message = data.message;
       chatLog.timestamp = timestamp;
       await this.chatLogRepository.save(chatLog); // チャットログをデータベースに保存
 
-      // socket.broadcast.to(data.roomID).emit('update', {
       // 送信者の部屋IDを取得
       const rooms = [...socket.rooms].slice(0);
       // 送信者の部屋以外に送信
-      this.server.to(rooms[1]).emit('update', {
-        roomID: data.roomID,
-        sender: data.sender.userName,
-        message: data.message,
-        timestamp,
-      });
+      this.server.to(rooms[1]).emit('update', chatLog);
+      // {
+      //   roomName: data.selectedRoom,
+      //   sender: data.sender.name,
+      //   message: data.message,
+      //   timestamp,
+      // });
     } catch (error) {
       this.logger.error(`Error handling message: ${(error as Error).message}`);
       throw error;
@@ -127,12 +126,11 @@ export class ChatGateway {
 
   @SubscribeMessage('joinRoom')
   handleJoinRoom(
-    @MessageBody() join: { sender: User; room: string },
+    @MessageBody() join: { sender: Sender; room: string },
     @ConnectedSocket() socket: Socket,
   ) {
     try {
-      this.logger.log(`joinRoom: ${join.sender.userName} joined ${join.room}`);
-      console.log('joinRoom: ', join.sender.userName, 'joined', join.room);
+      this.logger.log(`joinRoom: ${join.sender.name} joined ${join.room}`);
       const rooms = [...socket.rooms].slice(0);
       // 既に部屋に入っている場合は退出
       if (rooms.length == 2) socket.leave(rooms[1]);
@@ -145,9 +143,9 @@ export class ChatGateway {
   }
 
   @SubscribeMessage('deleteRoom')
-  async handleDeleteRoom(@MessageBody() delet: { sender: User; room: string }) {
+  async handleDeleteRoom(@MessageBody() delet: { sender: Sender; room: string }) {
     try {
-      this.logger.log(`${delet.sender.userName} deleteRoom: ${delet.room}`);
+      this.logger.log(`${delet.sender.name} deleted Room: ${delet.room}`);
 
       // データベースから指定のルームを削除
       const deletedRoom = await this.roomRepository.findOne({
@@ -171,17 +169,17 @@ export class ChatGateway {
     }
   }
 
-  // @SubscribeMessage('getRoomList')
-  // async handleGetRoomList(@MessageBody() socketId: string, @ConnectedSocket() socket: Socket) {
-  //   try {
-  //     this.logger.log(`Client connected: ${socket.id}`);
-  //     // データベースからルームリストを取得
-  //     const roomList = await this.roomRepository.find();
-  //     // ルームリストをクライアントに送信
-  //     socket.emit('roomList', roomList);
-  //   } catch (error) {
-  //     this.logger.error(`Error getting room list: ${(error as Error).message}`);
-  //     throw error;
-  //   }
-  // }
+  @SubscribeMessage('getRoomList')
+  async handleGetRoomList(@MessageBody() socketId: string, @ConnectedSocket() socket: Socket) {
+    try {
+      this.logger.log(`Client connected: ${socket.id}`);
+      // データベースからルームリストを取得
+      const roomList = await this.roomRepository.find();
+      // ルームリストをクライアントに送信
+      socket.emit('roomList', roomList);
+    } catch (error) {
+      this.logger.error(`Error getting room list: ${(error as Error).message}`);
+      throw error;
+    }
+  }
 }

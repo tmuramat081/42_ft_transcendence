@@ -16,6 +16,6 @@ export class Room {
   members: User[];
 
   // OneToManyリレーションシップを定義する
-  @OneToMany(() => ChatLog, (chatLog) => chatLog.roomID)
+  @OneToMany(() => ChatLog, (chatLog) => chatLog.roomName)
   chatLogs: ChatLog[];
 }

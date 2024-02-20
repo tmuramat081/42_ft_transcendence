@@ -1,6 +1,7 @@
 import { Entity, PrimaryGeneratedColumn, Column, ManyToOne } from 'typeorm';
-import { Room } from './room.entity';
-// import { User } from '../../users/entities/user.entity';
+import { Sender } from '../chat.gateway';
+import { User } from '../../users/entities/user.entity';
+// import { Room } from './room.entity';
 
 @Entity()
 export class ChatLog {
@@ -8,7 +9,7 @@ export class ChatLog {
   id: number;
 
   @Column()
-  roomID: string;
+  roomName: string;
 
   @Column()
   sender: string;
@@ -19,7 +20,7 @@ export class ChatLog {
   @Column()
   timestamp: string;
 
-  // ManyToOneリレーションシップを定義する
-  @ManyToOne(() => Room, (room) => room.chatLogs)
-  room: Room;
+  // // ManyToOneリレーションシップを定義する
+  // @ManyToOne(() => Room, (room) => room.chatLogs)
+  // room: Room;
 }
