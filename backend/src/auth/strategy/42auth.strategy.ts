@@ -46,10 +46,13 @@ export class IntraStrategy extends PassportStrategy(Strategy, '42') {
       password: username,
       userName: username,
       name42: username,
+      // undefinedになる
       icon: photos[0].value,
     };
 
-    console.log('IntraStrategy validate');
+    // console.log(profile)
+
+    // console.log('IntraStrategy validate');
 
     return this.authService.validateUser(user);
 

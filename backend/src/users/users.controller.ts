@@ -324,53 +324,89 @@ export class UsersController {
     //@UseGuards(JwtAuthGuard, TwoFactorAuthGuard)
     @Post('/update')
     async UpdateUser(@Body () userData: UpdateUserDto, @Req() req,  @Res({ passthrough: true }) res: Response) {
+        console.log("UpdateUser")
         console.log("userData: ", userData)
-        // リクエストハンドリング
-        if (!userData.userName || !userData.email) {
-            throw new ForbiddenException("Please enter all fields");
-            //return res.status(400).json({ message: 'Please enter all fields' });
-        }
+        console.log("req.user: ", req.user)
+        // // リクエストハンドリング
+        // if (!userData.userName || !userData.email) {
+        //     throw new ForbiddenException("Please enter all fields");
+        //     //return res.status(400).json({ message: 'Please enter all fields' });
+        // }
 
-        // パスワードの変更をした場合
-        // リクエストの検証
-        if (userData.password !== userData.passwordConfirm) {
-            throw new ForbiddenException("Passwords do not match");
-            //return res.status(400).json({ message: 'Passwords do not match' });
-        }
+        // // パスワードの変更をした場合
+        // // リクエストの検証
+        // if (userData.password !== userData.passwordConfirm) {
+        //     throw new ForbiddenException("Passwords do not match");
+        //     //return res.status(400).json({ message: 'Passwords do not match' });
+        // }
 
-        // アクセストークンを更新
-        // idにした方がいい
-        // var accessToken: string = await this.usersService.updateUser(req.user.userName, userData);
+        // // アクセストークンを更新
+        // // idにした方がいい
+        // // var accessToken: string = await this.usersService.updateUser(req.user.userName, userData);
+        // // if (accessToken === null) {
+        // //     //console.log("Invalid credentials");
+        // //     throw new ForbiddenException("Invalid credentials");
+        // //     //return res.status(400).json({ message: 'Invalid credentials' });
+        // // }
+
+        // // update
+        // const user: User = await this.usersService.updateUser(req.user.userId, userData);
+        // if (user === null) {
+        //     throw new ForbiddenException("Invalid credentials");
+        //     //return res.status(400).json({ message: 'Invalid credentials' });
+        // }
+
+        // // passwordの確認
+        // // 入力データと更新後のデータを比較
+        // // if (await bcrypt.compare(userData.password, user.password) === false) {
+        // //     throw new ForbiddenException("Passwords do not match");
+        // //     //return res.status(400).json({ message: 'Passwords do not match' });
+        // // }
+
+        // const accessToken: string = await this.usersService.generateJwt(user);
+        
         // if (accessToken === null) {
         //     //console.log("Invalid credentials");
         //     throw new ForbiddenException("Invalid credentials");
         //     //return res.status(400).json({ message: 'Invalid credentials' });
         // }
 
-        const user: User = await this.usersService.updateUser(req.user.userId, userData);
-        if (user === null) {
+        // //cookieにアクセストークンを保存
+        // res.cookie('jwt', accessToken, { httpOnly: true })
+
+        // //redisにアクセストークンを保存
+
+        // return JSON.stringify({"accessToken": accessToken});
+
+
+
+        // passwoedは必須
+        //現在パスワードが一致するか確認
+        // 名前からユーザーを取得
+        const user: User = await this.usersService.updateUser(req.user, userData);
+        if (!user) {
             throw new ForbiddenException("Invalid credentials");
-            //return res.status(400).json({ message: 'Invalid credentials' });
         }
 
-        if (await bcrypt.compare(userData.password, user.password) === false) {
-            throw new ForbiddenException("Passwords do not match");
-            //return res.status(400).json({ message: 'Passwords do not match' });
-        }
+        console.log("user: ", user);
 
+        //データを更新して、アクセストークンを返す
         const accessToken: string = await this.usersService.generateJwt(user);
-        
+
         if (accessToken === null) {
-            //console.log("Invalid credentials");
             throw new ForbiddenException("Invalid credentials");
-            //return res.status(400).json({ message: 'Invalid credentials' });
         }
+
+        console.log("accessToken: " + accessToken);
 
         //cookieにアクセストークンを保存
+        // localstrageよりcookieの方が安全
+        // XSS, 有効期限の観点からもcookieの方が良い
         res.cookie('jwt', accessToken, { httpOnly: true })
 
-        //redisにアクセストークンを保存
+        // //redisにアクセストークンを保存
 
+        //return accessToken;
         return JSON.stringify({"accessToken": accessToken});
     }
 
@@ -426,6 +462,10 @@ export class UsersController {
         // return of(res.sendFile(
         //     path.join(process.env.AVATAR_IMAGE_DIR, icon),
         // ))
+
+        //return of(res.sendFile(path.join(process.env.AVATAR_IMAGE_DIR, icon)));
+
+        //return res.sendFile(icon, { root: process.env.AVATAR_IMAGE_DIR });
     }
 
     // curl -X GET -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInVzZXJOYW1lIjoidGVzdCIsImVtYWlsIjoidGVzdEB0ZXN0IiwiaWF0IjoxNzAzNzU5NjU5LCJleHAiOjE3MDM3NjMyNTl9.R1TfxoDLp5kTOAAfIEGrkplZquRACJltQv3oGEANKDU" http://localhost:3001/users/me
@@ -449,6 +489,26 @@ export class UsersController {
         }
 
         return JSON.stringify({"user": user});
+    }
+
+    @UseGuards(JwtAuthGuard)
+    @Get("/:name")
+    async FindOneByName(@Param('name') name: string): Promise<string> {
+        const resultUser =  await this.usersService.findOneByName(name);
+
+
+        const user: ReturnUserDto = {
+            userId: resultUser.userId,
+            userName: resultUser.userName,
+            email: resultUser.email,
+            icon: resultUser.icon,
+            twoFactorAuth: resultUser.twoFactorAuth,
+            // 不要なので削除
+            twoFactorAuthNow: false
+        }
+
+        return JSON.stringify({"user": user});
+
     }
 
     @UseGuards(JwtAuthGuard)
