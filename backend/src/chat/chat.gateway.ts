@@ -14,18 +14,6 @@ import { ChatLog } from './entities/chatlog.entity';
 import { Room } from './entities/room.entity';
 import { User } from '../users/entities/user.entity';
 
-/*
-Table user {
-  user_id integer [pk]
-  user_name varchar
-  password varchar
-  email varchar
-  icon varchar
-  created_at date
-  updated_at date
-}
-*/
-
 export interface Sender {
   ID: string;
   name: string;
@@ -60,27 +48,26 @@ export class ChatGateway {
     @ConnectedSocket() socket: Socket,
   ) {
     try {
+      if (!data.sender || !data.sender.name || !data.sender.icon || !data.message) {
+        this.logger.error('Invalid chat message data:', data);
+        return;
+      }
       this.logger.log(`${data.selectedRoom} received ${data.message} from ${data.sender.name}`);
-      const timestamp = new Date().toLocaleString();
 
       // チャットログを保存
       const chatLog = new ChatLog();
       chatLog.roomName = data.selectedRoom;
       chatLog.sender = data.sender.name;
+      chatLog.icon = data.sender.icon;
       chatLog.message = data.message;
-      chatLog.timestamp = timestamp;
+      chatLog.timestamp = new Date().toLocaleString();
       await this.chatLogRepository.save(chatLog); // チャットログをデータベースに保存
 
       // 送信者の部屋IDを取得
-      const rooms = [...socket.rooms].slice(0);
+      // const rooms = [...socket.rooms].slice(0);
       // 送信者の部屋以外に送信
-      this.server.to(rooms[1]).emit('update', chatLog);
-      // {
-      //   roomName: data.selectedRoom,
-      //   sender: data.sender.name,
-      //   message: data.message,
-      //   timestamp,
-      // });
+      // this.server.to(rooms[1]).emit('update', chatLog);
+      this.server.to(data.selectedRoom).emit('update', chatLog);
     } catch (error) {
       this.logger.error(`Error handling message: ${(error as Error).message}`);
       throw error;
@@ -95,7 +82,8 @@ export class ChatGateway {
     try {
       this.logger.log(`${create.sender.name} createRoom: ${create.roomName}`);
       // ルーム名が空かどうかを確認
-      if (!create.roomName.trim()) {
+      if (!create.roomName || !create.roomName.trim()) {
+        this.logger.error('Invalid room name:', create.roomName);
         socket.emit('roomError', 'Room name cannot be empty.');
         return; // 空の場合は処理を中断
       }
