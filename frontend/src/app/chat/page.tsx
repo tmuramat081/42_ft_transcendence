@@ -89,14 +89,6 @@ const ChatPage = () => {
     };
   }, [selectedRoom]);
 
-  // useEffect(() => {
-  //   const handleRoomList = (rooms: Room[]) => {
-  //     console.log('Received roomList from server:', rooms);
-  //     const roomNames = rooms.map((room) => room.roomName); // ルームオブジェクトのroomNameプロパティのみを取得
-  //     setRoomList(roomNames);
-  //   };
-  // }, []);
-
   const onClickSubmit = useCallback(() => {
     console.log(
       `${(sender as Sender).name} ${(sender as Sender).ID} submitting message, '${message}'`,
