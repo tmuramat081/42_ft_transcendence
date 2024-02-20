@@ -7,7 +7,7 @@ import './ChatPage.css'; // スタイルシートの追加
 import Image from 'next/image';
 import { Room } from '../../../../backend/src/chat/entities/room.entity';
 import { ChatLog } from '../../../../backend/src/chat/entities/chatlog.entity';
-import { User } from '../../../../backend/src/users/entities/user.entity';
+// import { User } from '../../../../backend/src/users/entities/user.entity';
 
 interface Sender {
   ID: string;
@@ -63,7 +63,17 @@ const ChatPage = () => {
       console.error(error);
     });
 
-    socket.on('update', (chatLog: ChatLog): void => {
+    // コンポーネントがアンマウントされるときに切断
+    return () => {
+      socket.off('connect');
+      socket.off('roomList');
+      socket.off('roomError');
+    };
+  }, []);
+
+  useEffect(() => {
+    socket.on('update', (chatLog: ChatLog) => {
+      console.log('Received chatLog from server');
       console.log('Received chatLog from server:', chatLog);
       const newChatMessage: ChatMessage = {
         user: chatLog.sender,
@@ -82,14 +92,10 @@ const ChatPage = () => {
       });
     });
 
-    // コンポーネントがアンマウントされるときに切断
     return () => {
-      socket.off('connect');
-      socket.off('roomList');
-      socket.off('roomError');
       socket.off('update');
     };
-  }, []);
+  }, [ChatLog]);
 
   // useEffect(() => {
   //   const handleRoomList = (rooms: Room[]) => {
@@ -100,7 +106,9 @@ const ChatPage = () => {
   // }, []);
 
   const onClickSubmit = useCallback(() => {
-    console.log(`${(sender as Sender).name} submitting message, '${message}'`);
+    console.log(
+      `${(sender as Sender).name} ${(sender as Sender).ID} submitting message, '${message}'`,
+    );
     socket.emit('talk', { selectedRoom, sender: { ...sender, icon: sender.icon }, message });
     setMessage('');
   }, [selectedRoom, sender, message]);
@@ -112,7 +120,7 @@ const ChatPage = () => {
 
   const handleRoomChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
     const newRoomID = event.target.value;
-    console.log(`${(sender as Sender).name} joined ${roomList[Number(newRoomID)]}`);
+    console.log(`${(sender as Sender).name} joined room: ${roomList[Number(newRoomID)]}`);
     setRoomID(newRoomID);
     setSelectedRoom(roomList[Number(newRoomID)]);
     setMessage(''); // ルームが変更されたら新しいメッセージもリセット
