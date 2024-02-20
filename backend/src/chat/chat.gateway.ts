@@ -48,21 +48,29 @@ export class ChatGateway {
     @ConnectedSocket() socket: Socket,
   ) {
     try {
-      if (!data.sender || !data.sender.name || !data.sender.icon || !data.message) {
+      if (
+        !data.sender ||
+        !data.sender.ID ||
+        !data.sender.name ||
+        !data.sender.icon ||
+        !data.message
+      ) {
         this.logger.error('Invalid chat message data:', data);
         return;
       }
-      this.logger.log(`${data.selectedRoom} received ${data.message} from ${data.sender.name}`);
+      this.logger.log(
+        `${data.selectedRoom} received ${data.message} from ${data.sender.name} ${data.sender.ID}`,
+      );
 
       // チャットログを保存
       const chatLog = new ChatLog();
       chatLog.roomName = data.selectedRoom;
-      chatLog.sender = data.sender.name;
+      chatLog.sender = data.sender.ID;
       chatLog.icon = data.sender.icon;
       chatLog.message = data.message;
       chatLog.timestamp = new Date().toLocaleString();
       await this.chatLogRepository.save(chatLog); // チャットログをデータベースに保存
-
+      this.logger.log(`Saved chatLog: ${JSON.stringify(chatLog)}`);
       // 送信者の部屋IDを取得
       // const rooms = [...socket.rooms].slice(0);
       // 送信者の部屋以外に送信
@@ -80,7 +88,7 @@ export class ChatGateway {
     @ConnectedSocket() socket: Socket,
   ) {
     try {
-      this.logger.log(`${create.sender.name} createRoom: ${create.roomName}`);
+      this.logger.log(`createRoom: ${create.sender.name} create ${create.roomName}`);
       // ルーム名が空かどうかを確認
       if (!create.roomName || !create.roomName.trim()) {
         this.logger.error('Invalid room name:', create.roomName);
@@ -95,7 +103,7 @@ export class ChatGateway {
       if (!existingRoom) {
         const room = new Room();
         room.roomName = create.roomName; // ルーム名として入力された値を使用
-        this.logger.log(`Creating room: ${room.roomName}`);
+        // this.logger.log(`Creating room: ${room.roomName}`);
         await this.roomRepository.save(room); // 新しいルームをデータベースに保存
         socket.join(create.roomName);
         const rooms = await this.roomRepository.find();
