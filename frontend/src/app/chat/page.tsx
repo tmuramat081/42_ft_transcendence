@@ -75,19 +75,24 @@ const ChatPage = () => {
   useEffect(() => {
     socket.on('update', (chatMessage: ChatMessage) => {
       console.log('Received chatLog from server:', chatMessage);
-      setRoomChatLogs((prevRoomChatLogs) => {
-        const updatedLogs = { ...prevRoomChatLogs };
-        if (chatMessage && selectedRoom) {
-          updatedLogs[selectedRoom] = [...(updatedLogs[selectedRoom] || []), chatMessage];
-        }
-        return updatedLogs;
-      });
+      setRoomChatLogs((prevRoomChatLogs) => ({
+        ...prevRoomChatLogs,
+        [roomID]: [
+          ...(prevRoomChatLogs[roomID] || []),
+          {
+            user: chatMessage.user,
+            photo: chatMessage.photo,
+            text: chatMessage.text,
+            timestamp: chatMessage.timestamp,
+          },
+        ],
+      }));
     });
 
     return () => {
       socket.off('update');
     };
-  }, [selectedRoom]);
+  }, [selectedRoom, roomchatLogs]);
 
   const onClickSubmit = useCallback(() => {
     console.log(
