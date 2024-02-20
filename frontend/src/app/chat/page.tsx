@@ -38,6 +38,7 @@ const ChatPage = () => {
   });
   const [roomchatLogs, setRoomChatLogs] = useState<{ [roomId: string]: ChatMessage[] }>({});
   const [isDeleteButtonVisible, setDeleteButtonVisible] = useState(false);
+  const [participants, setParticipants] = useState<string[]>([]);
 
   // コンポーネントがマウントされたときのみ接続
   useEffect(() => {
@@ -64,11 +65,17 @@ const ChatPage = () => {
       console.error(error);
     });
 
+    socket.on('roomParticipants', (roomParticipants: string[]) => {
+      console.log('Received roomParticipants from server:', roomParticipants);
+      setParticipants(roomParticipants);
+    });
+
     // コンポーネントがアンマウントされるときに切断
     return () => {
       socket.off('connect');
       socket.off('roomList');
       socket.off('roomError');
+      socket.off('roomParticipants');
     };
   }, []);
 
@@ -116,6 +123,8 @@ const ChatPage = () => {
     setMessage(''); // ルームが変更されたら新しいメッセージもリセット
     setDeleteButtonVisible(true);
     socket.emit('joinRoom', { sender, room: roomList[Number(newRoomID)] });
+    // 参加者リストを更新
+    socket.emit('getParticipants', roomList[Number(newRoomID)]);
   };
 
   const onClickDeleteRoom = useCallback(() => {
@@ -139,7 +148,6 @@ const ChatPage = () => {
   return (
     <div className="chat-container">
       <h1>Chat Page</h1>
-
       {/* 新しいチャットグループの作成UI */}
       <div>
         <input
@@ -150,7 +158,6 @@ const ChatPage = () => {
         />
         <button onClick={onClickCreateRoom}>Create Room</button>
       </div>
-
       {/* チャットグループの選択UI */}
       <div className="chat-room-selector">
         <select
@@ -170,11 +177,18 @@ const ChatPage = () => {
           ))}
         </select>
       </div>
-
       {/* Delete Room ボタン */}
       {isDeleteButtonVisible && <button onClick={onClickDeleteRoom}>Delete Room</button>}
-
-      {/* チャットログ */}
+      {/* 参加者リスト */}
+      <div className="participants">
+        <h2>Participants:</h2>
+        <ul>
+          {participants.map((participant, index) => (
+            <li key={index}>{participant}</li>
+          ))}
+        </ul>
+      </div>
+      ;{/* チャットログ */}
       <div className="chat-messages">
         {roomchatLogs[roomID]?.map((message, index) => (
           <div
@@ -195,7 +209,6 @@ const ChatPage = () => {
           </div>
         ))}
       </div>
-
       {/* チャット入力欄 */}
       <div className="chat-input">
         <input

@@ -10,6 +10,9 @@ export class Room {
   @Column()
   roomName: string;
 
+  @Column('simple-array')
+  roomParticipants: string[];
+
   // メンバー情報を格納するための関連付け
   @ManyToMany(() => User)
   @JoinTable()

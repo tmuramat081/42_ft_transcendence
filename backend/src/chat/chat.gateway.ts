@@ -129,7 +129,7 @@ export class ChatGateway {
   }
 
   @SubscribeMessage('joinRoom')
-  handleJoinRoom(
+  async handleJoinRoom(
     @MessageBody() join: { sender: Sender; room: string },
     @ConnectedSocket() socket: Socket,
   ) {
@@ -138,10 +138,69 @@ export class ChatGateway {
       const rooms = [...socket.rooms].slice(0);
       // 既に部屋に入っている場合は退出
       if (rooms.length == 2) socket.leave(rooms[1]);
+      // データベースから部屋を取得
+      const room = await this.roomRepository.findOne({ where: { roomName: join.room } });
+      // 参加者リストを更新
+      if (room) {
+        if (!room.roomParticipants) {
+          room.roomParticipants = [];
+        }
+        room.roomParticipants.push(join.sender.ID);
+        await this.roomRepository.save(room);
+      } else {
+        this.logger.error(`Room ${join.room} not found in the database.`);
+      }
+      // 参加者リストを取得してクライアントに送信
+      const updatedRoom = await this.roomRepository.findOne({ where: { roomName: join.room } });
+      if (updatedRoom) {
+        this.server.to(join.room).emit('roomParticipants', updatedRoom.roomParticipants);
+      } else {
+        this.logger.error(`Error getting updated room.`);
+      }
+      // ソケットにルームに参加させる
       socket.join(join.room);
     } catch (error) {
       const errorMessage = (error as Error).message;
       this.logger.error(`Error joining room: ${errorMessage}`);
+      throw error;
+    }
+  }
+
+  @SubscribeMessage('leaveRoom')
+  async handleLeaveRoom(
+    @MessageBody() leave: { sender: Sender; room: string },
+    @ConnectedSocket() socket: Socket,
+  ) {
+    try {
+      this.logger.log(`leaveRoom: ${leave.sender.name} left ${leave.room}`);
+      // データベースから部屋を取得
+      const room = await this.roomRepository.findOne({ where: { roomName: leave.room } });
+
+      // 参加者リストを更新
+      if (room) {
+        if (room.roomParticipants) {
+          room.roomParticipants = room.roomParticipants.filter((id) => id !== leave.sender.ID);
+          await this.roomRepository.save(room);
+        }
+      } else {
+        this.logger.error(`Room ${leave.room} not found in the database.`);
+      }
+
+      // 更新された参加者リストを取得してクライアントに送信
+      const updatedRoom = await this.roomRepository.findOne({ where: { roomName: leave.room } });
+      if (updatedRoom) {
+        this.server.to(leave.room).emit('roomParticipants', updatedRoom.roomParticipants);
+      } else {
+        this.logger.error(`Error getting updated room.`);
+      }
+
+      // ソケットからルームを退出させる
+      const rooms = Object.keys(socket.rooms);
+      if (rooms.includes(leave.room)) {
+        socket.leave(leave.room);
+      }
+    } catch (error) {
+      this.logger.error(`Error leaving room: ${(error as Error).message}`);
       throw error;
     }
   }
@@ -183,6 +242,27 @@ export class ChatGateway {
       socket.emit('roomList', roomList);
     } catch (error) {
       this.logger.error(`Error getting room list: ${(error as Error).message}`);
+      throw error;
+    }
+  }
+
+  @SubscribeMessage('getRoomParticipants')
+  async handleGetRoomParticipants(
+    @MessageBody() roomName: string,
+    @ConnectedSocket() socket: Socket,
+  ) {
+    try {
+      this.logger.log(`getRoomParticipants: ${roomName}`);
+      // データベースから指定された部屋の参加者リストを取得
+      const room = await this.roomRepository.findOne({ where: { roomName } });
+      if (room) {
+        // 参加者リストをクライアントに送信
+        socket.emit('roomParticipants', room.roomParticipants);
+      } else {
+        this.logger.error(`Room ${roomName} not found in the database.`);
+      }
+    } catch (error) {
+      this.logger.error(`Error getting room participants: ${(error as Error).message}`);
       throw error;
     }
   }
