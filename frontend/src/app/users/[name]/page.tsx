@@ -1,6 +1,9 @@
 // サーバーサイドでの処理
 //"use client";
 
+import Avatar from '@mui/material/Avatar';
+
+
 export default async function Page({ params }: { params: { name: string } }) {
     console.log(params.name);
 
@@ -34,6 +37,9 @@ export default async function Page({ params }: { params: { name: string } }) {
     <div>
       <h1>{user.userName}</h1>
       <p>{user.email}</p>
+      <p>{user.userId}</p>
+      <p>{user.icon}</p>
+      <Avatar alt={user.userName} src={"http://localhost:3001/api/uploads/" + user.icon} />
     </div>
   );
 }

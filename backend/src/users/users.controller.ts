@@ -81,9 +81,15 @@ const storage = {
 export class UsersController {
     constructor(private readonly usersService: UsersService) {}
 
+    // users: User[] = [];にならない?なぜ？キャッシュのせい？
     @Get('')
-    findAll() {
-        return this.usersService.findAll();
+    async findAll(): Promise<string> {
+        //return this.usersService.findAll();
+
+        console.log("findAll")  
+        const users: User[] = await this.usersService.findAll();
+        console.log(JSON.stringify(users))
+        return JSON.stringify({"users": users});
     }
 
     // ここ
@@ -491,6 +497,7 @@ export class UsersController {
         return JSON.stringify({"user": user});
     }
 
+    // TODO: サーバーサイドからのアクセスのみを許可するようにstrategyを設定する？IPを設定する？
     // サーバーサイドからアクセスする場合はjwtは不要
     //@UseGuards(JwtAuthGuard)
     @Get("/:name")
@@ -517,6 +524,7 @@ export class UsersController {
     //@UseGuards(JwtAuthGuard, TwoFactorAuthGuard)
     @Get('/all')
     FindAllUsers() {
+        console.log("FindAllUsers")
         // passwordを除外する
         return classToPlain(this.usersService.findAll());
     }
