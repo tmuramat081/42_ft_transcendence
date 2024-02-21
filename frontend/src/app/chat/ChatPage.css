@@ -46,8 +46,26 @@
     margin-right: 10px;
   }
   
-  
   .timestamp {
     font-size: 10px;
     color: #888;
   }
+
+  .participants {
+    margin-top: 20px;
+  }
+  
+  .participant-icons {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+  }
+  
+  .participant {
+    text-align: center;
+  }
+  
+  .participant-name {
+    margin-top: 5px;
+  }
+  

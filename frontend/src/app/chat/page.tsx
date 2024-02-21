@@ -141,8 +141,6 @@ const ChatPage = () => {
     setMessage(''); // ルームが変更されたら新しいメッセージもリセット
     setDeleteButtonVisible(true);
     socket.emit('joinRoom', { sender, room: roomList[Number(newRoomID)] });
-    // 参加者リストを更新
-    // socket.emit('getParticipants', roomList[Number(newRoomID)]);
   };
 
   const onClickDeleteRoom = useCallback(() => {
@@ -196,11 +194,23 @@ const ChatPage = () => {
       {/* 参加者リスト */}
       <div className="participants">
         <h4>参加者リスト</h4>
-        <ul>
-          {Object.entries(participants).map((participant, index) => (
-            <li key={index}>{participant}</li>
+        <div className="participant-icons">
+          {participants.map((participant, index) => (
+            <div
+              key={index}
+              className="participant"
+            >
+              <Image
+                src={participant.icon}
+                alt={participant.name}
+                className="participant-icon"
+                width={50}
+                height={50}
+              />
+              <div className="participant-name">{participant.name}</div>
+            </div>
           ))}
-        </ul>
+        </div>
       </div>
       {/* Delete Room ボタン */}
       {isDeleteButtonVisible && <button onClick={onClickDeleteRoom}>Delete Room</button>}
