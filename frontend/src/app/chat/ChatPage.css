@@ -7,7 +7,7 @@
   }
 
   .chat-input {
-    margin-top: 10px;
+    margin-top: 20px;
     align-self: flex-end;
   }
   
@@ -52,7 +52,8 @@
   }
 
   .participants {
-    margin-top: 20px;
+    margin-top: 10px;
+    margin-bottom: 20px; /* delete ボタンとの間にマージンを追加 */
   }
   
   .participant-icons {
@@ -73,3 +74,6 @@
     font-size: 12px; /* 名前の文字サイズを調整 */
   }
   
+  .delete-button {
+    margin-bottom: 20px;
+  }
