@@ -1,7 +1,7 @@
 // サーバーサイドでの処理
 //"use client";
 
-export default function Page({ params }: { params: { name: string } }) {
+export default async function Page({ params }: { params: { name: string } }) {
     console.log(params.name);
 
     // user情報を取得する
@@ -10,7 +10,7 @@ export default function Page({ params }: { params: { name: string } }) {
 
     // サーバーサイドでの処理なのでhttp://localhost:3001は使えない
     // そのため、http://backend:3000を使う
-    const res = fetch("http://backend:3000/users/test1", {
+    const res = await fetch("http://backend:3000/users/test1", {
         method: "GET",
         headers: { "Content-Type": "application/json" },
         credentials: 'include',
@@ -26,12 +26,14 @@ export default function Page({ params }: { params: { name: string } }) {
           console.log(error);
       });
 
-    console.log(res);
+    console.log("res: ", res);
+
+    const user = res.user;
     
   return (
     <div>
-      <h1>Age</h1>
-      <p>Age: 20</p>
+      <h1>{user.userName}</h1>
+      <p>{user.email}</p>
     </div>
   );
 }
