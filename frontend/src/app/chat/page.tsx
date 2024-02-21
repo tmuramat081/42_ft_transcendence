@@ -38,7 +38,7 @@ const ChatPage = () => {
   });
   const [roomchatLogs, setRoomChatLogs] = useState<{ [roomId: string]: ChatMessage[] }>({});
   const [isDeleteButtonVisible, setDeleteButtonVisible] = useState(false);
-  const [participants, setParticipants] = useState<string[]>([]);
+  const [participants, setParticipants] = useState<{ name: string; icon: string }[]>([]);
 
   // コンポーネントがマウントされたときのみ接続
   useEffect(() => {
@@ -69,18 +69,11 @@ const ChatPage = () => {
   }, []);
 
   useEffect(() => {
-    // socket.on('roomList', (rooms: Room[]) => {
-    //   console.log('Received roomList from server:', rooms);
-    //   const roomNames = rooms.map((room) => room.roomName); // ルームオブジェクトのroomNameプロパティのみを取得
-    //   setRoomList(roomNames);
-    // });
-
     socket.on('roomError', (error) => {
       console.error(error);
     });
 
     return () => {
-      // socket.off('roomList');
       socket.off('roomError');
     };
   }, []);
@@ -108,7 +101,7 @@ const ChatPage = () => {
   }, [roomID]);
 
   useEffect(() => {
-    socket.on('roomParticipants', (roomParticipants: string[]) => {
+    socket.on('roomParticipants', (roomParticipants: { name: string; icon: string }[]) => {
       console.log('Received roomParticipants from server:', roomParticipants);
       setParticipants(roomParticipants);
       console.log('participants:', participants);
