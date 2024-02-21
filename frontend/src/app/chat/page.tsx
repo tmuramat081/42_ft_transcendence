@@ -54,7 +54,7 @@ const ChatPage = () => {
         icon: 'https://cdn.intra.42.fr/users/b9712d0534942eacfb43c2b0b031ae76/kshima.jpg',
       });
       socket.emit('getRoomList', socket.id);
-      socket.emit('getOnlineUsers');
+      socket.emit('getOnlineUsers', sender);
     });
 
     socket.on('roomList', (rooms: Room[]) => {
