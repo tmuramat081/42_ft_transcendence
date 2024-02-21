@@ -13,6 +13,9 @@ import { Repository } from 'typeorm';
 import { ChatLog } from './entities/chatlog.entity';
 import { Room } from './entities/room.entity';
 import { User } from '../users/entities/user.entity';
+import { DM_User } from './entities/dm-user.entity';
+import { DirectMessage } from './entities/direct-message.entity';
+import { OnlineUsers } from './entities/online-users.entity';
 
 export interface Sender {
   ID: string;
@@ -40,6 +43,18 @@ export class ChatGateway {
 
     @InjectRepository(Room)
     private roomRepository: Repository<Room>,
+
+    @InjectRepository(User)
+    private userRepository: Repository<User>,
+
+    @InjectRepository(DM_User)
+    private dmUserRepository: Repository<DM_User>,
+
+    @InjectRepository(DirectMessage)
+    private directMessageRepository: Repository<DirectMessage>,
+
+    @InjectRepository(OnlineUsers)
+    private onlineUsersRepository: Repository<OnlineUsers>,
   ) {}
 
   @SubscribeMessage('talk')
@@ -255,6 +270,20 @@ export class ChatGateway {
       socket.emit('roomList', roomList);
     } catch (error) {
       this.logger.error(`Error getting room list: ${(error as Error).message}`);
+      throw error;
+    }
+  }
+
+  @SubscribeMessage('getOnlineUsers')
+  async handleGetOnlineUsers(@MessageBody() sender: Sender, @ConnectedSocket() socket: Socket) {
+    try {
+      this.logger.log(`Client ${sender.name} connected.`);
+      // データベースからオンラインユーザーリストを取得
+      const onlineUsers = await this.onlineUsersRepository.find();
+      // オンラインユーザーリストをクライアントに送信
+      socket.emit('onlineUsers', onlineUsers);
+    } catch (error) {
+      this.logger.error(`Error getting online users: ${(error as Error).message}`);
       throw error;
     }
   }
