@@ -155,7 +155,7 @@ export class ChatGateway {
         if (!room.roomParticipants) {
           room.roomParticipants = [];
         }
-        room.roomParticipants.push(join.sender.ID);
+        room.roomParticipants.push({ name: join.sender.name, icon: join.sender.icon });
         await this.roomRepository.save(room);
       } else {
         this.logger.error(`Room ${join.room} not found in the database.`);
@@ -190,7 +190,9 @@ export class ChatGateway {
       // 参加者リストを更新
       if (room) {
         if (room.roomParticipants) {
-          room.roomParticipants = room.roomParticipants.filter((id) => id !== leave.sender.ID);
+          room.roomParticipants = room.roomParticipants.filter(
+            (participant) => participant.name !== leave.sender.name,
+          );
           await this.roomRepository.save(room);
         }
       } else {
