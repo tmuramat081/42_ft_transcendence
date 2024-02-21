@@ -75,5 +75,11 @@
   }
   
   .delete-button {
+    margin-top: 20px;
+    margin-bottom: 10px;
+  }
+
+  .leave-button {
+    margin-top: 10px;
     margin-bottom: 20px;
   }

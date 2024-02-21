@@ -136,6 +136,21 @@ const ChatPage = () => {
     socket.emit('joinRoom', { sender, room: roomList[Number(newRoomID)] });
   };
 
+  const onClickLeaveRoom = useCallback(() => {
+    if (selectedRoom) {
+      console.log(`${sender.name} left Room: ${selectedRoom}`);
+      socket.emit('leaveRoom', { sender, room: selectedRoom });
+      setSelectedRoom(null);
+      setDeleteButtonVisible(false); // ボタンが押されたら非表示にする
+      setMessage('');
+      setRoomID('');
+      // チャットログをクリアする
+      const updatedLogs = { ...roomchatLogs };
+      delete updatedLogs[selectedRoom];
+      setRoomChatLogs(updatedLogs);
+    }
+  }, [selectedRoom, roomchatLogs, sender]);
+
   const onClickDeleteRoom = useCallback(() => {
     if (selectedRoom) {
       console.log(`${(sender as Sender).name} deleted Room: ${selectedRoom}`);
@@ -205,6 +220,8 @@ const ChatPage = () => {
           ))}
         </div>
       </div>
+      {/* Leave Room ボタン */}
+      {isDeleteButtonVisible && <button onClick={onClickLeaveRoom}>Leave Room</button>}
       {/* Delete Room ボタン */}
       {isDeleteButtonVisible && <button onClick={onClickDeleteRoom}>Delete Room</button>}
       {/* チャットログ */}
