@@ -140,11 +140,9 @@ const ChatPage = () => {
       setSelectedRoom(null);
       setDeleteButtonVisible(false); // ボタンが押されたら非表示にする
       // チャットログをクリアする
-      setRoomChatLogs((prevRoomChatLogs) => {
-        const updatedLogs = { ...prevRoomChatLogs };
-        delete updatedLogs[selectedRoom];
-        return updatedLogs;
-      });
+      const updatedLogs = { ...roomchatLogs };
+      delete updatedLogs[selectedRoom];
+      setRoomChatLogs(updatedLogs);
       // ルームリストから削除する
       const newRoomList = roomList.filter((room) => room !== selectedRoom);
       setRoomList(newRoomList);
