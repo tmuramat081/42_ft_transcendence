@@ -195,7 +195,7 @@ const ChatPage = () => {
       </div>
       {/* 参加者リスト */}
       <div className="participants">
-        <h3>Participants:</h3>
+        <h4>参加者リスト</h4>
         <ul>
           {Object.entries(participants).map((participant, index) => (
             <li key={index}>{participant}</li>
