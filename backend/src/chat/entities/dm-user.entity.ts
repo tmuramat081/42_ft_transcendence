@@ -2,7 +2,7 @@ import { Entity, PrimaryGeneratedColumn, Column, OneToMany } from 'typeorm';
 import { DirectMessage } from './direct-message.entity';
 
 @Entity()
-export class User {
+export class DM_User {
   @PrimaryGeneratedColumn()
   id: number;
 
