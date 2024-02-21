@@ -133,6 +133,7 @@ export class ChatGateway {
         });
         this.server.emit('roomList', rooms); // ルームリストを更新して全クライアントに通知
       } else {
+        this.logger.error(`Room with the same name already exists: ${create.roomName}`);
         socket.emit('roomError', 'Room with the same name already exists.');
       }
     } catch (error) {
@@ -163,6 +164,8 @@ export class ChatGateway {
       } else {
         this.logger.error(`Room ${join.room} not found in the database.`);
       }
+      // ソケットにルームに参加させる
+      socket.join(join.room);
       // 参加者リストを取得してクライアントに送信
       const updatedRoom = await this.roomRepository.findOne({ where: { roomName: join.room } });
       if (updatedRoom) {
@@ -171,8 +174,6 @@ export class ChatGateway {
       } else {
         this.logger.error(`Error getting updated room.`);
       }
-      // ソケットにルームに参加させる
-      socket.join(join.room);
     } catch (error) {
       const errorMessage = (error as Error).message;
       this.logger.error(`Error joining room: ${errorMessage}`);

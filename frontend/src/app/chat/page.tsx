@@ -46,8 +46,8 @@ const ChatPage = () => {
 
     socket.on('connect', () => {
       console.log('connection ID : ', socket.id);
+      // ここでログイン情報を取得して設定する
       setSender({
-        // ここでログイン情報を取得して設定する
         ID: socket.id,
         name: 'kshima',
         icon: 'https://cdn.intra.42.fr/users/b9712d0534942eacfb43c2b0b031ae76/kshima.jpg',
@@ -61,14 +61,26 @@ const ChatPage = () => {
       setRoomList(roomNames);
     });
 
-    socket.on('roomError', (error) => {
-      console.error(error);
-    });
-
     // コンポーネントがアンマウントされるときに切断
     return () => {
       socket.disconnect();
       socket.off('roomList');
+    };
+  }, []);
+
+  useEffect(() => {
+    // socket.on('roomList', (rooms: Room[]) => {
+    //   console.log('Received roomList from server:', rooms);
+    //   const roomNames = rooms.map((room) => room.roomName); // ルームオブジェクトのroomNameプロパティのみを取得
+    //   setRoomList(roomNames);
+    // });
+
+    socket.on('roomError', (error) => {
+      console.error(error);
+    });
+
+    return () => {
+      // socket.off('roomList');
       socket.off('roomError');
     };
   }, []);
@@ -116,7 +128,7 @@ const ChatPage = () => {
   }, [selectedRoom, sender, message]);
 
   const onClickCreateRoom = useCallback(() => {
-    console.log(`${(sender as Sender).name} creating new room: ${newRoomName}`);
+    console.log(`${(sender as Sender).name} create new room: ${newRoomName}`);
     socket.emit('createRoom', { sender, roomName: newRoomName });
     setNewRoomName('');
   }, [sender, newRoomName]);
