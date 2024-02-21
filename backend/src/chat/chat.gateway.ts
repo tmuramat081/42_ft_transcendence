@@ -62,13 +62,26 @@ export class ChatGateway {
         `${data.selectedRoom} received ${data.message} from ${data.sender.name} ${data.sender.ID}`,
       );
 
+      function formatDate(date: Date): string {
+        const options: Intl.DateTimeFormatOptions = {
+          year: 'numeric',
+          month: '2-digit',
+          day: '2-digit',
+          hour: '2-digit',
+          minute: '2-digit',
+          hour12: false,
+          timeZone: 'Asia/Tokyo',
+        };
+        return date.toLocaleString('ja-JP', options);
+      }
+
       // チャットログを保存
       const chatLog = new ChatLog();
       chatLog.roomName = data.selectedRoom;
       chatLog.sender = data.sender.ID;
       chatLog.icon = data.sender.icon;
       chatLog.message = data.message;
-      chatLog.timestamp = new Date().toLocaleString();
+      chatLog.timestamp = formatDate(new Date());
       await this.chatLogRepository.save(chatLog); // チャットログをデータベースに保存
       this.logger.log(`Saved chatLog: ${JSON.stringify(chatLog)}`);
       // 送信者の部屋IDを取得
