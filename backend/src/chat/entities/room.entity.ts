@@ -10,8 +10,8 @@ export class Room {
   @Column()
   roomName: string;
 
-  @Column('simple-array')
-  roomParticipants: string[];
+  @Column('json', { nullable: true })
+  roomParticipants: { name: string; icon: string }[];
 
   // メンバー情報を格納するための関連付け
   @ManyToMany(() => User)
