@@ -39,6 +39,7 @@ const ChatPage = () => {
   const [roomchatLogs, setRoomChatLogs] = useState<{ [roomId: string]: ChatMessage[] }>({});
   const [isDeleteButtonVisible, setDeleteButtonVisible] = useState(false);
   const [participants, setParticipants] = useState<{ name: string; icon: string }[]>([]);
+  const [onlineUsers, setOnlineUsers] = useState<{ name: string; icon: string }[]>([]);
 
   // コンポーネントがマウントされたときのみ接続
   useEffect(() => {
@@ -53,6 +54,7 @@ const ChatPage = () => {
         icon: 'https://cdn.intra.42.fr/users/b9712d0534942eacfb43c2b0b031ae76/kshima.jpg',
       });
       socket.emit('getRoomList', socket.id);
+      socket.emit('getOnlineUsers');
     });
 
     socket.on('roomList', (rooms: Room[]) => {
@@ -61,10 +63,16 @@ const ChatPage = () => {
       setRoomList(roomNames);
     });
 
+    socket.on('onlineUsers', (users: { name: string; icon: string }[]) => {
+      console.log('Received online users from server:', users);
+      setOnlineUsers(users);
+    });
+
     // コンポーネントがアンマウントされるときに切断
     return () => {
       socket.disconnect();
       socket.off('roomList');
+      socket.off('onlineUsers');
     };
   }, []);
 
@@ -170,6 +178,28 @@ const ChatPage = () => {
   return (
     <div className="chat-container">
       <h1>Chat Page</h1>
+      {/* ログイン中の参加者リスト */}
+      <div className="participants">
+        <h4>Logined friends</h4>
+        <div className="participant-icons">
+          {onlineUsers.map((user, index) => (
+            <div
+              key={index}
+              className="participant"
+            >
+              <Image
+                src={user.icon}
+                alt={user.name}
+                className="participant-icon"
+                width={50}
+                height={50}
+              />
+              <div className="participant-name">{user.name}</div>
+              <button onClick={() => console.log(`Sending DM to ${user.name}`)}>Send DM</button>
+            </div>
+          ))}
+        </div>
+      </div>
       {/* 新しいチャットグループの作成UI */}
       <div>
         <input
@@ -199,9 +229,9 @@ const ChatPage = () => {
           ))}
         </select>
       </div>
-      {/* 参加者リスト */}
+      {/* ROOM参加者リスト */}
       <div className="participants">
-        <h4>参加者リスト</h4>
+        <h4>Room friends</h4>
         <div className="participant-icons">
           {participants.map((participant, index) => (
             <div
