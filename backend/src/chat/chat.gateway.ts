@@ -84,10 +84,6 @@ export class ChatGateway {
       chatLog.timestamp = formatDate(new Date());
       await this.chatLogRepository.save(chatLog); // チャットログをデータベースに保存
       this.logger.log(`Saved chatLog: ${JSON.stringify(chatLog)}`);
-      // 送信者の部屋IDを取得
-      // const rooms = [...socket.rooms].slice(0);
-      // 送信者の部屋以外に送信
-      // this.server.to(rooms[1]).emit('update', chatLog);
 
       const chatMessage: ChatMessage = {
         user: data.sender.ID,
