@@ -1,7 +1,6 @@
 /* eslint-disable */
 'use client';
 import React, { useState, useEffect, useCallback } from 'react';
-import { useHistory } from 'react-router-dom';
 import io from 'socket.io-client';
 import Link from 'next/link';
 import ChatLayout from './layout';
@@ -178,11 +177,6 @@ const ChatPage = () => {
       setRoomList(newRoomList);
     }
   }, [selectedRoom, roomList, sender]);
-
-  const sendDM = (recipient: string) => {
-    console.log(`Sending DM to ${recipient}`);
-    socket.emit('sendDM', { sender: sender.name, recipient: recipient, message: 'Hello!' });
-  };
 
   return (
     <div className="chat-container">
