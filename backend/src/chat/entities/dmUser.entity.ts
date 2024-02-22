@@ -15,9 +15,9 @@ export class DmUser {
   @Column()
   icon: string;
 
-  @OneToMany(() => DirectMessage, (message) => message.sender)
+  @OneToMany(() => DirectMessage, (message) => message.sender, { eager: true })
   sentMessages: DirectMessage[];
 
-  @OneToMany(() => DirectMessage, (message) => message.recipient)
+  @OneToMany(() => DirectMessage, (message) => message.recipient, { eager: true })
   receivedMessages: DirectMessage[];
 }
