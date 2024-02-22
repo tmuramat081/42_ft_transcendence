@@ -91,17 +91,18 @@
 
   .onlineuser-icons {
     display: flex;
-    flex-wrap: wrap;
+    flex-wrap: nowrap;
     gap: 20px;
-    justify-content: center; /* アイコンを中央揃えにするために追加 */
+    flex-direction: row; /* ユーザーを横並びに配置する */
+    justify-content: flex-start; /* ユーザーを左端から配置する */
   }
 
   .onlineuser {
     text-align: center;
-    margin: 0 10px; /* アイコンの間隔を調整 */
     display: flex;
     flex-direction: column; /* アイコンと名前を縦方向に配置するために追加 */
     align-items: center; /* アイコンと名前を中央揃えするために追加 */
+    justify-content: flex-start; /* アイコンと名前を左端に揃える */
   }
 
   .onlineuser-name {
