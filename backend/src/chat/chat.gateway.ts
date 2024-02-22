@@ -277,16 +277,17 @@ export class ChatGateway {
   @SubscribeMessage('getOnlineUsers')
   async handleGetOnlineUsers(@MessageBody() sender: Sender, @ConnectedSocket() socket: Socket) {
     try {
+      // 空のオンラインユーザーを削除
+      await this.deleteEmptyOnlineUsers();
+
       if (!sender || !sender.ID || !sender.name || !sender.icon) {
         throw new Error('Invalid sender data. Cannot save to database.');
       }
       this.logger.log(`Get online users: ${sender.ID}`);
-      // 既存の空のオンラインユーザーを削除
-      await this.onlineUsersRepository
-        .createQueryBuilder()
-        .delete()
-        .where('userId IS NULL OR name IS NULL OR icon IS NULL')
-        .execute();
+
+      // 重複したオンラインユーザーを削除
+      await this.deleteDuplicateOnlineUsers(sender);
+
       // OnlineUsersエンティティのインスタンスを作成し、データベースに保存
       const onlineUser = new OnlineUsers();
       onlineUser.userId = sender.ID;
@@ -301,5 +302,36 @@ export class ChatGateway {
       this.logger.error(`Error getting online users: ${(error as Error).message}`);
       throw error;
     }
+  }
+
+  async deleteEmptyOnlineUsers() {
+    // 空のオンラインユーザーを取得
+    const emptyOnlineUsers = await this.onlineUsersRepository.find({
+      where: {
+        userId: '',
+        name: '',
+        icon: '',
+      },
+    });
+
+    // 取得した空のオンラインユーザーを削除
+    await Promise.all(emptyOnlineUsers.map((user) => this.onlineUsersRepository.remove(user)));
+
+    console.log('Empty online users deleted:', emptyOnlineUsers);
+  }
+
+  async deleteDuplicateOnlineUsers(sender: Sender) {
+    // 名前とアイコンが同じユーザーを取得
+    const duplicateOnlineUsers = await this.onlineUsersRepository.find({
+      where: {
+        name: sender.name,
+        icon: sender.icon,
+      },
+    });
+
+    // 取得した重複したオンラインユーザーを削除
+    await Promise.all(duplicateOnlineUsers.map((user) => this.onlineUsersRepository.remove(user)));
+
+    console.log('Duplicate online users deleted:', duplicateOnlineUsers);
   }
 }
