@@ -13,9 +13,9 @@ import { Repository } from 'typeorm';
 import { ChatLog } from './entities/chatlog.entity';
 import { Room } from './entities/room.entity';
 import { User } from '../users/entities/user.entity';
-import { DM_User } from './entities/dm-user.entity';
-import { DirectMessage } from './entities/direct-message.entity';
-import { OnlineUsers } from './entities/online-users.entity';
+import { DM_User } from './entities/dmUser.entity';
+import { DirectMessage } from './entities/directMessage.entity';
+import { OnlineUsers } from './entities/onlineUsers.entity';
 
 export interface Sender {
   ID: string;

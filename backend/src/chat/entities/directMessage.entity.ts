@@ -1,5 +1,5 @@
 import { Entity, PrimaryGeneratedColumn, Column, ManyToOne } from 'typeorm';
-import { DM_User } from './dm-user.entity';
+import { DmUser } from './dmUser.entity';
 
 @Entity()
 export class DirectMessage {
@@ -18,9 +18,9 @@ export class DirectMessage {
   @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
   timestamp: Date;
 
-  @ManyToOne(() => DM_User, (user) => user.sentMessages)
-  sender: DM_User;
+  @ManyToOne(() => DmUser, (user) => user.sentMessages)
+  sender: DmUser;
 
-  @ManyToOne(() => DM_User, (user) => user.receivedMessages)
-  recipient: DM_User;
+  @ManyToOne(() => DmUser, (user) => user.receivedMessages)
+  recipient: DmUser;
 }

@@ -1,8 +1,8 @@
 import { Entity, PrimaryGeneratedColumn, Column, OneToMany } from 'typeorm';
-import { DirectMessage } from './direct-message.entity';
+import { DirectMessage } from './directMessage.entity';
 
 @Entity()
-export class DM_User {
+export class DmUser {
   @PrimaryGeneratedColumn()
   id: number;
 
