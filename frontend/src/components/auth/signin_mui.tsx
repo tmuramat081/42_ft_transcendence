@@ -118,7 +118,7 @@ export default function SignIn() {
         // setPassword('');
     };
 
-    const handleSubmit2fa = (e: React.MouseEvent<HTMLButtonElement>) => {
+    const handleSubmit2fa = (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
         //const data = new FormData(e.currentTarget);
         // ここに2FAコードを検証するロジックを追加
