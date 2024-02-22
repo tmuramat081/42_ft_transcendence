@@ -1,6 +1,7 @@
 /* eslint-disable */
 'use client';
 import React, { useState, useEffect, useCallback } from 'react';
+import { useHistory } from 'react-router-dom';
 import io from 'socket.io-client';
 import Link from 'next/link';
 import ChatLayout from './layout';
@@ -204,7 +205,7 @@ const ChatPage = () => {
               />
               <div className="onlineuser-name">{onlineUser.name}</div>
               {/* sendDM ボタンを Link コンポーネントで囲む */}
-              <Link href={`./chat/DM/${onlineUser.name}`}>
+              <Link href={{ pathname: '/chat/DM', query: { recipient: onlineUser.name } }}>
                 <button>Send DM</button>
               </Link>
             </div>
