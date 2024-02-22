@@ -13,7 +13,7 @@ import { Repository } from 'typeorm';
 import { ChatLog } from './entities/chatlog.entity';
 import { Room } from './entities/room.entity';
 import { User } from '../users/entities/user.entity';
-import { DM_User } from './entities/dmUser.entity';
+import { DmUser } from './entities/dmUser.entity';
 import { DirectMessage } from './entities/directMessage.entity';
 import { OnlineUsers } from './entities/onlineUsers.entity';
 
@@ -47,8 +47,8 @@ export class ChatGateway {
     @InjectRepository(User)
     private userRepository: Repository<User>,
 
-    @InjectRepository(DM_User)
-    private dmUserRepository: Repository<DM_User>,
+    @InjectRepository(DmUser)
+    private dmUserRepository: Repository<DmUser>,
 
     @InjectRepository(DirectMessage)
     private directMessageRepository: Repository<DirectMessage>,
