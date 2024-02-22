@@ -2,6 +2,7 @@
 'use client';
 import React, { useState, useEffect, useCallback } from 'react';
 import io from 'socket.io-client';
+import Link from 'next/link';
 import ChatLayout from './layout';
 import './ChatPage.css'; // スタイルシートの追加
 import Image from 'next/image';
@@ -77,11 +78,6 @@ const ChatPage = () => {
       socket.off('onlineUsers');
     };
   }, []);
-
-  // // sender の値が変更されたときに実行される
-  // useEffect(() => {
-  //   console.log('sender updated:', sender);
-  // }, [sender]);
 
   useEffect(() => {
     socket.on('roomError', (error) => {
@@ -207,7 +203,10 @@ const ChatPage = () => {
                 height={50}
               />
               <div className="onlineuser-name">{onlineUser.name}</div>
-              <button onClick={() => sendDM(onlineUser.name)}>Send DM</button>
+              {/* sendDM ボタンを Link コンポーネントで囲む */}
+              <Link href={`./chat/DM/${onlineUser.name}`}>
+                <button>Send DM</button>
+              </Link>
             </div>
           ))}
         </div>

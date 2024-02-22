@@ -1,0 +1,111 @@
+.chat-container {
+    max-width: 600px;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+  }
+
+  .chat-input {
+    margin-top: 20px;
+    align-self: flex-end;
+  }
+  
+  .chat-room-selector {
+    margin-bottom: 10px;
+  }
+  
+  .chat-messages {
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .message-bubble {
+    display: flex;
+    align-items: flex-start;
+    padding: 10px;
+    margin-bottom: 5px;
+    border-radius: 8px;
+    max-width: 70%;
+  }
+  
+  .message-bubble.self {
+    align-self: flex-end;
+    background-color: #e2f8ff; /* 自分のメッセージの背景色 */
+  }
+  
+  .message-bubble.other {
+    align-self: flex-start;
+    background-color: #f0f0f0; /* 相手のメッセージの背景色 */
+  }
+  
+  .icon {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    margin-right: 10px;
+  }
+  
+  .timestamp {
+    font-size: 10px;
+    color: #888;
+  }
+
+  .participants {
+    margin-top: 10px;
+    margin-bottom: 20px; /* delete ボタンとの間にマージンを追加 */
+  }
+  
+  .participant-icons {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+  }
+  
+  .participant {
+    text-align: center;
+    display: flex;
+    flex-direction: column; /* アイコンと名前を縦方向に配置するために追加 */
+    align-items: center; /* アイコンと名前を中央揃えするために追加 */
+  }
+  
+  .participant-name {
+    margin-top: 5px;
+    font-size: 12px; /* 名前の文字サイズを調整 */
+  }
+  
+  .delete-button {
+    margin-top: 20px;
+    margin-bottom: 10px;
+  }
+
+  .leave-button {
+    margin-top: 10px;
+    margin-bottom: 20px;
+  }
+
+  .onlineusers {
+    margin-top: 10px;
+    margin-bottom: 20px;
+  }
+
+  .onlineuser-icons {
+    display: flex;
+    flex-wrap: nowrap;
+    gap: 20px;
+    flex-direction: row; /* ユーザーを横並びに配置する */
+    justify-content: flex-start; /* ユーザーを左端から配置する */
+  }
+
+  .onlineuser {
+    text-align: center;
+    display: flex;
+    flex-direction: column; /* アイコンと名前を縦方向に配置するために追加 */
+    align-items: center; /* アイコンと名前を中央揃えするために追加 */
+    justify-content: flex-start; /* アイコンと名前を左端に揃える */
+  }
+
+  .onlineuser-name {
+    margin-top: 5px;
+    font-size: 12px; /* 名前の文字サイズを調整 */
+  }
