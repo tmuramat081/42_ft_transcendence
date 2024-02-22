@@ -1,8 +1,7 @@
 /* eslint-disable */
 'use client';
 import React, { useState, useEffect, useCallback } from 'react';
-import { useRouter } from 'next/navigation';
-// import { withRouter } from 'next/router';
+import { useRouter } from 'next/router';
 import io from 'socket.io-client';
 import Link from 'next/link';
 import ChatLayout from './layout';
@@ -27,7 +26,8 @@ const socket = io('http://localhost:3001');
 
 const DMPage = () => {
   const router = useRouter();
-  const { username } = router.query || { username: '' };
+  const { recipient } = router.query || { recipient: '' }; // recipient を受け取る
+  // const { username } = router.query || { username: '' };
   const [message, setMessage] = useState('');
   const [sender, setSender] = useState<Sender>({
     ID: '',
@@ -35,18 +35,18 @@ const DMPage = () => {
     icon: '',
   });
   const [dmchatLogs, setDMChatLogs] = useState<ChatMessage[]>([]);
-  const [recipient, setRecipient] = useState<Sender>({
-    ID: '',
-    name: 'username' as string, // usernameをデフォルトの名前として設定
-    icon: '', // デフォルトのアイコン
-  });
+  // const [recipient, setRecipient] = useState<Sender>({
+  //   ID: '',
+  //   name: 'username' as string, // usernameをデフォルトの名前として設定
+  //   icon: '', // デフォルトのアイコン
+  // });
 
   useEffect(() => {
     const socket = io('http://localhost:3001');
 
     socket.on('connect', () => {
       console.log('connection ID : ', socket.id);
-      console.log('username:', username);
+      console.log('recipient:', recipient);
       const senderData = {
         ID: socket.id,
         name: 'kaori',
@@ -72,7 +72,7 @@ const DMPage = () => {
     return () => {
       socket.disconnect();
     };
-  }, [username]);
+  }, [recipient]);
 
   const onClickSubmit = useCallback(() => {
     console.log(`${sender.name} submitting DM to ${recipient.name}: ${message}`);
