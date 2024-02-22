@@ -287,25 +287,4 @@ export class ChatGateway {
       throw error;
     }
   }
-
-  // @SubscribeMessage('getRoomParticipants')
-  // async handleGetRoomParticipants(
-  //   @MessageBody() roomName: string,
-  //   @ConnectedSocket() socket: Socket,
-  // ) {
-  //   try {
-  //     this.logger.log(`getRoomParticipants: ${roomName}`);
-  //     // データベースから指定された部屋の参加者リストを取得
-  //     const room = await this.roomRepository.findOne({ where: { roomName } });
-  //     if (room) {
-  //       // 参加者リストをクライアントに送信
-  //       socket.emit('roomParticipants', room.roomParticipants);
-  //     } else {
-  //       this.logger.error(`Room ${roomName} not found in the database.`);
-  //     }
-  //   } catch (error) {
-  //     this.logger.error(`Error getting room participants: ${(error as Error).message}`);
-  //     throw error;
-  //   }
-  // }
 }
