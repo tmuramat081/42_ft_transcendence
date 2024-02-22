@@ -39,6 +39,7 @@ export default async function Page({ params }: { params: { name: string } }) {
 
 
       // なぜres.usersがundefinedなのか？
+      // SSRだとキャッシュが残るらしい
     console.log("res: ", res);
 
     const users = res.users;
