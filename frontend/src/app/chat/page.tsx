@@ -189,20 +189,22 @@ const ChatPage = () => {
       <div className="onlineusers">
         <h4>Logined friends</h4>
         <div className="onlineusers-icons">
-          {onlineUsers.map((user, index) => (
+          {onlineUsers.map((onlineUser, index) => (
             <div
               key={index}
-              className="onlineusers"
+              className="onlineuser"
             >
-              <Image
-                src={user.icon}
-                alt={user.name}
+              <img
+                src={onlineUser.icon}
+                alt={onlineUser.name}
                 className="onlineusers-icon"
                 width={50}
                 height={50}
               />
-              <div className="onlineuser-name">{user.name}</div>
-              <button onClick={() => console.log(`Sending DM to ${user.name}`)}>Send DM</button>
+              <div className="onlineuser-name">{onlineUser.name}</div>
+              <button onClick={() => console.log(`Sending DM to ${onlineUser.name}`)}>
+                Send DM
+              </button>
             </div>
           ))}
         </div>
