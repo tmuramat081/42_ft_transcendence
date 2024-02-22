@@ -8,6 +8,8 @@ import './ChatPage.css'; // スタイルシートの追加
 import Image from 'next/image';
 import { Room } from '../../../../backend/src/chat/entities/room.entity';
 import { Chat } from '@mui/icons-material';
+// import { useRouter } from 'next/router';
+// import DMPage from './DM/page';
 // import { ChatLog } from '../../../../backend/src/chat/entities/chatlog.entity';
 // import { User } from '../../../../backend/src/users/entities/user.entity';
 
@@ -27,6 +29,7 @@ interface ChatMessage {
 const socket = io('http://localhost:3001');
 
 const ChatPage = () => {
+  // const router = useRouter();
   const [message, setMessage] = useState('');
   const [roomID, setRoomID] = useState('');
   const [newRoomName, setNewRoomName] = useState('');
@@ -224,7 +227,7 @@ const ChatPage = () => {
           }}
           value={roomID}
         >
-          <option value="">---</option>
+          <option value="">Select Room</option>
           {Object.entries(roomList).map(([roomId, roomName]) => (
             <option
               key={`room_${roomId}`}
