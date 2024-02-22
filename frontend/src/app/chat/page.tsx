@@ -48,13 +48,15 @@ const ChatPage = () => {
     socket.on('connect', () => {
       console.log('connection ID : ', socket.id);
       // ここでログイン情報を取得して設定する
-      setSender({
+      const senderData = {
         ID: socket.id,
         name: 'kshima',
         icon: 'https://cdn.intra.42.fr/users/b9712d0534942eacfb43c2b0b031ae76/kshima.jpg',
-      });
-      socket.emit('getRoomList', socket.id);
-      socket.emit('getOnlineUsers', sender);
+      };
+      setSender(senderData);
+      console.log('sender:', senderData);
+      socket.emit('getRoomList', senderData);
+      socket.emit('getOnlineUsers', senderData);
     });
 
     socket.on('roomList', (rooms: Room[]) => {
@@ -75,6 +77,11 @@ const ChatPage = () => {
       socket.off('onlineUsers');
     };
   }, []);
+
+  // // sender の値が変更されたときに実行される
+  // useEffect(() => {
+  //   console.log('sender updated:', sender);
+  // }, [sender]);
 
   useEffect(() => {
     socket.on('roomError', (error) => {
@@ -179,22 +186,22 @@ const ChatPage = () => {
     <div className="chat-container">
       <h1>Chat Page</h1>
       {/* ログイン中の参加者リスト */}
-      <div className="participants">
+      <div className="onlineusers">
         <h4>Logined friends</h4>
-        <div className="participant-icons">
+        <div className="onlineusers-icons">
           {onlineUsers.map((user, index) => (
             <div
               key={index}
-              className="participant"
+              className="onlineusers"
             >
               <Image
                 src={user.icon}
                 alt={user.name}
-                className="participant-icon"
+                className="onlineusers-icon"
                 width={50}
                 height={50}
               />
-              <div className="participant-name">{user.name}</div>
+              <div className="onlineuser-name">{user.name}</div>
               <button onClick={() => console.log(`Sending DM to ${user.name}`)}>Send DM</button>
             </div>
           ))}

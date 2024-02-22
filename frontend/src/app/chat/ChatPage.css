@@ -83,3 +83,28 @@
     margin-top: 10px;
     margin-bottom: 20px;
   }
+
+  .onlineusers {
+    margin-top: 10px;
+    margin-bottom: 20px;
+  }
+
+  .onlineuser-icons {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+    justify-content: center; /* アイコンを中央揃えにするために追加 */
+  }
+
+  .onlineuser {
+    text-align: center;
+    margin: 0 10px; /* アイコンの間隔を調整 */
+    display: flex;
+    flex-direction: column; /* アイコンと名前を縦方向に配置するために追加 */
+    align-items: center; /* アイコンと名前を中央揃えするために追加 */
+  }
+
+  .onlineuser-name {
+    margin-top: 5px;
+    font-size: 12px; /* 名前の文字サイズを調整 */
+  }

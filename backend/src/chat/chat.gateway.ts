@@ -261,9 +261,9 @@ export class ChatGateway {
   }
 
   @SubscribeMessage('getRoomList')
-  async handleGetRoomList(@MessageBody() socketId: string, @ConnectedSocket() socket: Socket) {
+  async handleGetRoomList(@MessageBody() sender: Sender, @ConnectedSocket() socket: Socket) {
     try {
-      this.logger.log(`Client connected: ${socket.id}`);
+      this.logger.log(`Get room list: ${sender.ID}`);
       // データベースからルームリストを取得
       const roomList = await this.roomRepository.find();
       // ルームリストをクライアントに送信
@@ -277,7 +277,22 @@ export class ChatGateway {
   @SubscribeMessage('getOnlineUsers')
   async handleGetOnlineUsers(@MessageBody() sender: Sender, @ConnectedSocket() socket: Socket) {
     try {
-      this.logger.log(`Client ${sender.name} connected.`);
+      if (!sender || !sender.ID || !sender.name || !sender.icon) {
+        throw new Error('Invalid sender data. Cannot save to database.');
+      }
+      this.logger.log(`Get online users: ${sender.ID}`);
+      // 既存の空のオンラインユーザーを削除
+      await this.onlineUsersRepository
+        .createQueryBuilder()
+        .delete()
+        .where('userId IS NULL OR name IS NULL OR icon IS NULL')
+        .execute();
+      // OnlineUsersエンティティのインスタンスを作成し、データベースに保存
+      const onlineUser = new OnlineUsers();
+      onlineUser.userId = sender.ID;
+      onlineUser.name = sender.name;
+      onlineUser.icon = sender.icon;
+      await this.onlineUsersRepository.save(onlineUser);
       // データベースからオンラインユーザーリストを取得
       const onlineUsers = await this.onlineUsersRepository.find();
       // オンラインユーザーリストをクライアントに送信
