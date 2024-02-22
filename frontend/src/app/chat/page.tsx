@@ -182,6 +182,11 @@ const ChatPage = () => {
     }
   }, [selectedRoom, roomList, sender]);
 
+  const sendDM = (recipient: string) => {
+    console.log(`Sending DM to ${recipient}`);
+    socket.emit('sendDM', { sender: sender.name, recipient: recipient, message: 'Hello!' });
+  };
+
   return (
     <div className="chat-container">
       <h1>Chat Page</h1>
@@ -202,9 +207,7 @@ const ChatPage = () => {
                 height={50}
               />
               <div className="onlineuser-name">{onlineUser.name}</div>
-              <button onClick={() => console.log(`Sending DM to ${onlineUser.name}`)}>
-                Send DM
-              </button>
+              <button onClick={() => sendDM(onlineUser.name)}>Send DM</button>
             </div>
           ))}
         </div>

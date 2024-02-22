@@ -16,7 +16,7 @@ export class DirectMessage {
   message: string;
 
   @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
-  timestamp: Date;
+  timestamp: string;
 
   @ManyToOne(() => DmUser, (user) => user.sentMessages)
   sender: DmUser;

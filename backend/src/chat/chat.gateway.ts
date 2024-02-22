@@ -334,4 +334,57 @@ export class ChatGateway {
 
     console.log('Duplicate online users deleted:', duplicateOnlineUsers);
   }
+
+  @SubscribeMessage('sendDM') // 追加: sendDMイベントのハンドリング
+  async handleSendDM(
+    client: Socket,
+    payload: { sender: string; recipient: string; message: string },
+  ) {
+    try {
+      // 送信者と受信者のDMUserエンティティを取得
+      const senderDMUser = await this.dmUserRepository.findOne({ where: { name: payload.sender } });
+      const recipientDMUser = await this.dmUserRepository.findOne({
+        where: { name: payload.recipient },
+      });
+
+      // DMUserが存在しない場合は新規作成
+      if (!senderDMUser) {
+        await this.dmUserRepository.save({ name: payload.sender });
+      }
+      if (!recipientDMUser) {
+        await this.dmUserRepository.save({ name: payload.recipient });
+      }
+
+      function formatDate(date: Date): string {
+        const options: Intl.DateTimeFormatOptions = {
+          year: 'numeric',
+          month: '2-digit',
+          day: '2-digit',
+          hour: '2-digit',
+          minute: '2-digit',
+          hour12: false,
+          timeZone: 'Asia/Tokyo',
+        };
+        return date.toLocaleString('ja-JP', options);
+      }
+
+      // DirectMessageを作成して保存
+      const directMessage = new DirectMessage();
+      directMessage.senderId = payload.sender;
+      directMessage.recipientId = payload.recipient;
+      directMessage.message = payload.message;
+      directMessage.timestamp = formatDate(new Date());
+      await this.directMessageRepository.save(directMessage);
+
+      // クライアントに送信
+      this.server.to(client.id).emit('dmSent', directMessage);
+
+      // 成功メッセージを返す
+      return { success: true, message: 'DM sent successfully' };
+    } catch (error) {
+      // エラーハンドリング
+      console.error('Error sending DM:', error);
+      return { success: false, message: 'Failed to send DM' };
+    }
+  }
 }
