@@ -7,14 +7,17 @@ import * as Joi from 'joi';
 import { UsersModule } from './users/users.module';
 import { AuthModule } from './auth/auth.module';
 import { ChatModule } from './chat/chat.module';
-import { Room } from './chat/entities/room.entity';
 import { GameModule } from './games/games.module';
 import { User } from './users/entities/user.entity';
 import { GameRoom } from './games/entities/gameRoom.entity';
 import { GameEntry } from './games/entities/gameEntry.entity';
 import { MatchResult } from './games/entities/matchResult.entity';
 import { Match } from './games/entities/match.entity';
+import { Room } from './chat/entities/room.entity';
 import { ChatLog } from './chat/entities/chatlog.entity';
+import { OnlineUsers } from './chat/entities/onlineUsers.entity';
+import { DmUser } from './chat/entities/dmUser.entity';
+import { DirectMessage } from './chat/entities/directMessage.entity';
 
 // .envを読み込む
 dotenv.config();
@@ -35,7 +38,21 @@ dotenv.config();
     }),
     // forRootAsync()を使って非同期接続
     TypeOrmModule.forRootAsync({
-      imports: [TypeOrmModule.forFeature([Room, ChatLog]), ConfigModule],
+      imports: [
+        TypeOrmModule.forFeature([
+          Room,
+          ChatLog,
+          OnlineUsers,
+          DmUser,
+          DirectMessage,
+          User,
+          GameRoom,
+          GameEntry,
+          MatchResult,
+          Match,
+        ]),
+        ConfigModule,
+      ],
       inject: [ConfigService],
       useFactory: (config: ConfigService) => ({
         type: 'postgres',
@@ -44,7 +61,18 @@ dotenv.config();
         username: config.get<string>('POSTGRESS_USER'),
         password: config.get<string>('POSTGRESS_PASSWORD'),
         database: config.get<string>('POSTGRESS_DB'),
-        entities: [Room, User, ChatLog, GameRoom, GameEntry, MatchResult, Match], // 直接エンティティを指定
+        entities: [
+          User,
+          Room,
+          ChatLog,
+          OnlineUsers,
+          DmUser,
+          DirectMessage,
+          GameRoom,
+          GameEntry,
+          MatchResult,
+          Match,
+        ], // 直接エンティティを指定
         synchronize: true,
       }),
     }),
