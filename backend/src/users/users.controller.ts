@@ -82,7 +82,7 @@ export class UsersController {
     constructor(private readonly usersService: UsersService) {}
 
     // users: User[] = [];にならない?なぜ？キャッシュのせい？
-    @Get('')
+    @Get('/')
     async findAll(): Promise<string> {
         //return this.usersService.findAll();
 
@@ -91,6 +91,13 @@ export class UsersController {
         console.log(JSON.stringify(users))
         return JSON.stringify({"users": users});
     }
+
+    // @Get('/testaaaa')
+    // async test(): Promise<string> {
+    //     //return this.usersService.findAll();
+    //     console.log("test")
+    //     return JSON.stringify({"test": "test"});
+    // }
 
     // ここ
     // curl -X POST -H "Content-Type: application/json" -d '{"userName":"test","email":"test@test","password":"test","passwordConfirm":"test"}' http://localhost:3001/users/signup

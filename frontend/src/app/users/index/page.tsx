@@ -21,7 +21,7 @@ export default async function Page({ params }: { params: { name: string } }) {
 
     // サーバーサイドでの処理なのでhttp://localhost:3001は使えない
     // そのため、http://backend:3000を使う
-    const res = await fetch("http://backend:3000/users", {
+    const res = await fetch("http://backend:3000/users/", {
         method: "GET",
         headers: { "Content-Type": "application/json" },
         credentials: 'include',
@@ -41,13 +41,13 @@ export default async function Page({ params }: { params: { name: string } }) {
       // なぜres.usersがundefinedなのか？
     console.log("res: ", res);
 
-    const users = res;
+    const users = res.users;
 
     users.forEach((user: User) => {
         console.log("user: ", user.userName);
     });
 
-    console.log("users: ", users);
+    //console.log("users: ", users);
     
   return (
     <div>
