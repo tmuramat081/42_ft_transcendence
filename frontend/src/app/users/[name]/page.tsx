@@ -30,6 +30,7 @@ export default async function Page({ params }: { params: { name: string } }) {
       });
 
       // テスト
+      
     console.log("res: ", res);
 
     const user = res.user;
