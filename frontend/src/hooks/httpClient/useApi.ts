@@ -67,7 +67,6 @@ export default function useApi<T>(initialRequest: RequestParams): UseApiReturnTy
       };
       if (method === HTTP_METHOD.POST || method === HTTP_METHOD.PATCH) {
         fetchOptions.body = JSON.stringify(body);
-        console.log('fetchOptions', body, fetchOptions);
       }
       const url = new URL(`${API_URL}/${path}`);
       const urlAndQuery = appendQueryParams(url, query);

@@ -10,11 +10,11 @@ import styles from './createRoomModal.module.css';
 import { GameRoom } from '@/types/game/roomList';
 
 type Props = {
-  roomDetail?: GameRoom | null;
+  roomDetail?: GameRoom;
   showModal: boolean;
   handleSave: () => void;
   handleClose: () => void;
-  user?: User | null;
+  user: User;
 };
 
 // フィールド初期化用
@@ -38,13 +38,13 @@ const initialFields = {
 /**
  * ルーム入室画面
  */
-export default function EnterRoomModal({ showModal, roomDetail, handleSave, handleClose }: Props) {
+export default function EnterRoomModal({ showModal, roomDetail, handleSave, handleClose, user }: Props) {
   // 入力フォームの状態管理
   const { fields, handleFieldChange, setFields } = useFormValidation(initialFields);
 
   // ゲーム参加者登録APIコール
-  const { fetchData: createGameRoom } = useApi({
-    path: 'game-room',
+  const { fetchData: entryGameRoom } = useApi({
+    path: `game-room/${roomDetail?.gameRoomId ?? 1}/entry`,
     method: HTTP_METHOD.POST,
   });
 
@@ -79,18 +79,18 @@ export default function EnterRoomModal({ showModal, roomDetail, handleSave, hand
     return isValid;
   };
 
-  // ルーム登録ボタンのハンドラ
+  // ルーム入室ボタンのハンドラ
   const handleCreate = () => {
     const isValid = validate();
     if (!isValid) {
       return;
     }
     const requestBody = {
+      userId: user.userId,
       playerName: fields.playerName.value,
-      maxPlayers: 2, // TODO: 拡張性を考慮して、最大プレイヤー数を入力できるようにする
-      createUserId: 1,
+      administratorFlag: false,
     };
-    createGameRoom({ body: requestBody })
+    entryGameRoom({ body: requestBody })
       .then(() => {
         handleSave();
         handleClose();

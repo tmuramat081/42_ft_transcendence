@@ -40,6 +40,15 @@ export default function RoomList(_prop: Props) {
     currentPage: 1,
   });
 
+  // ダミーユーザー
+  const userDummy = {
+    userId: 1,
+    userName: 'tmuramat',
+    email: 'muramatsu@gmail.com',
+    icon: 'https://www.gravatar.com/avatar/205e460b479e2e5b48aec07710c08d50',
+    twoFactorAuth: false,
+  };
+
   // ゲームルーム一覧取得APIコール
   const {
     data: listGameRooms,
@@ -134,6 +143,7 @@ export default function RoomList(_prop: Props) {
         showModal={showEnterModal}
         handleSave={handleEnter}
         handleClose={() => setShowEnterModal(false)}
+        user={userDummy}
       />
     </div>
   );
