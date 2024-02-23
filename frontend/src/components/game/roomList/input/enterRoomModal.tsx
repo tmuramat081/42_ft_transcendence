@@ -38,7 +38,13 @@ const initialFields = {
 /**
  * ルーム入室画面
  */
-export default function EnterRoomModal({ showModal, roomDetail, handleSave, handleClose, user }: Props) {
+export default function EnterRoomModal({
+  showModal,
+  roomDetail,
+  handleSave,
+  handleClose,
+  user,
+}: Props) {
   // 入力フォームの状態管理
   const { fields, handleFieldChange, setFields } = useFormValidation(initialFields);
 
