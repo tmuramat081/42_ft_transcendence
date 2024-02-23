@@ -9,5 +9,5 @@ export const SOCKET_EVENTS = {
     JOIN_ROOM: 'joinGameRoom',
     START_GAME: 'startGame',
     USERS_IN_ROOM: 'usersInRoom',
-  }
+  },
 } as const;
