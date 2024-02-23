@@ -1,4 +1,3 @@
-import { Logger } from '@nestjs/common';
 import {
   ConnectedSocket,
   MessageBody,
@@ -7,9 +6,16 @@ import {
   WebSocketServer,
 } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
+import { SOCKET_EVENTS_GAME } from '../game.constant';
 
 type GameRoomConnectionDto = {
   roomId: string;
+  userId: string;
+};
+
+// 接続者情報
+type ConnectedUser = {
+  client: Socket;
   userId: string;
 };
 
@@ -18,11 +24,10 @@ export class GameGateway {
   @WebSocketServer()
   server: Server;
 
-  private logger: Logger = new Logger('Gateway Log');
-  private rooms: { [roomId: string]: Socket[] } = {};
+  private rooms: { [roomId: string]: ConnectedUser[] } = {};
 
   // ユーザーの入室処理
-  @SubscribeMessage('join')
+  @SubscribeMessage('joinGameRoom')
   async handleJoinRoom(
     @MessageBody() data: GameRoomConnectionDto,
     @ConnectedSocket() client: Socket,
@@ -31,19 +36,28 @@ export class GameGateway {
     if (!this.rooms[data.roomId]) {
       this.rooms[data.roomId] = [];
     }
-    this.rooms[data.roomId].push(client);
+    this.rooms[data.roomId].push({ client: client, userId: data.userId });
 
-    if (this.rooms[data.roomId].length === 2) {
-      console.log('Game is starting', client.id);
-      this.server.to(data.roomId).emit('startGame', 'Game is starting');
-    }
     await client.join(data.roomId);
+
+    // ルームが規定人数に達した場合、ゲーム開始通知を送信
+    if (this.rooms[data.roomId].length === 2) {
+      this.server.to(data.roomId).emit(SOCKET_EVENTS_GAME.START_GAME, 'Game is starting');
+    }
+
+    // ルームの参加者情報を更新
+    this.server
+      .to(data.roomId)
+      .emit(
+        SOCKET_EVENTS_GAME.USERS_IN_ROOM,
+        this.rooms[data.roomId]?.map((client) => client.userId),
+      );
   }
 
-  @SubscribeMessage('getEntries')
+  @SubscribeMessage('getGameEntries')
   handleGetEntries(@MessageBody() data: GameRoomConnectionDto, @ConnectedSocket() client: Socket) {
-    const users = this.rooms[data.roomId]?.map((user) => user.id) || [];
-    client.emit('usersInRoom', users);
+    const userIds = this.rooms[data.roomId]?.map((client) => client.userId) || [];
+    client.emit('usersInRoom', userIds);
   }
 
   afterInit(_client: Server) {
@@ -51,19 +65,18 @@ export class GameGateway {
   }
 
   handleConnection(socket: Socket) {
-    console.log('New client connected');
     socket.emit('message', 'Welcome to the game room');
   }
 
   handleDisconnect(client: Socket) {
-    // remove client from room
+    // ルームからクライアントを削除
     let roomIdToDelete: string | undefined;
-    for (const [roomId, clients] of Object.entries(this.rooms)) {
-      const index = clients.findIndex((c) => c.id === client.id);
+    for (const [roomId, users] of Object.entries(this.rooms)) {
+      const index = users.findIndex((user) => user.client.id === client.id);
       if (index !== -1) {
-        clients.splice(index, 1); // クライアントをルームから削除
+        users.splice(index, 1); // クライアントをルームから削除
         roomIdToDelete = roomId;
-        if (clients.length === 0) {
+        if (users.length === 0) {
           delete this.rooms[roomId]; // ルームが空になったら削除
         }
         break;
@@ -78,6 +91,12 @@ export class GameGateway {
           .emit('gameStopped', 'The game has stopped because a player left');
       }
     }
-    console.log('Client disconnected', roomIdToDelete);
+    // ルームの参加者情報を更新
+    this.server
+      .to(roomIdToDelete)
+      .emit(
+        SOCKET_EVENTS_GAME.USERS_IN_ROOM,
+        this.rooms[roomIdToDelete]?.map((client) => client.userId),
+      );
   }
 }

@@ -18,7 +18,7 @@ export default function GameRoom({ roomId, userId }: Props) {
   const router = useRouter();
 
   // ゲーム接続情報のフック
-  const { gameStarted, logs } = UseGameConnection({ roomId, userId });
+  const { gameStarted, users, logs } = UseGameConnection({ roomId, userId });
 
   return (
     <>
@@ -45,7 +45,10 @@ export default function GameRoom({ roomId, userId }: Props) {
       )}
       <aside style={{ width: '300px' }}>
         <h3>ゲームログ</h3>
-        <GameLog logs={logs} />
+        <GameLog
+          users={users}
+          logs={logs}
+        />
       </aside>
     </>
   );
