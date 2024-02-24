@@ -54,8 +54,9 @@ const ChatPage = () => {
       // ここでログイン情報を取得して設定する
       const senderData = {
         ID: socket.id,
-        name: 'kshima',
-        icon: 'https://cdn.intra.42.fr/users/b9712d0534942eacfb43c2b0b031ae76/kshima.jpg',
+        name: 'Bob',
+        // icon: 'https://cdn.intra.42.fr/users/b9712d0534942eacfb43c2b0b031ae76/kshima.jpg',
+        icon: 'https://pics.prcm.jp/db3b34efef8a0/86032013/jpeg/86032013.jpeg',
       };
       setSender(senderData);
       console.log('sender:', senderData);
