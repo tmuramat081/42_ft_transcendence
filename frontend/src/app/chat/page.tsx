@@ -3,15 +3,12 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import io from 'socket.io-client';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import ChatLayout from './layout';
 import './ChatPage.css'; // スタイルシートの追加
 import Image from 'next/image';
 import { Room } from '../../../../backend/src/chat/entities/room.entity';
 import { Chat } from '@mui/icons-material';
-// import { useRouter } from 'next/router';
-// import DMPage from './DM/page';
-// import { ChatLog } from '../../../../backend/src/chat/entities/chatlog.entity';
-// import { User } from '../../../../backend/src/users/entities/user.entity';
 
 interface Sender {
   ID: string;
@@ -29,7 +26,6 @@ interface ChatMessage {
 const socket = io('http://localhost:3001');
 
 const ChatPage = () => {
-  // const router = useRouter();
   const [message, setMessage] = useState('');
   const [roomID, setRoomID] = useState('');
   const [newRoomName, setNewRoomName] = useState('');
@@ -44,6 +40,10 @@ const ChatPage = () => {
   const [isDeleteButtonVisible, setDeleteButtonVisible] = useState(false);
   const [participants, setParticipants] = useState<{ name: string; icon: string }[]>([]);
   const [onlineUsers, setOnlineUsers] = useState<{ name: string; icon: string }[]>([]);
+  const [recipient, setRecipient] = useState('');
+
+  // Next.jsのuseRouterフックを使ってルーターの情報にアクセス
+  const router = useRouter();
 
   // コンポーネントがマウントされたときのみ接続
   useEffect(() => {
@@ -55,7 +55,6 @@ const ChatPage = () => {
       const senderData = {
         ID: socket.id,
         name: 'Bob',
-        // icon: 'https://cdn.intra.42.fr/users/b9712d0534942eacfb43c2b0b031ae76/kshima.jpg',
         icon: 'https://pics.prcm.jp/db3b34efef8a0/86032013/jpeg/86032013.jpeg',
       };
       setSender(senderData);
@@ -203,7 +202,13 @@ const ChatPage = () => {
               />
               <div className="onlineuser-name">{onlineUser.name}</div>
               {/* sendDM ボタンを Link コンポーネントで囲む */}
-              <Link href={{ pathname: '/chat/DM', query: { recipient: onlineUser.name } }}>
+              <Link
+                href={{
+                  pathname: '/chat/DM/[recipient]',
+                  query: { recipient: onlineUser.name, sender: JSON.stringify(sender) },
+                }}
+                as={`/chat/DM`}
+              >
                 <button>Send DM</button>
               </Link>
             </div>

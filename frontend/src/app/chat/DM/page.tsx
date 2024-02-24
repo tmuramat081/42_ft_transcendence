@@ -1,10 +1,9 @@
 /* eslint-disable */
 'use client';
 import React, { useState, useEffect, useCallback } from 'react';
-import { useRouter } from 'next/router';
+import { useRouter } from 'next/navigation';
 import io from 'socket.io-client';
-import Link from 'next/link';
-import ChatLayout from './layout';
+import DMLayout from './layout';
 import './DMPage.css'; // スタイルシートの追加
 import Image from 'next/image';
 import { Chat } from '@mui/icons-material';
@@ -22,12 +21,16 @@ interface ChatMessage {
   timestamp: string;
 }
 
+interface Recipient {
+  ID: string;
+  name: string;
+  icon: string;
+}
+
 const socket = io('http://localhost:3001');
 
 const DMPage = () => {
   const router = useRouter();
-  const { recipient } = router.query || { recipient: '' }; // recipient を受け取る
-  // const { username } = router.query || { username: '' };
   const [message, setMessage] = useState('');
   const [sender, setSender] = useState<Sender>({
     ID: '',
@@ -35,18 +38,14 @@ const DMPage = () => {
     icon: '',
   });
   const [dmchatLogs, setDMChatLogs] = useState<ChatMessage[]>([]);
-  // const [recipient, setRecipient] = useState<Sender>({
-  //   ID: '',
-  //   name: 'username' as string, // usernameをデフォルトの名前として設定
-  //   icon: '', // デフォルトのアイコン
-  // });
+  const [recipient, setRecipient] = useState<Recipient | null>(null);
 
   useEffect(() => {
     const socket = io('http://localhost:3001');
 
     socket.on('connect', () => {
       console.log('connection ID : ', socket.id);
-      console.log('recipient:', recipient);
+      // console.log('recipient:', recipient);
       const senderData = {
         ID: socket.id,
         name: 'kaori',
@@ -72,11 +71,17 @@ const DMPage = () => {
     return () => {
       socket.disconnect();
     };
+  }, []);
+
+  useEffect(() => {
+    if (recipient) {
+      console.log('recipient:', recipient);
+    }
   }, [recipient]);
 
   const onClickSubmit = useCallback(() => {
-    console.log(`${sender.name} submitting DM to ${recipient.name}: ${message}`);
-    socket.emit('sendDM', { sender: sender.name, recipient: recipient.name, message: message });
+    console.log(`${sender.name} submitting DM to ${recipient}: ${message}`);
+    socket.emit('sendDM', { sender: sender.name, recipient: recipient, message: message });
     setMessage('');
   }, [sender, recipient, message]);
 
@@ -86,14 +91,14 @@ const DMPage = () => {
       {/* DM 相手の情報 */}
       <div className="dm-recipient-info">
         <h4>Recipient:</h4>
-        <Image
-          src={recipient.icon || ''}
-          alt={recipient.name || ''}
-          className="recipient-icon"
-          width={50}
-          height={50}
-        />
-        <div className="recipient-name">{recipient.name || 'Recipient Name'}</div>
+        {/* <Image
+            src={recipient.icon || ''}
+            alt={recipient.name || ''}
+            className="recipient-icon"
+            width={50}
+            height={50}
+          /> */}
+        <div className="recipient-name"></div>
       </div>
       {/* DM 履歴 */}
       <div className="dm-messages">
@@ -130,5 +135,4 @@ const DMPage = () => {
     </div>
   );
 };
-
 export default DMPage;
