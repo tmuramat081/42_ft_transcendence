@@ -98,7 +98,7 @@ const DMPage = () => {
             width={50}
             height={50}
           /> */}
-        <div className="recipient-name"></div>
+        <div className="recipient-name">{recipient?.name}</div>
       </div>
       {/* DM 履歴 */}
       <div className="dm-messages">
@@ -132,6 +132,13 @@ const DMPage = () => {
         />
         <button onClick={onClickSubmit}>Send</button>
       </div>
+      <button
+        onClick={() => {
+          router.back();
+        }}
+      >
+        Back
+      </button>
     </div>
   );
 };
