@@ -87,7 +87,7 @@ const DMPage = () => {
 
   return (
     <div className="chat-container">
-      <h1>Direct Messages with 'username'</h1>
+      <h1>Direct Messages with </h1>
       {/* DM 相手の情報 */}
       <div className="dm-recipient-info">
         <h4>Recipient:</h4>
