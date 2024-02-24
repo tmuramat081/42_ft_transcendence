@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import io from 'socket.io-client';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+// import { useRouter } from 'next/navigation';
 import ChatLayout from './layout';
 import './ChatPage.css'; // スタイルシートの追加
 import Image from 'next/image';
@@ -43,7 +43,7 @@ const ChatPage = () => {
   const [recipient, setRecipient] = useState('');
 
   // Next.jsのuseRouterフックを使ってルーターの情報にアクセス
-  const router = useRouter();
+  // const router = useRouter();
 
   // コンポーネントがマウントされたときのみ接続
   useEffect(() => {
@@ -201,8 +201,11 @@ const ChatPage = () => {
                 height={50}
               />
               <div className="onlineuser-name">{onlineUser.name}</div>
+              <Link href={'/chat/DM'}>
+                <button>Send DM</button>
+              </Link>
               {/* sendDM ボタンを Link コンポーネントで囲む */}
-              <Link
+              {/* <Link
                 href={{
                   pathname: '/chat/DM/[recipient]',
                   query: { recipient: onlineUser.name, sender: JSON.stringify(sender) },
@@ -210,7 +213,7 @@ const ChatPage = () => {
                 as={`/chat/DM`}
               >
                 <button>Send DM</button>
-              </Link>
+              </Link> */}
             </div>
           ))}
         </div>
