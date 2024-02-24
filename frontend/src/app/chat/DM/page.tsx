@@ -132,13 +132,15 @@ const DMPage = () => {
         />
         <button onClick={onClickSubmit}>Send</button>
       </div>
-      <button
-        onClick={() => {
-          router.back();
-        }}
-      >
-        Back
-      </button>
+      <div className="back-button">
+        <button
+          onClick={() => {
+            router.back();
+          }}
+        >
+          Back
+        </button>
+      </div>
     </div>
   );
 };
