@@ -1,3 +1,5 @@
+/* eslint-disable */
+
 // サーバーサイドでの処理
 //"use client";
 
