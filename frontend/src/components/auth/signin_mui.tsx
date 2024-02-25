@@ -254,7 +254,7 @@ export default function SignIn() {
       >
 
 
-        <Box sx={{ ...style }}>
+        <Box sx={{ ...style }} onSubmit={handleSubmit2fa}>
                 <h2 id="child-modal-title">Text in a child modal</h2>
                 <p id="child-modal-description">
                     Lorem ipsum, dolor sit amet consectetur adipisicing elit.
@@ -264,7 +264,7 @@ export default function SignIn() {
                     onChange={setCode}
                     length={6}
                 />
-                <Button onClick={handleSubmit2fa}>Submit</Button>
+                <Button>Submit</Button>
         </Box>
       </Modal>
 
