@@ -1,5 +1,5 @@
-import { GAME_ROOM_STATUS } from './../../../../backend/src/games/game.constant';
-import { Valueof } from '../../../../backend/src/common/types/global';
+import { GAME_ROOM_STATUS } from '@/constants/game.constant';
+import { Valueof } from '../common/global';
 
 export type ListGameRoomResponse = {
   results: GameRoom[];
