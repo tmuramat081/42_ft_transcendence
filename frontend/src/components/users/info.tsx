@@ -6,7 +6,8 @@ export default function Info() {
   const { loginUser, getCurrentUser, loading } = useAuth();
 
   useEffect(() => {
-    getCurrentUser().then((res) => {
+    getCurrentUser()
+    .then((res) => {
       console.log('res: ', res);
     }).catch((error) => {
        console.error('Error:', error);
