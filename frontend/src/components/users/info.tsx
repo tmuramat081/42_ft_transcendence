@@ -11,16 +11,15 @@ export default function Info() {
 
   if (loading || !loginUser) {
     return <p>loading...</p>;
-  };
+  }
 
   return (
     <div>
       <h1>User Info</h1>
-      <Avatar 
+      <Avatar
         alt={loginUser.userName}
         src={'http://localhost:3001/api/uploads/' + loginUser.icon}
-       />
-    
+      />    
       <p>Username: {loginUser.userName}</p>
       <p>Email: {loginUser.email}</p>
     </div>
