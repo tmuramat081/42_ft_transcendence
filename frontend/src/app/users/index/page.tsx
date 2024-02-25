@@ -44,6 +44,14 @@ export default async function Page({ params }: { params: { name: string } }) {
       // SSRだとキャッシュが残るらしい
     console.log("res: ", res);
 
+    if (res.users === undefined) {
+        return (
+            <div>
+                <h1>ユーザーが見つかりません</h1>
+            </div>
+        );
+    }
+
     const users = res.users;
 
     users.forEach((user: User) => {
