@@ -6,7 +6,11 @@ export default function Info() {
   const { loginUser, getCurrentUser, loading } = useAuth();
 
   useEffect(() => {
-    getCurrentUser();
+    getCurrentUser().then((res) => {
+        console.log('res: ', res);
+    }).catch((error) => {
+        console.error('Error:', error);
+    });
   }, [getCurrentUser]);
 
   if (loading || !loginUser) {
@@ -19,7 +23,7 @@ export default function Info() {
       <Avatar
         alt={loginUser.userName}
         src={'http://localhost:3001/api/uploads/' + loginUser.icon}
-      />    
+      />
       <p>Username: {loginUser.userName}</p>
       <p>Email: {loginUser.email}</p>
     </div>
