@@ -7,11 +7,11 @@ export default function Info() {
 
   useEffect(() => {
     getCurrentUser()
-    .then((res) => {
-      console.log('res: ', res);
-    }).catch((error) => {
-       console.error('Error:', error);
-    });
+      .then((res) => {
+        console.log('res: ', res);
+      }).catch((error) => {
+        console.error('Error:', error);
+      });
   }, [getCurrentUser]);
 
   if (loading || !loginUser) {
