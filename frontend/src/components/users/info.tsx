@@ -9,7 +9,8 @@ export default function Info() {
     getCurrentUser()
       .then((res) => {
         console.log('res: ', res);
-      }).catch((error) => {
+      })
+      .catch((error) => {
         console.error('Error:', error);
       });
   }, [getCurrentUser]);
