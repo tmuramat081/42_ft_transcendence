@@ -7,6 +7,7 @@ import { customGameRoomRepository } from './gameRoom.repository';
 import { GamesService } from './games.service';
 import { DataSource } from 'typeorm';
 import { customGameEntryRepository } from './gameEntry.repository';
+import { GameGateway } from './gateway/game.gateway';
 
 @Module({
   imports: [TypeOrmModule.forFeature([GameRoom, GameEntry])],
@@ -25,6 +26,7 @@ import { customGameEntryRepository } from './gameEntry.repository';
         dataSource.getRepository(GameEntry).extend(customGameEntryRepository),
     },
     GamesService,
+    GameGateway,
   ],
   exports: [GameModule, GamesService],
 })

@@ -1,3 +1,4 @@
+/* eslint-disable */
 import * as React from 'react';
 import Avatar from '@mui/material/Avatar';
 import Button from '@mui/material/Button';
@@ -69,7 +70,7 @@ export default function SignIn() {
     }, []);
 
     //field修正
-
+    
     // handleSubmit修正
 
     const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
@@ -118,6 +119,7 @@ export default function SignIn() {
         // setPassword('');
     };
 
+    //React.FormEvent<HTMLFormElement>
     const handleSubmit2fa = (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
         //const data = new FormData(e.currentTarget);
@@ -254,7 +256,7 @@ export default function SignIn() {
       >
 
 
-        <Box sx={{ ...style }}>
+        <Box component="form" onSubmit={handleSubmit2fa} noValidate sx={{ ...style }}>
                 <h2 id="child-modal-title">Text in a child modal</h2>
                 <p id="child-modal-description">
                     Lorem ipsum, dolor sit amet consectetur adipisicing elit.
@@ -264,7 +266,12 @@ export default function SignIn() {
                     onChange={setCode}
                     length={6}
                 />
-                <Button onClick={handleSubmit2fa}>Submit</Button>
+                <Button
+                  type="submit"
+                  fullWidth
+                  variant="contained"
+                  sx={{ mt: 3, mb: 2 }}
+                >Submit</Button>
         </Box>
       </Modal>
 
