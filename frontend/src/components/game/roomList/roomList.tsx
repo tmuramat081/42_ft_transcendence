@@ -10,16 +10,25 @@ import PaginationArea from '../../common/pagination/pagination';
 import { GAME_ROOM_PAGE_COUNT } from '@/constants/game.constant';
 import { Button } from '@mui/material';
 import CreateRoomModal from './input/createRoomModal';
+import EnterRoomModal from './input/enterRoomModal';
+import { useRouter } from 'next/navigation';
+import { APP_ROUTING } from '@/constants/routing.constant';
 
 type Props = {
   user?: User | null;
 };
 
 export default function RoomList(_prop: Props) {
+  // ルーティング
+  const router = useRouter();
   // 現在ページ
   const [page, setPage] = useState(1);
+  // 選択されたゲームルームID
+  const [selectedGameRoomId, setSelectedGameRoomId] = useState(0);
   // 新規登録モーダル
   const [showModal, setShowModal] = useState(false);
+  // ルーム入室モーダル
+  const [showEnterModal, setShowEnterModal] = useState(false);
   // ゲームルーム一覧
   const [gameRooms, setGameRooms] = useState<GameRoom[]>([]);
   // 再フェッチ用フラグ
@@ -30,6 +39,15 @@ export default function RoomList(_prop: Props) {
     perPage: 0,
     currentPage: 1,
   });
+
+  // ダミーユーザー
+  const userDummy = {
+    userId: 1,
+    userName: 'tmuramat',
+    email: 'muramatsu@gmail.com',
+    icon: 'https://www.gravatar.com/avatar/205e460b479e2e5b48aec07710c08d50',
+    twoFactorAuth: false,
+  };
 
   // ゲームルーム一覧取得APIコール
   const {
@@ -45,9 +63,15 @@ export default function RoomList(_prop: Props) {
     },
   });
 
+  // 入室ボタン押下時のハンドラ
+  const handleEnter = () => {
+    router.push(APP_ROUTING.GAME.ROOMS.DETAIL.path.replace(':id', selectedGameRoomId.toString()));
+  };
+
   // カード押下時のハンドラ
-  const handleClick = () => {
-    alert('ルーム詳細・編集');
+  const handleClick = (gameRoomId: number) => {
+    setSelectedGameRoomId(gameRoomId);
+    setShowEnterModal(true);
   };
 
   // ページ選択時のハンドラ
@@ -95,7 +119,7 @@ export default function RoomList(_prop: Props) {
             <div key={room.gameRoomId}>
               <GameRoomCard
                 gameRoom={room}
-                onClick={handleClick}
+                onClick={() => handleClick(room.gameRoomId)}
               />
             </div>
           ))}
@@ -112,6 +136,14 @@ export default function RoomList(_prop: Props) {
         showModal={showModal}
         handleSave={handleUpdate}
         handleClose={() => setShowModal(false)}
+      />
+      {/* ルーム入室モーダル */}
+      <EnterRoomModal
+        roomDetail={gameRooms.find((room) => room.gameRoomId === selectedGameRoomId)}
+        showModal={showEnterModal}
+        handleSave={handleEnter}
+        handleClose={() => setShowEnterModal(false)}
+        user={userDummy}
       />
     </div>
   );
