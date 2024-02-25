@@ -16,6 +16,8 @@ export default function Form() {
 
     const [userName, setUserName] = useState("");
     const [email, setEmail] = useState("");
+
+    // 42の場合は表示しない、確認もしない
     const [newPassword, setNewPassword] = useState("");
     const [newPasswordConfirm, setNewPasswordConfirm] = useState("");
     const [password, setPassword] = useState("");

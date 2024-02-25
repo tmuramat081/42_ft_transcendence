@@ -22,9 +22,11 @@ import {
   DeleteDateColumn,
   Entity,
   OneToMany,
+  ManyToMany,
   PrimaryGeneratedColumn,
   Timestamp,
   Unique,
+  JoinTable,
 } from 'typeorm';
 
 // 11 dto
@@ -110,6 +112,46 @@ export class User {
   @Column({ name: 'two_factor_auth_secret', type: 'text', nullable: true })
   @Exclude()
     twoFactorAuthSecret: string;
+
+  // 簡単な配列でも使える
+  // @Column('simple-array')
+	//   friends: string[]
+
+  // @Column('simple-array')
+	//   blockedUsers: string[]
+
+  // friend
+  /** リレーション定義 */
+  @ManyToMany(() => User)
+  @JoinTable({
+    // テーブル名
+    name: "user_friends_user",
+    // 自分のカラム名
+    joinColumn: {
+      name: "receiver",
+      referencedColumnName: "userId"
+    },
+    // 相手のカラム名
+    inverseJoinColumn: {
+      name: "sender",
+      referencedColumnName: "userId"
+    }
+  })
+  friends: User[];
+
+  @ManyToMany(() => User)
+  @JoinTable({
+    name: "user_block_user",
+    joinColumn: {
+      name: "blocker",
+      referencedColumnName: "userId"
+    },
+    inverseJoinColumn: {
+      name: "blocked",
+      referencedColumnName: "userId"
+    }
+  })
+  blocked: User[];
 
   /** リレーション定義 */
   // ゲームルームテーブルと1対多の関係
