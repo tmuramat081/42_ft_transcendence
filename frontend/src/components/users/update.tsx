@@ -179,6 +179,7 @@ export default function Form() {
 
     const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
 
+        if (!e.target.files) return;
         // URLに変換してプレビューを表示
         // mfny参考
         setFile(e.target.files[0]);
