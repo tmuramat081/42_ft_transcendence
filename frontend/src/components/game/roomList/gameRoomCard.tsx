@@ -2,8 +2,16 @@
 import { TO_LOCALE_STRING_OPTIONS } from '@/constants/date.contant';
 import { GameRoom } from '@/types/game/roomList';
 import { Card, CardContent } from '@mui/material';
-import { GAME_ROOM_STATUS } from '../../../../../backend/src/games/game.constant';
-import { Valueof } from '../../../../../backend/src/common/types/global';
+//import { GAME_ROOM_STATUS } from '../../../../../backend/src/games/game.constant';
+//import { Valueof } from '../../../../../backend/src/common/types/global';
+
+type Valueof<T> = T[keyof T];
+
+export const GAME_ROOM_STATUS = {
+  WAITING: 'waiting',
+  STARTED: 'started',
+  FINISHED: 'finished',
+} as const;
 
 export type Props = {
   gameRoom: GameRoom;
