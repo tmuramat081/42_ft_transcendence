@@ -35,10 +35,17 @@ export default async function Page({ params }: { params: { name: string } }) {
           return data;
       })
       .catch((error) => {
-
           console.log(error);
       });
 
+      // TODO: もっときれいに描く
+      if (res === undefined) {
+            return (
+                <div>
+                    <h1>ユーザーが見つかりません</h1>
+                </div>
+            );
+        }
 
       // なぜres.usersがundefinedなのか？
       // SSRだとキャッシュが残るらしい
