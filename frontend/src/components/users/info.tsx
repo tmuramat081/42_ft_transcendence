@@ -7,9 +7,9 @@ export default function Info() {
 
   useEffect(() => {
     getCurrentUser().then((res) => {
-        console.log('res: ', res);
+      console.log('res: ', res);
     }).catch((error) => {
-        console.error('Error:', error);
+       console.error('Error:', error);
     });
   }, [getCurrentUser]);
 
