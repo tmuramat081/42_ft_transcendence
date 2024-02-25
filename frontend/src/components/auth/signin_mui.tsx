@@ -118,7 +118,8 @@ export default function SignIn() {
         // setPassword('');
     };
 
-    const handleSubmit2fa = (e: React.FormEvent<HTMLFormElement>) => {
+    //React.FormEvent<HTMLFormElement>
+    const handleSubmit2fa = (e: React.MouseEvent<HTMLFormElement>) => {
         e.preventDefault();
         //const data = new FormData(e.currentTarget);
         // ここに2FAコードを検証するロジックを追加
@@ -254,7 +255,7 @@ export default function SignIn() {
       >
 
 
-        <Box sx={{ ...style }} onSubmit={handleSubmit2fa}>
+        <Box sx={{ ...style }}>
                 <h2 id="child-modal-title">Text in a child modal</h2>
                 <p id="child-modal-description">
                     Lorem ipsum, dolor sit amet consectetur adipisicing elit.
@@ -264,7 +265,7 @@ export default function SignIn() {
                     onChange={setCode}
                     length={6}
                 />
-                <Button>Submit</Button>
+                <Button onClick={handleSubmit2fa}>Submit</Button>
         </Box>
       </Modal>
 
