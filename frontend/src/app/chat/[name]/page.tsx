@@ -29,7 +29,8 @@ interface Recipient {
 
 const socket = io('http://localhost:3001');
 
-const DMPage = () => {
+const DMPage = ({ params }: { params: { name: string } }) => {
+  console.log('params:', params);
   const router = useRouter();
   const [message, setMessage] = useState('');
   const [sender, setSender] = useState<Sender>({

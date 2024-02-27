@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import io from 'socket.io-client';
 import Link from 'next/link';
-// import { useRouter } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 import ChatLayout from './layout';
 import './ChatPage.css'; // スタイルシートの追加
 import Image from 'next/image';
@@ -43,7 +43,7 @@ const ChatPage = () => {
   const [recipient, setRecipient] = useState('');
 
   // Next.jsのuseRouterフックを使ってルーターの情報にアクセス
-  // const router = useRouter();
+  const router = useRouter();
 
   // コンポーネントがマウントされたときのみ接続
   useEffect(() => {
@@ -181,6 +181,11 @@ const ChatPage = () => {
     }
   }, [selectedRoom, roomList, sender]);
 
+  // パラメータを含むリンクを生成する
+  const handleLinkClick = (recipient: string) => {
+    router.push(`/chat/DM/${recipient}`);
+  };
+
   return (
     <div className="chat-container">
       <h1>Chat Page</h1>
@@ -201,19 +206,20 @@ const ChatPage = () => {
                 height={50}
               />
               <div className="onlineuser-name">{onlineUser.name}</div>
-              <Link href={'/chat/DM'}>
-                <button>Send DM</button>
-              </Link>
-              {/* sendDM ボタンを Link コンポーネントで囲む */}
-              {/* <Link
-                href={{
-                  pathname: '/chat/DM/[recipient]',
-                  query: { recipient: onlineUser.name, sender: JSON.stringify(sender) },
-                }}
-                as={`/chat/DM`}
-              >
+              {/* <Link href={'/chat/DM/${recipient: onlineUser.name}'}>
                 <button>Send DM</button>
               </Link> */}
+              {/*sendDM ボタンを Link コンポーネントで囲む */}
+              <Link
+                href={{
+                  pathname: '/chat/DM/${recipient}',
+                  query: { recipient: onlineUser.name, sender: JSON.stringify(sender) },
+                }}
+                as={`/chat/${recipient}`}
+              >
+                {/* <button>Send DM</button> */}
+                <button onClick={() => handleLinkClick('recipient_value')}>Send DM</button>
+              </Link>
             </div>
           ))}
         </div>
