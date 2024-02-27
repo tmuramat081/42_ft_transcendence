@@ -32,6 +32,7 @@ const socket = io('http://localhost:3001');
 const DMPage = ({ params }: { params: { name: string } }) => {
   console.log('params:', params);
   const router = useRouter();
+  const name = router.query; // パラメータからrecipientの名前を取得
   const [message, setMessage] = useState('');
   const [sender, setSender] = useState<Sender>({
     ID: '',
