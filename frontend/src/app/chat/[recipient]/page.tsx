@@ -31,8 +31,7 @@ const socket = io('http://localhost:3001');
 
 const DMPage = ({ params }: { params: { name: string } }) => {
   console.log('params:', params);
-  const router = useRouter();
-  const name = router.query; // パラメータからrecipientの名前を取得
+  const router = useRouter(); //Backボタンを使うためのrouter
   const [message, setMessage] = useState('');
   const [sender, setSender] = useState<Sender>({
     ID: '',
@@ -47,7 +46,6 @@ const DMPage = ({ params }: { params: { name: string } }) => {
 
     socket.on('connect', () => {
       console.log('connection ID : ', socket.id);
-      // console.log('recipient:', recipient);
       const senderData = {
         ID: socket.id,
         name: 'kaori',
@@ -56,6 +54,8 @@ const DMPage = ({ params }: { params: { name: string } }) => {
       setSender(senderData);
       console.log('sender:', senderData);
     });
+
+    // recipientをセット
 
     socket.on('updateDM', (chatMessage: ChatMessage) => {
       console.log('Received DM from server:', chatMessage);
@@ -75,11 +75,11 @@ const DMPage = ({ params }: { params: { name: string } }) => {
     };
   }, []);
 
-  useEffect(() => {
-    if (recipient) {
-      console.log('recipient:', recipient);
-    }
-  }, [recipient]);
+  // useEffect(() => {
+  //   if (recipient) {
+  //     console.log('recipient:', recipient);
+  //   }
+  // }, [recipient]);
 
   const onClickSubmit = useCallback(() => {
     console.log(`${sender.name} submitting DM to ${recipient}: ${message}`);
