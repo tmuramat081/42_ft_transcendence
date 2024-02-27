@@ -17,7 +17,7 @@ import { DmUser } from './entities/dmUser.entity';
 import { DirectMessage } from './entities/directMessage.entity';
 import { OnlineUsers } from './entities/onlineUsers.entity';
 
-export interface Sender {
+export interface UserInfo {
   ID: string;
   name: string;
   icon: string;
@@ -59,7 +59,7 @@ export class ChatGateway {
 
   @SubscribeMessage('talk')
   async handleMessage(
-    @MessageBody() data: { selectedRoom: string; sender: Sender; message: string },
+    @MessageBody() data: { selectedRoom: string; sender: UserInfo; message: string },
     @ConnectedSocket() socket: Socket,
   ) {
     try {
@@ -116,7 +116,7 @@ export class ChatGateway {
 
   @SubscribeMessage('createRoom')
   async handleCreateRoom(
-    @MessageBody() create: { sender: Sender; roomName: string },
+    @MessageBody() create: { sender: UserInfo; roomName: string },
     @ConnectedSocket() socket: Socket,
   ) {
     try {
@@ -155,7 +155,7 @@ export class ChatGateway {
 
   @SubscribeMessage('joinRoom')
   async handleJoinRoom(
-    @MessageBody() join: { sender: Sender; room: string },
+    @MessageBody() join: { sender: UserInfo; room: string },
     @ConnectedSocket() socket: Socket,
   ) {
     try {
@@ -194,7 +194,7 @@ export class ChatGateway {
 
   @SubscribeMessage('leaveRoom')
   async handleLeaveRoom(
-    @MessageBody() leave: { sender: Sender; room: string },
+    @MessageBody() leave: { sender: UserInfo; room: string },
     @ConnectedSocket() socket: Socket,
   ) {
     try {
@@ -234,7 +234,7 @@ export class ChatGateway {
   }
 
   @SubscribeMessage('deleteRoom')
-  async handleDeleteRoom(@MessageBody() delet: { sender: Sender; room: string }) {
+  async handleDeleteRoom(@MessageBody() delet: { sender: UserInfo; room: string }) {
     try {
       this.logger.log(`${delet.sender.name} deleted Room: ${delet.room}`);
 
@@ -261,7 +261,7 @@ export class ChatGateway {
   }
 
   @SubscribeMessage('getRoomList')
-  async handleGetRoomList(@MessageBody() sender: Sender, @ConnectedSocket() socket: Socket) {
+  async handleGetRoomList(@MessageBody() sender: UserInfo, @ConnectedSocket() socket: Socket) {
     try {
       this.logger.log(`Get room list: ${sender.ID}`);
       // データベースからルームリストを取得
@@ -275,7 +275,7 @@ export class ChatGateway {
   }
 
   @SubscribeMessage('getOnlineUsers')
-  async handleGetOnlineUsers(@MessageBody() sender: Sender, @ConnectedSocket() socket: Socket) {
+  async handleGetOnlineUsers(@MessageBody() sender: UserInfo, @ConnectedSocket() socket: Socket) {
     try {
       // 空のオンラインユーザーを削除
       await this.deleteEmptyOnlineUsers();
@@ -320,7 +320,7 @@ export class ChatGateway {
     console.log('Empty online users deleted:', emptyOnlineUsers);
   }
 
-  async deleteDuplicateOnlineUsers(sender: Sender) {
+  async deleteDuplicateOnlineUsers(sender: UserInfo) {
     // 名前とアイコンが同じユーザーを取得
     const duplicateOnlineUsers = await this.onlineUsersRepository.find({
       where: {

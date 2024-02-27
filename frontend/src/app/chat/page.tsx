@@ -10,7 +10,7 @@ import Image from 'next/image';
 import { Room } from '../../../../backend/src/chat/entities/room.entity';
 import { Chat } from '@mui/icons-material';
 
-interface Sender {
+interface UserInfo {
   ID: string;
   name: string;
   icon: string;
@@ -31,16 +31,20 @@ const ChatPage = () => {
   const [newRoomName, setNewRoomName] = useState('');
   const [roomList, setRoomList] = useState<string[]>([]);
   const [selectedRoom, setSelectedRoom] = useState<string | null>(null);
-  const [sender, setSender] = useState<Sender>({
+  const [sender, setSender] = useState<UserInfo>({
     ID: '',
     name: '',
     icon: '',
   });
   const [roomchatLogs, setRoomChatLogs] = useState<{ [roomId: string]: ChatMessage[] }>({});
   const [isDeleteButtonVisible, setDeleteButtonVisible] = useState(false);
-  const [participants, setParticipants] = useState<{ name: string; icon: string }[]>([]);
-  const [onlineUsers, setOnlineUsers] = useState<{ name: string; icon: string }[]>([]);
-  const [recipient, setRecipient] = useState('');
+  const [participants, setParticipants] = useState<UserInfo[]>([]);
+  const [onlineUsers, setOnlineUsers] = useState<UserInfo[]>([]);
+  const [recipient, setRecipient] = useState<UserInfo>({
+    ID: '',
+    name: '',
+    icon: '',
+  });
 
   // Next.jsのuseRouterフックを使ってルーターの情報にアクセス
   const router = useRouter();
@@ -69,7 +73,7 @@ const ChatPage = () => {
       setRoomList(roomNames);
     });
 
-    socket.on('onlineUsers', (users: { name: string; icon: string }[]) => {
+    socket.on('onlineUsers', (users: UserInfo[]) => {
       console.log('Received online users from server:', users);
       setOnlineUsers(users);
     });
@@ -115,7 +119,7 @@ const ChatPage = () => {
   }, [roomID]);
 
   useEffect(() => {
-    socket.on('roomParticipants', (roomParticipants: { name: string; icon: string }[]) => {
+    socket.on('roomParticipants', (roomParticipants: UserInfo[]) => {
       console.log('Received roomParticipants from server:', roomParticipants);
       setParticipants(roomParticipants);
       console.log('participants:', participants);
@@ -128,21 +132,21 @@ const ChatPage = () => {
 
   const onClickSubmit = useCallback(() => {
     console.log(
-      `${(sender as Sender).name} ${(sender as Sender).ID} submitting message, '${message}'`,
+      `${(sender as UserInfo).name} ${(sender as UserInfo).ID} submitting message, '${message}'`,
     );
     socket.emit('talk', { selectedRoom, sender: { ...sender, icon: sender.icon }, message });
     setMessage('');
   }, [selectedRoom, sender, message]);
 
   const onClickCreateRoom = useCallback(() => {
-    console.log(`${(sender as Sender).name} create new room: ${newRoomName}`);
+    console.log(`${(sender as UserInfo).name} create new room: ${newRoomName}`);
     socket.emit('createRoom', { sender, roomName: newRoomName });
     setNewRoomName('');
   }, [sender, newRoomName]);
 
   const handleRoomChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
     const newRoomID = event.target.value;
-    console.log(`${(sender as Sender).name} joined room: ${roomList[Number(newRoomID)]}`);
+    console.log(`${(sender as UserInfo).name} joined room: ${roomList[Number(newRoomID)]}`);
     setRoomID(newRoomID);
     setSelectedRoom(roomList[Number(newRoomID)]);
     setMessage(''); // ルームが変更されたら新しいメッセージもリセット
@@ -167,7 +171,7 @@ const ChatPage = () => {
 
   const onClickDeleteRoom = useCallback(() => {
     if (selectedRoom) {
-      console.log(`${(sender as Sender).name} deleted Room: ${selectedRoom}`);
+      console.log(`${(sender as UserInfo).name} deleted Room: ${selectedRoom}`);
       socket.emit('deleteRoom', { sender, room: selectedRoom });
       setSelectedRoom(null);
       setDeleteButtonVisible(false); // ボタンが押されたら非表示にする
@@ -182,7 +186,7 @@ const ChatPage = () => {
   }, [selectedRoom, roomList, sender]);
 
   // パラメータを含むリンクを生成する
-  const handleLinkClick = (recipient: string) => {
+  const handleLinkClick = (recipient: UserInfo) => {
     const href = `/chat/${recipient}`;
     router.push(href);
   };
@@ -207,7 +211,8 @@ const ChatPage = () => {
                 height={50}
               />
               <div className="onlineuser-name">{onlineUser.name}</div>
-              <button onClick={() => handleLinkClick(onlineUser.name)}>Send DM</button>
+              {/* <button onClick={() => handleLinkClick(onlineUser.name)}>Send DM</button> */}
+              <button onClick={() => handleLinkClick(onlineUser)}>Send DM</button>
             </div>
           ))}
         </div>
