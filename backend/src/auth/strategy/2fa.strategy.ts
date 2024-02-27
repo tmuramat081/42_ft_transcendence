@@ -7,6 +7,8 @@ import { UserRepository } from '../../users/users.repository';
 import { Request } from 'express';
 import { JwtPayload } from '../../users/interfaces/jwt_payload';
 
+// 不要
+
 // 認証処理を実装
 @Injectable()
 // PassportStrategyを継承

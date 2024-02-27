@@ -11,10 +11,10 @@ import React, {
 
 import {User} from "../types/user"
 
-import { usePrivateRoute } from '@/hooks/routes/usePrivateRouter'
-import { usePublicRoute } from "@/hooks/routes/usePublicRoute";
+//import { usePrivateRoute } from '@/hooks/routes/usePrivateRouter'
+//import { usePublicRoute } from "@/hooks/routes/usePublicRoute";
 
-import { useRouter } from 'next/navigation'
+//import { useRouter } from 'next/navigation'
 
 // API毎回呼び出すのは非効率なので、contextに保存しておく
 

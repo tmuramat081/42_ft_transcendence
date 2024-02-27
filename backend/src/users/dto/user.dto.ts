@@ -10,6 +10,8 @@ import {
   MaxLength,
   MinLength,
   IsBoolean,
+  IsOptional,
+  ValidateIf,
 } from 'class-validator';
 import { Match } from './match.decorator';
 
@@ -70,14 +72,49 @@ export class SignInUserDto {
 }
 
 export class UpdateUserDto {
+  // IsOptional()は、値がundefinedの場合はバリデーションをスキップする
+  // 空の文字列も許可する場合は、@IsOptional()と@IsString()を組み合わせる
+  //IsOptional()は、値がundefinedの場合はバリデーションをスキップする　
+  // 空文字はスキップされないので@ValidateIfで条件を追加する
+  //https://qiita.com/t-kubodera/items/2839ec4e4fe667b43f18
+  @IsOptional()
+  @ValidateIf((o, v) => v != null && v.length)
+  @IsString()
   @MinLength(4)
   @MaxLength(20)
   @IsAlphanumeric()
     userName: string;
 
+  @IsOptional()
+  @ValidateIf((o, v) => v != null && v.length)
+  @IsString()
   @IsEmail()
     email: string;
 
+  @IsOptional()
+  @IsString()
+  @ValidateIf((o, v) => v != null && v.length)
+  @MinLength(4)
+  @MaxLength(20)
+  // 記号と英数字のみ
+  // @Matches(/^[a-zA-Z0-]+$/,
+  //     { message: 'パスワードは英数字のみ使用できます' }
+  // )
+  @Matches(/((?=.*\d)|(?=.*\W+))(?![.\n])(?=.*[A-Z])(?=.*[a-z]).*$/, {
+    message: 'パスワードは大文字、小文字、数字、記号を含めてください',
+  })
+    newPassword: string;
+
+  @IsOptional()
+  @ValidateIf((o, v) => v != null && v.length)
+  //@IsOptionalOrEmpty()
+  @IsString()
+  @MinLength(4)
+  @MaxLength(20)
+  @Match('password', { message: 'パスワードが一致しません' })
+    newPasswordConfirm: string;
+
+  @IsString()
   @MinLength(4)
   @MaxLength(20)
   // 記号と英数字のみ
@@ -88,16 +125,6 @@ export class UpdateUserDto {
     message: 'パスワードは大文字、小文字、数字、記号を含めてください',
   })
     password: string;
-
-  @MinLength(4)
-  @MaxLength(20)
-  @Match('password', { message: 'パスワードが一致しません' })
-    passwordConfirm: string;
-
-  //icon: string;
-
-  @IsBoolean()
-  twoFactorAuth: boolean;
 }
 
 export class ReturnUserDto {
@@ -106,6 +133,7 @@ export class ReturnUserDto {
   userName: string;
   icon: string;
   twoFactorAuth: boolean;
+  // 不要
   twoFactorAuthNow: boolean;
 }
 
