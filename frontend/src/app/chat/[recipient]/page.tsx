@@ -8,7 +8,7 @@ import './DMPage.css'; // スタイルシートの追加
 import Image from 'next/image';
 import { Chat } from '@mui/icons-material';
 
-interface Sender {
+interface UserInfo {
   ID: string;
   name: string;
   icon: string;
@@ -29,11 +29,11 @@ interface Recipient {
 
 const socket = io('http://localhost:3001');
 
-const DMPage = ({ params }: { params: { name: string } }) => {
+const DMPage = ({ params }: { params: UserInfo }) => {
   console.log('params:', params);
   const router = useRouter(); //Backボタンを使うためのrouter
   const [message, setMessage] = useState('');
-  const [sender, setSender] = useState<Sender>({
+  const [sender, setSender] = useState<UserInfo>({
     ID: '',
     name: '',
     icon: '',

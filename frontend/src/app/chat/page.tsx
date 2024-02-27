@@ -187,7 +187,7 @@ const ChatPage = () => {
 
   // パラメータを含むリンクを生成する
   const handleLinkClick = (recipient: UserInfo) => {
-    const href = `/chat/${recipient}`;
+    const href = `/chat/${recipient.name}`;
     router.push(href);
   };
 

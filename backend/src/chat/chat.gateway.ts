@@ -170,7 +170,11 @@ export class ChatGateway {
         if (!room.roomParticipants) {
           room.roomParticipants = [];
         }
-        room.roomParticipants.push({ name: join.sender.name, icon: join.sender.icon });
+        room.roomParticipants.push({
+          id: join.sender.ID,
+          name: join.sender.name,
+          icon: join.sender.icon,
+        });
         await this.roomRepository.save(room);
       } else {
         this.logger.error(`Room ${join.room} not found in the database.`);

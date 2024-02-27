@@ -1,6 +1,7 @@
 import { Entity, PrimaryGeneratedColumn, Column, OneToMany, ManyToMany, JoinTable } from 'typeorm';
 import { User } from '../../users/entities/user.entity';
 import { ChatLog } from './chatlog.entity';
+// import { OnlineUsers } from './onlineUsers.entity';
 
 @Entity()
 export class Room {
@@ -11,7 +12,7 @@ export class Room {
   roomName: string;
 
   @Column('json', { nullable: true })
-  roomParticipants: { name: string; icon: string }[];
+  roomParticipants: { id: string; name: string; icon: string }[];
 
   // メンバー情報を格納するための関連付け
   @ManyToMany(() => User)
