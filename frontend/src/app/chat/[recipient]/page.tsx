@@ -43,20 +43,26 @@ const DMPage = ({ params }: { params: { recipient: UserInfo } }) => {
     const socket = io('http://localhost:3001');
 
     socket.on('connect', () => {
-      console.log('connection ID : ', socket.id);
-      const senderData = {
-        ID: socket.id,
-        name: 'kaori',
-        icon: 'https://pics.prcm.jp/db3b34efef8a0/86032013/jpeg/86032013.jpeg',
-      };
-      setSender(senderData);
-      console.log('sender:', senderData);
+      // console.log('connection ID : ', socket.id);
+      // const senderData = {
+      //   ID: socket.id,
+      //   name: 'kaori',
+      //   icon: 'https://pics.prcm.jp/db3b34efef8a0/86032013/jpeg/86032013.jpeg',
+      // };
+      // setSender(senderData);
+      // console.log('sender:', senderData);
+      socket.emit('getCurrentUser');
       setReceiver(params.recipient);
       console.log('receiver:', receiver);
     });
 
-    socket.on('readytoDM', (partner: UserInfo) => {
-      console.log('readytoDM:', partner);
+    socket.on('currentUser', (user: UserInfo) => {
+      console.log('currentUser:', user);
+      setSender(user);
+    });
+
+    socket.on('readytoDM', (recipient: UserInfo) => {
+      console.log('readytoDM:', recipient);
     });
 
     socket.on('updateDM', (chatMessage: ChatMessage) => {

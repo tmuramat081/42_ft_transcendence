@@ -150,6 +150,7 @@ const ChatPage = () => {
     setRoomID(newRoomID);
     setSelectedRoom(roomList[Number(newRoomID)]);
     setMessage(''); // ルームが変更されたら新しいメッセージもリセット
+    setParticipants([]); //クリアされない？
     setDeleteButtonVisible(true);
     socket.emit('joinRoom', { sender, room: roomList[Number(newRoomID)] });
   };
@@ -162,6 +163,7 @@ const ChatPage = () => {
       setDeleteButtonVisible(false); // ボタンが押されたら非表示にする
       setMessage('');
       setRoomID('');
+      setParticipants([]);
       // チャットログをクリアする
       const updatedLogs = { ...roomchatLogs };
       delete updatedLogs[selectedRoom];
