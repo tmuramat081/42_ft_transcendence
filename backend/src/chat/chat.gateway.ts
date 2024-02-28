@@ -36,12 +36,6 @@ export class ChatGateway {
   server: Server;
 
   private logger: Logger = new Logger('Gateway Log');
-  // 現在のUserの情報を保持
-  private currentUser: UserInfo = {
-    ID: '',
-    name: '',
-    icon: '',
-  };
 
   constructor(
     @InjectRepository(ChatLog)
@@ -53,8 +47,8 @@ export class ChatGateway {
     @InjectRepository(User)
     private userRepository: Repository<User>,
 
-    @InjectRepository(DmUser)
-    private dmUserRepository: Repository<DmUser>,
+    @InjectRepository(CurrentUser)
+    private currentUserRepository: Repository<CurrentUser>,
 
     @InjectRepository(DirectMessage)
     private directMessageRepository: Repository<DirectMessage>,
@@ -287,8 +281,15 @@ export class ChatGateway {
   @SubscribeMessage('getOnlineUsers')
   async handleGetOnlineUsers(@MessageBody() sender: UserInfo, @ConnectedSocket() socket: Socket) {
     try {
-      // currentUserにsenderを保存
-      this.currentUser = sender;
+      this.logger.log(`Get online users: ${sender.ID}`);
+
+      // データベースcurrentUserにsenderを保存
+      const currentUser = new CurrentUser();
+      currentUser.userId = sender.ID;
+      currentUser.name = sender.name;
+      currentUser.icon = sender.icon;
+      await this.currentUserRepository.save(currentUser);
+      this.logger.log(`currentUser: ${JSON.stringify(currentUser)}`);
 
       // 空のオンラインユーザーを削除
       await this.deleteEmptyOnlineUsers();
@@ -296,7 +297,6 @@ export class ChatGateway {
       if (!sender || !sender.ID || !sender.name || !sender.icon) {
         throw new Error('Invalid sender data. Cannot save to database.');
       }
-      this.logger.log(`Get online users: ${sender.ID}`);
 
       // ダミーユーザーを登録
       // await this.createDummyUsers();
@@ -398,133 +398,133 @@ export class ChatGateway {
     );
   }
 
-  @SubscribeMessage('getCurrentUser')
-  async handleGetCurrentUser(@MessageBody() id: string, @ConnectedSocket() socket: Socket) {
-    try {
-      this.logger.log(`getCurrentUser: ${id}`);
-      // データベースからオンラインユーザーを取得
-      const user = await this.onlineUsersRepository.findOne({ where: { userId: id } });
-      if (user) {
-        this.logger.log(`Current user: ${JSON.stringify(user)}`);
-        // クライアントに送信
-        socket.emit('currentUser', user);
-      } else {
-        this.logger.error(`User ${id} not found in the database.`);
-      }
-    } catch (error) {
-      this.logger.error(`Error getting current user: ${(error as Error).message}`);
-      throw error;
-    }
-  }
+  //   @SubscribeMessage('getCurrentUser')
+  //   async handleGetCurrentUser(@MessageBody() id: string, @ConnectedSocket() socket: Socket) {
+  //     try {
+  //       this.logger.log(`getCurrentUser: ${id}`);
+  //       // データベースからオンラインユーザーを取得
+  //       const user = await this.onlineUsersRepository.findOne({ where: { userId: id } });
+  //       if (user) {
+  //         this.logger.log(`Current user: ${JSON.stringify(user)}`);
+  //         // クライアントに送信
+  //         socket.emit('currentUser', user);
+  //       } else {
+  //         this.logger.error(`User ${id} not found in the database.`);
+  //       }
+  //     } catch (error) {
+  //       this.logger.error(`Error getting current user: ${(error as Error).message}`);
+  //       throw error;
+  //     }
+  //   }
 
-  @SubscribeMessage('startDM')
-  async handleStartDM(
-    @MessageBody() payload: { sender: UserInfo; recipient: UserInfo },
-    @ConnectedSocket() socket: Socket,
-  ) {
-    try {
-      if (!payload.sender || !payload.recipient) {
-        this.logger.error('Invalid DM data:', payload);
-        return;
-      }
-      this.logger.log(`startDM: ${payload.sender.name} started DM with ${payload.recipient.name}`);
-      // 送信者と受信者のエンティティを取得
-      const senderUser = await this.onlineUsersRepository.findOne({
-        where: { name: payload.sender.name },
-      });
-      const recipientUser = await this.onlineUsersRepository.findOne({
-        where: { name: payload.recipient.name },
-      });
+  //   @SubscribeMessage('startDM')
+  //   async handleStartDM(
+  //     @MessageBody() payload: { sender: UserInfo; recipient: UserInfo },
+  //     @ConnectedSocket() socket: Socket,
+  //   ) {
+  //     try {
+  //       if (!payload.sender || !payload.recipient) {
+  //         this.logger.error('Invalid DM data:', payload);
+  //         return;
+  //       }
+  //       this.logger.log(`startDM: ${payload.sender.name} started DM with ${payload.recipient.name}`);
+  //       // 送信者と受信者のエンティティを取得
+  //       const senderUser = await this.onlineUsersRepository.findOne({
+  //         where: { name: payload.sender.name },
+  //       });
+  //       const recipientUser = await this.onlineUsersRepository.findOne({
+  //         where: { name: payload.recipient.name },
+  //       });
 
-      // DMUserが存在しない場合はエラー
-      if (!senderUser) {
-        this.logger.error(`Sender ${payload.sender.name} not found in the database.`);
-        return;
-      }
-      if (!recipientUser) {
-        this.logger.error(`Recipient ${payload.recipient.name} not found in the database.`);
-        return;
-      }
+  //       // Userが存在しない場合はエラー
+  //       if (!senderUser) {
+  //         this.logger.error(`Sender ${payload.sender.name} not found in the database.`);
+  //         return;
+  //       }
+  //       if (!recipientUser) {
+  //         this.logger.error(`Recipient ${payload.recipient.name} not found in the database.`);
+  //         return;
+  //       }
 
-      // クライアントに送信
-      this.server.to(payload.sender.ID).emit('readytoDM', payload.recipient);
-    } catch (error) {
-      this.logger.error(`Error starting DM: ${(error as Error).message}`);
-      throw error;
-    }
-  }
+  //       // クライアントに送信
+  //       this.server.to(payload.sender.ID).emit('readytoDM', payload.recipient);
+  //     } catch (error) {
+  //       this.logger.error(`Error starting DM: ${(error as Error).message}`);
+  //       throw error;
+  //     }
+  //   }
 
-  @SubscribeMessage('sendDM')
-  async handleSendDM(
-    @MessageBody() payload: { sender: string; receiver: string; message: string },
-  ) {
-    try {
-      if (
-        !payload.sender ||
-        !payload.receiver ||
-        !payload.message ||
-        !payload.sender.trim() ||
-        !payload.receiver.trim() ||
-        !payload.message.trim()
-      ) {
-        console.error('Invalid DM data:', payload);
-        return { success: false, message: 'Invalid DM data' };
-      }
-      this.logger.log(`sendDM: ${payload.sender} sent DM to ${payload.receiver}`);
-      // 送信者と受信者のエンティティを取得
-      const senderUser = await this.onlineUsersRepository.findOne({
-        where: { name: payload.sender },
-      });
-      const recipientUser = await this.onlineUsersRepository.findOne({
-        where: { name: payload.receiver },
-      });
+  //   @SubscribeMessage('sendDM')
+  //   async handleSendDM(
+  //     @MessageBody() payload: { sender: string; receiver: string; message: string },
+  //   ) {
+  //     try {
+  //       if (
+  //         !payload.sender ||
+  //         !payload.receiver ||
+  //         !payload.message ||
+  //         !payload.sender.trim() ||
+  //         !payload.receiver.trim() ||
+  //         !payload.message.trim()
+  //       ) {
+  //         console.error('Invalid DM data:', payload);
+  //         return { success: false, message: 'Invalid DM data' };
+  //       }
+  //       this.logger.log(`sendDM: ${payload.sender} sent DM to ${payload.receiver}`);
+  //       // 送信者と受信者のエンティティを取得
+  //       const senderUser = await this.onlineUsersRepository.findOne({
+  //         where: { name: payload.sender },
+  //       });
+  //       const recipientUser = await this.onlineUsersRepository.findOne({
+  //         where: { name: payload.receiver },
+  //       });
 
-      // DMUserが存在しない場合は新規作成
-      if (!senderUser) {
-        await this.onlineUsersRepository.save({ name: payload.sender });
-      }
-      if (!recipientUser) {
-        await this.onlineUsersRepository.save({ name: payload.receiver });
-      }
+  //       // Userが存在しない場合は新規作成
+  //       if (!senderUser) {
+  //         await this.onlineUsersRepository.save({ name: payload.sender });
+  //       }
+  //       if (!recipientUser) {
+  //         await this.onlineUsersRepository.save({ name: payload.receiver });
+  //       }
 
-      function formatDate(date: Date): string {
-        const options: Intl.DateTimeFormatOptions = {
-          year: 'numeric',
-          month: '2-digit',
-          day: '2-digit',
-          hour: '2-digit',
-          minute: '2-digit',
-          hour12: false,
-          timeZone: 'Asia/Tokyo',
-        };
-        return date.toLocaleString('ja-JP', options);
-      }
+  //       function formatDate(date: Date): string {
+  //         const options: Intl.DateTimeFormatOptions = {
+  //           year: 'numeric',
+  //           month: '2-digit',
+  //           day: '2-digit',
+  //           hour: '2-digit',
+  //           minute: '2-digit',
+  //           hour12: false,
+  //           timeZone: 'Asia/Tokyo',
+  //         };
+  //         return date.toLocaleString('ja-JP', options);
+  //       }
 
-      // DirectMessageを作成して保存
-      const directMessage = new DirectMessage();
-      directMessage.senderId = payload.sender;
-      directMessage.recipientId = payload.receiver;
-      directMessage.message = payload.message;
-      directMessage.timestamp = formatDate(new Date());
-      await this.directMessageRepository.save(directMessage);
-      this.logger.log(`Saved directMessage: ${JSON.stringify(directMessage)}`);
+  //       // DirectMessageを作成して保存
+  //       const directMessage = new DirectMessage();
+  //       directMessage.senderId = payload.sender;
+  //       directMessage.recipientId = payload.receiver;
+  //       directMessage.message = payload.message;
+  //       directMessage.timestamp = formatDate(new Date());
+  //       await this.directMessageRepository.save(directMessage);
+  //       this.logger.log(`Saved directMessage: ${JSON.stringify(directMessage)}`);
 
-      const dmData: ChatMessage = {
-        user: payload.sender,
-        photo: senderUser?.icon || '',
-        text: payload.message,
-        timestamp: directMessage.timestamp,
-      };
+  //       const dmData: ChatMessage = {
+  //         user: payload.sender,
+  //         photo: senderUser?.icon || '',
+  //         text: payload.message,
+  //         timestamp: directMessage.timestamp,
+  //       };
 
-      // クライアントに送信
-      this.server.to(payload.receiver).emit('updateDM', dmData);
+  //       // クライアントに送信
+  //       this.server.to(payload.receiver).emit('updateDM', dmData);
 
-      // 成功メッセージを返す
-      return { success: true, message: 'DM sent successfully' };
-    } catch (error) {
-      // エラーハンドリング
-      console.error('Error sending DM:', error);
-      return { success: false, message: 'Failed to send DM' };
-    }
-  }
+  //       // 成功メッセージを返す
+  //       return { success: true, message: 'DM sent successfully' };
+  //     } catch (error) {
+  //       // エラーハンドリング
+  //       console.error('Error sending DM:', error);
+  //       return { success: false, message: 'Failed to send DM' };
+  //     }
+  //   }
 }
