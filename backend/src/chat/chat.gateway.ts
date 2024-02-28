@@ -289,6 +289,9 @@ export class ChatGateway {
       }
       this.logger.log(`Get online users: ${sender.ID}`);
 
+      // ダミーユーザーを登録
+      // await this.createDummyUsers();
+
       // 重複したオンラインユーザーを削除
       await this.deleteDuplicateOnlineUsers(sender);
 
@@ -300,8 +303,12 @@ export class ChatGateway {
       await this.onlineUsersRepository.save(onlineUser);
       // データベースからオンラインユーザーリストを取得
       const onlineUsers = await this.onlineUsersRepository.find();
-      // オンラインユーザーリストをクライアントに送信
-      socket.emit('onlineUsers', onlineUsers);
+      // sender以外のオンラインユーザーリストをクライアントに送信
+      socket.emit(
+        'onlineUsers',
+        onlineUsers.filter((user) => user.userId !== sender.ID),
+      );
+      // socket.emit('onlineUsers', onlineUsers);
     } catch (error) {
       this.logger.error(`Error getting online users: ${(error as Error).message}`);
       throw error;
@@ -324,19 +331,61 @@ export class ChatGateway {
     console.log('Empty online users deleted:', emptyOnlineUsers);
   }
 
-  async deleteDuplicateOnlineUsers(sender: UserInfo) {
-    // 名前とアイコンが同じユーザーを取得
-    const duplicateOnlineUsers = await this.onlineUsersRepository.find({
-      where: {
-        name: sender.name,
-        icon: sender.icon,
+  async deleteDuplicateOnlineUsers() {
+    // オンラインユーザーを全て取得
+    const allOnlineUsers = await this.onlineUsersRepository.find();
+
+    // 名前とアイコンが一致するユーザーを検索して削除
+    for (let i = 0; i < allOnlineUsers.length; i++) {
+      const currentUser = allOnlineUsers[i];
+      for (let j = i + 1; j < allOnlineUsers.length; j++) {
+        const nextUser = allOnlineUsers[j];
+        if (currentUser.name === nextUser.name && currentUser.icon === nextUser.icon) {
+          await this.onlineUsersRepository.remove(nextUser);
+          console.log('Duplicate online user deleted:', nextUser);
+        }
+      }
+    }
+  }
+
+  // ダミーユーザーを登録
+  async createDummyUsers() {
+    const dummyUsers: UserInfo[] = [
+      {
+        ID: 'dummy1',
+        name: 'Patrick',
+        icon: 'https://www.plazastyle.com/images/charapla-spongebob/img_character02.png',
       },
-    });
-
-    // 取得した重複したオンラインユーザーを削除
-    await Promise.all(duplicateOnlineUsers.map((user) => this.onlineUsersRepository.remove(user)));
-
-    console.log('Duplicate online users deleted:', duplicateOnlineUsers);
+      {
+        ID: 'dummy2',
+        name: 'plankton',
+        icon: 'https://www.plazastyle.com/images/charapla-spongebob/img_character05.png',
+      },
+      {
+        ID: 'dummy3',
+        name: 'sandy',
+        icon: 'https://www.plazastyle.com/images/charapla-spongebob/img_character06.png',
+      },
+      {
+        ID: 'dummy4',
+        name: 'Mr.krabs',
+        icon: 'https://www.plazastyle.com/images/charapla-spongebob/img_character04.png',
+      },
+      {
+        ID: 'dummy5',
+        name: 'gary',
+        icon: 'https://www.plazastyle.com/images/charapla-spongebob/img_character07.png',
+      },
+    ];
+    await Promise.all(
+      dummyUsers.map(async (user) => {
+        const onlineUser = new OnlineUsers();
+        onlineUser.userId = user.ID;
+        onlineUser.name = user.name;
+        onlineUser.icon = user.icon;
+        await this.onlineUsersRepository.save(onlineUser);
+      }),
+    );
   }
 
   @SubscribeMessage('startDM')
