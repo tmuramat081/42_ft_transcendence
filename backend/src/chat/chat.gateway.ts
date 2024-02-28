@@ -292,23 +292,24 @@ export class ChatGateway {
       // ダミーユーザーを登録
       // await this.createDummyUsers();
 
-      // 重複したオンラインユーザーを削除
-      await this.deleteDuplicateOnlineUsers(sender);
-
       // OnlineUsersエンティティのインスタンスを作成し、データベースに保存
       const onlineUser = new OnlineUsers();
       onlineUser.userId = sender.ID;
       onlineUser.name = sender.name;
       onlineUser.icon = sender.icon;
       await this.onlineUsersRepository.save(onlineUser);
+
+      // 重複したオンラインユーザーを削除
+      await this.deleteDuplicateOnlineUsers();
+
       // データベースからオンラインユーザーリストを取得
       const onlineUsers = await this.onlineUsersRepository.find();
+
       // sender以外のオンラインユーザーリストをクライアントに送信
       socket.emit(
         'onlineUsers',
-        onlineUsers.filter((user) => user.userId !== sender.ID),
+        onlineUsers.filter((user) => user.name !== sender.name),
       );
-      // socket.emit('onlineUsers', onlineUsers);
     } catch (error) {
       this.logger.error(`Error getting online users: ${(error as Error).message}`);
       throw error;
