@@ -13,7 +13,7 @@ import { Repository } from 'typeorm';
 import { ChatLog } from './entities/chatlog.entity';
 import { Room } from './entities/room.entity';
 import { User } from '../users/entities/user.entity';
-import { DmUser } from './entities/dmUser.entity';
+import { CurrentUser } from './entities/currentUser.entity';
 import { DirectMessage } from './entities/directMessage.entity';
 import { OnlineUsers } from './entities/onlineUsers.entity';
 
@@ -36,6 +36,12 @@ export class ChatGateway {
   server: Server;
 
   private logger: Logger = new Logger('Gateway Log');
+  // 現在のUserの情報を保持
+  private currentUser: UserInfo = {
+    ID: '',
+    name: '',
+    icon: '',
+  };
 
   constructor(
     @InjectRepository(ChatLog)
@@ -281,6 +287,9 @@ export class ChatGateway {
   @SubscribeMessage('getOnlineUsers')
   async handleGetOnlineUsers(@MessageBody() sender: UserInfo, @ConnectedSocket() socket: Socket) {
     try {
+      // currentUserにsenderを保存
+      this.currentUser = sender;
+
       // 空のオンラインユーザーを削除
       await this.deleteEmptyOnlineUsers();
 
@@ -389,6 +398,25 @@ export class ChatGateway {
     );
   }
 
+  @SubscribeMessage('getCurrentUser')
+  async handleGetCurrentUser(@MessageBody() id: string, @ConnectedSocket() socket: Socket) {
+    try {
+      this.logger.log(`getCurrentUser: ${id}`);
+      // データベースからオンラインユーザーを取得
+      const user = await this.onlineUsersRepository.findOne({ where: { userId: id } });
+      if (user) {
+        this.logger.log(`Current user: ${JSON.stringify(user)}`);
+        // クライアントに送信
+        socket.emit('currentUser', user);
+      } else {
+        this.logger.error(`User ${id} not found in the database.`);
+      }
+    } catch (error) {
+      this.logger.error(`Error getting current user: ${(error as Error).message}`);
+      throw error;
+    }
+  }
+
   @SubscribeMessage('startDM')
   async handleStartDM(
     @MessageBody() payload: { sender: UserInfo; recipient: UserInfo },
@@ -408,17 +436,18 @@ export class ChatGateway {
         where: { name: payload.recipient.name },
       });
 
-      // DMUserが存在しない場合は新規作成
+      // DMUserが存在しない場合はエラー
       if (!senderUser) {
-        await this.onlineUsersRepository.save({ name: payload.sender.name });
+        this.logger.error(`Sender ${payload.sender.name} not found in the database.`);
+        return;
       }
       if (!recipientUser) {
-        await this.onlineUsersRepository.save({ name: payload.recipient.name });
+        this.logger.error(`Recipient ${payload.recipient.name} not found in the database.`);
+        return;
       }
 
       // クライアントに送信
-      this.server.to(payload.sender.name).emit('readytoDM', payload.recipient);
-      this.server.to(payload.recipient.name).emit('readytoDM', payload.sender);
+      this.server.to(payload.sender.ID).emit('readytoDM', payload.recipient);
     } catch (error) {
       this.logger.error(`Error starting DM: ${(error as Error).message}`);
       throw error;

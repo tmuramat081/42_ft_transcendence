@@ -16,7 +16,7 @@ import { Match } from './games/entities/match.entity';
 import { Room } from './chat/entities/room.entity';
 import { ChatLog } from './chat/entities/chatlog.entity';
 import { OnlineUsers } from './chat/entities/onlineUsers.entity';
-import { DmUser } from './chat/entities/dmUser.entity';
+import { CurrentUser } from './chat/entities/currentUser.entity';
 import { DirectMessage } from './chat/entities/directMessage.entity';
 
 // .envを読み込む

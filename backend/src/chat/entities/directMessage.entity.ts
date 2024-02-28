@@ -1,5 +1,5 @@
 import { Entity, PrimaryGeneratedColumn, Column, ManyToOne } from 'typeorm';
-import { DmUser } from './dmUser.entity';
+import { DmUser } from './currentUser.entity';
 
 @Entity()
 export class DirectMessage {
