@@ -146,11 +146,20 @@ const ChatPage = () => {
 
   const handleRoomChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
     const newRoomID = event.target.value;
+    //newRoomIDがnullだった場合の処理
+    if (newRoomID === '') {
+      console.log('newRoomID is null');
+      setRoomID('');
+      setMessage('');
+      setDeleteButtonVisible(false);
+      socket.emit('leaveRoom', { sender, room: selectedRoom });
+      return;
+    }
+    console.log('newRoomID', newRoomID);
     console.log(`${(sender as UserInfo).name} joined room: ${roomList[Number(newRoomID)]}`);
     setRoomID(newRoomID);
     setSelectedRoom(roomList[Number(newRoomID)]);
     setMessage(''); // ルームが変更されたら新しいメッセージもリセット
-    setParticipants([]); //クリアされない？
     setDeleteButtonVisible(true);
     socket.emit('joinRoom', { sender, room: roomList[Number(newRoomID)] });
   };
@@ -163,7 +172,6 @@ const ChatPage = () => {
       setDeleteButtonVisible(false); // ボタンが押されたら非表示にする
       setMessage('');
       setRoomID('');
-      setParticipants([]);
       // チャットログをクリアする
       const updatedLogs = { ...roomchatLogs };
       delete updatedLogs[selectedRoom];
