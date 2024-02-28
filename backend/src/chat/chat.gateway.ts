@@ -339,24 +339,73 @@ export class ChatGateway {
     console.log('Duplicate online users deleted:', duplicateOnlineUsers);
   }
 
-  @SubscribeMessage('sendDM') // 追加: sendDMイベントのハンドリング
-  async handleSendDM(
-    client: Socket,
-    payload: { sender: string; recipient: string; message: string },
+  @SubscribeMessage('startDM')
+  async handleStartDM(
+    @MessageBody() payload: { sender: UserInfo; recipient: UserInfo },
+    @ConnectedSocket() socket: Socket,
   ) {
     try {
-      // 送信者と受信者のDMUserエンティティを取得
-      const senderDMUser = await this.dmUserRepository.findOne({ where: { name: payload.sender } });
-      const recipientDMUser = await this.dmUserRepository.findOne({
-        where: { name: payload.recipient },
+      if (!payload.sender || !payload.recipient) {
+        this.logger.error('Invalid DM data:', payload);
+        return;
+      }
+      this.logger.log(`startDM: ${payload.sender.name} started DM with ${payload.recipient.name}`);
+      // 送信者と受信者のエンティティを取得
+      const senderUser = await this.onlineUsersRepository.findOne({
+        where: { name: payload.sender.name },
+      });
+      const recipientUser = await this.onlineUsersRepository.findOne({
+        where: { name: payload.recipient.name },
       });
 
       // DMUserが存在しない場合は新規作成
-      if (!senderDMUser) {
-        await this.dmUserRepository.save({ name: payload.sender });
+      if (!senderUser) {
+        await this.onlineUsersRepository.save({ name: payload.sender.name });
       }
-      if (!recipientDMUser) {
-        await this.dmUserRepository.save({ name: payload.recipient });
+      if (!recipientUser) {
+        await this.onlineUsersRepository.save({ name: payload.recipient.name });
+      }
+
+      // クライアントに送信
+      this.server.to(payload.sender.name).emit('readytoDM', payload.recipient);
+      this.server.to(payload.recipient.name).emit('readytoDM', payload.sender);
+    } catch (error) {
+      this.logger.error(`Error starting DM: ${(error as Error).message}`);
+      throw error;
+    }
+  }
+
+  @SubscribeMessage('sendDM')
+  async handleSendDM(
+    @MessageBody() payload: { sender: string; receiver: string; message: string },
+  ) {
+    try {
+      if (
+        !payload.sender ||
+        !payload.receiver ||
+        !payload.message ||
+        !payload.sender.trim() ||
+        !payload.receiver.trim() ||
+        !payload.message.trim()
+      ) {
+        console.error('Invalid DM data:', payload);
+        return { success: false, message: 'Invalid DM data' };
+      }
+      this.logger.log(`sendDM: ${payload.sender} sent DM to ${payload.receiver}`);
+      // 送信者と受信者のエンティティを取得
+      const senderUser = await this.onlineUsersRepository.findOne({
+        where: { name: payload.sender },
+      });
+      const recipientUser = await this.onlineUsersRepository.findOne({
+        where: { name: payload.receiver },
+      });
+
+      // DMUserが存在しない場合は新規作成
+      if (!senderUser) {
+        await this.onlineUsersRepository.save({ name: payload.sender });
+      }
+      if (!recipientUser) {
+        await this.onlineUsersRepository.save({ name: payload.receiver });
       }
 
       function formatDate(date: Date): string {
@@ -375,13 +424,21 @@ export class ChatGateway {
       // DirectMessageを作成して保存
       const directMessage = new DirectMessage();
       directMessage.senderId = payload.sender;
-      directMessage.recipientId = payload.recipient;
+      directMessage.recipientId = payload.receiver;
       directMessage.message = payload.message;
       directMessage.timestamp = formatDate(new Date());
       await this.directMessageRepository.save(directMessage);
+      this.logger.log(`Saved directMessage: ${JSON.stringify(directMessage)}`);
+
+      const dmData: ChatMessage = {
+        user: payload.sender,
+        photo: senderUser?.icon || '',
+        text: payload.message,
+        timestamp: directMessage.timestamp,
+      };
 
       // クライアントに送信
-      this.server.to(client.id).emit('dmSent', directMessage);
+      this.server.to(payload.receiver).emit('updateDM', dmData);
 
       // 成功メッセージを返す
       return { success: true, message: 'DM sent successfully' };

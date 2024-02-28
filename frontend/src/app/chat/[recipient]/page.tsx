@@ -1,6 +1,6 @@
 /* eslint-disable */
 'use client';
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, use } from 'react';
 import { useRouter } from 'next/navigation';
 import io from 'socket.io-client';
 import DMLayout from './layout';
@@ -21,16 +21,10 @@ interface ChatMessage {
   timestamp: string;
 }
 
-interface Recipient {
-  ID: string;
-  name: string;
-  icon: string;
-}
-
 const socket = io('http://localhost:3001');
 
-const DMPage = ({ params }: { params: UserInfo }) => {
-  console.log('params:', params);
+const DMPage = ({ params }: { params: { recipient: UserInfo } }) => {
+  // console.log('params:', params);
   const router = useRouter(); //Backボタンを使うためのrouter
   const [message, setMessage] = useState('');
   const [sender, setSender] = useState<UserInfo>({
@@ -38,8 +32,12 @@ const DMPage = ({ params }: { params: UserInfo }) => {
     name: '',
     icon: '',
   });
-  const [dmchatLogs, setDMChatLogs] = useState<ChatMessage[]>([]);
-  const [recipient, setRecipient] = useState<Recipient | null>(null);
+  const [receiver, setReceiver] = useState<UserInfo>({
+    ID: '',
+    name: '',
+    icon: '',
+  });
+  const [dmLogs, setDMLogs] = useState<ChatMessage[]>([]);
 
   useEffect(() => {
     const socket = io('http://localhost:3001');
@@ -53,14 +51,18 @@ const DMPage = ({ params }: { params: UserInfo }) => {
       };
       setSender(senderData);
       console.log('sender:', senderData);
+      setReceiver(params.recipient);
+      console.log('receiver:', receiver);
     });
 
-    // recipientをセット
+    socket.on('readytoDM', (partner: UserInfo) => {
+      console.log('readytoDM:', partner);
+    });
 
     socket.on('updateDM', (chatMessage: ChatMessage) => {
       console.log('Received DM from server:', chatMessage);
-      setDMChatLogs((prevDMChatLogs) => [
-        ...prevDMChatLogs,
+      setDMLogs((prevDMLogs) => [
+        ...prevDMLogs,
         {
           user: chatMessage.user,
           photo: chatMessage.photo,
@@ -75,36 +77,34 @@ const DMPage = ({ params }: { params: UserInfo }) => {
     };
   }, []);
 
-  // useEffect(() => {
-  //   if (recipient) {
-  //     console.log('recipient:', recipient);
-  //   }
-  // }, [recipient]);
+  useEffect(() => {
+    console.log('receiver:', receiver);
+  }, [receiver]);
 
   const onClickSubmit = useCallback(() => {
-    console.log(`${sender.name} submitting DM to ${recipient}: ${message}`);
-    socket.emit('sendDM', { sender: sender.name, recipient: recipient, message: message });
+    console.log(`${sender.name} submitting DM to ${receiver}: ${message}`);
+    socket.emit('sendDM', { sender: sender.name, receiver: receiver, message: message });
     setMessage('');
-  }, [sender, recipient, message]);
+  }, [sender, receiver, message]);
 
   return (
     <div className="chat-container">
-      <h1>Direct Messages with </h1>
+      <h1>Direct Messages</h1>
       {/* DM 相手の情報 */}
-      <div className="dm-recipient-info">
-        <h4>Recipient:</h4>
-        {/* <Image
-            src={recipient.icon || ''}
-            alt={recipient.name || ''}
-            className="recipient-icon"
-            width={50}
-            height={50}
-          /> */}
-        <div className="recipient-name">{recipient?.name}</div>
+      <div className="recipient-info">
+        <h4>Recipient</h4>
+        <Image
+          src={receiver.icon || ''}
+          alt={receiver.name || ''}
+          className="recipient-icon"
+          width={50}
+          height={50}
+        />
+        <div className="recipient-name">{receiver?.name}</div>
       </div>
       {/* DM 履歴 */}
       <div className="dm-messages">
-        {dmchatLogs.map((message, index) => (
+        {dmLogs.map((message, index) => (
           <div
             key={index}
             className={`message-bubble ${message.user === sender.ID ? 'self' : 'other'}`}

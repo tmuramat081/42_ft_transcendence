@@ -187,8 +187,11 @@ const ChatPage = () => {
 
   // パラメータを含むリンクを生成する
   const handleLinkClick = (recipient: UserInfo) => {
-    const href = `/chat/${recipient.name}`;
+    socket.emit('startDM', { sender, recipient });
+    const href = `/chat/${recipient}`;
+    const as = `/chat/${recipient.name}`;
     router.push(href);
+    router.push(as);
   };
 
   return (
@@ -211,7 +214,6 @@ const ChatPage = () => {
                 height={50}
               />
               <div className="onlineuser-name">{onlineUser.name}</div>
-              {/* <button onClick={() => handleLinkClick(onlineUser.name)}>Send DM</button> */}
               <button onClick={() => handleLinkClick(onlineUser)}>Send DM</button>
             </div>
           ))}
