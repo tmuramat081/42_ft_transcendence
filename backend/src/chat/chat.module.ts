@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ChatGateway } from './chat.gateway';
+import { DMGateway } from './directMessage.gateway';
 import { Room } from './entities/room.entity';
 import { ChatLog } from './entities/chatlog.entity';
 import { User } from '../users/entities/user.entity';
@@ -12,6 +13,6 @@ import { OnlineUsers } from './entities/onlineUsers.entity';
   imports: [
     TypeOrmModule.forFeature([Room, ChatLog, User, CurrentUser, DirectMessage, OnlineUsers]),
   ],
-  providers: [ChatGateway],
+  providers: [ChatGateway, DMGateway],
 })
 export class ChatModule {}
