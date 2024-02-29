@@ -314,6 +314,8 @@ export class ChatGateway {
       // データベースからオンラインユーザーリストを取得
       const onlineUsers = await this.onlineUsersRepository.find();
 
+      this.logger.log(`Online users: ${JSON.stringify(onlineUsers)}`);
+
       // sender以外のオンラインユーザーリストをクライアントに送信
       socket.emit(
         'onlineUsers',
