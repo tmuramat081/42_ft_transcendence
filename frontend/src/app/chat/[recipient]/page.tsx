@@ -43,7 +43,7 @@ const DMPage = ({ params }: { params: { recipient: UserInfo } }) => {
     const socket = io('http://localhost:3001');
 
     socket.on('connect', () => {
-      // console.log('connection ID : ', socket.id);
+      console.log('connection ID : ', socket.id);
       // const senderData = {
       //   ID: socket.id,
       //   name: 'kaori',
@@ -52,7 +52,7 @@ const DMPage = ({ params }: { params: { recipient: UserInfo } }) => {
       // setSender(senderData);
       // console.log('sender:', senderData);
       socket.emit('getCurrentUser');
-      setReceiver(params.recipient);
+      // setReceiver(params.recipient);
       console.log('receiver:', receiver);
     });
 
@@ -85,6 +85,7 @@ const DMPage = ({ params }: { params: { recipient: UserInfo } }) => {
 
   useEffect(() => {
     console.log('receiver:', receiver);
+    setReceiver(receiver);
   }, [receiver]);
 
   const onClickSubmit = useCallback(() => {
