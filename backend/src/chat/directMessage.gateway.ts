@@ -36,12 +36,6 @@ export class DMGateway {
   server: Server;
 
   private logger: Logger = new Logger('Gateway Log');
-  // 現在のUserの情報を保持
-  private currentUser: UserInfo = {
-    ID: '',
-    name: '',
-    icon: '',
-  };
 
   constructor(
     @InjectRepository(ChatLog)
@@ -70,13 +64,124 @@ export class DMGateway {
       // データベースからcurrentUserを取得
       const currentUser = await this.currentUserRepository.findOne({});
       if (currentUser) {
-        this.currentUser.ID = currentUser.userId;
-        this.currentUser.name = currentUser.name;
-        this.currentUser.icon = currentUser.icon;
-        this.server.to(socket.id).emit('currentUser', this.currentUser);
+        currentUser.userId = currentUser.userId;
+        currentUser.name = currentUser.name;
+        currentUser.icon = currentUser.icon;
+        this.server.to(socket.id).emit('currentUser', currentUser);
       }
     } catch (error) {
       this.logger.error(error);
+    }
+  }
+
+  @SubscribeMessage('startDM')
+  async handleStartDM(
+    @MessageBody() payload: { sender: UserInfo; recipient: UserInfo },
+    @ConnectedSocket() socket: Socket,
+  ) {
+    try {
+      if (!payload.sender || !payload.recipient) {
+        this.logger.error('Invalid DM data:', payload);
+        return;
+      }
+      this.logger.log(`startDM: ${payload.sender.name} started DM with ${payload.recipient.name}`);
+      // 送信者と受信者のエンティティを取得
+      const senderUser = await this.onlineUsersRepository.findOne({
+        where: { name: payload.sender.name },
+      });
+      const recipientUser = await this.onlineUsersRepository.findOne({
+        where: { name: payload.recipient.name },
+      });
+
+      // Userが存在しない場合はエラー
+      if (!senderUser) {
+        this.logger.error(`Sender ${payload.sender.name} not found in the database.`);
+        return;
+      }
+      if (!recipientUser) {
+        this.logger.error(`Recipient ${payload.recipient.name} not found in the database.`);
+        return;
+      }
+
+      // クライアントに送信
+      this.server.to(payload.sender.ID).emit('readytoDM', payload.recipient);
+    } catch (error) {
+      this.logger.error(`Error starting DM: ${(error as Error).message}`);
+      throw error;
+    }
+  }
+
+  @SubscribeMessage('sendDM')
+  async handleSendDM(
+    @MessageBody() payload: { sender: string; receiver: string; message: string },
+  ) {
+    try {
+      if (
+        !payload.sender ||
+        !payload.receiver ||
+        !payload.message ||
+        !payload.sender.trim() ||
+        !payload.receiver.trim() ||
+        !payload.message.trim()
+      ) {
+        console.error('Invalid DM data:', payload);
+        return { success: false, message: 'Invalid DM data' };
+      }
+      this.logger.log(`sendDM: ${payload.sender} sent DM to ${payload.receiver}`);
+      // 送信者と受信者のエンティティを取得
+      const senderUser = await this.onlineUsersRepository.findOne({
+        where: { name: payload.sender },
+      });
+      const recipientUser = await this.onlineUsersRepository.findOne({
+        where: { name: payload.receiver },
+      });
+
+      // Userが存在しない場合は新規作成
+      if (!senderUser) {
+        await this.onlineUsersRepository.save({ name: payload.sender });
+      }
+      if (!recipientUser) {
+        await this.onlineUsersRepository.save({ name: payload.receiver });
+      }
+
+      function formatDate(date: Date): string {
+        const options: Intl.DateTimeFormatOptions = {
+          year: 'numeric',
+          month: '2-digit',
+          day: '2-digit',
+          hour: '2-digit',
+          minute: '2-digit',
+          hour12: false,
+          timeZone: 'Asia/Tokyo',
+        };
+        return date.toLocaleString('ja-JP', options);
+      }
+
+      // DirectMessageを作成して保存
+      const directMessage = new DirectMessage();
+      directMessage.senderId = payload.sender;
+      directMessage.recipientId = payload.receiver;
+      directMessage.message = payload.message;
+      directMessage.timestamp = formatDate(new Date());
+      await this.directMessageRepository.save(directMessage);
+      this.logger.log(`Saved directMessage: ${JSON.stringify(directMessage)}`);
+
+      const dmData: ChatMessage = {
+        user: payload.sender,
+        photo: senderUser?.icon || '',
+        text: payload.message,
+        timestamp: directMessage.timestamp,
+      };
+
+      // クライアントに送信
+      this.server.to(payload.receiver).emit('updateDM', dmData);
+
+      // 成功メッセージを返す
+      return { success: true, message: 'DM sent successfully' };
+    } catch (error) {
+      // エラーハンドリング
+      console.error('Error sending DM:', error);
+      return { success: false, message: 'Failed to send DM' };
     }
   }
 }
