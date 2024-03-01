@@ -117,4 +117,82 @@ export class UserRepository {
     user.password = await bycrypt.hash(user.password, salt);
     return this.userRepository.save(user);
   }
+
+  async addFriend(user: User, friendName: string): Promise<User> {
+    //targetを取得
+    const target: User = await this.findOneByName(friendName);
+    if (!target) {
+      throw new Error('User not found');
+    }
+
+    // すでに友達リストにいるかどうか
+    if (user.friends.some((friend) => friend.userId === target.userId)) {
+      throw new Error('Already friends');
+    }
+
+    user.friends.push(target);
+    return await this.userRepository.save(user);
+    // 自分の友達リストにtargetを追加
+  }
+
+  async removeFriend(user: User, friendName: string): Promise<User>{
+    //targetを取得
+    const target: User = await this.findOneByName(friendName);
+    if (!target) {
+      throw new Error('User not found');
+    }
+
+    // 友達にいない場合
+    if (!user.friends.some((friend) => friend.userId === target.userId)) {
+      throw new Error('Not friends');
+    }
+
+    user.friends = user.friends.filter((friend) => friend.userId !== target.userId);
+    return await this.userRepository.save(user);
+    // 自分の友達リストからtargetを削除
+  }
+
+  async getFriends(user: User): Promise<User[]> {
+    // データ整形が必要？パスワードなどが含まれているかも
+    return user.friends;
+  }
+
+  async blockUser(user: User, blockName: string): Promise<User> {
+    //targetを取得
+    const target: User = await this.findOneByName(blockName);
+    if (!target) {
+      throw new Error('User not found');
+    }
+
+    // すでにブロックリストにいるかどうか
+    if (user.blocked.some((blocked) => blocked.userId === target.userId)) {
+      throw new Error('Already blocked');
+    }
+
+    user.blocked.push(target);
+    return await this.userRepository.save(user);
+    // 自分のブロックリストにtargetを追加
+  }
+
+  async unblockUser(user: User, blockName: string): Promise<User> {
+    //targetを取得
+    const target: User = await this.findOneByName(blockName);
+    if (!target) {
+      throw new Error('User not found');
+    }
+
+    // ブロックリストにいない場合
+    if (!user.blocked.some((blocked) => blocked.userId === target.userId)) {
+      throw new Error('Not blocked');
+    }
+
+    user.blocked = user.blocked.filter((blocked) => blocked.userId !== target.userId);
+    return await this.userRepository.save(user);
+    // 自分のブロックリストからtargetを削除
+  }
+
+  async getBlockedUsers(user: User): Promise<User[]> {
+    // データ整形が必要？パスワードなどが含まれているかも
+    return user.blocked;
+  }
 }

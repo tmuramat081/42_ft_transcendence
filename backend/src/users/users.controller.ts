@@ -543,4 +543,23 @@ export class UsersController {
         // passwordを除外する
         return classToPlain(this.usersService.findOne(req.params.id));
     }
+
+    // friend UserInfoページからのアクセス
+    @UseGuards(JwtAuthGuard)
+    @Post('/friend/add/:userName')
+    async addFriend(@Req() req, @Param('userName') userName: string) {
+        return await this.usersService.addFriend(req.user, userName);
+    }
+
+    @UseGuards(JwtAuthGuard)
+    @Post('/friend/remove/:userName')
+    async deleteFriend(@Req() req, @Param('userName') userName: string) {
+        return await this.usersService.removeFriend(req.user, userName);
+    }
+
+    @UseGuards(JwtAuthGuard)
+    @Get('/friend/all')
+    async findAllFriends(@Req() req) {
+        return await this.usersService.getFriends(req.user);
+    }
 }

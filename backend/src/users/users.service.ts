@@ -485,4 +485,32 @@ export class UsersService {
     newUser = await this.userRepository.createUser42(newUser);
     return newUser;
   }
+
+  // friend
+  async addFriend(user: User, friendName: string): Promise<User> {
+    return this.userRepository.addFriend(user, friendName);
+    //return null;
+  }
+
+  async removeFriend(user: User, friendName: string): Promise<User> {
+    return this.userRepository.removeFriend(user, friendName);
+    //return null;
+  }
+
+  async getFriends(user: User): Promise<User[]> {
+    return this.userRepository.getFriends(user);
+  }
+
+  // block
+  async blockUser(user: User, blockName: string): Promise<User> {
+    return this.userRepository.blockUser(user, blockName);
+  }
+
+  async unblockUser(user: User, blockName: string): Promise<User> {
+    return this.userRepository.unblockUser(user, blockName);
+  }
+
+  async getBlocks(user: User): Promise<User[]> {
+    return this.userRepository.getBlockedUsers(user);
+  }
 }
