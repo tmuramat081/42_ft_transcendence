@@ -61,15 +61,39 @@ export class DMGateway {
   async handleGetCurrentUser(@ConnectedSocket() socket: Socket) {
     try {
       this.logger.log(`getCurrentUser`);
+      // データベースからonlineUsersを取得
+      const onlineUsers = await this.onlineUsersRepository.find();
+      if (onlineUsers) {
+        this.logger.log(`onlineUsers found: ${JSON.stringify(onlineUsers)}`);
+      } else {
+        this.logger.error('No onlineUserd found');
+      }
       // データベースからcurrentUserを取得
       const currentUser = await this.onlineUsersRepository.findOne({ where: { me: true } });
       if (currentUser) {
-        currentUser.userId = currentUser.userId;
-        currentUser.name = currentUser.name;
-        currentUser.icon = currentUser.icon;
+        this.logger.log(`currentUser found: ${JSON.stringify(currentUser)}`);
         this.server.to(socket.id).emit('currentUser', currentUser);
       } else {
         this.logger.error('No current user found');
+      }
+    } catch (error) {
+      this.logger.error(error);
+    }
+  }
+
+  // データベースからrecipientを取得
+  @SubscribeMessage('getRecipient')
+  async handleGetRecipient(@MessageBody() recipient: UserInfo, @ConnectedSocket() socket: Socket) {
+    try {
+      this.logger.log(`getRecipient: ${JSON.stringify(recipient)}`);
+      const recipientUser = await this.onlineUsersRepository.findOne({
+        where: { name: recipient.name },
+      });
+      if (recipientUser) {
+        this.logger.log(`Recipient found: ${JSON.stringify(recipientUser)}`);
+        this.server.to(socket.id).emit('recipient', recipientUser);
+      } else {
+        this.logger.error('No recipient found');
       }
     } catch (error) {
       this.logger.error(error);

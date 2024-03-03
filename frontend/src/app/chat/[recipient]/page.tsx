@@ -24,7 +24,7 @@ interface ChatMessage {
 const socket = io('http://localhost:3001');
 
 const DMPage = ({ params }: { params: { recipient: UserInfo } }) => {
-  console.log('params:', params);
+  // console.log('params:', params);
   const router = useRouter(); //Backボタンを使うためのrouter
   const [message, setMessage] = useState('');
   const [sender, setSender] = useState<UserInfo>({
@@ -59,14 +59,14 @@ const DMPage = ({ params }: { params: { recipient: UserInfo } }) => {
       console.log('sender:', sender);
     });
 
-    socket.on('readytoDM', (recipient: UserInfo) => {
+    socket.on('recipient', (recipient: UserInfo) => {
       const receiver: UserInfo = {
         ID: recipient.ID,
         name: recipient.name,
         icon: recipient.icon,
       };
       setReceiver(receiver);
-      console.log('receiverReadytoDM:', receiver);
+      console.log('ReadytoDM:receiver', receiver);
     });
 
     socket.on('updateDM', (chatMessage: ChatMessage) => {

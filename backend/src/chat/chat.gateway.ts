@@ -284,12 +284,12 @@ export class ChatGateway {
       this.logger.log(`Get online users: ${sender.ID}`);
 
       // データベースcurrentUserにsenderを保存
-      const currentUser = new CurrentUser();
-      currentUser.userId = sender.ID;
-      currentUser.name = sender.name;
-      currentUser.icon = sender.icon;
-      await this.currentUserRepository.save(currentUser);
-      this.logger.log(`currentUser: ${JSON.stringify(currentUser)}`);
+      // const currentUser = new CurrentUser();
+      // currentUser.userId = sender.ID;
+      // currentUser.name = sender.name;
+      // currentUser.icon = sender.icon;
+      // await this.currentUserRepository.save(currentUser);
+      // this.logger.log(`currentUser: ${JSON.stringify(currentUser)}`);
 
       // 空のオンラインユーザーを削除
       await this.deleteEmptyOnlineUsers();
@@ -306,14 +306,14 @@ export class ChatGateway {
       onlineUser.userId = sender.ID;
       onlineUser.name = sender.name;
       onlineUser.icon = sender.icon;
-      // onlineUser.me = true;
+      onlineUser.me = true;
       await this.onlineUsersRepository.save(onlineUser);
 
       // 重複したオンラインユーザーを削除
       await this.deleteDuplicateOnlineUsers();
 
       // id=1のオンラインユーザーのmeをtrueにして保存
-      const me = await this.onlineUsersRepository.findOne({ where: { id: 1 } });
+      const me = await this.onlineUsersRepository.findOne({ where: { name: 'Bob' } });
       if (me) {
         me.me = true;
         await this.onlineUsersRepository.save(me);
