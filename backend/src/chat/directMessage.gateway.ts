@@ -62,7 +62,7 @@ export class DMGateway {
     try {
       this.logger.log(`getCurrentUser`);
       // データベースからcurrentUserを取得
-      const currentUser = await this.currentUserRepository.findOne({});
+      const currentUser = await this.onlineUsersRepository.findOne({ where: { me: true } });
       if (currentUser) {
         currentUser.userId = currentUser.userId;
         currentUser.name = currentUser.name;

@@ -306,10 +306,18 @@ export class ChatGateway {
       onlineUser.userId = sender.ID;
       onlineUser.name = sender.name;
       onlineUser.icon = sender.icon;
+      // onlineUser.me = true;
       await this.onlineUsersRepository.save(onlineUser);
 
       // 重複したオンラインユーザーを削除
       await this.deleteDuplicateOnlineUsers();
+
+      // id=1のオンラインユーザーのmeをtrueにして保存
+      const me = await this.onlineUsersRepository.findOne({ where: { id: 1 } });
+      if (me) {
+        me.me = true;
+        await this.onlineUsersRepository.save(me);
+      }
 
       // データベースからオンラインユーザーリストを取得
       const onlineUsers = await this.onlineUsersRepository.find();

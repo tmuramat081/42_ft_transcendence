@@ -21,7 +21,7 @@ interface ChatMessage {
   timestamp: string;
 }
 
-const socket = io('http://localhost:3001');
+// const socket = io('http://localhost:3001');
 
 const DMPage = ({ params }: { params: { recipient: UserInfo } }) => {
   // console.log('params:', params);
