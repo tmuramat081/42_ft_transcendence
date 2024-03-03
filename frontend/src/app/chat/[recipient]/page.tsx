@@ -21,10 +21,10 @@ interface ChatMessage {
   timestamp: string;
 }
 
-// const socket = io('http://localhost:3001');
+const socket = io('http://localhost:3001');
 
 const DMPage = ({ params }: { params: { recipient: UserInfo } }) => {
-  // console.log('params:', params);
+  console.log('params:', params);
   const router = useRouter(); //Backボタンを使うためのrouter
   const [message, setMessage] = useState('');
   const [sender, setSender] = useState<UserInfo>({
@@ -45,8 +45,7 @@ const DMPage = ({ params }: { params: { recipient: UserInfo } }) => {
     socket.on('connect', () => {
       console.log('connection ID : ', socket.id);
       socket.emit('getCurrentUser');
-      // setReceiver(params.recipient);
-      console.log('receiver:', receiver);
+      socket.emit('getRecipient', params.recipient);
     });
 
     socket.on('currentUser', (user: UserInfo) => {
@@ -61,7 +60,13 @@ const DMPage = ({ params }: { params: { recipient: UserInfo } }) => {
     });
 
     socket.on('readytoDM', (recipient: UserInfo) => {
-      console.log('readytoDM:', recipient);
+      const receiver: UserInfo = {
+        ID: recipient.ID,
+        name: recipient.name,
+        icon: recipient.icon,
+      };
+      setReceiver(receiver);
+      console.log('receiverReadytoDM:', receiver);
     });
 
     socket.on('updateDM', (chatMessage: ChatMessage) => {
@@ -83,9 +88,11 @@ const DMPage = ({ params }: { params: { recipient: UserInfo } }) => {
   }, []);
 
   useEffect(() => {
-    console.log('receiver:', receiver);
-    setReceiver(receiver);
-  }, [receiver]);
+    if (sender.name && receiver.name) {
+      console.log('receiver:', receiver);
+      socket.emit('startDM', { sender: sender, receiver: receiver });
+    }
+  }, [sender, receiver]);
 
   const onClickSubmit = useCallback(() => {
     console.log(`${sender.name} submitting DM to ${receiver}: ${message}`);

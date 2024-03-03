@@ -68,6 +68,8 @@ export class DMGateway {
         currentUser.name = currentUser.name;
         currentUser.icon = currentUser.icon;
         this.server.to(socket.id).emit('currentUser', currentUser);
+      } else {
+        this.logger.error('No current user found');
       }
     } catch (error) {
       this.logger.error(error);
@@ -76,35 +78,37 @@ export class DMGateway {
 
   @SubscribeMessage('startDM')
   async handleStartDM(
-    @MessageBody() payload: { sender: UserInfo; recipient: UserInfo },
+    @MessageBody() payload: { sender: UserInfo; receiver: UserInfo },
     @ConnectedSocket() socket: Socket,
   ) {
+    this.logger.log(`sender:', ${JSON.stringify(payload.sender)}`);
+    this.logger.log(`receiver:', ${JSON.stringify(payload.receiver)}`);
     try {
-      if (!payload.sender || !payload.recipient) {
+      if (!payload.sender || !payload.receiver) {
         this.logger.error('Invalid DM data:', payload);
         return;
       }
-      this.logger.log(`startDM: ${payload.sender.name} started DM with ${payload.recipient.name}`);
+      this.logger.log(`startDM: ${payload.sender.name} started DM with ${payload.receiver.name}`);
       // 送信者と受信者のエンティティを取得
-      const senderUser = await this.onlineUsersRepository.findOne({
-        where: { name: payload.sender.name },
-      });
-      const recipientUser = await this.onlineUsersRepository.findOne({
-        where: { name: payload.recipient.name },
+      // const senderUser = await this.onlineUsersRepository.findOne({
+      //   where: { name: payload.sender.name },
+      // });
+      const recipient = await this.onlineUsersRepository.findOne({
+        where: { name: payload.receiver.name },
       });
 
       // Userが存在しない場合はエラー
-      if (!senderUser) {
-        this.logger.error(`Sender ${payload.sender.name} not found in the database.`);
-        return;
-      }
-      if (!recipientUser) {
-        this.logger.error(`Recipient ${payload.recipient.name} not found in the database.`);
+      // if (!senderUser) {
+      //   this.logger.error(`Sender ${payload.sender.name} not found in the database.`);
+      //   return;
+      // }
+      if (!recipient) {
+        this.logger.error(`Recipient ${payload.receiver.name} not found in the database.`);
         return;
       }
 
       // クライアントに送信
-      this.server.to(payload.sender.ID).emit('readytoDM', payload.recipient);
+      this.server.to(payload.sender.ID).emit('readytoDM', recipient);
     } catch (error) {
       this.logger.error(`Error starting DM: ${(error as Error).message}`);
       throw error;
