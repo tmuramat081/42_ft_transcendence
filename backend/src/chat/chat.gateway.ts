@@ -170,6 +170,12 @@ export class ChatGateway {
         if (!room.roomParticipants) {
           room.roomParticipants = [];
         }
+        // 参加者が100人を超える場合はエラーを返す
+        if (room.roomParticipants.length >= 100) {
+          this.logger.error('Room is full');
+          socket.emit('roomError', 'Room is full.');
+          return;
+        }
         room.roomParticipants.push({
           id: join.sender.ID,
           name: join.sender.name,
