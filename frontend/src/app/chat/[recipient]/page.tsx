@@ -66,7 +66,7 @@ const DMPage = ({ params }: { params: { recipient: UserInfo } }) => {
         icon: recipient.icon,
       };
       setReceiver(receiver);
-      console.log('ReadytoDM:receiver', receiver);
+      console.log('receiver', receiver);
     });
 
     socket.on('updateDM', (chatMessage: ChatMessage) => {
@@ -89,14 +89,14 @@ const DMPage = ({ params }: { params: { recipient: UserInfo } }) => {
 
   useEffect(() => {
     if (sender.name && receiver.name) {
-      console.log('receiver:', receiver);
+      console.log('startDM:', sender, receiver);
       socket.emit('startDM', { sender: sender, receiver: receiver });
     }
   }, [sender, receiver]);
 
   const onClickSubmit = useCallback(() => {
-    console.log(`${sender.name} submitting DM to ${receiver}: ${message}`);
-    socket.emit('sendDM', { sender: sender.name, receiver: receiver, message: message });
+    console.log(`${sender.name} submitting DM to ${receiver.name}: ${message}`);
+    socket.emit('sendDM', { sender: sender, receiver: receiver, message: message });
     setMessage('');
   }, [sender, receiver, message]);
 

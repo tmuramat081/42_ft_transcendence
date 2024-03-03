@@ -7,10 +7,10 @@ export class DirectMessage {
   id: number;
 
   @Column()
-  senderId: string;
+  senderName: string;
 
   @Column()
-  recipientId: string;
+  recipientName: string;
 
   @Column()
   message: string;

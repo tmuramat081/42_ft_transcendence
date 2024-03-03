@@ -105,34 +105,15 @@ export class DMGateway {
     @MessageBody() payload: { sender: UserInfo; receiver: UserInfo },
     @ConnectedSocket() socket: Socket,
   ) {
-    this.logger.log(`sender:', ${JSON.stringify(payload.sender)}`);
-    this.logger.log(`receiver:', ${JSON.stringify(payload.receiver)}`);
     try {
       if (!payload.sender || !payload.receiver) {
         this.logger.error('Invalid DM data:', payload);
         return;
       }
       this.logger.log(`startDM: ${payload.sender.name} started DM with ${payload.receiver.name}`);
-      // 送信者と受信者のエンティティを取得
-      // const senderUser = await this.onlineUsersRepository.findOne({
-      //   where: { name: payload.sender.name },
-      // });
-      const recipient = await this.onlineUsersRepository.findOne({
-        where: { name: payload.receiver.name },
-      });
-
-      // Userが存在しない場合はエラー
-      // if (!senderUser) {
-      //   this.logger.error(`Sender ${payload.sender.name} not found in the database.`);
-      //   return;
-      // }
-      if (!recipient) {
-        this.logger.error(`Recipient ${payload.receiver.name} not found in the database.`);
-        return;
-      }
 
       // クライアントに送信
-      this.server.to(payload.sender.ID).emit('readytoDM', recipient);
+      // this.server.to(payload.sender.ID).emit('readytoDM', payload.receiver);
     } catch (error) {
       this.logger.error(`Error starting DM: ${(error as Error).message}`);
       throw error;
@@ -141,36 +122,14 @@ export class DMGateway {
 
   @SubscribeMessage('sendDM')
   async handleSendDM(
-    @MessageBody() payload: { sender: string; receiver: string; message: string },
+    @MessageBody() payload: { sender: UserInfo; receiver: UserInfo; message: string },
   ) {
     try {
-      if (
-        !payload.sender ||
-        !payload.receiver ||
-        !payload.message ||
-        !payload.sender.trim() ||
-        !payload.receiver.trim() ||
-        !payload.message.trim()
-      ) {
+      if (!payload.sender || !payload.receiver || !payload.message) {
         console.error('Invalid DM data:', payload);
         return { success: false, message: 'Invalid DM data' };
       }
-      this.logger.log(`sendDM: ${payload.sender} sent DM to ${payload.receiver}`);
-      // 送信者と受信者のエンティティを取得
-      const senderUser = await this.onlineUsersRepository.findOne({
-        where: { name: payload.sender },
-      });
-      const recipientUser = await this.onlineUsersRepository.findOne({
-        where: { name: payload.receiver },
-      });
-
-      // Userが存在しない場合は新規作成
-      if (!senderUser) {
-        await this.onlineUsersRepository.save({ name: payload.sender });
-      }
-      if (!recipientUser) {
-        await this.onlineUsersRepository.save({ name: payload.receiver });
-      }
+      this.logger.log(`sendDM: ${payload.sender.name} sent DM to ${payload.receiver.name}`);
 
       function formatDate(date: Date): string {
         const options: Intl.DateTimeFormatOptions = {
@@ -187,27 +146,24 @@ export class DMGateway {
 
       // DirectMessageを作成して保存
       const directMessage = new DirectMessage();
-      directMessage.senderId = payload.sender;
-      directMessage.recipientId = payload.receiver;
+      directMessage.senderName = payload.sender.name;
+      directMessage.recipientName = payload.receiver.name;
       directMessage.message = payload.message;
       directMessage.timestamp = formatDate(new Date());
       await this.directMessageRepository.save(directMessage);
       this.logger.log(`Saved directMessage: ${JSON.stringify(directMessage)}`);
 
-      const dmData: ChatMessage = {
-        user: payload.sender,
-        photo: senderUser?.icon || '',
+      // クライアントに送信
+      this.server.to(payload.sender.ID).emit('updateDM', {
+        user: payload.sender.name,
+        photo: payload.sender.icon,
         text: payload.message,
         timestamp: directMessage.timestamp,
-      };
-
-      // クライアントに送信
-      this.server.to(payload.receiver).emit('updateDM', dmData);
+      });
 
       // 成功メッセージを返す
       return { success: true, message: 'DM sent successfully' };
     } catch (error) {
-      // エラーハンドリング
       console.error('Error sending DM:', error);
       return { success: false, message: 'Failed to send DM' };
     }
