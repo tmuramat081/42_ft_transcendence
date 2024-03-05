@@ -14,9 +14,9 @@ interface UserInfo {
   icon: string;
 }
 
-interface ChatMessage {
-  user: string;
-  photo: string;
+interface DirectMessage {
+  sender: string;
+  recipient: string;
   text: string;
   timestamp: string;
 }
@@ -24,7 +24,7 @@ interface ChatMessage {
 const socket = io('http://localhost:3001');
 
 const DMPage = ({ params }: { params: { recipient: UserInfo } }) => {
-  // console.log('params:', params);
+  console.log('params:', params);
   const router = useRouter(); //Backボタンを使うためのrouter
   const [message, setMessage] = useState('');
   const [sender, setSender] = useState<UserInfo>({
@@ -37,7 +37,7 @@ const DMPage = ({ params }: { params: { recipient: UserInfo } }) => {
     name: '',
     icon: '',
   });
-  const [dmLogs, setDMLogs] = useState<ChatMessage[]>([]);
+  const [dmLogs, setDMLogs] = useState<DirectMessage[]>([]);
 
   useEffect(() => {
     const socket = io('http://localhost:3001');
@@ -69,15 +69,15 @@ const DMPage = ({ params }: { params: { recipient: UserInfo } }) => {
       console.log('receiver', receiver);
     });
 
-    socket.on('updateDM', (chatMessage: ChatMessage) => {
-      console.log('Received DM from server:', chatMessage);
+    socket.on('logDM', (directMessage: DirectMessage) => {
+      console.log('Received DM from server:', directMessage);
       setDMLogs((prevDMLogs) => [
         ...prevDMLogs,
         {
-          user: chatMessage.user,
-          photo: chatMessage.photo,
-          text: chatMessage.text,
-          timestamp: chatMessage.timestamp,
+          sender: directMessage.sender,
+          recipient: directMessage.recipient,
+          text: directMessage.text,
+          timestamp: directMessage.timestamp,
         },
       ]);
     });
@@ -120,15 +120,15 @@ const DMPage = ({ params }: { params: { recipient: UserInfo } }) => {
         {dmLogs.map((message, index) => (
           <div
             key={index}
-            className={`message-bubble ${message.user === sender.ID ? 'self' : 'other'}`}
+            className={`message-bubble ${message.sender === sender.name ? 'self' : 'other'}`}
           >
-            <Image
+            {/* <Image
               src={message.photo}
               alt="User Icon"
               className="icon"
               width={50}
               height={50}
-            />
+            /> */}
             <div>
               <div>{message.text}</div>
               <div className="timestamp">{message.timestamp}</div>

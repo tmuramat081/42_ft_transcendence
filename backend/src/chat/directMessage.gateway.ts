@@ -62,12 +62,12 @@ export class DMGateway {
     try {
       this.logger.log(`getCurrentUser`);
       // データベースからonlineUsersを取得
-      const onlineUsers = await this.onlineUsersRepository.find();
-      if (onlineUsers) {
-        this.logger.log(`onlineUsers found: ${JSON.stringify(onlineUsers)}`);
-      } else {
-        this.logger.error('No onlineUserd found');
-      }
+      // const onlineUsers = await this.onlineUsersRepository.find();
+      // if (onlineUsers) {
+      //   this.logger.log(`onlineUsers found: ${JSON.stringify(onlineUsers)}`);
+      // } else {
+      //   this.logger.error('No onlineUsers found');
+      // }
       // データベースからcurrentUserを取得
       const currentUser = await this.onlineUsersRepository.findOne({ where: { me: true } });
       if (currentUser) {
@@ -83,11 +83,11 @@ export class DMGateway {
 
   // データベースからrecipientを取得
   @SubscribeMessage('getRecipient')
-  async handleGetRecipient(@MessageBody() recipient: UserInfo, @ConnectedSocket() socket: Socket) {
+  async handleGetRecipient(@MessageBody() recipient: string, @ConnectedSocket() socket: Socket) {
     try {
-      this.logger.log(`getRecipient: ${JSON.stringify(recipient)}`);
+      this.logger.log(`getRecipient: ${recipient}`);
       const recipientUser = await this.onlineUsersRepository.findOne({
-        where: { name: recipient.name },
+        where: { name: recipient },
       });
       if (recipientUser) {
         this.logger.log(`Recipient found: ${JSON.stringify(recipientUser)}`);
@@ -123,6 +123,7 @@ export class DMGateway {
   @SubscribeMessage('sendDM')
   async handleSendDM(
     @MessageBody() payload: { sender: UserInfo; receiver: UserInfo; message: string },
+    @ConnectedSocket() socket: Socket,
   ) {
     try {
       if (!payload.sender || !payload.receiver || !payload.message) {
@@ -154,14 +155,7 @@ export class DMGateway {
       this.logger.log(`Saved directMessage: ${JSON.stringify(directMessage)}`);
 
       // クライアントに送信
-      this.server.to(payload.sender.ID).emit('updateDM', {
-        user: payload.sender.name,
-        photo: payload.sender.icon,
-        text: payload.message,
-        timestamp: directMessage.timestamp,
-      });
-
-      // 成功メッセージを返す
+      this.server.to(socket.id).emit('logDM', directMessage);
       return { success: true, message: 'DM sent successfully' };
     } catch (error) {
       console.error('Error sending DM:', error);
