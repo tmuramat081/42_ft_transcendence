@@ -13,7 +13,6 @@ import { Repository } from 'typeorm';
 import { ChatLog } from './entities/chatlog.entity';
 import { Room } from './entities/room.entity';
 import { User } from '../users/entities/user.entity';
-import { CurrentUser } from './entities/currentUser.entity';
 import { DirectMessage } from './entities/directMessage.entity';
 import { OnlineUsers } from './entities/onlineUsers.entity';
 
@@ -46,9 +45,6 @@ export class ChatGateway {
 
     @InjectRepository(User)
     private userRepository: Repository<User>,
-
-    @InjectRepository(CurrentUser)
-    private currentUserRepository: Repository<CurrentUser>,
 
     @InjectRepository(DirectMessage)
     private directMessageRepository: Repository<DirectMessage>,
@@ -288,14 +284,6 @@ export class ChatGateway {
   async handleGetOnlineUsers(@MessageBody() sender: UserInfo, @ConnectedSocket() socket: Socket) {
     try {
       this.logger.log(`Get online users: ${sender.ID}`);
-
-      // データベースcurrentUserにsenderを保存
-      // const currentUser = new CurrentUser();
-      // currentUser.userId = sender.ID;
-      // currentUser.name = sender.name;
-      // currentUser.icon = sender.icon;
-      // await this.currentUserRepository.save(currentUser);
-      // this.logger.log(`currentUser: ${JSON.stringify(currentUser)}`);
 
       // 空のオンラインユーザーを削除
       await this.deleteEmptyOnlineUsers();
