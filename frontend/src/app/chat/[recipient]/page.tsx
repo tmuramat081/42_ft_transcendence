@@ -80,10 +80,11 @@ const DMPage = ({ params }: { params: { recipient: UserInfo } }) => {
           timestamp: directMessage.timestamp,
         },
       ]);
+      console.log('dmLogs:', dmLogs);
     });
 
     return () => {
-      socket.disconnect();
+      socket.off('logDM');
     };
   }, []);
 

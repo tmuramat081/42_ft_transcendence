@@ -109,7 +109,7 @@ export class DMGateway {
       this.logger.log(`startDM: ${payload.sender.name} started DM with ${payload.receiver.name}`);
 
       // クライアントに送信
-      // this.server.to(payload.sender.ID).emit('readytoDM', payload.receiver);
+      // this.server.to(socket.id).emit('readytoDM', payload.receiver);
     } catch (error) {
       this.logger.error(`Error starting DM: ${(error as Error).message}`);
       throw error;
@@ -126,7 +126,9 @@ export class DMGateway {
         console.error('Invalid DM data:', payload);
         return { success: false, message: 'Invalid DM data' };
       }
-      this.logger.log(`sendDM: ${payload.sender.name} sent DM to ${payload.receiver.name}`);
+      this.logger.log(
+        `sendDM: ${payload.sender.name} sent DM to ${payload.receiver.name}: ${payload.message}`,
+      );
 
       function formatDate(date: Date): string {
         const options: Intl.DateTimeFormatOptions = {
@@ -150,12 +152,10 @@ export class DMGateway {
       await this.directMessageRepository.save(directMessage);
       this.logger.log(`Saved directMessage: ${JSON.stringify(directMessage)}`);
 
-      // クライアントに送信
       this.server.to(socket.id).emit('logDM', directMessage);
-      return { success: true, message: 'DM sent successfully' };
     } catch (error) {
-      console.error('Error sending DM:', error);
-      return { success: false, message: 'Failed to send DM' };
+      this.logger.error('Error sending DM:', error);
+      throw error;
     }
   }
 }
