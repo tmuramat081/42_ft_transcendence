@@ -4,6 +4,7 @@ import GameLog from './gameLog';
 import { Button } from '@mui/material';
 import { useRouter } from 'next/navigation';
 import UseGameConnection from './hooks/useGameRoomConnect';
+import { useWebSocket } from '@/providers/webSocketProvider';
 
 type Props = {
   roomId: number;
@@ -16,9 +17,11 @@ type Props = {
 export default function GameRoom({ roomId, userId }: Props) {
   // ルーティング
   const router = useRouter();
+  // ソケット情報
+  const { socket } = useWebSocket();
 
   // ゲーム接続情報のフック
-  const { gameStarted, users, logs } = UseGameConnection({ roomId, userId });
+  const { gameStarted, users, logs } = UseGameConnection({ roomId, userId, socket });
 
   return (
     <>
