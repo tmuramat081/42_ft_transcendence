@@ -13,7 +13,6 @@ import { Repository } from 'typeorm';
 import { ChatLog } from './entities/chatlog.entity';
 import { Room } from './entities/room.entity';
 import { User } from '../users/entities/user.entity';
-import { CurrentUser } from './entities/currentUser.entity';
 import { DirectMessage } from './entities/directMessage.entity';
 import { OnlineUsers } from './entities/onlineUsers.entity';
 
@@ -46,9 +45,6 @@ export class DMGateway {
 
     @InjectRepository(User)
     private userRepository: Repository<User>,
-
-    @InjectRepository(CurrentUser)
-    private currentUserRepository: Repository<CurrentUser>,
 
     @InjectRepository(DirectMessage)
     private directMessageRepository: Repository<DirectMessage>,

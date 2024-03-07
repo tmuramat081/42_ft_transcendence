@@ -4,7 +4,7 @@ import React, { useState, useEffect, useCallback, use } from 'react';
 import { useRouter } from 'next/navigation';
 import io from 'socket.io-client';
 import DMLayout from './layout';
-import './DMPage.css'; // スタイルシートの追加
+import './DMPage.css';
 import Image from 'next/image';
 import { Chat } from '@mui/icons-material';
 
@@ -24,7 +24,7 @@ interface DirectMessage {
 const socket = io('http://localhost:3001');
 
 const DMPage = ({ params }: { params: { recipient: UserInfo } }) => {
-  console.log('params:', params);
+  // console.log('params:', params);
   const router = useRouter(); //Backボタンを使うためのrouter
   const [message, setMessage] = useState('');
   const [sender, setSender] = useState<UserInfo>({
