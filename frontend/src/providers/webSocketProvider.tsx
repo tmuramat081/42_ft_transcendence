@@ -32,5 +32,5 @@ export const WebSocketProvider = ({ children }: Props) => {
     };
   }, []);
 
-  return <SocketContext.Provider value={socket}>{children}</SocketContext.Provider>;
+  return <SocketContext.Provider value={{ socket }}>{children}</SocketContext.Provider>;
 };

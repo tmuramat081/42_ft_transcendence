@@ -1,7 +1,7 @@
 'use client';
 import { SOCKET_EVENTS } from '@/constants/socket.constant';
 import { useEffect, useState } from 'react';
-import { Socket } from 'socket.io-client/debug';
+import { Socket } from 'socket.io-client';
 
 type Props = {
   roomId: number;
