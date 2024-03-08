@@ -447,12 +447,14 @@ export class UsersService {
     return await this.userRepository.findAll();
   }
 
+  // TODO: relation: friend, block
   async findOne(id: number): Promise<User | undefined> {
-    return await this.userRepository.findOne({ where: { userId: id } });
+    return await this.userRepository.findOne({ where: { userId: id }, relations: ['friends', 'blocked'] });
   }
 
+  // releation: friend, block
   async findOneByName(name: string): Promise<User | undefined> {
-    return await this.userRepository.findOne({ where: { userName: name } });
+    return await this.userRepository.findOne({ where: { userName: name }, relations: ['friends', 'blocked'] });
   }
 
   async validateUser42(userData: UserDto42): Promise<User> {
@@ -510,7 +512,7 @@ export class UsersService {
     return this.userRepository.unblockUser(user, blockName);
   }
 
-  async getBlocks(user: User): Promise<User[]> {
+  async getBlockeds(user: User): Promise<User[]> {
     return this.userRepository.getBlockedUsers(user);
   }
 }

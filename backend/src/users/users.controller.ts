@@ -329,6 +329,15 @@ export class UsersController {
         return JSON.stringify({"userId": undefined, "status": "SUCCESS"});
     }
 
+    @UseGuards(JwtAuthGuard)
+    @Post('/signout')
+    async SignOut(@Req() req, @Res({ passthrough: true }) res: Response) : Promise<string> {
+        //cookieからアクセストークンを削除
+        res.clearCookie('jwt');
+
+        return JSON.stringify({"status": "SUCCESS"});
+    }
+
     // 未完成
     //@Param('username') userName: string, 引数に追加する
     // curl -X POST -H "Content-Type: application/json" -d '{"userName":"test","email":"test@example.com","password":"Test123!","passwordConfirm":"Test123!"}' http://localhost:3001/users/test/update
@@ -491,15 +500,49 @@ export class UsersController {
         //const { password, ...user } = req.user;
         //const user: User = req.user;
 
+        console.log("CurrentUser")
+
         const user: ReturnUserDto = {
             userId: req.user.userId,
             userName: req.user.userName,
             email: req.user.email,
             icon: req.user.icon,
             twoFactorAuth: req.user.twoFactorAuth,
+            name42: req.user.name42,
+            friends: req.user.friends,
+            blocked: req.user.blocked,
             // 不要なので削除
             twoFactorAuthNow: false
         }
+
+        //user.friends = []
+
+        // const friend: User = {
+        //     userId: 1,
+        //     userName: "test",
+        //     email: "test@test",
+        //     icon: "test",
+        //     twoFactorAuth: false,
+        //     name42: "test",
+        //     password: "test",
+        //     createdAt: new Date(),
+        //     deletedAt: new Date(),
+        //     twoFactorAuthSecret: "test",
+        //     friends: [],
+        //     blocked: [],
+        //     gameRooms: [],
+        //     gameEntries: [],
+        //     matchesAsPlayer1: [],
+        //     matchesAsPlayer2: [],
+        //     matchResults: [],
+        // };
+
+        // console.log(req.user.friends)
+
+        // user.friends.push(friend)
+
+        // console.log(req.user.friends)
+
 
         return JSON.stringify({"user": user});
     }
@@ -519,6 +562,9 @@ export class UsersController {
             email: resultUser.email,
             icon: resultUser.icon,
             twoFactorAuth: resultUser.twoFactorAuth,
+            name42: resultUser.name42,
+            friends: resultUser.friends,
+            blocked: resultUser.blocked,
             // 不要なので削除
             twoFactorAuthNow: false
         }
@@ -548,6 +594,7 @@ export class UsersController {
     @UseGuards(JwtAuthGuard)
     @Post('/friend/add/:userName')
     async addFriend(@Req() req, @Param('userName') userName: string) {
+        //console.log("addFriend")
         return await this.usersService.addFriend(req.user, userName);
     }
 
@@ -561,5 +608,23 @@ export class UsersController {
     @Get('/friend/all')
     async findAllFriends(@Req() req) {
         return await this.usersService.getFriends(req.user);
+    }
+
+    @UseGuards(JwtAuthGuard)
+    @Post('/block/:userName')
+    async blockUser(@Req() req, @Param('userName') userName: string) {
+        return await this.usersService.blockUser(req.user, userName);
+    }
+
+    @UseGuards(JwtAuthGuard)
+    @Post('/unblock/:userName')
+    async unblockUser(@Req() req, @Param('userName') userName: string) {
+        return await this.usersService.unblockUser(req.user, userName);
+    }
+
+    @UseGuards(JwtAuthGuard)
+    @Get('/blocked/all')
+    async findAllBlocked(@Req() req) {
+        return await this.usersService.getBlockeds(req.user);
     }
 }

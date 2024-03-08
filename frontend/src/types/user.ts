@@ -4,4 +4,7 @@ export type User = {
   email: string;
   icon: string;
   twoFactorAuth: boolean;
+  name42: string;
+  friends: User[];
+  blocked: User[];
 };

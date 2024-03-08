@@ -4,6 +4,7 @@
 
 import Avatar from '@mui/material/Avatar';
 import {useEffect, useState} from 'react';
+import { useAuth } from '@/providers/useAuth';
 
 export default function functionPage({ params }: { params: { name: string } }) {
     console.log(params.name);
@@ -14,7 +15,12 @@ export default function functionPage({ params }: { params: { name: string } }) {
 
     const [user, setUser] = useState(null);
     // すでに友達かどうか
-    const [isFriend, setIsFriend] = useState(false);
+
+    const { loginUser, getCurrentUser } = useAuth();
+
+    useEffect(() => {
+        getCurrentUser();
+    }, []);
 
     useEffect(() => {
         // サーバーサイドでの処理なのでhttp://localhost:3001は使えない
@@ -44,10 +50,10 @@ export default function functionPage({ params }: { params: { name: string } }) {
         //setUser(res.user);
     }, []);
 
-    const handleFriend = () => {
+    const handleAddFriend = () => {
         console.log('friend');
         
-        fetch("http://localhost:3001/friends/" + user.userName, {
+        fetch("http://localhost:3001/users/friend/add/" + user.userName, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             credentials: 'include',
@@ -55,16 +61,77 @@ export default function functionPage({ params }: { params: { name: string } }) {
         .then((res) => res.json())
         .then((data) => {
                 console.log("data: ", data);
-                setIsFriend(true);
+                getCurrentUser();
                 return data;
             }
         )
         .catch((error) => {
             console.log(error);
         });
-
     }
 
+    const handleRemoveFriend = () => {
+        console.log('friend');
+        
+        fetch("http://localhost:3001/users/friend/remove/" + user.userName, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            credentials: 'include',
+        })
+        .then((res) => res.json())
+        .then((data) => {
+                console.log("data: ", data);
+                getCurrentUser();
+                return data;
+            }
+        )
+        .catch((error) => {
+            console.log(error);
+        });
+    }
+
+
+    const handleBlockUser = () => {
+        console.log('block');
+
+        fetch("http://localhost:3001/users/block/" + user.userName, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            credentials: 'include',
+        })
+        .then((res) => res.json())
+        .then((data) => {
+                console.log("data: ", data);
+                getCurrentUser();
+                return data;
+            }
+        )
+        .catch((error) => {
+            console.log(error);
+        });
+    }
+
+    const handleUnblockUser = () => {
+        console.log('unblock');
+
+        fetch("http://localhost:3001/users/unblock/" + user.userName, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            credentials: 'include',
+        })
+        .then((res) => res.json())
+        .then((data) => {
+                console.log("data: ", data);
+                getCurrentUser();
+                return data;
+            }
+        )
+        .catch((error) => {
+            console.log(error);
+        });
+    }
+
+    console.log("user: ", loginUser?.friends.filter((friend) => friend.userId === user?.userId).length > 0);
 
     
   return (
@@ -73,11 +140,44 @@ export default function functionPage({ params }: { params: { name: string } }) {
 
       {user !== null && (
         <div>
-      <h1>{user.userName}</h1>
-      <p>{user.email}</p>
-      <p>{user.userId}</p>
-      <p>{user.icon}</p>
-      <Avatar alt={user.userName} src={"http://localhost:3001/api/uploads/" + user.icon} />
+            <h1>{user.userName}</h1>
+            <p>{user.email}</p>
+            <p>{user.userId}</p>
+            <p>{user.icon}</p>
+            <Avatar alt={user.userName} src={"http://localhost:3001/api/uploads/" + user.icon} />
+
+            {loginUser !== null && loginUser.userId !== user.userId && loginUser.friends.filter((friend) => friend.userId === user.userId).length <= 0 &&
+                (
+                    <button onClick={handleAddFriend}>友達になる</button>
+                )
+            }  
+            {loginUser !== null && loginUser.userId !== user.userId && loginUser.friends.filter((friend) => friend.userId === user.userId).length > 0 &&
+                (
+                    <button onClick={handleRemoveFriend}>友達を外す</button>
+                )
+            }  
+
+            {loginUser !== null && loginUser.userId !== user.userId && loginUser.blocked.filter((friend) => friend.userId === user.userId).length <= 0 &&
+                (
+                    <button onClick={handleBlockUser}>ブロックする</button>
+                )
+            }  
+            {loginUser !== null && loginUser.userId !== user.userId && loginUser.blocked.filter((friend) => friend.userId === user.userId).length > 0 &&
+                (
+                    <button onClick={handleUnblockUser}>アンブロック</button>
+                )
+            }  
+
+            <h2>Friend List</h2>
+            {loginUser !== null && loginUser.friends.map((friend) => {
+                return (
+                    <div>
+                        <p key={friend.userName}>{friend.userName}</p>
+                        <Avatar alt={user.userName} src={"http://localhost:3001/api/uploads/" + friend.icon} />
+                    </div>
+                )
+            })}
+
         </div>
     )}
     </div>

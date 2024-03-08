@@ -14,6 +14,8 @@ type User = {
     twoFactorAuthNow: boolean;
 }
 
+// user 一覧を取得する
+
 export default async function Page({ params }: { params: { name: string } }) {
     //console.log(params.name);
 

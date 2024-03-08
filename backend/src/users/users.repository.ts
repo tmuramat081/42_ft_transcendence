@@ -28,6 +28,7 @@ export class UserRepository {
     return await this.userRepository.save(user);
   }
 
+  // いる？
   // idからUserを取得して、Userを更新する
   // 二つのUserを渡す方法もある
   async saveUser(user: User): Promise<User> {
@@ -80,7 +81,7 @@ export class UserRepository {
 
   async findOneByName(name: string): Promise<User | undefined> {
     //return this.connection.getRepository(User).findOne({ where: { user_name: name } });
-    return this.userRepository.findOne({ where: { userName: name } });
+    return this.userRepository.findOne({ where: { userName: name }, relations: ['friends', 'blocked'] });
   }
 
   // async findOne(username: string): Promise<User | undefined> {
