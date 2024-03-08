@@ -21,8 +21,4 @@ export class ChatLog {
 
   @Column()
   timestamp: string;
-
-  // // ManyToOneリレーションシップを定義する
-  // @ManyToOne(() => Room, (room) => room.chatLogs)
-  // room: Room;
 }
