@@ -14,7 +14,7 @@ import { GameEntry } from './games/entities/gameEntry.entity';
 import { MatchResult } from './games/entities/matchResult.entity';
 import { Match } from './games/entities/match.entity';
 import { Room } from './chat/entities/room.entity';
-import { ChatLog } from './chat/entities/chatLog.entity';
+import { ChatLog } from './chat/entities/chatlog.entity';
 import { OnlineUsers } from './chat/entities/onlineUsers.entity';
 import { DmLog } from './chat/entities/dmLog.entity';
 
