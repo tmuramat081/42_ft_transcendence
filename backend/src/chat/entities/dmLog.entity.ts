@@ -14,6 +14,6 @@ export class DmLog {
   @Column()
   message: string;
 
-  @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
+  @Column()
   timestamp: string;
 }
