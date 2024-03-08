@@ -88,8 +88,9 @@ const DMPage = ({ params }: { params: { recipient: UserInfo } }) => {
           timestamp: directMessage.timestamp,
         },
       ]);
-      console.log('dmLogs:', dmLogs);
     });
+
+    console.log('dmLogs:', dmLogs);
 
     return () => {
       socket.off('directMessage');
@@ -110,7 +111,7 @@ const DMPage = ({ params }: { params: { recipient: UserInfo } }) => {
   }, [sender, receiver, message]);
 
   return (
-    <div className="chat-container">
+    <div className="dm-container">
       <h1>Direct Messages</h1>
       {/* DM 相手の情報 */}
       <div className="recipient-info">
@@ -131,13 +132,13 @@ const DMPage = ({ params }: { params: { recipient: UserInfo } }) => {
             key={index}
             className={`message-bubble ${message.sender === sender.name ? 'self' : 'other'}`}
           >
-            {/* <Image
-              src={message.photo}
+            <Image
+              src={message.sender === sender.name ? sender.icon : receiver.icon}
               alt="User Icon"
               className="icon"
               width={50}
               height={50}
-            /> */}
+            />
             <div>
               <div>{message.text}</div>
               <div className="timestamp">{message.timestamp}</div>

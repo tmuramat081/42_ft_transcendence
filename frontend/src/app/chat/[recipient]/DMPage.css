@@ -1,4 +1,4 @@
-.chat-container {
+.dm-container {
     max-width: 600px;
     margin: 0 auto;
     display: flex;
@@ -6,16 +6,12 @@
     height: 100vh;
   }
 
-  .chat-input {
+  .dm-input {
     margin-top: 20px;
     align-self: flex-end;
   }
   
-  .chat-room-selector {
-    margin-bottom: 10px;
-  }
-  
-  .chat-messages {
+  .dm-messages {
     display: flex;
     flex-direction: column;
   }
