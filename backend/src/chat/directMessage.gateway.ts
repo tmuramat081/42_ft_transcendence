@@ -10,21 +10,21 @@ import { Logger } from '@nestjs/common';
 import { Server, Socket } from 'socket.io';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { ChatLog } from './entities/chatlog.entity';
+import { ChatLog } from './entities/chatLog.entity';
 import { Room } from './entities/room.entity';
 import { User } from '../users/entities/user.entity';
-import { DirectMessage } from './entities/directMessage.entity';
+import { DmLog } from './entities/dmLog.entity';
 import { OnlineUsers } from './entities/onlineUsers.entity';
 
-export interface UserInfo {
+interface UserInfo {
   ID: string;
   name: string;
   icon: string;
 }
 
-export interface ChatMessage {
-  user: string;
-  photo: string;
+interface DirectMessage {
+  sender: string;
+  recipient: string;
   text: string;
   timestamp: string;
 }
@@ -46,8 +46,8 @@ export class DMGateway {
     @InjectRepository(User)
     private userRepository: Repository<User>,
 
-    @InjectRepository(DirectMessage)
-    private directMessageRepository: Repository<DirectMessage>,
+    @InjectRepository(DmLog)
+    private dmLogRepository: Repository<DmLog>,
 
     @InjectRepository(OnlineUsers)
     private onlineUsersRepository: Repository<OnlineUsers>,
@@ -144,15 +144,22 @@ export class DMGateway {
       }
 
       // DirectMessageを作成して保存
-      const directMessage = new DirectMessage();
-      directMessage.senderName = payload.sender.name;
-      directMessage.recipientName = payload.receiver.name;
-      directMessage.message = payload.message;
-      directMessage.timestamp = formatDate(new Date());
-      await this.directMessageRepository.save(directMessage);
-      this.logger.log(`Saved directMessage: ${JSON.stringify(directMessage)}`);
+      const dmLog = new DmLog();
+      dmLog.senderName = payload.sender.name;
+      dmLog.recipientName = payload.receiver.name;
+      dmLog.message = payload.message;
+      dmLog.timestamp = formatDate(new Date());
+      await this.dmLogRepository.save(dmLog);
+      this.logger.log(`Saved dmLog: ${JSON.stringify(dmLog)}`);
 
-      this.server.to(socket.id).emit('logDM', directMessage);
+      const directMessage: DirectMessage = {
+        sender: payload.sender.name,
+        recipient: payload.receiver.name,
+        text: payload.message,
+        timestamp: dmLog.timestamp,
+      };
+
+      this.server.to(socket.id).emit('directMessage', directMessage);
     } catch (error) {
       this.logger.error('Error sending DM:', error);
       throw error;

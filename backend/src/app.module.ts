@@ -14,9 +14,9 @@ import { GameEntry } from './games/entities/gameEntry.entity';
 import { MatchResult } from './games/entities/matchResult.entity';
 import { Match } from './games/entities/match.entity';
 import { Room } from './chat/entities/room.entity';
-import { ChatLog } from './chat/entities/chatlog.entity';
+import { ChatLog } from './chat/entities/chatLog.entity';
 import { OnlineUsers } from './chat/entities/onlineUsers.entity';
-import { DirectMessage } from './chat/entities/directMessage.entity';
+import { DmLog } from './chat/entities/dmLog.entity';
 
 // .envを読み込む
 dotenv.config();
@@ -42,7 +42,7 @@ dotenv.config();
           Room,
           ChatLog,
           OnlineUsers,
-          DirectMessage,
+          DmLog,
           User,
           GameRoom,
           GameEntry,
@@ -64,7 +64,7 @@ dotenv.config();
           Room,
           ChatLog,
           OnlineUsers,
-          DirectMessage,
+          DmLog,
           GameRoom,
           GameEntry,
           MatchResult,

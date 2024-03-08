@@ -10,10 +10,10 @@ import { Logger } from '@nestjs/common';
 import { Server, Socket } from 'socket.io';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { ChatLog } from './entities/chatlog.entity';
+import { ChatLog } from './entities/chatLog.entity';
 import { Room } from './entities/room.entity';
 import { User } from '../users/entities/user.entity';
-import { DirectMessage } from './entities/directMessage.entity';
+import { DmLog } from './entities/dmLog.entity';
 import { OnlineUsers } from './entities/onlineUsers.entity';
 
 export interface UserInfo {
@@ -46,8 +46,8 @@ export class ChatGateway {
     @InjectRepository(User)
     private userRepository: Repository<User>,
 
-    @InjectRepository(DirectMessage)
-    private directMessageRepository: Repository<DirectMessage>,
+    @InjectRepository(DmLog)
+    private dmLogRepository: Repository<DmLog>,
 
     @InjectRepository(OnlineUsers)
     private onlineUsersRepository: Repository<OnlineUsers>,

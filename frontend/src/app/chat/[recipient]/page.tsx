@@ -69,7 +69,7 @@ const DMPage = ({ params }: { params: { recipient: UserInfo } }) => {
       console.log('receiver', receiver);
     });
 
-    socket.on('logDM', (directMessage: DirectMessage) => {
+    socket.on('directMessage', (directMessage: DirectMessage) => {
       console.log('Received DM from server:', directMessage);
       setDMLogs((prevDMLogs) => [
         ...prevDMLogs,
