@@ -1,7 +1,5 @@
 import { Entity, PrimaryGeneratedColumn, Column } from 'typeorm';
-// import { User } from '../../users/entities/user.entity';
 // import { ChatLog } from './chatLog.entity';
-// import { OnlineUsers } from './onlineUsers.entity';
 
 @Entity()
 export class Room {
