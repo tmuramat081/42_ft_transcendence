@@ -15,6 +15,7 @@ import { Room } from './entities/room.entity';
 import { User } from '../users/entities/user.entity';
 import { DmLog } from './entities/dmLog.entity';
 import { OnlineUsers } from './entities/onlineUsers.entity';
+import { formatDate } from './tools';
 
 export interface UserInfo {
   ID: string;
@@ -72,19 +73,6 @@ export class ChatGateway {
       this.logger.log(
         `${data.selectedRoom} received ${data.message} from ${data.sender.name} ${data.sender.ID}`,
       );
-
-      function formatDate(date: Date): string {
-        const options: Intl.DateTimeFormatOptions = {
-          year: 'numeric',
-          month: '2-digit',
-          day: '2-digit',
-          hour: '2-digit',
-          minute: '2-digit',
-          hour12: false,
-          timeZone: 'Asia/Tokyo',
-        };
-        return date.toLocaleString('ja-JP', options);
-      }
 
       // チャットログを保存
       const chatLog = new ChatLog();

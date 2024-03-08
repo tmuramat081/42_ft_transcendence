@@ -69,6 +69,14 @@ const DMPage = ({ params }: { params: { recipient: UserInfo } }) => {
       console.log('receiver', receiver);
     });
 
+    return () => {
+      socket.disconnect();
+      socket.off('currentUser');
+      socket.off('recipient');
+    };
+  }, []);
+
+  useEffect(() => {
     socket.on('directMessage', (directMessage: DirectMessage) => {
       console.log('Received DM from server:', directMessage);
       setDMLogs((prevDMLogs) => [
@@ -84,9 +92,9 @@ const DMPage = ({ params }: { params: { recipient: UserInfo } }) => {
     });
 
     return () => {
-      socket.off('logDM');
+      socket.off('directMessage');
     };
-  }, []);
+  }, [dmLogs]);
 
   useEffect(() => {
     if (sender.name && receiver.name) {

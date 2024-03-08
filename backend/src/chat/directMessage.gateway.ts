@@ -15,6 +15,7 @@ import { Room } from './entities/room.entity';
 import { User } from '../users/entities/user.entity';
 import { DmLog } from './entities/dmLog.entity';
 import { OnlineUsers } from './entities/onlineUsers.entity';
+import { formatDate } from './tools';
 
 interface UserInfo {
   ID: string;
@@ -57,13 +58,6 @@ export class DMGateway {
   async handleGetCurrentUser(@ConnectedSocket() socket: Socket) {
     try {
       this.logger.log(`getCurrentUser`);
-      // データベースからonlineUsersを取得
-      // const onlineUsers = await this.onlineUsersRepository.find();
-      // if (onlineUsers) {
-      //   this.logger.log(`onlineUsers found: ${JSON.stringify(onlineUsers)}`);
-      // } else {
-      //   this.logger.error('No onlineUsers found');
-      // }
       // データベースからcurrentUserを取得
       const currentUser = await this.onlineUsersRepository.findOne({ where: { me: true } });
       if (currentUser) {
@@ -107,9 +101,6 @@ export class DMGateway {
         return;
       }
       this.logger.log(`startDM: ${payload.sender.name} started DM with ${payload.receiver.name}`);
-
-      // クライアントに送信
-      // this.server.to(socket.id).emit('readytoDM', payload.receiver);
     } catch (error) {
       this.logger.error(`Error starting DM: ${(error as Error).message}`);
       throw error;
@@ -130,26 +121,14 @@ export class DMGateway {
         `sendDM: ${payload.sender.name} sent DM to ${payload.receiver.name}: ${payload.message}`,
       );
 
-      function formatDate(date: Date): string {
-        const options: Intl.DateTimeFormatOptions = {
-          year: 'numeric',
-          month: '2-digit',
-          day: '2-digit',
-          hour: '2-digit',
-          minute: '2-digit',
-          hour12: false,
-          timeZone: 'Asia/Tokyo',
-        };
-        return date.toLocaleString('ja-JP', options);
-      }
-
-      // DirectMessageを作成して保存
+      // DirectMessageを保存
       const dmLog = new DmLog();
       dmLog.senderName = payload.sender.name;
       dmLog.recipientName = payload.receiver.name;
       dmLog.message = payload.message;
       dmLog.timestamp = formatDate(new Date());
       await this.dmLogRepository.save(dmLog);
+      this.logger.log(`timestamp: ${dmLog.timestamp}`);
       this.logger.log(`Saved dmLog: ${JSON.stringify(dmLog)}`);
 
       const directMessage: DirectMessage = {
