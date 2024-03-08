@@ -34,6 +34,33 @@ export class UserRepository {
     return await this.userRepository.save(user);
   }
 
+  // async deleteOldImage(user: User) {
+  //   const fs = require('fs');
+  //   const filePath = process.cwd() + process.env.AVATAR_IMAGE_DIR + user.icon;
+  //   fs.stat(filePath, (err: any, stats: any) => {
+  //     if (err) {
+  //       console.error(err);
+  //       return
+  //     }
+
+  //     // ファイルが存在する場合
+  //     fs.unlink(filePath, (err: any) => {
+  //         if (err) {
+  //           console.error(err);
+  //           return
+  //         }
+  //       },
+  //     );
+  //   });
+  // }
+
+  // async saveImage(icon , user: User): Promise<string> { 
+  //   if (!icon?.filename) 
+
+  //   user.icon = icon.name;
+  //   return await this.userRepository.save(user);
+  // }
+
   // 他のカスタムメソッドをここに追加できます
   async findAll(): Promise<User[]> {
     // リポジトリパターンの方がいい？

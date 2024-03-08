@@ -8,15 +8,17 @@ import styles from  "./toggleSwitch.module.css"
 import Modal from './2fa/modal'; // Modalコンポーネントをインポート
 import { usePrivateRoute } from '@/hooks/routes/usePrivateRouter';
 import { useAuth } from '@/providers/useAuth';
-import { useRouter } from 'next/navigation';
+import { useRouter } from 'next/navigation'; 
+import Avatar from '@mui/material/Avatar';
 
 export default function Form() {
     const {loginUser, getCurrentUser, loading} = useAuth();
 
     const [userName, setUserName] = useState("");
     const [email, setEmail] = useState("");
+    const [newPassword, setNewPassword] = useState("");
+    const [newPasswordConfirm, setNewPasswordConfirm] = useState("");
     const [password, setPassword] = useState("");
-    const [passwordConfirm, setPasswordConfirm] = useState("");
     const [file, setFile] = useState<File | null>(null);
     const [twoFactorAuth, setTwoFactorAuth] = useState(false);
     //const [user, setUser] = useState({});
@@ -138,6 +140,7 @@ export default function Form() {
         // formData.append('userName', userName)
         // formData.append('email', email)
 
+        console.log(JSON.stringify({ userName, email, newPassword, newPasswordConfirm, password }))
 
         fetch("http://localhost:3001/users/update", {
             method: 'POST',
@@ -145,7 +148,7 @@ export default function Form() {
             headers: {
                 'Content-Type': 'application/json',
             },
-            body: JSON.stringify({ userName, email, password, passwordConfirm, twoFactorAuth }),
+            body: JSON.stringify({ userName, email, newPassword, newPasswordConfirm, password }),
         })
         .then ((res) => {
             // /console.log(res.json());
@@ -165,18 +168,52 @@ export default function Form() {
 
         // console.log('送信されたデータ:', { userName, password });
         // // 送信後の処理（例: フォームをクリアする）
-        setUserName('');
-        setEmail('');
-        setPassword('');
-        setPasswordConfirm('');
-        setFile(null);
-        setTwoFactorAuth(false);
+        // setUserName('');
+        // setEmail('');
+        // setNewPassword('');
+        // setNewPasswordConfirm('');
+        // setPassword('');
+        // setFile(null);
+        // setTwoFactorAuth(false);
     };
 
     const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+
         if (!e.target.files) return;
+        // URLに変換してプレビューを表示
+        // mfny参考
         setFile(e.target.files[0]);
+
+
     };
+
+    const handleSubmitIcon = (e: React.FormEvent<HTMLFormElement>) => {
+        e.preventDefault();
+        if (!file) return;
+
+        const formData = new FormData();
+        formData.append('icon', file as Blob);
+
+        console.log('formData:', formData.get('icon'));
+
+        fetch('http://localhost:3001/users/update/icon', { 
+            method: 'POST',
+            credentials: 'include',
+            body: formData,
+        })
+        .then((res) => {
+            // access response data here
+            return res.json();
+        })
+        .then((data) => {
+            console.log('Success:', data);
+            getCurrentUser();
+        })
+        .catch((error) => {
+            console.error('Error:', error);
+        });
+
+    }
     
     const handle2FAToggle = (e: React.ChangeEvent<HTMLInputElement>) => {
         setTwoFactorAuth(e.target.checked);
@@ -284,14 +321,21 @@ export default function Form() {
     
     return (
         <div>
-        <form onSubmit={()=>{}}>
+            <div>
+            <h1>ユーザー情報更新</h1>
+            <Avatar alt={loginUser.userName} src={"http://localhost:3001/api/uploads/" + loginUser.icon} />
+            </div>
+        <form onSubmit={handleSubmitIcon}>
             <div>
             <label htmlFor="fileInput">画像ファイル：</label>
             <input type="file" id="fileInput" onChange={handleFileChange} />
             </div>
             <button type="submit">送信</button>
         </form>
+
         <form onSubmit={handleSubmit}>
+            <div>
+            <p>{loginUser.userName}</p>
             <label htmlFor="username">名前:</label>
             <input
             type="text"
@@ -299,7 +343,10 @@ export default function Form() {
             value={userName}
             onChange={(e) => setUserName(e.target.value)}
             />
+            </div>
 
+            <div>
+            <p>{loginUser.email}</p>
             <label htmlFor="emaile">email:</label>
             <input
             type="email"
@@ -307,22 +354,37 @@ export default function Form() {
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             />
+            </div>
     
+            <div>
+            <label htmlFor="password">新しいパスワード:</label>
+            <input
+            type="newPassword"
+            id="newPassword"
+            value={newPassword}
+            onChange={(e) => setNewPassword(e.target.value)}
+            />
+            </div>
+
+            <div>
+            <label htmlFor="password">新しいパスワード確認:</label>
+            <input
+            type="newPasswordConfirm"
+            id="newPasswordConfirm"
+            value={newPasswordConfirm}
+            onChange={(e) => setNewPasswordConfirm(e.target.value)}
+            />
+            </div>
+
+            <div>
             <label htmlFor="password">パスワード:</label>
             <input
             type="password"
             id="password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            />
-
-            <label htmlFor="password">パスワード確認:</label>
-            <input
-            type="passwordConfirm"
-            id="passwordConfirm"
-            value={passwordConfirm}
-            onChange={(e) => setPasswordConfirm(e.target.value)}
-            />
+            /> 
+            </div>
 
             {/* <div>
             <label htmlFor="2faToggle">2FA：</label>

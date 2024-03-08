@@ -1,9 +1,9 @@
 'use client';
 import { TO_LOCALE_STRING_OPTIONS } from '@/constants/date.contant';
+import { GAME_ROOM_STATUS } from '@/constants/game.constant';
+import { Valueof } from '@/types/common/global';
 import { GameRoom } from '@/types/game/roomList';
 import { Card, CardContent } from '@mui/material';
-import { GAME_ROOM_STATUS } from '../../../../../backend/src/games/game.constant';
-import { Valueof } from '../../../../../backend/src/common/types/global';
 
 export type Props = {
   gameRoom: GameRoom;
