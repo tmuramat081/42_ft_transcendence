@@ -5,7 +5,7 @@ import io from 'socket.io-client';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import ChatLayout from './layout';
-import './ChatPage.css'; // スタイルシートの追加
+import './ChatPage.css';
 import Image from 'next/image';
 import { Room } from '../../../../backend/src/chat/entities/room.entity';
 import { Chat } from '@mui/icons-material';
@@ -69,7 +69,7 @@ const ChatPage = () => {
 
     socket.on('roomList', (rooms: Room[]) => {
       console.log('Received roomList from server:', rooms);
-      const roomNames = rooms.map((room) => room.roomName); // ルームオブジェクトのroomNameプロパティのみを取得
+      const roomNames = rooms.map((room) => room.roomName);
       setRoomList(roomNames);
     });
 
@@ -104,8 +104,8 @@ const ChatPage = () => {
         [roomID]: [
           ...(prevRoomChatLogs[roomID] || []),
           {
-            user: chatMessage.user, // 送信者のID
-            photo: chatMessage.photo, // 送信者のアイコン
+            user: chatMessage.user,
+            photo: chatMessage.photo,
             text: chatMessage.text,
             timestamp: chatMessage.timestamp,
           },

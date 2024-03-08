@@ -24,7 +24,6 @@ interface DirectMessage {
 const socket = io('http://localhost:3001');
 
 const DMPage = ({ params }: { params: { recipient: UserInfo } }) => {
-  // console.log('params:', params);
   const router = useRouter(); //Backボタンを使うためのrouter
   const [message, setMessage] = useState('');
   const [sender, setSender] = useState<UserInfo>({

@@ -81,7 +81,7 @@ export class ChatGateway {
       chatLog.icon = data.sender.icon;
       chatLog.message = data.message;
       chatLog.timestamp = formatDate(new Date());
-      await this.chatLogRepository.save(chatLog); // チャットログをデータベースに保存
+      await this.chatLogRepository.save(chatLog);
       this.logger.log(`Saved chatLog: ${JSON.stringify(chatLog)}`);
 
       const chatMessage: ChatMessage = {
@@ -109,7 +109,7 @@ export class ChatGateway {
       if (!create.roomName || !create.roomName.trim()) {
         this.logger.error('Invalid room name:', create.roomName);
         socket.emit('roomError', 'Room name cannot be empty.');
-        return; // 空の場合は処理を中断
+        return;
       }
 
       // 同じ名前のルームが存在しないか確認
@@ -118,15 +118,16 @@ export class ChatGateway {
       });
       if (!existingRoom) {
         const room = new Room();
-        room.roomName = create.roomName; // ルーム名として入力された値を使用
-        room.roomParticipants = []; // 参加者リストを空の配列で初期化
-        await this.roomRepository.save(room); // 新しいルームをデータベースに保存
+        room.roomName = create.roomName;
+        room.roomParticipants = [];
+        await this.roomRepository.save(room);
         socket.join(create.roomName);
         const rooms = await this.roomRepository.find();
         rooms.forEach((room) => {
           this.logger.log(`Room: ${JSON.stringify(room)}`);
         });
-        this.server.emit('roomList', rooms); // ルームリストを更新して全クライアントに通知
+        // ルームリストを更新して全クライアントに通知
+        this.server.emit('roomList', rooms);
       } else {
         this.logger.error(`Room with the same name already exists: ${create.roomName}`);
         socket.emit('roomError', 'Room with the same name already exists.');
