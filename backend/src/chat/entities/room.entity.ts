@@ -14,11 +14,6 @@ export class Room {
   @Column('json', { nullable: true })
   roomParticipants: { id: string; name: string; icon: string }[];
 
-  // // メンバー情報を格納するための関連付け
-  // @ManyToMany(() => User)
-  // @JoinTable()
-  // members: User[];
-
   // // OneToManyリレーションシップを定義する
   // @OneToMany(() => ChatLog, (chatLog) => chatLog.roomName)
   // chatLogs: ChatLog[];
