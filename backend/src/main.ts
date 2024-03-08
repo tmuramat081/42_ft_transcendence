@@ -5,14 +5,21 @@ import * as cookieParser from 'cookie-parser';
 import { AllExceptionFilter } from './filters/allException.filter';
 import helmet from 'helmet';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
+import { join } from 'path';
+import { NestExpressApplication } from '@nestjs/platform-express';
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
+  const app = await NestFactory.create<NestExpressApplication>(AppModule);
 
   // CORSを有効化
   app.enableCors({
     origin: true,
+    // ブラウザからはすべてのリクエストを受け付ける為、下記の設定は不要
+    //origin: [process.env.FRONTEND_URL],
+    //origin: "http://localhost:3000",
+    //methods: "GET,POST,PUT,DELETE,OPTIONS",
     //methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
+    //allowedHeaders: "Content-Type,Authorization",
     credentials: true,
   });
 
@@ -27,7 +34,15 @@ async function bootstrap() {
   app.useGlobalFilters(new AllExceptionFilter(httpAdapterHost));
 
   // Helmetを使用（脆弱性対策）
-  app.use(helmet());
+  //https://stackoverflow.com/questions/69243166/err-blocked-by-response-notsameorigin-cors-policy-javascript
+  app.use(helmet.crossOriginResourcePolicy({ policy: "cross-origin" }));
+
+  // 静的ファイルを提供
+  const staticAssetsPath = join(process.cwd(), process.env.AVATAR_IMAGE_DIR);
+  console.log("staticAssetsPath: ", staticAssetsPath)
+  app.useStaticAssets(staticAssetsPath, {
+    prefix: "/api/uploads/",
+  });
 
   // Swagger設定
   const config = new DocumentBuilder()
