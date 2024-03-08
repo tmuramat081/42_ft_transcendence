@@ -55,7 +55,7 @@
     "rxjs": "^7.8.1",
     "socket.io": "^4.7.2",
     "speakeasy": "^2.0.0",
-    "typeorm": "^0.3.19",
+    "typeorm": "^0.3.20",
     "uuid": "^9.0.1"
   },
   "devDependencies": {
