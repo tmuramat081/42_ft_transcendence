@@ -5,7 +5,7 @@ WORKDIR /frontend
 COPY . .
 
 RUN npm install -g next
-RUN npm install typeorm
+# RUN npm install typeorm
 RUN npm install
 
 EXPOSE 3000
