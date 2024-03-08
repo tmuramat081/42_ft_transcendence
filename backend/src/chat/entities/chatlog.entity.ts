@@ -1,6 +1,4 @@
 import { Entity, PrimaryGeneratedColumn, Column } from 'typeorm';
-// import { User } from '../../users/entities/user.entity';
-// import { Room } from './room.entity';
 
 @Entity()
 export class ChatLog {
