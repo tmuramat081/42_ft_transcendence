@@ -10,7 +10,7 @@ import { Logger } from '@nestjs/common';
 import { Server, Socket } from 'socket.io';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { ChatLog } from './entities/chatlog.entity';
+import { ChatLog } from './entities/chatLog.entity';
 import { Room } from './entities/room.entity';
 import { User } from '../users/entities/user.entity';
 import { DmLog } from './entities/dmLog.entity';
