@@ -16,6 +16,7 @@
     ]
   },
   "devDependencies": {
+    "@types/node": "^20.11.25",
     "@typescript-eslint/eslint-plugin": "^6.19.1",
     "@typescript-eslint/parser": "^6.19.1",
     "eslint": "^8.56.0",
@@ -28,7 +29,9 @@
     "prettier": "^3.2.4"
   },
   "dependencies": {
+    "pg": "^8.11.3",
     "react-router-dom": "^6.22.1",
+    "reflect-metadata": "^0.2.1",
     "typeorm": "^0.3.20"
   }
 }
