@@ -5,6 +5,7 @@ import { AccessControlProvider } from '@/providers/useAccessControl';
 import GlobalHeader from '@/components/common/header/globalHeader';
 import GlobalThemeProvider from '@/providers/globalThemeProvider';
 import GlobalFooter from '@/components/common/footer/globalFooter';
+import { WebSocketProvider } from '@/providers/webSocketProvider';
 
 export const metadata: Metadata = {
   title: 'ft_transcendence',
@@ -17,13 +18,15 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <GlobalThemeProvider>
         <LoginUserProvider>
           <AccessControlProvider>
-            <html lang="en">
-              <body>
-                <GlobalHeader />
-                <main>{children}</main>
-                <GlobalFooter />
-              </body>
-            </html>
+            <WebSocketProvider>
+              <html lang="en">
+                <body>
+                  <GlobalHeader />
+                  <main>{children}</main>
+                  <GlobalFooter />
+                </body>
+              </html>
+            </WebSocketProvider>
           </AccessControlProvider>
         </LoginUserProvider>
       </GlobalThemeProvider>
