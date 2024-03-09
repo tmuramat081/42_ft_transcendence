@@ -1,3 +1,4 @@
+/* eslint-disable */
 import { Test, TestingModule } from '@nestjs/testing';
 import { UsersService } from './users.service';
 import { UsersController } from './users.controller';
@@ -9,28 +10,42 @@ import { PassportModule } from '@nestjs/passport';
 import { JwtStrategy } from './strategy/jwt.strategy';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
 import { JwtPayload } from './interfaces/jwt_payload';
-import { JwtService } from '@nestjs/jwt'
+import { JwtService } from '@nestjs/jwt';
 import { User } from './entities/user.entity';
-import { UserDto } from './dto/user.dto';
+import { SignUpUserDto, SignInUserDto } from './dto/user.dto';
 import { ConfigModule, ConfigService } from '@nestjs/config';
-import * as dotenv from 'dotenv'; 
+import * as dotenv from 'dotenv';
 import * as Joi from 'joi';
-import { Column, CreateDateColumn, DeleteDateColumn, Entity, OneToMany, PrimaryGeneratedColumn, Timestamp, Unique } from "typeorm";
+import {
+  Column,
+  CreateDateColumn,
+  DeleteDateColumn,
+  Entity,
+  OneToMany,
+  PrimaryGeneratedColumn,
+  Timestamp,
+  Unique,
+} from 'typeorm';
 import { Response } from 'express';
-
+import * as bcrypt from 'bcrypt';
 
 dotenv.config();
 const mockUser1: User = {
   userId: 1,
-  userName: "test",
-  email: "test@test",
-  password: "test",
-  icon: "",
+  userName: 'test',
+  email: 'test@test',
+  password: 'test',
+  icon: '',
   createdAt: new Date('2023-01-01T00:00:00Z'),
   deletedAt: new Date('2023-01-01T00:00:00Z'),
-  name42: "",
+  name42: '',
   twoFactorAuth: false,
-  twoFactorAuthSecret: "",
+  twoFactorAuthSecret: '',
+  gameRooms: [],
+  matchResults: [],
+  gameEntries: [],
+  matchesAsPlayer1: [],
+  matchesAsPlayer2: [],
 };
 
 // serviceをモックする
@@ -41,6 +56,7 @@ const mockUsersService = () => ({
   findOne: jest.fn(),
   findOneByName: jest.fn(),
   currentUser: jest.fn(),
+  generateJwt: jest.fn(),
 });
 
 dotenv.config();
@@ -76,7 +92,7 @@ describe('UsersController', () => {
             username: config.get<string>('POSTGRESS_USER'),
             password: config.get<string>('POSTGRESS_PASSWORD'),
             database: config.get<string>('POSTGRESS_DB'),
-            entities: [User],
+            entities: [__dirname + '/../**/*.entity.{js,ts}'],
             synchronize: true,
           }),
         }),
@@ -94,7 +110,12 @@ describe('UsersController', () => {
         }),
       ],
       controllers: [UsersController],
-      providers: [UserRepository, JwtStrategy, JwtAuthGuard, { provide: UsersService, useFactory: mockUsersService }],
+      providers: [
+        UserRepository,
+        JwtStrategy,
+        JwtAuthGuard,
+        { provide: UsersService, useFactory: mockUsersService },
+      ],
       exports: [JwtStrategy, JwtAuthGuard],
     }).compile();
 
@@ -108,14 +129,19 @@ describe('UsersController', () => {
 
   describe('signUp', () => {
     it('should return a jwt token', async () => {
-      const result = 'testToken';
+      const resultToken = 'testToken';
+      const result: User = mockUser1;
+
       const userDto = {
         userId: 1,
-        userName: 'testUser',
-        email: 'test@test.com',
-        password: 'testPassword',
-        passwordConfirm: 'testPassword',
+        userName: mockUser1.userName,
+        email: mockUser1.email,
+        password: mockUser1.password,
+        passwordConfirm: mockUser1.password,
       };
+
+      const salt = await bcrypt.genSalt();
+      result.password = await bcrypt.hash(result.password, salt);
 
       const mockResponse = {
         status: jest.fn().mockReturnThis(),
@@ -126,14 +152,19 @@ describe('UsersController', () => {
       } as unknown as Response;
 
       jest.spyOn(service, 'signUp').mockImplementation(async () => result);
+      jest.spyOn(service, 'generateJwt').mockImplementation(async () => resultToken);
 
-      expect(await controller.SignUp(userDto, mockResponse)).toBe("{\"accessToken\":\"testToken\"}");
-    }); 
-  }); 
+      //console.log(await controller.SignUp(userDto, mockResponse));
+
+      expect(await controller.SignUp(userDto, mockResponse)).toBe('{"accessToken":"testToken"}');
+    });
+  });
 
   describe('signIn', () => {
     it('should return a jwt token', async () => {
-      const result = 'testToken';
+      const resultToken = 'testToken';
+      const result: User = mockUser1;
+
       const userDto = {
         userId: 1,
         userName: 'testUser',
@@ -151,15 +182,16 @@ describe('UsersController', () => {
       } as unknown as Response;
 
       jest.spyOn(service, 'signIn').mockImplementation(async () => result);
+      jest.spyOn(service, 'generateJwt').mockImplementation(async () => resultToken);
 
-      expect(await controller.SignIn(userDto, mockResponse)).toBe("{\"accessToken\":\"testToken\"}");
-    }); 
-  }); 
+      expect(await controller.SignIn(userDto, mockResponse)).toBe('{"status":"SUCCESS"}');
+    });
+  });
 
   describe('currentUser', () => {
     it('should return a user', async () => {
       const expected = mockUser1;
-      
+
       jest.spyOn(service, 'currentUser').mockResolvedValue(expected);
 
       const mockRequest = {
@@ -172,20 +204,20 @@ describe('UsersController', () => {
         },
       };
 
-      const result = await controller.currentUser(mockRequest);
+      const result = await controller.CurrentUser(mockRequest);
       //const {password, ...expected2} = expected;
 
-
-      expect(result).toEqual("{\"user\":{\"userId\":1,\"userName\":\"test\",\"email\":\"test@test\",\"passwordConfirm\":\"test\"}}");
+      expect(result).toEqual(
+        '{"user":{"userId":1,"userName":"test","email":"test@test","twoFactorAuthNow":false}}',
+      );
     });
   });
-
 
   describe('findAll', () => {
     it('should return an array of users', async () => {
       const result = [mockUser1];
       jest.spyOn(service, 'findAll').mockResolvedValue(result);
       expect(await controller.findAll()).toBe(result);
-    }); 
+    });
   });
 });

@@ -2,8 +2,8 @@ import React from 'react';
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Pong game demonstration',
-  description: 'demonstration for game design.',
+  title: 'Room list',
+  description: 'Game Room list.',
 };
 
 export default function Layout({ children }: { children: React.ReactNode }) {

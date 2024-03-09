@@ -11,7 +11,7 @@ module.exports = {
     'plugin:@typescript-eslint/recommended', // 推奨ルール
     'plugin:@typescript-eslint/recommended-requiring-type-checking', // 型情報のルール
     'plugin:react/recommended', // React用ルール
-    'prettier', // Prettierとの競合を防ぐ
+    'plugin:prettier/recommended', // Prettierとの競合を防ぐ
   ],
   root: true,
   env: {
@@ -27,5 +27,15 @@ module.exports = {
     semi: ['error', 'always'], // セミコロン必須
     quotes: ['error', 'single'], // シングルクォートのみ許可
     'react/react-in-jsx-scope': 'off',
+    "@typescript-eslint/no-unused-vars": [
+      "error",
+      {
+        "argsIgnorePattern": "^_",
+        "varsIgnorePattern": "^_",
+        "caughtErrorsIgnorePattern": "^_",
+        "destructuredArrayIgnorePattern": "^_",
+        "ignoreRestSiblings": true
+      }
+    ],
   },
 };
