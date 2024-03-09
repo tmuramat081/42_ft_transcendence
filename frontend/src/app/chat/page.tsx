@@ -1,69 +1,95 @@
 /* eslint-disable */
-"use client";
-import React, { useState, useEffect, useCallback, use } from "react";
-import io from "socket.io-client";
-import ChatLayout from "./layout";
-import "./ChatPage.css"; // スタイルシートの追加
-import Image from "next/image";
+'use client';
+import React, { useState, useEffect, useCallback } from 'react';
+import io from 'socket.io-client';
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import ChatLayout from './layout';
+import './ChatPage.css';
+import Image from 'next/image';
+import { Chat } from '@mui/icons-material';
 
-const socket = io("http://localhost:3001");
+interface UserInfo {
+  ID: string;
+  name: string;
+  icon: string;
+}
+
+interface ChatMessage {
+  user: string;
+  photo: string;
+  text: string;
+  timestamp: string;
+}
+
+interface Room {
+  id: number;
+  roomName: string;
+  roomParticipants: UserInfo[];
+}
+
+const socket = io('http://localhost:3001');
 
 const ChatPage = () => {
-  const [message, setMessage] = useState("");
-  const [roomID, setRoomID] = useState("");
-  const [newRoomName, setNewRoomName] = useState("");
-  const [roomList, setRoomList] = useState<{ [key: string]: string }>({});
+  const [message, setMessage] = useState('');
+  const [roomID, setRoomID] = useState('');
+  const [newRoomName, setNewRoomName] = useState('');
+  const [roomList, setRoomList] = useState<string[]>([]);
   const [selectedRoom, setSelectedRoom] = useState<string | null>(null);
-  const [sender, setSender] = useState<{
-    ID: string;
-    name: string;
-    icon: string;
-  }>({
-    ID: "",
-    name: "",
-    icon: "",
+  const [sender, setSender] = useState<UserInfo>({
+    ID: '',
+    name: '',
+    icon: '',
   });
-  const [roomchatLogs, setRoomChatLogs] = useState<{
-    [roomId: string]: {
-      user: string;
-      photo: string;
-      text: string;
-      timestamp: string;
-    }[];
-  }>({});
+  const [roomchatLogs, setRoomChatLogs] = useState<{ [roomId: string]: ChatMessage[] }>({});
   const [isDeleteButtonVisible, setDeleteButtonVisible] = useState(false);
+  const [participants, setParticipants] = useState<UserInfo[]>([]);
+  const [onlineUsers, setOnlineUsers] = useState<UserInfo[]>([]);
+  const [recipient, setRecipient] = useState<UserInfo>({
+    ID: '',
+    name: '',
+    icon: '',
+  });
+
+  // Next.jsのuseRouterフックを使ってルーターの情報にアクセス
+  const router = useRouter();
 
   // コンポーネントがマウントされたときのみ接続
   useEffect(() => {
-    const socket = io("http://localhost:3001");
+    const socket = io('http://localhost:3001');
 
-    socket.on("connect", () => {
-      console.log("connection ID : ", socket.id);
-      setSender({
-        // ここでログイン情報を取得して設定する
+    socket.on('connect', () => {
+      console.log('connection ID : ', socket.id);
+      // ここでログイン情報を取得して設定する
+      const senderData = {
         ID: socket.id,
-        name: "kshima",
-        icon: "https://cdn.intra.42.fr/users/b9712d0534942eacfb43c2b0b031ae76/kshima.jpg",
-      });
-      socket.emit("getRoomList", socket.id);
+        name: 'Bob',
+        icon: 'https://pics.prcm.jp/db3b34efef8a0/86032013/jpeg/86032013.jpeg',
+      };
+      setSender(senderData);
+      console.log('sender:', senderData);
+      socket.emit('getRoomList', senderData);
+      socket.emit('getOnlineUsers', senderData);
+    });
+
+    socket.on('roomList', (rooms: Room[]) => {
+      console.log('Received roomList from server:', rooms);
+      const roomNames = rooms.map((room) => room.roomName);
+      setRoomList(roomNames);
+    });
+
+    socket.on('onlineUsers', (users: UserInfo[]) => {
+      console.log('Received online users from server:', users);
+      setOnlineUsers(users);
     });
 
     // コンポーネントがアンマウントされるときに切断
     return () => {
       socket.disconnect();
+      socket.off('roomList');
+      socket.off('onlineUsers');
     };
   }, []);
-
-  useEffect(() => {
-    socket.on("roomList", (rooms) => {
-      console.log("Received roomList from server:", rooms);
-      setRoomList(rooms);
-    });
-
-    return () => {
-      socket.off("roomList");
-    };
-  }, [socket]);
 
   useEffect(() => {
     socket.on('roomError', (error) => {
@@ -76,86 +102,138 @@ const ChatPage = () => {
   }, []);
 
   useEffect(() => {
-    socket.on("update", ({ roomID, sender, message, time }): void => {
-      console.log("recieved : ", roomID, sender.ID, message);
+    socket.on('update', (chatMessage: ChatMessage) => {
+      console.log('Received chatLog from server:', chatMessage);
       setRoomChatLogs((prevRoomChatLogs) => ({
         ...prevRoomChatLogs,
         [roomID]: [
           ...(prevRoomChatLogs[roomID] || []),
           {
-            user: sender.ID,
-            photo: sender.icon,
-            text: message,
-            timestamp: time,
+            user: chatMessage.user,
+            photo: chatMessage.photo,
+            text: chatMessage.text,
+            timestamp: chatMessage.timestamp,
           },
         ],
       }));
     });
 
     return () => {
-      socket.off("update");
+      socket.off('update');
+    };
+  }, [roomID]);
+
+  useEffect(() => {
+    socket.on('roomParticipants', (roomParticipants: UserInfo[]) => {
+      console.log('Received roomParticipants from server:', roomParticipants);
+      setParticipants(roomParticipants);
+      console.log('participants:', participants);
+    });
+
+    return () => {
+      socket.off('roomParticipants');
     };
   }, []);
 
-  // useEffect(() => {
-  //   socket.on('chatLogs', ({ roomID, logs }) => {
-  //     console.log(`Received chatLogs for room ${roomID}:`, logs);
-  //     setRoomChatLogs((prevRoomChatLogs) => ({
-  //       ...prevRoomChatLogs,
-  //       [roomID]: logs,
-  //     }));
-  //   });
-  
-  //   return () => {
-  //     socket.off('chatLogs');
-  //   };
-  // }, []);
-  
-
   const onClickSubmit = useCallback(() => {
-    socket.emit("talk", { roomID, sender, message });
-    setMessage("");
-  }, [roomID, sender, message]);
+    console.log(
+      `${(sender as UserInfo).name} ${(sender as UserInfo).ID} submitting message, '${message}'`,
+    );
+    socket.emit('talk', { selectedRoom, sender: { ...sender, icon: sender.icon }, message });
+    setMessage('');
+  }, [selectedRoom, sender, message]);
 
   const onClickCreateRoom = useCallback(() => {
-    socket.emit("createRoom", { sender, roomID: newRoomName });
-    setNewRoomName("");
-  }, [sender, newRoomName, socket]);
+    console.log(`${(sender as UserInfo).name} create new room: ${newRoomName}`);
+    socket.emit('createRoom', { sender, roomName: newRoomName });
+    setNewRoomName('');
+  }, [sender, newRoomName]);
 
   const handleRoomChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
     const newRoomID = event.target.value;
-    console.log("newRoomID:", newRoomID); // debug
+    //newRoomIDがnullだった場合の処理
+    if (newRoomID === '') {
+      console.log('newRoomID is null');
+      setRoomID('');
+      setMessage('');
+      setDeleteButtonVisible(false);
+      socket.emit('leaveRoom', { sender, room: selectedRoom });
+      return;
+    }
+    console.log('newRoomID', newRoomID);
+    console.log(`${(sender as UserInfo).name} joined room: ${roomList[Number(newRoomID)]}`);
     setRoomID(newRoomID);
-    setSelectedRoom(roomList[newRoomID]);
-    setMessage(""); // ルームが変更されたら新しいメッセージもリセット
+    setSelectedRoom(roomList[Number(newRoomID)]);
+    setMessage(''); // ルームが変更されたら新しいメッセージもリセット
     setDeleteButtonVisible(true);
-    socket.emit("joinRoom", { sender, room: roomList[newRoomID] });
+    socket.emit('joinRoom', { sender, room: roomList[Number(newRoomID)] });
   };
+
+  const onClickLeaveRoom = useCallback(() => {
+    if (selectedRoom) {
+      console.log(`${sender.name} left Room: ${selectedRoom}`);
+      socket.emit('leaveRoom', { sender, room: selectedRoom });
+      setSelectedRoom(null);
+      setDeleteButtonVisible(false); // ボタンが押されたら非表示にする
+      setMessage('');
+      setRoomID('');
+      // チャットログをクリアする
+      const updatedLogs = { ...roomchatLogs };
+      delete updatedLogs[selectedRoom];
+      setRoomChatLogs(updatedLogs);
+    }
+  }, [selectedRoom, roomchatLogs, sender]);
 
   const onClickDeleteRoom = useCallback(() => {
     if (selectedRoom) {
-      socket.emit('deleteRoom', {sender, room: selectedRoom});
+      console.log(`${(sender as UserInfo).name} deleted Room: ${selectedRoom}`);
+      socket.emit('deleteRoom', { sender, room: selectedRoom });
       setSelectedRoom(null);
       setDeleteButtonVisible(false); // ボタンが押されたら非表示にする
       // チャットログをクリアする
-      setRoomChatLogs((prevRoomChatLogs) => {
-        const updatedLogs = { ...prevRoomChatLogs };
-        delete updatedLogs[selectedRoom];
-        return updatedLogs;
-      });
+      const updatedLogs = { ...roomchatLogs };
+      delete updatedLogs[selectedRoom];
+      setRoomChatLogs(updatedLogs);
       // ルームリストから削除する
-      const newRoomList = Object.fromEntries(
-        Object.entries(roomList).filter(([key]) => key !== selectedRoom)
-      );
+      const newRoomList = roomList.filter((room) => room !== selectedRoom);
       setRoomList(newRoomList);
-
     }
-  }, [selectedRoom, roomList]);
+  }, [selectedRoom, roomList, sender]);
+
+  // パラメータを含むリンクを生成する
+  const handleLinkClick = (recipient: UserInfo) => {
+    socket.emit('startDM', { sender, recipient });
+    const href = `/chat/${recipient}`;
+    const as = `/chat/${recipient.name}`;
+    router.push(href);
+    router.push(as);
+  };
 
   return (
     <div className="chat-container">
       <h1>Chat Page</h1>
-
+      {/* ログイン中の参加者リスト */}
+      <div className="onlineusers">
+        <h4>Logined friends</h4>
+        <div className="onlineusers-icons">
+          {onlineUsers.map((onlineUser, index) => (
+            <div
+              key={index}
+              className="onlineuser"
+            >
+              <img
+                src={onlineUser.icon}
+                alt={onlineUser.name}
+                className="onlineusers-icon"
+                width={50}
+                height={50}
+              />
+              <div className="onlineuser-name">{onlineUser.name}</div>
+              <button onClick={() => handleLinkClick(onlineUser)}>Send DM</button>
+            </div>
+          ))}
+        </div>
+      </div>
       {/* 新しいチャットグループの作成UI */}
       <div>
         <input
@@ -166,7 +244,6 @@ const ChatPage = () => {
         />
         <button onClick={onClickCreateRoom}>Create Room</button>
       </div>
-
       {/* チャットグループの選択UI */}
       <div className="chat-room-selector">
         <select
@@ -175,27 +252,48 @@ const ChatPage = () => {
           }}
           value={roomID}
         >
-          <option value="">---</option>
+          <option value="">Select Room</option>
           {Object.entries(roomList).map(([roomId, roomName]) => (
-            <option key={`room_${roomId}`} value={roomId}>
+            <option
+              key={`room_${roomId}`}
+              value={roomId}
+            >
               {roomName}
             </option>
           ))}
         </select>
       </div>
-
+      {/* ROOM参加者リスト */}
+      <div className="participants">
+        <h4>Room friends</h4>
+        <div className="participant-icons">
+          {participants.map((participant, index) => (
+            <div
+              key={index}
+              className="participant"
+            >
+              <Image
+                src={participant.icon}
+                alt={participant.name}
+                className="participant-icon"
+                width={50}
+                height={50}
+              />
+              <div className="participant-name">{participant.name}</div>
+            </div>
+          ))}
+        </div>
+      </div>
+      {/* Leave Room ボタン */}
+      {isDeleteButtonVisible && <button onClick={onClickLeaveRoom}>Leave Room</button>}
       {/* Delete Room ボタン */}
-      {isDeleteButtonVisible && (
-        <button onClick={onClickDeleteRoom}>Delete Room</button>
-      )}
-
+      {isDeleteButtonVisible && <button onClick={onClickDeleteRoom}>Delete Room</button>}
+      {/* チャットログ */}
       <div className="chat-messages">
         {roomchatLogs[roomID]?.map((message, index) => (
           <div
             key={index}
-            className={`message-bubble ${
-              message.user === sender.ID ? "self" : "other"
-            }`}
+            className={`message-bubble ${message.user === sender.ID ? 'self' : 'other'}`}
           >
             <Image
               src={message.photo}
@@ -211,7 +309,7 @@ const ChatPage = () => {
           </div>
         ))}
       </div>
-
+      {/* チャット入力欄 */}
       <div className="chat-input">
         <input
           id="message"
