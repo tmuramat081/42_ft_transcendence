@@ -7,7 +7,6 @@ import { useRouter } from 'next/navigation';
 import ChatLayout from './layout';
 import './ChatPage.css';
 import Image from 'next/image';
-import { Room } from '../../../../backend/src/chat/entities/room.entity';
 import { Chat } from '@mui/icons-material';
 
 interface UserInfo {
@@ -21,6 +20,12 @@ interface ChatMessage {
   photo: string;
   text: string;
   timestamp: string;
+}
+
+interface Room {
+  id: number;
+  roomName: string;
+  roomParticipants: UserInfo[];
 }
 
 const socket = io('http://localhost:3001');
