@@ -1,13 +1,12 @@
 'use client';
 import { SOCKET_EVENTS } from '@/constants/socket.constant';
 import { useEffect, useState } from 'react';
-import { io } from 'socket.io-client';
-
-const WEBSOCKET_URL = 'http://localhost:3001';
+import { Socket } from 'socket.io-client';
 
 type Props = {
   roomId: number;
   userId: number;
+  socket: Socket | null;
 };
 
 type UseGameConnectionReturnType = {
@@ -16,7 +15,11 @@ type UseGameConnectionReturnType = {
   logs: string[]; // 接続ログ
 };
 
-export const UseGameConnection = ({ roomId, userId }: Props): UseGameConnectionReturnType => {
+export const UseGameConnection = ({
+  roomId,
+  userId,
+  socket,
+}: Props): UseGameConnectionReturnType => {
   // ゲーム開始フラグ
   const [gameStarted, setGameStarted] = useState(false);
   // 接続ユーザー名
@@ -32,8 +35,7 @@ export const UseGameConnection = ({ roomId, userId }: Props): UseGameConnectionR
   };
 
   useEffect(() => {
-    // TODO: 外部から受け渡せるようにする
-    const socket = io(WEBSOCKET_URL);
+    if (!socket) return;
 
     // サーバー接続・ルーム入室
     socket.on(SOCKET_EVENTS.COMMON.CONNECT, () => {
