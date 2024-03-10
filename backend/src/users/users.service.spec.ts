@@ -39,6 +39,8 @@ const mockUser1: User = {
   name42: '',
   twoFactorAuth: false,
   twoFactorAuthSecret: '',
+  friends: [],
+  blocked: [],
   gameRooms: [],
   matchResults: [],
   gameEntries: [],
@@ -65,7 +67,8 @@ const mockUserRepository = () => ({
   signIn: jest.fn(),
   findAll: jest.fn(),
   findOne: jest.fn().mockResolvedValue(mockUser1), // モックの戻り値を設定
-  findOneByName: jest.fn(),
+  findOneByName: jest.fn(), 
+  sign: jest.fn(),
 });
 
 describe('UsersService', () => {
@@ -166,6 +169,7 @@ describe('UsersService', () => {
         passwordConfirm: mockUser1.password,
       };
 
+      //mockResolvedValueは主に非同期関数のテストに使用される
       // signupメソッドのモックを設定（もし必要な場合）
       jest.spyOn(repository, 'createUser').mockResolvedValue(expected);
 
@@ -180,6 +184,21 @@ describe('UsersService', () => {
 
       expect(result).toEqual(expected);
     });
+
+    // userDtoの情報が不足している場合
+
+    it("should return null", async() => {
+      const dto: SignUpUserDto = {
+        userName: "",
+        email: "",
+        password: "",
+        passwordConfirm: "",
+      };
+
+      const result = await service.signUp(dto);
+
+      expect(result).toEqual(null);
+    })
   });
 
   describe('signIn', () => {
@@ -205,6 +224,33 @@ describe('UsersService', () => {
       // expect(payload).toEqual({ userId: expected.userId, userName: expected.userName, email: expected.email });
 
       expect(result).toEqual(expected);
+    }); 
+
+    it("should return null", async() => {
+      const dto: SignInUserDto = {
+        userName: "",
+        password: "",
+      };
+
+      const result = await service.signIn(dto);
+      
+      expect(result).toEqual(null);
+    });
+  });
+
+  describe('generteJwt', () => {
+    it('should return a jwt token', async () => {
+      const user: User = mockUser1;
+      //jest.spyOn(jwtService, 'sign').mockResolvedValue('testToken');
+
+      // mockImplementationはより汎用的で、モック関数の挙動を細かく制御したい場合に使用
+      jest.spyOn(jwtService, 'sign').mockImplementation(() => 'testToken');
+
+
+      const result = await service.generateJwt(user);
+
+  
+      expect(result).toEqual('testToken');
     });
   });
 
@@ -230,6 +276,9 @@ describe('UsersService', () => {
       expect(result).toEqual(expected2);
     });
   });
+
+  // describe('updateUser', () => {
+  // });
 
   describe('findAll', () => {
     it('should return an array of users', async () => {

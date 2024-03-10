@@ -53,6 +53,9 @@ export class UsersService {
   // }
 
   async signUp(userData: SignUpUserDto): Promise<User> {
+    if (!userData.email || !userData.password || !userData.userName) {
+      return null;
+    }
     const user: User = new User({});
     user.userName = userData.userName;
     user.email = userData.email;
@@ -66,6 +69,7 @@ export class UsersService {
       //return res.status(400).json({ message: 'Passwords do not match' });
       return resultUser;
     } else {
+      console.log('error')
       return null;
       //return await this.userRepository.createUser(user);
     }
@@ -154,6 +158,9 @@ export class UsersService {
   // }
 
   async signIn(userData: SignInUserDto): Promise<User> {
+    if (!userData.userName || !userData.password) {
+      return null;
+    }
     // ユーザーの検索
     //const user: User = await this.userRepository.findOneByName(userData.userName);
     const user: User = await this.userRepository.findOne({
@@ -205,6 +212,7 @@ export class UsersService {
       email: user.email,
       twoFactorAuth: false,
     };
+    // await?
     const accessToken: string = this.jwtService.sign(payload);
     return accessToken;
   }

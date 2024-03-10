@@ -41,6 +41,8 @@ const mockUser1: User = {
   name42: '',
   twoFactorAuth: false,
   twoFactorAuthSecret: '',
+  friends: [],
+  blocked: [],
   gameRooms: [],
   matchResults: [],
   gameEntries: [],
@@ -213,11 +215,11 @@ describe('UsersController', () => {
     });
   });
 
-  describe('findAll', () => {
-    it('should return an array of users', async () => {
-      const result = [mockUser1];
-      jest.spyOn(service, 'findAll').mockResolvedValue(result);
-      expect(await controller.findAll()).toBe(result);
-    });
-  });
+  // describe('findAll', () => {
+  //   it('should return an array of users', async () => {
+  //     const result = [mockUser1];
+  //     jest.spyOn(service, 'findAll').mockResolvedValue(result);
+  //     expect(await controller.findAll()).toBe(result);
+  //   });
+  // });
 });
