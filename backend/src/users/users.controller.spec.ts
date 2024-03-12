@@ -65,6 +65,7 @@ dotenv.config();
 describe('UsersController', () => {
   let controller: UsersController;
   let service: UsersService;
+  let repository: UserRepository;
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
@@ -123,6 +124,7 @@ describe('UsersController', () => {
 
     controller = module.get<UsersController>(UsersController);
     service = module.get<UsersService>(UsersService);
+    repository = module.get<UserRepository>(UserRepository);
   });
 
   it('should be defined', () => {
@@ -194,7 +196,7 @@ describe('UsersController', () => {
     it('should return a user', async () => {
       const expected = mockUser1;
 
-      jest.spyOn(service, 'currentUser').mockResolvedValue(expected);
+      //jest.spyOn(service, 'currentUser').mockResolvedValue(expected);
 
       const mockRequest = {
         user: {
@@ -205,6 +207,9 @@ describe('UsersController', () => {
           passwordConfirm: mockUser1.password,
         },
       };
+
+      // serviceを使うようにする?
+      jest.spyOn(repository, 'findOneByName').mockImplementation(async () => mockUser1);
 
       const result = await controller.CurrentUser(mockRequest);
       //const {password, ...expected2} = expected;

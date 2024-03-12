@@ -217,18 +217,19 @@ export class UsersService {
     return accessToken;
   }
 
+  // not used
   // Partial<User> は User の一部のプロパティを表す
-  async currentUser(userData: SignUpUserDto): Promise<Partial<User>> {
-    // ユーザーの検索
-    //const user: User = await this.userRepository.findOneByName(userData.userName);
-    const user: User = await this.userRepository.findOne({
-      where: { userName: userData.userName },
-    });
+  // async currentUser(userData: SignUpUserDto): Promise<Partial<User>> {
+  //   // ユーザーの検索
+  //   //const user: User = await this.userRepository.findOneByName(userData.userName);
+  //   const user: User = await this.userRepository.findOne({
+  //     where: { userName: userData.userName },
+  //   });
 
-    const { password, ...result } = user;
-    return result;
-    //return user
-  }
+  //   const { password, ...result } = user;
+  //   return result;
+  //   //return user
+  // }
 
   // async updateUser(userName: string, updateUser: UpdateUserDto): Promise<string> {
   //     const user = await this.userRepository.findOne({ where : { userName: userName }});

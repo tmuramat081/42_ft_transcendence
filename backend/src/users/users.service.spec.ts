@@ -12,7 +12,7 @@ import { JwtAuthGuard } from './guards/jwt-auth.guard';
 import { JwtPayload } from './interfaces/jwt_payload';
 import { JwtService } from '@nestjs/jwt';
 import { User } from './entities/user.entity';
-import { SignUpUserDto, SignInUserDto } from './dto/user.dto';
+import { SignUpUserDto, SignInUserDto, UpdateUserDto } from './dto/user.dto';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import * as dotenv from 'dotenv';
 import * as Joi from 'joi';
@@ -69,6 +69,7 @@ const mockUserRepository = () => ({
   findOne: jest.fn().mockResolvedValue(mockUser1), // モックの戻り値を設定
   findOneByName: jest.fn(), 
   sign: jest.fn(),
+  saveUser: jest.fn(),
 });
 
 describe('UsersService', () => {
@@ -249,36 +250,141 @@ describe('UsersService', () => {
 
       const result = await service.generateJwt(user);
 
-  
       expect(result).toEqual('testToken');
     });
   });
 
-  describe('currentUser', () => {
-    it('should return a user', async () => {
-      const expected = mockUser1;
+  // not used
+  // describe('currentUser', () => {
+  //   it('should return a user', async () => {
+  //     const expected = mockUser1;
 
-      const dto: SignUpUserDto = {
-        userName: mockUser1.userName,
-        email: mockUser1.email,
-        password: mockUser1.password,
-        passwordConfirm: mockUser1.password,
-      };
+  //     const dto: SignUpUserDto = {
+  //       userName: mockUser1.userName,
+  //       email: mockUser1.email,
+  //       password: mockUser1.password,
+  //       passwordConfirm: mockUser1.password,
+  //     };
 
-      jest.spyOn(repository, 'findOneByName').mockResolvedValue(expected);
+  //     jest.spyOn(repository, 'findOneByName').mockResolvedValue(expected);
 
-      // signupメソッドのモックを設定（もし必要な場合）
-      const result = await service.currentUser(dto);
+  //     // signupメソッドのモックを設定（もし必要な場合）
+  //     const result = await service.currentUser(dto);
 
-      const { password, ...expected2 } = expected;
+  //     const { password, ...expected2 } = expected;
 
-      //expect(result).toEqual(expected);
-      expect(result).toEqual(expected2);
-    });
-  });
+  //     //expect(result).toEqual(expected);
+  //     expect(result).toEqual(expected2);
+  //   });
+  // });
 
   // describe('updateUser', () => {
   // });
+
+  //?
+  describe('updateUser', () => {
+    it('update user success', async () => {
+      const expected = mockUser1;
+
+      expected.userName = 'test2';
+      expected.email = 'test2@test2.com';
+
+      const dto: UpdateUserDto = {
+        userName: expected.userName,
+        email: expected.email,
+        password: mockUser1.password,
+        newPassword: '',
+        newPasswordConfirm: '',
+      };
+
+      jest.spyOn(repository, 'findOne').mockResolvedValue(mockUser1);
+      jest.spyOn(repository, 'saveUser').mockResolvedValue(expected);
+
+      const result = await service.updateUser(mockUser1, dto);
+
+      // console.log(result);
+      // console.log(expected);
+
+      expect(result).toEqual(expected);
+    });
+
+    // パスワードが間違っている場合
+
+    // ユーザーが存在しない場合
+
+    // パスワードを更新する場合
+
+    // パスワードを更新する場合（新しいパスワードが一致しない場合）
+  })
+
+  describe('updateUserIcon', () => {
+    it('update user icon success', async () => {
+      //console.log(mockUser1);
+      const expected = mockUser1;
+
+      // 画像ファイル名を設定
+      // test用
+      //expected.icon = 'photo-1584949091598-c31daaaa4aa9442a34a2-a684-4135-9a24-b8b62f82e7ce.jpeg';
+
+      jest.spyOn(repository, 'findOne').mockResolvedValue(mockUser1);
+      jest.spyOn(repository, 'saveUser').mockResolvedValue(expected);
+
+      // fileのモックを設定（もし必要な場合）
+      const file = {
+        filename: 'photo-1584949091598-c31daaaa4aa9442a34a2-a684-4135-9a24-b8b62f82e7ce.jpeg',
+      };
+
+      const result = await service.updateUserIcon(mockUser1.userName, file);
+
+      //console.log(result);
+
+      expect(result).toEqual(expected);
+    });
+
+    // ユーザーが存在しない場合
+
+    // iconが存在しない場合
+
+  });
+
+  describe('getUserIcon', () => {
+  });
+
+  describe('updateUser2fa', () => {
+
+  });
+
+  describe('updateUser2faSecret', () => {
+
+  });
+
+  describe('validateUser42', () => {
+
+  });
+
+  describe('addFriend', () => {
+
+  });
+
+  describe('removeFriend', () => {
+
+  });
+
+  describe('getFriends', () => {
+
+  });
+
+  describe('blockUser', () => {
+
+  });
+
+  describe('unblockUser', () => {
+
+  });
+
+  describe('getBlockedUsers', () => {
+
+  });
 
   describe('findAll', () => {
     it('should return an array of users', async () => {
@@ -304,6 +410,10 @@ describe('UsersService', () => {
 
       expect(result).toEqual(expected);
     });
+  });
+
+  describe('findOneByName', () => {
+
   });
 
   // モックしない場合
