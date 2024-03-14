@@ -8,29 +8,11 @@ import './ChatPage.css';
 import Image from 'next/image';
 import { Chat } from '@mui/icons-material';
 import { useWebSocket } from '@/providers/webSocketProvider';
-
-interface UserInfo {
-  ID: string;
-  name: string;
-  icon: string;
-}
-
-interface ChatMessage {
-  user: string;
-  photo: string;
-  text: string;
-  timestamp: string;
-}
-
-interface Room {
-  id: number;
-  roomName: string;
-  roomParticipants: UserInfo[];
-}
+import { UserInfo, ChatMessage, Room } from '@/types/chat/chat';
 
 const socket = io('http://localhost:3001');
 
-const ChatPage = () => {
+export default function ChatPage() {
   const [message, setMessage] = useState('');
   const [roomID, setRoomID] = useState('');
   const [newRoomName, setNewRoomName] = useState('');
@@ -54,10 +36,12 @@ const ChatPage = () => {
   // Next.jsのuseRouterフックを使ってルーターの情報にアクセス
   const router = useRouter();
 
+  // ソケット情報
+  // const { socket } = useWebSocket();
+
   // コンポーネントがマウントされたときのみ接続
   useEffect(() => {
     const socket = io('http://localhost:3001');
-    // const { socket } = useWebSocket();
 
     socket.on('connect', () => {
       console.log('connection ID : ', socket.id);
@@ -323,6 +307,6 @@ const ChatPage = () => {
       </div>
     </div>
   );
-};
+}
 
-export default ChatPage;
+// export default ChatPage;

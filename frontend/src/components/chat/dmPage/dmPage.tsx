@@ -6,19 +6,7 @@ import io from 'socket.io-client';
 import './dmPage.css';
 import Image from 'next/image';
 import { Chat } from '@mui/icons-material';
-
-interface UserInfo {
-  ID: string;
-  name: string;
-  icon: string;
-}
-
-interface DirectMessage {
-  sender: string;
-  recipient: string;
-  text: string;
-  timestamp: string;
-}
+import { UserInfo, DirectMessage } from '@/types/chat/chat';
 
 const socket = io('http://localhost:3001');
 
@@ -43,7 +31,7 @@ const DMPage = ({ params }: { params: string }) => {
     socket.on('connect', () => {
       console.log('connection ID : ', socket.id);
       socket.emit('getCurrentUser');
-      socket.emit('getRecipient', params.recipient);
+      socket.emit('getRecipient', params);
     });
 
     socket.on('currentUser', (user: UserInfo) => {
