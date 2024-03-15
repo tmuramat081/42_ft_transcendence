@@ -9,6 +9,7 @@ import Image from 'next/image';
 import { Chat } from '@mui/icons-material';
 import { useWebSocket } from '@/providers/webSocketProvider';
 import { UserInfo, ChatMessage, Room } from '@/types/chat/chat';
+import { useAuth } from '@/providers/useAuth';
 
 const socket = io('http://localhost:3001');
 
@@ -39,13 +40,19 @@ export default function ChatPage() {
   // ソケット情報
   // const { socket } = useWebSocket();
 
+  const { getCurrentUser } = useAuth();
+
   // コンポーネントがマウントされたときのみ接続
   useEffect(() => {
     const socket = io('http://localhost:3001');
 
     socket.on('connect', () => {
       console.log('connection ID : ', socket.id);
+
       // ここでログイン情報を取得して設定する
+      const user = getCurrentUser();
+      console.log('user:', user);
+
       const senderData = {
         ID: socket.id,
         name: 'Bob',
@@ -175,6 +182,7 @@ export default function ChatPage() {
       socket.emit('deleteRoom', { sender, room: selectedRoom });
       setSelectedRoom(null);
       setDeleteButtonVisible(false); // ボタンが押されたら非表示にする
+      setParticipants([]);
       // チャットログをクリアする
       const updatedLogs = { ...roomchatLogs };
       delete updatedLogs[selectedRoom];
@@ -229,24 +237,44 @@ export default function ChatPage() {
         />
         <button onClick={onClickCreateRoom}>Create Room</button>
       </div>
-      {/* チャットグループの選択UI */}
-      <div className="chat-room-selector">
-        <select
-          onChange={(event) => {
-            handleRoomChange(event);
-          }}
-          value={roomID}
-        >
-          <option value="">Select Room</option>
-          {Object.entries(roomList).map(([roomId, roomName]) => (
-            <option
-              key={`room_${roomId}`}
-              value={roomId}
+      <div className="chat-room-selector-wrapper">
+        {/* チャットグループの選択UI */}
+        <div className="chat-room-selector">
+          <select
+            onChange={(event) => {
+              handleRoomChange(event);
+            }}
+            value={roomID}
+          >
+            <option value="">Select Room</option>
+            {Object.entries(roomList).map(([roomId, roomName]) => (
+              <option
+                key={`room_${roomId}`}
+                value={roomId}
+              >
+                {roomName}
+              </option>
+            ))}
+          </select>
+          {/* Leave Room ボタン */}
+          {isDeleteButtonVisible && (
+            <button
+              className="btn-small"
+              onClick={onClickLeaveRoom}
             >
-              {roomName}
-            </option>
-          ))}
-        </select>
+              Leave Room
+            </button>
+          )}
+          {/* Delete Room ボタン */}
+          {isDeleteButtonVisible && (
+            <button
+              className="btn-small"
+              onClick={onClickDeleteRoom}
+            >
+              Delete Room
+            </button>
+          )}
+        </div>
       </div>
       {/* ROOM参加者リスト */}
       <div className="participants">
@@ -269,12 +297,22 @@ export default function ChatPage() {
           ))}
         </div>
       </div>
-      {/* Leave Room ボタン */}
-      {isDeleteButtonVisible && <button onClick={onClickLeaveRoom}>Leave Room</button>}
-      {/* Delete Room ボタン */}
-      {isDeleteButtonVisible && <button onClick={onClickDeleteRoom}>Delete Room</button>}
+      {/* チャット入力欄 */}
+      <div className="chat-input">
+        <input
+          id="message"
+          type="text"
+          placeholder="Enter message"
+          value={message}
+          onChange={(event) => setMessage(event.target.value)}
+        />
+        <button onClick={onClickSubmit}>Send</button>
+      </div>
       {/* チャットログ */}
-      <div className="chat-messages">
+      <div
+        className="chat-messages"
+        style={{ overflowY: 'auto', maxHeight: '300px' }}
+      >
         {roomchatLogs[roomID]?.map((message, index) => (
           <div
             key={index}
@@ -294,19 +332,6 @@ export default function ChatPage() {
           </div>
         ))}
       </div>
-      {/* チャット入力欄 */}
-      <div className="chat-input">
-        <input
-          id="message"
-          type="text"
-          placeholder="Enter message"
-          value={message}
-          onChange={(event) => setMessage(event.target.value)}
-        />
-        <button onClick={onClickSubmit}>Send</button>
-      </div>
     </div>
   );
 }
-
-// export default ChatPage;

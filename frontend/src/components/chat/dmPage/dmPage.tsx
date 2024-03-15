@@ -112,7 +112,10 @@ const DMPage = ({ params }: { params: string }) => {
         <div className="recipient-name">{receiver?.name}</div>
       </div>
       {/* DM 履歴 */}
-      <div className="dm-messages">
+      <div
+        className="dm-messages"
+        style={{ overflowY: 'auto', maxHeight: '300px' }}
+      >
         {dmLogs.map((message, index) => (
           <div
             key={index}
