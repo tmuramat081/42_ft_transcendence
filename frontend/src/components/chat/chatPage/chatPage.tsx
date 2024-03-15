@@ -94,28 +94,6 @@ export default function ChatPage() {
   }, []);
 
   useEffect(() => {
-    socket.on('update', (chatMessage: ChatMessage) => {
-      console.log('Received chatLog from server:', chatMessage);
-      setRoomChatLogs((prevRoomChatLogs) => ({
-        ...prevRoomChatLogs,
-        [roomID]: [
-          ...(prevRoomChatLogs[roomID] || []),
-          {
-            user: chatMessage.user,
-            photo: chatMessage.photo,
-            text: chatMessage.text,
-            timestamp: chatMessage.timestamp,
-          },
-        ],
-      }));
-    });
-
-    return () => {
-      socket.off('update');
-    };
-  }, [roomID]);
-
-  useEffect(() => {
     socket.on('roomParticipants', (roomParticipants: UserInfo[]) => {
       console.log('Received roomParticipants from server:', roomParticipants);
       setParticipants(roomParticipants);
@@ -126,6 +104,22 @@ export default function ChatPage() {
       socket.off('roomParticipants');
     };
   }, []);
+
+  useEffect(() => {
+    socket.on('chatLogs', (chatMessages: ChatMessage[]) => {
+      console.log('Received chatLogs from server:', chatMessages);
+      setRoomChatLogs((prevRoomChatLogs) => ({ ...prevRoomChatLogs, [roomID]: chatMessages }));
+      console.log('roomchatLogs:', roomchatLogs);
+    });
+
+    return () => {
+      socket.off('chatLogs');
+    };
+  }, [roomID, roomchatLogs]);
+
+  useEffect(() => {
+    console.log('Room chat logs updated:', roomchatLogs);
+  }, [roomchatLogs]);
 
   const onClickSubmit = useCallback(() => {
     console.log(

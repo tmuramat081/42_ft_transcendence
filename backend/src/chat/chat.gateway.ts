@@ -84,14 +84,30 @@ export class ChatGateway {
       await this.chatLogRepository.save(chatLog);
       this.logger.log(`Saved chatLog: ${JSON.stringify(chatLog)}`);
 
-      const chatMessage: ChatMessage = {
-        user: data.sender.ID,
-        photo: data.sender.icon,
-        text: data.message,
-        timestamp: chatLog.timestamp,
-      };
+      // チャットログを取得してクライアントに送信
+      const chatLogs = await this.chatLogRepository.find({
+        where: { roomName: data.selectedRoom },
+      });
+      this.logger.log(`Chat logs: ${JSON.stringify(chatLogs)}`);
+      // chatLogsをchatmessage[]に変換
+      const chatMessages: ChatMessage[] = chatLogs.map((log) => {
+        return {
+          user: log.sender,
+          photo: log.icon,
+          text: log.message,
+          timestamp: log.timestamp,
+        };
+      });
+      this.server.to(data.selectedRoom).emit('chatLogs', chatMessages);
 
-      this.server.to(data.selectedRoom).emit('update', chatMessage);
+      // const chatMessage: ChatMessage = {
+      //   user: data.sender.ID,
+      //   photo: data.sender.icon,
+      //   text: data.message,
+      //   timestamp: chatLog.timestamp,
+      // };
+
+      // this.server.to(data.selectedRoom).emit('update', chatMessage);
     } catch (error) {
       this.logger.error(`Error handling message: ${(error as Error).message}`);
       throw error;
@@ -179,6 +195,23 @@ export class ChatGateway {
         this.server.to(join.room).emit('roomParticipants', updatedRoom.roomParticipants);
       } else {
         this.logger.error(`Error getting updated room.`);
+      }
+      // チャットログを取得してクライアントに送信
+      const chatLogs = await this.chatLogRepository.find({ where: { roomName: join.room } });
+      if (chatLogs) {
+        this.logger.log(`Chat logs: ${JSON.stringify(chatLogs)}`);
+        // chatLogsをchatmessage[]に変換
+        const chatMessages: ChatMessage[] = chatLogs.map((log) => {
+          return {
+            user: log.sender,
+            photo: log.icon,
+            text: log.message,
+            timestamp: log.timestamp,
+          };
+        });
+        this.server.to(join.room).emit('chatLogs', chatMessages);
+      } else {
+        this.logger.error(`Error getting chat logs.`);
       }
     } catch (error) {
       const errorMessage = (error as Error).message;
