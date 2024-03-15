@@ -77,7 +77,7 @@ export class ChatGateway {
       // チャットログを保存
       const chatLog = new ChatLog();
       chatLog.roomName = data.selectedRoom;
-      chatLog.sender = data.sender.ID;
+      chatLog.sender = data.sender.ID; //nameに変更予定
       chatLog.icon = data.sender.icon;
       chatLog.message = data.message;
       chatLog.timestamp = formatDate(new Date());
@@ -99,15 +99,6 @@ export class ChatGateway {
         };
       });
       this.server.to(data.selectedRoom).emit('chatLogs', chatMessages);
-
-      // const chatMessage: ChatMessage = {
-      //   user: data.sender.ID,
-      //   photo: data.sender.icon,
-      //   text: data.message,
-      //   timestamp: chatLog.timestamp,
-      // };
-
-      // this.server.to(data.selectedRoom).emit('update', chatMessage);
     } catch (error) {
       this.logger.error(`Error handling message: ${(error as Error).message}`);
       throw error;
