@@ -17,45 +17,63 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import * as dotenv from 'dotenv';
 import * as Joi from 'joi';
 
+const mockUserRepository = () => ({
+  createUser: jest.fn(),
+  signUp: jest.fn(),
+  signIn: jest.fn(),
+  findAll: jest.fn(),
+  //findOne: jest.fn().mockResolvedValue(mockUser1), // モックの戻り値を設定
+  findOneByName: jest.fn(), 
+  sign: jest.fn(),
+  saveUser: jest.fn(),
+  addFriend: jest.fn(),
+  removeFriend: jest.fn(),
+  getFriends: jest.fn(),
+  blockUser: jest.fn(),
+  unblockUser: jest.fn(),
+  getBlockedUsers: jest.fn(),
+});
+
 dotenv.config();
 describe('AuthService', () => {
   let service: AuthService;
+  let usersService: UsersService;
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       //forwardRefは循環参照を解決するために使われる
       imports: [
-        forwardRef(() => UsersModule),
-        HttpModule,
-        ConfigModule.forRoot({
-          isGlobal: true,
-          envFilePath: '.env',
-          //バリデーション
-          //required()は必須項目
-          validationSchema: Joi.object({
-            POSTGRESS_HOST: Joi.string().required(),
-            POSTGRESS_PORT: Joi.number().required(),
-            POSTGRESS_USER: Joi.string().required(),
-            POSTGRESS_PASSWORD: Joi.string().required(),
-            POSTGRESS_DB: Joi.string().required(),
-          }),
-        }),
-        // forRootAsync()を使って非同期接続
-        TypeOrmModule.forRootAsync({
-          imports: [ConfigModule],
-          inject: [ConfigService],
-          useFactory: (config: ConfigService) => ({
-            type: 'postgres',
-            host: config.get<string>('POSTGRESS_HOST'),
-            port: config.get<number>('POSTGRESS_PORT'),
-            username: config.get<string>('POSTGRESS_USER'),
-            password: config.get<string>('POSTGRESS_PASSWORD'),
-            database: config.get<string>('POSTGRESS_DB'),
-            entities: [__dirname + '/../**/*.entity.{js,ts}'],
-            synchronize: true,
-          }),
-        }),
-        TypeOrmModule.forFeature([User]),
+        // forwardRef(() => UsersModule),
+        // HttpModule,
+        // ConfigModule.forRoot({
+        //   isGlobal: true,
+        //   envFilePath: '.env',
+        //   //バリデーション
+        //   //required()は必須項目
+        //   validationSchema: Joi.object({
+        //     POSTGRESS_HOST: Joi.string().required(),
+        //     POSTGRESS_PORT: Joi.number().required(),
+        //     POSTGRESS_USER: Joi.string().required(),
+        //     POSTGRESS_PASSWORD: Joi.string().required(),
+        //     POSTGRESS_DB: Joi.string().required(),
+        //   }),
+        // }),
+        // // forRootAsync()を使って非同期接続
+        // TypeOrmModule.forRootAsync({
+        //   imports: [ConfigModule],
+        //   inject: [ConfigService],
+        //   useFactory: (config: ConfigService) => ({
+        //     type: 'postgres',
+        //     host: config.get<string>('POSTGRESS_HOST'),
+        //     port: config.get<number>('POSTGRESS_PORT'),
+        //     username: config.get<string>('POSTGRESS_USER'),
+        //     password: config.get<string>('POSTGRESS_PASSWORD'),
+        //     database: config.get<string>('POSTGRESS_DB'),
+        //     entities: [__dirname + '/../**/*.entity.{js,ts}'],
+        //     synchronize: true,
+        //   }),
+        // }),
+        // TypeOrmModule.forFeature([User]),
         PassportModule.register({ defaultStrategy: 'jwt' }),
         // JWTの設定
         JwtModule.register({
@@ -69,10 +87,16 @@ describe('AuthService', () => {
         }),
       ],
       controllers: [AuthController],
-      providers: [AuthService, UsersService, IntraStrategy, IntraAuthGuard],
+      providers: [
+        IntraStrategy, 
+        IntraAuthGuard,
+        { provide: UsersService, useValue: mockUserRepository },
+        { provide: AuthService, useValue: mockUserRepository },
+      ],
     }).compile();
 
     service = module.get<AuthService>(AuthService);
+    usersService = module.get<UsersService>(UsersService);
   });
 
   it('should be defined', () => {

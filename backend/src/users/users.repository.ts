@@ -1,5 +1,5 @@
 /* eslint-disable */
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, Connection } from 'typeorm';
 import { User } from './entities/user.entity';
@@ -112,6 +112,7 @@ export class UserRepository {
   //     return this.userRepository.remove(user);
   // }
 
+  // cereateUserと同じ
   async createUser42(user: User): Promise<User> {
     const salt = await bycrypt.genSalt();
     // パスワードのハッシュ化
@@ -123,12 +124,14 @@ export class UserRepository {
     //targetを取得
     const target: User = await this.findOneByName(friendName);
     if (!target) {
-      throw new Error('User not found');
+      //throw new Error('User not found');
+      throw new NotFoundException('User not found');
     }
 
     // すでに友達リストにいるかどうか
     if (user.friends.some((friend) => friend.userId === target.userId)) {
-      throw new Error('Already friends');
+      //throw new Error('Already friends');
+      throw new BadRequestException('Already friends');
     }
 
     user.friends.push(target);
@@ -140,12 +143,14 @@ export class UserRepository {
     //targetを取得
     const target: User = await this.findOneByName(friendName);
     if (!target) {
-      throw new Error('User not found');
+      //throw new Error('User not found');
+      throw new NotFoundException('User not found');
     }
 
     // 友達にいない場合
     if (!user.friends.some((friend) => friend.userId === target.userId)) {
-      throw new Error('Not friends');
+      //throw new Error('Not friends');
+      throw new BadRequestException('Already friends');
     }
 
     user.friends = user.friends.filter((friend) => friend.userId !== target.userId);
@@ -162,12 +167,14 @@ export class UserRepository {
     //targetを取得
     const target: User = await this.findOneByName(blockName);
     if (!target) {
-      throw new Error('User not found');
+      //throw new Error('User not found');
+      throw new NotFoundException('User not found');
     }
 
     // すでにブロックリストにいるかどうか
     if (user.blocked.some((blocked) => blocked.userId === target.userId)) {
-      throw new Error('Already blocked');
+      //throw new Error('Already blocked');
+      throw new BadRequestException('Already friends');
     }
 
     user.blocked.push(target);
@@ -179,12 +186,14 @@ export class UserRepository {
     //targetを取得
     const target: User = await this.findOneByName(blockName);
     if (!target) {
-      throw new Error('User not found');
+      //throw new Error('User not found');
+      throw new NotFoundException('User not found');
     }
 
     // ブロックリストにいない場合
     if (!user.blocked.some((blocked) => blocked.userId === target.userId)) {
-      throw new Error('Not blocked');
+      //throw new Error('Not blocked');
+      throw new BadRequestException('Not blocked');
     }
 
     user.blocked = user.blocked.filter((blocked) => blocked.userId !== target.userId);

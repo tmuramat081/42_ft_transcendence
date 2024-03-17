@@ -27,7 +27,7 @@ import { UsersService } from '../users/users.service';
 @Controller('auth')
 export class AuthController {
   constructor(
-    private httpService: HttpService,
+    //private httpService: HttpService,
     private jwtService: JwtService,
     private authService: AuthService,
     private usersService: UsersService,

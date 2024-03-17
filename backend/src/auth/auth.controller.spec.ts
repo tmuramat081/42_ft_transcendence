@@ -19,45 +19,60 @@ import * as dotenv from 'dotenv';
 import * as Joi from 'joi';
 import { JwtService } from '@nestjs/jwt';
 
+const mockAuthService = () => ({
+  signUp: jest.fn(),
+  signIn: jest.fn(),
+  findAll: jest.fn(),
+  findOne: jest.fn(),
+  findOneByName: jest.fn(),
+  currentUser: jest.fn(),
+  generateJwt: jest.fn(),
+});
+
 dotenv.config();
 describe('AuthController', () => {
   let controller: AuthController;
+  let module: TestingModule;
+  let authService: AuthService;
+  let usersService: UsersService;
+  let jwtService: JwtService;
+
 
   beforeEach(async () => {
-    const module: TestingModule = await Test.createTestingModule({
+    module = await Test.createTestingModule({
       //forwardRefは循環参照を解決するために使われる
       imports: [
-        forwardRef(() => UsersModule),
+        //forwardRef(() => UsersModule),
         HttpModule,
-        ConfigModule.forRoot({
-          isGlobal: true,
-          envFilePath: '.env',
-          //バリデーション
-          //required()は必須項目
-          validationSchema: Joi.object({
-            POSTGRESS_HOST: Joi.string().required(),
-            POSTGRESS_PORT: Joi.number().required(),
-            POSTGRESS_USER: Joi.string().required(),
-            POSTGRESS_PASSWORD: Joi.string().required(),
-            POSTGRESS_DB: Joi.string().required(),
-          }),
-        }),
-        // forRootAsync()を使って非同期接続
-        TypeOrmModule.forRootAsync({
-          imports: [ConfigModule],
-          inject: [ConfigService],
-          useFactory: async (config: ConfigService) => ({
-            type: 'postgres',
-            host: config.get<string>('POSTGRESS_HOST'),
-            port: config.get<number>('POSTGRESS_PORT'),
-            username: config.get<string>('POSTGRESS_USER'),
-            password: config.get<string>('POSTGRESS_PASSWORD'),
-            database: config.get<string>('POSTGRESS_DB'),
-            entities: [__dirname + '/../**/*.entity.{js,ts}'],
-            synchronize: true,
-          }),
-        }),
-        TypeOrmModule.forFeature([User]),
+        // ConfigModule.forRoot({
+        //   isGlobal: true,
+        //   envFilePath: '.env',
+        //   //バリデーション
+        //   //required()は必須項目
+        //   validationSchema: Joi.object({
+        //     POSTGRESS_HOST: Joi.string().required(),
+        //     POSTGRESS_PORT: Joi.number().required(),
+        //     POSTGRESS_USER: Joi.string().required(),
+        //     POSTGRESS_PASSWORD: Joi.string().required(),
+        //     POSTGRESS_DB: Joi.string().required(),
+        //   }),
+        // }),
+        // // forRootAsync()を使って非同期接続
+        // TypeOrmModule.forRootAsync({
+        //   imports: [ConfigModule],
+        //   inject: [ConfigService],
+        //   useFactory: async (config: ConfigService) => ({
+        //     type: 'postgres',
+        //     host: config.get<string>('POSTGRESS_HOST'),
+        //     port: config.get<number>('POSTGRESS_PORT'),
+        //     username: config.get<string>('POSTGRESS_USER'),
+        //     password: config.get<string>('POSTGRESS_PASSWORD'),
+        //     database: config.get<string>('POSTGRESS_DB'),
+        //     entities: [__dirname + '/../**/*.entity.{js,ts}'],
+        //     synchronize: true,
+        //   }),
+        // }),
+        // TypeOrmModule.forFeature([User]),
         PassportModule.register({ defaultStrategy: 'jwt' }),
         // JWTの設定
         JwtModule.register({
@@ -71,10 +86,21 @@ describe('AuthController', () => {
         }),
       ],
       controllers: [AuthController],
-      providers: [AuthService, UsersService, IntraStrategy, IntraAuthGuard, JwtService],
+      //AuthService, UsersService, 
+      providers: [
+        IntraStrategy, 
+        IntraAuthGuard, 
+        JwtService,
+        { provide: AuthService, useFactory: mockAuthService },
+        { provide: UsersService, useFactory: mockAuthService },
+      ],
+      exports: [IntraStrategy, IntraAuthGuard],
     }).compile();
 
     controller = module.get<AuthController>(AuthController);
+    authService = module.get<AuthService>(AuthService);
+    usersService = module.get<UsersService>(UsersService);
+    jwtService = module.get<JwtService>(JwtService);
   });
 
   it('should be defined', () => {
