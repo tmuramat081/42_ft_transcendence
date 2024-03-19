@@ -1,17 +1,17 @@
 /* eslint-disable */
 'use client';
 import React, { useState, useEffect, useCallback } from 'react';
-import { useRouter } from 'next/navigation';
-import io from 'socket.io-client';
-import './dmPage.css';
 import Image from 'next/image';
-import { Chat } from '@mui/icons-material';
+import { useRouter } from 'next/navigation';
+import { useWebSocket } from '@/providers/webSocketProvider';
+import { useAuth } from '@/providers/useAuth';
 import { UserInfo, DirectMessage } from '@/types/chat/chat';
+import './dmPage.css';
 
-const socket = io('http://localhost:3001');
-
-const DMPage = ({ params }: { params: string }) => {
+export default function DMPage({ params }: { params: string }) {
+  const { socket } = useWebSocket();
   const router = useRouter(); //Backボタンを使うためのrouter
+  const { getCurrentUser } = useAuth();
   const [message, setMessage] = useState('');
   const [sender, setSender] = useState<UserInfo>({
     ID: '',
@@ -26,7 +26,7 @@ const DMPage = ({ params }: { params: string }) => {
   const [dmLogs, setDMLogs] = useState<DirectMessage[]>([]);
 
   useEffect(() => {
-    const socket = io('http://localhost:3001');
+    if (!socket) return;
 
     socket.on('connect', () => {
       console.log('connection ID : ', socket.id);
@@ -57,12 +57,11 @@ const DMPage = ({ params }: { params: string }) => {
 
     return () => {
       socket.disconnect();
-      socket.off('currentUser');
-      socket.off('recipient');
     };
-  }, []);
+  }, [socket]);
 
   useEffect(() => {
+    if (!socket) return;
     socket.on('directMessage', (directMessage: DirectMessage) => {
       console.log('Received DM from server:', directMessage);
       setDMLogs((prevDMLogs) => [
@@ -84,6 +83,7 @@ const DMPage = ({ params }: { params: string }) => {
   }, [dmLogs]);
 
   useEffect(() => {
+    if (!socket) return;
     if (sender.name && receiver.name) {
       console.log('startDM:', sender, receiver);
       socket.emit('startDM', { sender: sender, receiver: receiver });
@@ -91,6 +91,7 @@ const DMPage = ({ params }: { params: string }) => {
   }, [sender, receiver]);
 
   const onClickSubmit = useCallback(() => {
+    if (!socket) return;
     console.log(`${sender.name} submitting DM to ${receiver.name}: ${message}`);
     socket.emit('sendDM', { sender: sender, receiver: receiver, message: message });
     setMessage('');
@@ -157,6 +158,4 @@ const DMPage = ({ params }: { params: string }) => {
       </div>
     </div>
   );
-};
-
-export default DMPage;
+}

@@ -4,8 +4,8 @@ import React, { useState, useEffect, useCallback } from 'react';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { useWebSocket } from '@/providers/webSocketProvider';
-import { UserInfo, ChatMessage, Room } from '@/types/chat/chat';
 import { useAuth } from '@/providers/useAuth';
+import { UserInfo, ChatMessage, Room } from '@/types/chat/chat';
 import './chatPage.css';
 
 export default function ChatPage() {
