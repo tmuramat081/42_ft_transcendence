@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation';
 import { useWebSocket } from '@/providers/webSocketProvider';
 import { UserInfo, ChatMessage, Room } from '@/types/chat/chat';
 import { useAuth } from '@/providers/useAuth';
+import './chatPage.css';
 
 export default function ChatPage() {
   const { socket } = useWebSocket();
@@ -61,20 +62,6 @@ export default function ChatPage() {
       setRoomList(roomNames);
     });
 
-    socket.on('onlineUsers', (users: UserInfo[]) => {
-      console.log('Received online users from server:', users);
-      setOnlineUsers(users);
-    });
-
-    // コンポーネントがアンマウントされるときに切断
-    return () => {
-      socket.disconnect();
-    };
-  }, []);
-
-  useEffect(() => {
-    if (!socket) return;
-
     socket.on('roomParticipants', (roomParticipants: UserInfo[]) => {
       console.log('Received roomParticipants from server:', roomParticipants);
       setParticipants(roomParticipants);
@@ -85,9 +72,14 @@ export default function ChatPage() {
       console.error(error);
     });
 
+    socket.on('onlineUsers', (users: UserInfo[]) => {
+      console.log('Received online users from server:', users);
+      setOnlineUsers(users);
+    });
+
+    // コンポーネントがアンマウントされるときに切断
     return () => {
-      socket.off('roomParticipants');
-      socket.off('roomError');
+      socket.disconnect();
     };
   }, [socket]);
 
