@@ -1,19 +1,14 @@
 /* eslint-disable */
 'use client';
 import React, { useState, useEffect, useCallback } from 'react';
-import io from 'socket.io-client';
-import Link from 'next/link';
-import { useRouter } from 'next/navigation';
-import './ChatPage.css';
 import Image from 'next/image';
-import { Chat } from '@mui/icons-material';
+import { useRouter } from 'next/navigation';
 import { useWebSocket } from '@/providers/webSocketProvider';
 import { UserInfo, ChatMessage, Room } from '@/types/chat/chat';
 import { useAuth } from '@/providers/useAuth';
 
-const socket = io('http://localhost:3001');
-
 export default function ChatPage() {
+  const { socket } = useWebSocket();
   const [message, setMessage] = useState('');
   const [roomID, setRoomID] = useState('');
   const [newRoomName, setNewRoomName] = useState('');
@@ -36,15 +31,11 @@ export default function ChatPage() {
 
   // Next.jsのuseRouterフックを使ってルーターの情報にアクセス
   const router = useRouter();
-
-  // ソケット情報
-  // const { socket } = useWebSocket();
-
   const { getCurrentUser } = useAuth();
 
   // コンポーネントがマウントされたときのみ接続
   useEffect(() => {
-    const socket = io('http://localhost:3001');
+    if (!socket) return;
 
     socket.on('connect', () => {
       console.log('connection ID : ', socket.id);
@@ -78,34 +69,30 @@ export default function ChatPage() {
     // コンポーネントがアンマウントされるときに切断
     return () => {
       socket.disconnect();
-      socket.off('roomList');
-      socket.off('onlineUsers');
     };
   }, []);
 
   useEffect(() => {
-    socket.on('roomError', (error) => {
-      console.error(error);
-    });
+    if (!socket) return;
 
-    return () => {
-      socket.off('roomError');
-    };
-  }, []);
-
-  useEffect(() => {
     socket.on('roomParticipants', (roomParticipants: UserInfo[]) => {
       console.log('Received roomParticipants from server:', roomParticipants);
       setParticipants(roomParticipants);
       console.log('participants:', participants);
     });
 
+    socket.on('roomError', (error) => {
+      console.error(error);
+    });
+
     return () => {
       socket.off('roomParticipants');
+      socket.off('roomError');
     };
-  }, []);
+  }, [socket]);
 
   useEffect(() => {
+    if (!socket) return;
     socket.on('chatLogs', (chatMessages: ChatMessage[]) => {
       console.log('Received chatLogs from server:', chatMessages);
       setRoomChatLogs((prevRoomChatLogs) => ({ ...prevRoomChatLogs, [roomID]: chatMessages }));
@@ -122,6 +109,7 @@ export default function ChatPage() {
   }, [roomchatLogs]);
 
   const onClickSubmit = useCallback(() => {
+    if (!socket) return;
     console.log(
       `${(sender as UserInfo).name} ${(sender as UserInfo).ID} submitting message, '${message}'`,
     );
@@ -130,12 +118,14 @@ export default function ChatPage() {
   }, [selectedRoom, sender, message]);
 
   const onClickCreateRoom = useCallback(() => {
+    if (!socket) return;
     console.log(`${(sender as UserInfo).name} create new room: ${newRoomName}`);
     socket.emit('createRoom', { sender, roomName: newRoomName });
     setNewRoomName('');
   }, [sender, newRoomName]);
 
   const handleRoomChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
+    if (!socket) return;
     const newRoomID = event.target.value;
     //newRoomIDがnullだった場合の処理
     if (newRoomID === '') {
@@ -156,6 +146,7 @@ export default function ChatPage() {
   };
 
   const onClickLeaveRoom = useCallback(() => {
+    if (!socket) return;
     if (selectedRoom) {
       console.log(`${sender.name} left Room: ${selectedRoom}`);
       socket.emit('leaveRoom', { sender, room: selectedRoom });
@@ -171,6 +162,7 @@ export default function ChatPage() {
   }, [selectedRoom, roomchatLogs, sender]);
 
   const onClickDeleteRoom = useCallback(() => {
+    if (!socket) return;
     if (selectedRoom) {
       console.log(`${(sender as UserInfo).name} deleted Room: ${selectedRoom}`);
       socket.emit('deleteRoom', { sender, room: selectedRoom });
@@ -189,6 +181,7 @@ export default function ChatPage() {
 
   // パラメータを含むリンクを生成する
   const handleLinkClick = (recipient: UserInfo) => {
+    if (!socket) return;
     socket.emit('startDM', { sender, recipient });
     const href = `/chat/${recipient}`;
     const as = `/chat/${recipient.name}`;
