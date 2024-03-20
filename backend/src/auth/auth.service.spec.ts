@@ -102,4 +102,12 @@ describe('AuthService', () => {
   it('should be defined', () => {
     expect(service).toBeDefined();
   });
+
+  // verify2fa
+
+  // generate2faSecret
+
+  // generate2faQRCode
+
+  // disable2fa
 });

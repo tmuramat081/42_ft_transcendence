@@ -12,7 +12,7 @@ import { JwtAuthGuard } from './guards/jwt-auth.guard';
 import { JwtPayload } from './interfaces/jwt_payload';
 import { JwtService } from '@nestjs/jwt';
 import { User } from './entities/user.entity';
-import { SignUpUserDto, SignInUserDto } from './dto/user.dto';
+import { SignUpUserDto, SignInUserDto, UpdateUserDto } from './dto/user.dto';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import * as dotenv from 'dotenv';
 import * as Joi from 'joi';
@@ -59,6 +59,8 @@ const mockUsersService = () => ({
   findOneByName: jest.fn(),
   currentUser: jest.fn(),
   generateJwt: jest.fn(),
+  updateUser: jest.fn(),
+  updateUserIcon: jest.fn(),
 });
 
 dotenv.config();
@@ -230,4 +232,84 @@ describe('UsersController', () => {
   //     expect(await controller.findAll()).toBe(result);
   //   });
   // });
+
+  describe('updateUser', () => {
+    it('should return a user', async () => {
+      const result: User = mockUser1;
+      result.userName = 'testUser';
+
+      const serDto: UpdateUserDto = {
+        userName: 'testUser',
+        email: '',
+        password: mockUser1.password,
+        newPassword: '',
+        newPasswordConfirm: '',
+      };
+
+      const mockRequest = {
+        user: {
+          userId: mockUser1.userId,
+          userName: mockUser1.userName,
+          email: mockUser1.email,
+          password: mockUser1.password,
+          passwordConfirm: mockUser1.password,
+        },
+      };
+
+      const mockResponse = {
+        status: jest.fn().mockReturnThis(),
+        json: jest.fn().mockReturnThis(),
+        send: jest.fn().mockReturnThis(),
+        cookie: jest.fn().mockReturnThis(),
+        // 他に必要なメソッドをモック化
+      } as unknown as Response;
+
+      jest.spyOn(service, 'updateUser').mockImplementation(async () => result);
+
+      jest.spyOn(service, 'generateJwt').mockImplementation(async () => 'testToken');
+
+      expect(await controller.UpdateUser(serDto, mockRequest, mockResponse)).toBe('{"accessToken":"testToken"}');
+    });
+  });
+
+  // どうやってやる？
+  //むりならテストしない
+  describe('updateIcon', () => {
+    it('should return a user', async () => {
+      const result: User = mockUser1;
+      result.icon = 'testIcon';
+
+      const mockRequest = {
+        user: {
+          userId: mockUser1.userId,
+          userName: mockUser1.userName,
+          email: mockUser1.email,
+          password: mockUser1.password,
+          passwordConfirm: mockUser1.password,
+        },
+      };
+
+      const mockResponse = {
+        status: jest.fn().mockReturnThis(),
+        json: jest.fn().mockReturnThis(),
+        send: jest.fn().mockReturnThis(),
+        cookie: jest.fn().mockReturnThis(),
+        // 他に必要なメソッドをモック化
+      } as unknown as Response;
+
+      jest.spyOn(service, 'updateUserIcon').mockImplementation(async () => result);
+
+      //jest.spyOn(service, 'generateJwt').mockImplementation(async () => 'testToken');
+
+      expect(await controller.UpdateIcon('testIcon', mockRequest)).toBe('{"status":"SUCCESS","icon":"testIcon"}');
+    });
+  });
+
+  describe('findOneByName', () => {
+    it('should return a user', async () => {
+      const expected = mockUser1;
+      jest.spyOn(service, 'findOneByName').mockResolvedValue(expected);
+      expect(await controller.FindOneByName('test')).toBe("{\"user\":{\"userId\":1,\"userName\":\"testUser\",\"email\":\"test@test\",\"icon\":\"testIcon\",\"twoFactorAuth\":false,\"name42\":\"\",\"friends\":[],\"blocked\":[],\"twoFactorAuthNow\":false}}");
+    });
+  });
 });

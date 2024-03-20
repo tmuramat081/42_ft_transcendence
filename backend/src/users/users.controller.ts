@@ -196,12 +196,14 @@ export class UsersController {
             // }
 
             // 重複エントリーの例外を投げる
-            if ((error as any).code === 'ER_DUP_ENTRY') {
-                throw new InternalServerErrorException('User already exists');
-                //return res.status(400).json({ message: 'User already exists' });
-            }
-            throw new InternalServerErrorException("access token error");
+            // if ((error as any).code === 'ER_DUP_ENTRY') {
+            //     throw new InternalServerErrorException('User already exists');
+            //     //return res.status(400).json({ message: 'User already exists' });
+            // }
+            // throw new InternalServerErrorException("access token error");
             //return res.status(400).json({ message: 'User already exists' });
+
+            throw error;
         }
     }
 
@@ -294,39 +296,47 @@ export class UsersController {
         //     //throw new InternalServerErrorException("access token error");
         //     return res.status(400).json({ message: 'User already exists' });
         // }
-        
-        // findは例外を投げない為、try-catchで囲まない
-        const user: User = await this.usersService.signIn(userData);
 
-        // 2faの判定 signInをuserを返す様に修正する
-        // accessTokenからtwoFactorAuthを取得する
-        // const decode = jwt_decode(accessToken)
-		// if (decode['auth'] === false && user.twoFactorAuth === true) {
-		// 	throw new ForbiddenException('need 2FA')
-		// }
+        try {
+            // findは例外を投げない為、try-catchで囲まない
+            const user: User = await this.usersService.signIn(userData);
 
-        // 2faの検証
-        if (user.twoFactorAuth) {
-            return JSON.stringify({"userId": user.userId, "status": "2FA_REQUIRED"});
+            // 2faの判定 signInをuserを返す様に修正する
+            // accessTokenからtwoFactorAuthを取得する
+            // const decode = jwt_decode(accessToken)
+            // if (decode['auth'] === false && user.twoFactorAuth === true) {
+            // 	throw new ForbiddenException('need 2FA')
+            // }
+
+            // 2faの検証
+            if (user.twoFactorAuth) {
+                return JSON.stringify({"userId": user.userId, "status": "2FA_REQUIRED"});
+            }
+
+            const accessToken: string = await this.usersService.generateJwt(user);
+            
+
+            if (accessToken === null) {
+                //console.log("Invalid credentials");
+                throw new ForbiddenException("Invalid credentials");
+                //return res.status(400).json({ message: 'Invalid credentials' });
+            }
+            //cookieにアクセストークンを保存
+            res.cookie('jwt', accessToken, { httpOnly: true })
+
+            //console.log("accessToken: " + accessToken);
+
+            //redisにアクセストークンを保存
+
+            //return JSON.stringify({"accessToken": accessToken});
+            return JSON.stringify({"userId": undefined, "status": "SUCCESS"});
+        } catch (error) {
+            // if (error instanceof UnauthorizedException) {
+            //     throw error;
+            // }
+            // throw new InternalServerErrorException();
+            throw error;
         }
-
-        const accessToken: string = await this.usersService.generateJwt(user);
-        
-
-        if (accessToken === null) {
-            //console.log("Invalid credentials");
-            throw new ForbiddenException("Invalid credentials");
-            //return res.status(400).json({ message: 'Invalid credentials' });
-        }
-        //cookieにアクセストークンを保存
-        res.cookie('jwt', accessToken, { httpOnly: true })
-
-        //console.log("accessToken: " + accessToken);
-
-        //redisにアクセストークンを保存
-
-        //return JSON.stringify({"accessToken": accessToken});
-        return JSON.stringify({"userId": undefined, "status": "SUCCESS"});
     }
 
     @UseGuards(JwtAuthGuard)
@@ -401,35 +411,38 @@ export class UsersController {
         // return JSON.stringify({"accessToken": accessToken});
 
 
+        try {
+            // passwoedは必須
+            //現在パスワードが一致するか確認
+            // 名前からユーザーを取得
+            const user: User = await this.usersService.updateUser(req.user, userData);
+            if (!user) {
+                throw new ForbiddenException("Invalid credentials");
+            }
 
-        // passwoedは必須
-        //現在パスワードが一致するか確認
-        // 名前からユーザーを取得
-        const user: User = await this.usersService.updateUser(req.user, userData);
-        if (!user) {
-            throw new ForbiddenException("Invalid credentials");
+            console.log("user: ", user);
+
+            //データを更新して、アクセストークンを返す
+            const accessToken: string = await this.usersService.generateJwt(user);
+
+            if (!accessToken) {
+                throw new ForbiddenException("Invalid credentials");
+            }
+
+            console.log("accessToken: " + accessToken);
+
+            //cookieにアクセストークンを保存
+            // localstrageよりcookieの方が安全
+            // XSS, 有効期限の観点からもcookieの方が良い
+            res.cookie('jwt', accessToken, { httpOnly: true })
+
+            // //redisにアクセストークンを保存
+
+            //return accessToken;
+            return JSON.stringify({"accessToken": accessToken});
+        } catch (error) {
+            throw error;
         }
-
-        console.log("user: ", user);
-
-        //データを更新して、アクセストークンを返す
-        const accessToken: string = await this.usersService.generateJwt(user);
-
-        if (accessToken === null) {
-            throw new ForbiddenException("Invalid credentials");
-        }
-
-        console.log("accessToken: " + accessToken);
-
-        //cookieにアクセストークンを保存
-        // localstrageよりcookieの方が安全
-        // XSS, 有効期限の観点からもcookieの方が良い
-        res.cookie('jwt', accessToken, { httpOnly: true })
-
-        // //redisにアクセストークンを保存
-
-        //return accessToken;
-        return JSON.stringify({"accessToken": accessToken});
     }
 
 
@@ -445,17 +458,22 @@ export class UsersController {
         // console.log("file: ", file)
         // console.log("req.user.userName: ", req.user.userName)
 
-        // 読み込み時にディレクトリを指定する
-        const user = await this.usersService.updateUserIcon(req.user.userName, file);
+        try {
+            // 読み込み時にディレクトリを指定する
+            const user = await this.usersService.updateUserIcon(req.user.userName, file);
 
-        //例外を返す？
-        if (!user) {
-            throw new ForbiddenException("Invalid credentials");
+            //例外を返す？
+            if (!user) {
+                throw new ForbiddenException("Invalid credentials");
+            }
+
+            return JSON.stringify({"status": "SUCCESS", "icon": user.icon});
+        } catch (error) {
+            throw error;
         }
-
-        return JSON.stringify({"status": "SUCCESS", "icon": user.icon});
     }
 
+    // 使っていない
     //: Promise<Observable<StreamableFile>>
     @UseGuards(JwtAuthGuard)
     @Get('/icons/:iconName')
@@ -547,6 +565,7 @@ export class UsersController {
         return JSON.stringify({"user": user});
     }
 
+    // TODO: JWT GUARDを使う
     // TODO: サーバーサイドからのアクセスのみを許可するようにstrategyを設定する？IPを設定する？
     // サーバーサイドからアクセスする場合はjwtは不要
     //@UseGuards(JwtAuthGuard)
@@ -573,6 +592,7 @@ export class UsersController {
 
     }
 
+    // 使っていない
     @UseGuards(JwtAuthGuard)
     //@UseGuards(JwtAuthGuard, TwoFactorAuthGuard)
     @Get('/all')
@@ -582,6 +602,7 @@ export class UsersController {
         return classToPlain(this.usersService.findAll());
     }
 
+    // 使っていない
     @UseGuards(JwtAuthGuard)
     //@UseGuards(JwtAuthGuard, TwoFactorAuthGuard)
     @Get('/:id')
@@ -598,6 +619,7 @@ export class UsersController {
         return await this.usersService.addFriend(req.user, userName);
     }
 
+    // 例外もそのまま返す
     @UseGuards(JwtAuthGuard)
     @Post('/friend/remove/:userName')
     async deleteFriend(@Req() req, @Param('userName') userName: string) {
