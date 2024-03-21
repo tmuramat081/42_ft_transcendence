@@ -18,7 +18,7 @@ import { OnlineUsers } from './entities/onlineUsers.entity';
 import { formatDate } from './tools';
 
 interface UserInfo {
-  ID: string;
+  ID: number;
   name: string;
   icon: string;
 }
@@ -62,7 +62,13 @@ export class DMGateway {
       const currentUser = await this.onlineUsersRepository.findOne({ where: { me: true } });
       if (currentUser) {
         this.logger.log(`currentUser found: ${JSON.stringify(currentUser)}`);
-        this.server.to(socket.id).emit('currentUser', currentUser);
+        // currentUserをUserInfoに変換
+        const userInfo: UserInfo = {
+          ID: currentUser.id,
+          name: currentUser.name,
+          icon: currentUser.icon,
+        };
+        this.server.to(socket.id).emit('currentUser', userInfo);
       } else {
         this.logger.error('No current user found');
       }
@@ -81,7 +87,13 @@ export class DMGateway {
       });
       if (recipientUser) {
         this.logger.log(`Recipient found: ${JSON.stringify(recipientUser)}`);
-        this.server.to(socket.id).emit('recipient', recipientUser);
+        // recipientUserをUserInfoに変換
+        const recipient: UserInfo = {
+          ID: recipientUser.id,
+          name: recipientUser.name,
+          icon: recipientUser.icon,
+        };
+        this.server.to(socket.id).emit('recipient', recipient);
       } else {
         this.logger.error('No recipient found');
       }

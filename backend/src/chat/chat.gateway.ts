@@ -77,7 +77,7 @@ export class ChatGateway {
       this.logger.log(`Get online users: ${sender.name}`);
 
       // ダミーユーザーを登録
-      await this.createDummyUsers();
+      // await this.createDummyUsers();
 
       // OnlineUsersエンティティのインスタンスを作成し、データベースに保存
       const onlineUser = new OnlineUsers();

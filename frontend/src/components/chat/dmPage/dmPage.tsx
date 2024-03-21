@@ -28,47 +28,22 @@ export default function DMPage({ params }: { params: string }) {
   useEffect(() => {
     if (!socket) return;
 
-    const fetchData = async () => {
-      const user = await getCurrentUser();
-      if (!user) return;
-      console.log('currentUser:', user);
+    socket.on('connect', () => {
+      console.log('connection ID : ', socket.id);
+      socket.emit('getCurrentUser');
+      socket.emit('getRecipient', params);
+    });
+
+    socket.on('currentUser', (user: UserInfo) => {
       const sender: UserInfo = {
-        ID: user.userId,
-        name: user.userName,
+        ID: user.ID,
+        name: user.name,
         icon: user.icon,
       };
       setSender(sender);
       console.log('sender:', sender);
+    });
 
-      socket.emit('getRecipient', params);
-    };
-
-    fetchData();
-
-    return () => {
-      socket.disconnect();
-    };
-  }, [socket, getCurrentUser, params]);
-
-  // socket.on('connect', () => {
-  //   console.log('connection ID : ', socket.id);
-  //   socket.emit('getCurrentUser');
-  //   socket.emit('getRecipient', params);
-  // });
-
-  // socket.on('currentUser', (user: UserInfo) => {
-  //   console.log('currentUser:', user);
-  //   const sender: UserInfo = {
-  //     ID: user.ID,
-  //     name: user.name,
-  //     icon: user.icon,
-  //   };
-  //   setSender(sender);
-  //   console.log('sender:', sender);
-  // });
-
-  useEffect(() => {
-    if (!socket) return;
     socket.on('recipient', (recipient: UserInfo) => {
       const receiver: UserInfo = {
         ID: recipient.ID,
@@ -79,6 +54,13 @@ export default function DMPage({ params }: { params: string }) {
       console.log('receiver', receiver);
     });
 
+    return () => {
+      socket.disconnect();
+    };
+  }, [socket]);
+
+  useEffect(() => {
+    if (!socket) return;
     socket.on('directMessage', (directMessage: DirectMessage) => {
       console.log('Received DM from server:', directMessage);
       setDMLogs((prevDMLogs) => [
@@ -92,53 +74,17 @@ export default function DMPage({ params }: { params: string }) {
       ]);
     });
 
+    console.log('dmLogs:', dmLogs);
+
     return () => {
-      socket.off('recipient');
       socket.off('directMessage');
     };
-  }, [socket]);
-
-  //   socket.on('recipient', (recipient: UserInfo) => {
-  //     const receiver: UserInfo = {
-  //       ID: recipient.ID,
-  //       name: recipient.name,
-  //       icon: recipient.icon,
-  //     };
-  //     setReceiver(receiver);
-  //     console.log('receiver', receiver);
-  //   });
-
-  //   return () => {
-  //     socket.disconnect();
-  //   };
-  // }, []);
-
-  // useEffect(() => {
-  //   if (!socket) return;
-  //   socket.on('directMessage', (directMessage: DirectMessage) => {
-  //     console.log('Received DM from server:', directMessage);
-  //     setDMLogs((prevDMLogs) => [
-  //       ...prevDMLogs,
-  //       {
-  //         sender: directMessage.sender,
-  //         recipient: directMessage.recipient,
-  //         text: directMessage.text,
-  //         timestamp: directMessage.timestamp,
-  //       },
-  //     ]);
-  //   });
-
-  //   console.log('dmLogs:', dmLogs);
-
-  //   return () => {
-  //     socket.off('directMessage');
-  //   };
-  // }, [dmLogs]);
+  }, [dmLogs]);
 
   useEffect(() => {
     if (!socket) return;
     if (sender.name && receiver.name) {
-      console.log('startDM:', sender, receiver);
+      console.log(`${sender.name} start DM with ${receiver.name}`);
       socket.emit('startDM', { sender: sender, receiver: receiver });
     }
   }, [sender, receiver]);
