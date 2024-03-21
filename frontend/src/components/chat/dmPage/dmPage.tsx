@@ -2,12 +2,15 @@
 'use client';
 import React, { useState, useEffect, useCallback } from 'react';
 import Image from 'next/image';
+// import io from 'socket.io-client';
 import { useRouter } from 'next/navigation';
 import { useWebSocket } from '@/providers/webSocketProvider';
 import { useAuth } from '@/providers/useAuth';
 import { useRouterGuard } from '@/hooks/routes/useRouterGuard';
 import { UserInfo, DirectMessage } from '@/types/chat/chat';
 import './dmPage.css';
+
+// const socket = io('http://localhost:3001');
 
 export default function DMPage({ params }: { params: string }) {
   const { socket } = useWebSocket();
@@ -26,18 +29,31 @@ export default function DMPage({ params }: { params: string }) {
   });
   const [dmLogs, setDMLogs] = useState<DirectMessage[]>([]);
 
-  // paramsレンダリングする
+  useEffect(() => {
+    if (!socket || !params) return;
+
+    const fetchInitialData = async () => {
+      try {
+        // ログインユーザー情報の取得
+        // const user = getCurrentUser();
+        // console.log('user:', user);
+
+        socket.emit('getCurrentUser');
+        socket.emit('getRecipient', params);
+      } catch (error) {
+        console.error('Error fetching initial data:', error);
+      }
+    };
+
+    fetchInitialData();
+
+    return () => {
+      socket.disconnect();
+    };
+  }, [socket, params]);
 
   useEffect(() => {
     if (!socket) return;
-    socket.on('connect', () => {
-      console.log('connection ID : ', socket.id);
-      // // ログイン情報を取得
-      // const user = getCurrentUser();
-      // console.log('user:', user);
-      socket.emit('getCurrentUser');
-      socket.emit('getRecipient', params);
-    });
 
     socket.on('currentUser', (user: UserInfo) => {
       const sender: UserInfo = {
@@ -62,7 +78,7 @@ export default function DMPage({ params }: { params: string }) {
     return () => {
       socket.disconnect();
     };
-  }, [params]);
+  }, [socket]);
 
   useEffect(() => {
     if (!socket) return;
