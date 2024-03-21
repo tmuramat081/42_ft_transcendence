@@ -2,6 +2,7 @@
 'use client';
 import React, { useState, useEffect, useCallback } from 'react';
 import Image from 'next/image';
+import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useWebSocket } from '@/providers/webSocketProvider';
 import { useAuth } from '@/providers/useAuth';
@@ -16,7 +17,7 @@ export default function ChatPage() {
   const [roomList, setRoomList] = useState<string[]>([]);
   const [selectedRoom, setSelectedRoom] = useState<string | null>(null);
   const [sender, setSender] = useState<UserInfo>({
-    ID: '',
+    ID: -1,
     name: '',
     icon: '',
   });
@@ -25,7 +26,7 @@ export default function ChatPage() {
   const [participants, setParticipants] = useState<UserInfo[]>([]);
   const [onlineUsers, setOnlineUsers] = useState<UserInfo[]>([]);
   const [recipient, setRecipient] = useState<UserInfo>({
-    ID: '',
+    ID: -1,
     name: '',
     icon: '',
   });
@@ -37,16 +38,16 @@ export default function ChatPage() {
   // コンポーネントがマウントされたときのみ接続
   useEffect(() => {
     if (!socket) return;
-
     socket.on('connect', () => {
       console.log('connection ID : ', socket.id);
 
-      // ここでログイン情報を取得して設定する
+      // ログイン情報を取得
       const user = getCurrentUser();
       console.log('user:', user);
 
+      // 仮のユーザー情報をセット
       const senderData = {
-        ID: socket.id,
+        ID: 1,
         name: 'Bob',
         icon: 'https://pics.prcm.jp/db3b34efef8a0/86032013/jpeg/86032013.jpeg',
       };
@@ -62,6 +63,11 @@ export default function ChatPage() {
       setRoomList(roomNames);
     });
 
+    socket.on('onlineUsers', (users: UserInfo[]) => {
+      console.log('Received online users from server:', users);
+      setOnlineUsers(users);
+    });
+
     socket.on('roomParticipants', (roomParticipants: UserInfo[]) => {
       console.log('Received roomParticipants from server:', roomParticipants);
       setParticipants(roomParticipants);
@@ -70,11 +76,6 @@ export default function ChatPage() {
 
     socket.on('roomError', (error) => {
       console.error(error);
-    });
-
-    socket.on('onlineUsers', (users: UserInfo[]) => {
-      console.log('Received online users from server:', users);
-      setOnlineUsers(users);
     });
 
     // コンポーネントがアンマウントされるときに切断
@@ -102,16 +103,14 @@ export default function ChatPage() {
 
   const onClickSubmit = useCallback(() => {
     if (!socket) return;
-    console.log(
-      `${(sender as UserInfo).name} ${(sender as UserInfo).ID} submitting message, '${message}'`,
-    );
+    console.log(`${sender.name} submitting message, '${message}'`);
     socket.emit('talk', { selectedRoom, sender: { ...sender, icon: sender.icon }, message });
     setMessage('');
   }, [selectedRoom, sender, message]);
 
   const onClickCreateRoom = useCallback(() => {
     if (!socket) return;
-    console.log(`${(sender as UserInfo).name} create new room: ${newRoomName}`);
+    console.log(`${sender.name} create new room: ${newRoomName}`);
     socket.emit('createRoom', { sender, roomName: newRoomName });
     setNewRoomName('');
   }, [sender, newRoomName]);
@@ -129,7 +128,7 @@ export default function ChatPage() {
       return;
     }
     console.log('newRoomID', newRoomID);
-    console.log(`${(sender as UserInfo).name} joined room: ${roomList[Number(newRoomID)]}`);
+    console.log(`${sender.name} joined room: ${roomList[Number(newRoomID)]}`);
     setRoomID(newRoomID);
     setSelectedRoom(roomList[Number(newRoomID)]);
     setMessage(''); // ルームが変更されたら新しいメッセージもリセット
@@ -172,14 +171,13 @@ export default function ChatPage() {
   }, [selectedRoom, roomList, sender]);
 
   // パラメータを含むリンクを生成する
-  const handleLinkClick = (recipient: UserInfo) => {
-    if (!socket) return;
-    socket.emit('startDM', { sender, recipient });
-    const href = `/chat/${recipient}`;
-    const as = `/chat/${recipient.name}`;
-    router.push(href);
-    router.push(as);
-  };
+  // const handleLinkClick = (recipient: UserInfo) => {
+  //   if (!socket) return;
+  //   socket.emit('startDM', { sender, recipient });
+  //   // const href = `/chat/${recipient}`;
+  //   const href = `/chat/${recipient.name}`;
+  //   router.push(href);
+  // };
 
   return (
     <div className="chat-container">
@@ -201,7 +199,10 @@ export default function ChatPage() {
                 height={50}
               />
               <div className="onlineuser-name">{onlineUser.name}</div>
-              <button onClick={() => handleLinkClick(onlineUser)}>Send DM</button>
+              <Link href={`/chat/${onlineUser.name}`}>
+                <button>Send DM</button>
+              </Link>
+              {/* <button onClick={() => handleLinkClick(onlineUser)}>Send DM</button> */}
             </div>
           ))}
         </div>
@@ -295,7 +296,7 @@ export default function ChatPage() {
         {roomchatLogs[roomID]?.map((message, index) => (
           <div
             key={index}
-            className={`message-bubble ${message.user === sender.ID ? 'self' : 'other'}`}
+            className={`message-bubble ${message.user === sender.name ? 'self' : 'other'}`}
           >
             <Image
               src={message.photo}

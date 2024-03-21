@@ -6,7 +6,7 @@ export class OnlineUsers {
   id: number;
 
   @Column()
-  userId: string;
+  userId: number;
 
   @Column()
   name: string;
