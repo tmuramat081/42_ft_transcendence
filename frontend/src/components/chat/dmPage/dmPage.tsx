@@ -27,9 +27,11 @@ export default function DMPage({ params }: { params: string }) {
 
   useEffect(() => {
     if (!socket) return;
-
     socket.on('connect', () => {
       console.log('connection ID : ', socket.id);
+      // // ログイン情報を取得
+      // const user = getCurrentUser();
+      // console.log('user:', user);
       socket.emit('getCurrentUser');
       socket.emit('getRecipient', params);
     });
@@ -61,33 +63,26 @@ export default function DMPage({ params }: { params: string }) {
 
   useEffect(() => {
     if (!socket) return;
-    socket.on('directMessage', (directMessage: DirectMessage) => {
-      console.log('Received DM from server:', directMessage);
-      setDMLogs((prevDMLogs) => [
-        ...prevDMLogs,
-        {
-          sender: directMessage.sender,
-          recipient: directMessage.recipient,
-          text: directMessage.text,
-          timestamp: directMessage.timestamp,
-        },
-      ]);
-    });
-
-    console.log('dmLogs:', dmLogs);
-
-    return () => {
-      socket.off('directMessage');
-    };
-  }, [dmLogs, socket]);
-
-  useEffect(() => {
-    if (!socket) return;
     if (sender.name && receiver.name) {
       console.log(`${sender.name} start DM with ${receiver.name}`);
       socket.emit('startDM', { sender: sender, receiver: receiver });
+      socket.emit('getDMLogs', { sender: sender, receiver: receiver });
     }
   }, [sender, receiver]);
+
+  useEffect(() => {
+    if (!socket) return;
+    socket.on('dmLogs', (directMessages: DirectMessage[]) => {
+      console.log('Received DMLogs from server:', directMessages);
+      // setDMLogs((prevdmLogs) => ({ ...prevdmLogs, directMessages }));
+      setDMLogs(directMessages);
+      console.log('dmLogs:', dmLogs);
+    });
+
+    return () => {
+      socket.off('dmLogs');
+    };
+  }, [socket]);
 
   const onClickSubmit = useCallback(() => {
     if (!socket) return;

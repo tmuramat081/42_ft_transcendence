@@ -216,7 +216,7 @@ export class ChatGateway {
       await this.chatLogRepository.save(chatLog);
       this.logger.log(`Saved chatLog: ${JSON.stringify(chatLog)}`);
 
-      // チャットログを取得してクライアントに送信
+      // チャットログを取得
       const chatLogs = await this.chatLogRepository.find({
         where: { roomName: data.selectedRoom },
       });
