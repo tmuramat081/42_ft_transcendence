@@ -170,14 +170,11 @@ export default function ChatPage() {
     }
   }, [selectedRoom, roomList, sender]);
 
-  // パラメータを含むリンクを生成する
-  // const handleLinkClick = (recipient: UserInfo) => {
-  //   if (!socket) return;
-  //   socket.emit('startDM', { sender, recipient });
-  //   // const href = `/chat/${recipient}`;
-  //   const href = `/chat/${recipient.name}`;
-  //   router.push(href);
-  // };
+  const handleLinkClick = (recipient: UserInfo) => {
+    if (!socket) return;
+    const href = `/chat/${recipient.name}`;
+    router.push(href);
+  };
 
   return (
     <div className="chat-container">
@@ -202,7 +199,6 @@ export default function ChatPage() {
               <Link href={`/chat/${onlineUser.name}`}>
                 <button>Send DM</button>
               </Link>
-              {/* <button onClick={() => handleLinkClick(onlineUser)}>Send DM</button> */}
             </div>
           ))}
         </div>
