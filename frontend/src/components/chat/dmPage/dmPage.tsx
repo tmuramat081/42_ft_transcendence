@@ -5,6 +5,7 @@ import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { useWebSocket } from '@/providers/webSocketProvider';
 import { useAuth } from '@/providers/useAuth';
+import { useRouterGuard } from '@/hooks/routes/useRouterGuard';
 import { UserInfo, DirectMessage } from '@/types/chat/chat';
 import './dmPage.css';
 
@@ -24,6 +25,8 @@ export default function DMPage({ params }: { params: string }) {
     icon: '',
   });
   const [dmLogs, setDMLogs] = useState<DirectMessage[]>([]);
+
+  // useRouterGuard()に変化があったらレンダリングされるuseEffect
 
   useEffect(() => {
     if (!socket) return;
