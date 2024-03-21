@@ -26,7 +26,7 @@ export default function DMPage({ params }: { params: string }) {
   });
   const [dmLogs, setDMLogs] = useState<DirectMessage[]>([]);
 
-  // useRouterGuard()に変化があったらレンダリングされるuseEffect
+  // paramsレンダリングする
 
   useEffect(() => {
     if (!socket) return;
@@ -62,7 +62,7 @@ export default function DMPage({ params }: { params: string }) {
     return () => {
       socket.disconnect();
     };
-  }, [socket]);
+  }, [params]);
 
   useEffect(() => {
     if (!socket) return;
@@ -77,7 +77,6 @@ export default function DMPage({ params }: { params: string }) {
     if (!socket) return;
     socket.on('dmLogs', (directMessages: DirectMessage[]) => {
       console.log('Received DMLogs from server:', directMessages);
-      // setDMLogs((prevdmLogs) => ({ ...prevdmLogs, directMessages }));
       setDMLogs(directMessages);
       console.log('dmLogs:', dmLogs);
     });
