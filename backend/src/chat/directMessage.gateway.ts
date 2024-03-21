@@ -140,7 +140,6 @@ export class DMGateway {
       dmLog.message = payload.message;
       dmLog.timestamp = formatDate(new Date());
       await this.dmLogRepository.save(dmLog);
-      this.logger.log(`timestamp: ${dmLog.timestamp}`);
       this.logger.log(`Saved dmLog: ${JSON.stringify(dmLog)}`);
 
       const directMessage: DirectMessage = {

@@ -79,7 +79,7 @@ export default function DMPage({ params }: { params: string }) {
     return () => {
       socket.off('directMessage');
     };
-  }, [dmLogs]);
+  }, [dmLogs, socket]);
 
   useEffect(() => {
     if (!socket) return;
