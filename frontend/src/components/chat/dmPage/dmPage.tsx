@@ -1,14 +1,13 @@
 'use client';
 import React, { useState, useEffect, useCallback } from 'react';
 import Image from 'next/image';
-// import io from 'socket.io-client';
 import { useRouter } from 'next/navigation';
 import { useWebSocket } from '@/providers/webSocketProvider';
 // import { useAuth } from '@/providers/useAuth';
 import { UserInfo, DirectMessage } from '@/types/chat/chat';
 import './dmPage.css';
 
-export default function DMPage({ params }: { params: string }) {
+export default function DMPage({ params }: { params: UserInfo }) {
   const router = useRouter(); //Backボタンを使うためのrouter
   const { socket } = useWebSocket();
   // const { getCurrentUser } = useAuth();
@@ -24,6 +23,11 @@ export default function DMPage({ params }: { params: string }) {
     icon: '',
   });
   const [dmLogs, setDMLogs] = useState<DirectMessage[]>([]);
+
+  useEffect(() => {
+    console.log('params:', params);
+    console.log('params.name:', params.name);
+  });
 
   useEffect(() => {
     if (!socket) return;

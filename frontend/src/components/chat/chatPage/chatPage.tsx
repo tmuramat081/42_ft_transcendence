@@ -9,7 +9,9 @@ import { UserInfo, ChatMessage, Room } from '@/types/chat/chat';
 import './chatPage.css';
 
 export default function ChatPage() {
+  const router = useRouter();
   const { socket } = useWebSocket();
+  const { getCurrentUser } = useAuth();
   const [message, setMessage] = useState('');
   const [roomID, setRoomID] = useState('');
   const [newRoomName, setNewRoomName] = useState('');
@@ -24,25 +26,18 @@ export default function ChatPage() {
   const [isDeleteButtonVisible, setDeleteButtonVisible] = useState(false);
   const [participants, setParticipants] = useState<UserInfo[]>([]);
   const [onlineUsers, setOnlineUsers] = useState<UserInfo[]>([]);
-  // const [recipient, setRecipient] = useState<UserInfo>({
-  //   ID: -1,
-  //   name: '',
-  //   icon: '',
-  // });
 
-  // Next.jsのuseRouterフックを使ってルーターの情報にアクセス
-  const router = useRouter();
-  const { getCurrentUser } = useAuth();
+  // useEffect(() => {
+  //   // ログイン情報を取得
+  //   const user = getCurrentUser();
+  //   setSender(user);
+  //   console.log('user:', user);
+  // }, [getCurrentUser]);
 
-  // コンポーネントがマウントされたときのみ接続
   useEffect(() => {
     if (!socket) return;
     socket.on('connect', () => {
       console.log('connection ID : ', socket.id);
-
-      // ログイン情報を取得
-      // const user = getCurrentUser();
-      // console.log('user:', user);
 
       // 仮のユーザー情報をセット
       const senderData = {
@@ -77,9 +72,11 @@ export default function ChatPage() {
       console.error(error);
     });
 
-    // コンポーネントがアンマウントされるときに切断
     return () => {
-      socket.disconnect();
+      socket.off('roomList');
+      socket.off('onlineUsers');
+      socket.off('roomParticipants');
+      socket.off('roomError');
     };
   }, [socket, getCurrentUser, participants]);
 
@@ -171,8 +168,10 @@ export default function ChatPage() {
 
   const handleLinkClick = (recipient: UserInfo) => {
     if (!socket) return;
-    const href = `/chat/${recipient.name}`;
+    const href = `/chat/${recipient.name}?recipient=${JSON.stringify(recipient)}`;
+    const as = `/chat/${recipient.name}`;
     router.push(href);
+    router.push(as);
   };
 
   return (
