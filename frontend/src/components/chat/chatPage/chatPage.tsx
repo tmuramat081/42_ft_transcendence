@@ -1,8 +1,7 @@
-/* eslint-disable */
 'use client';
 import React, { useState, useEffect, useCallback } from 'react';
 import Image from 'next/image';
-import Link from 'next/link';
+// import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useWebSocket } from '@/providers/webSocketProvider';
 import { useAuth } from '@/providers/useAuth';
@@ -25,11 +24,11 @@ export default function ChatPage() {
   const [isDeleteButtonVisible, setDeleteButtonVisible] = useState(false);
   const [participants, setParticipants] = useState<UserInfo[]>([]);
   const [onlineUsers, setOnlineUsers] = useState<UserInfo[]>([]);
-  const [recipient, setRecipient] = useState<UserInfo>({
-    ID: -1,
-    name: '',
-    icon: '',
-  });
+  // const [recipient, setRecipient] = useState<UserInfo>({
+  //   ID: -1,
+  //   name: '',
+  //   icon: '',
+  // });
 
   // Next.jsのuseRouterフックを使ってルーターの情報にアクセス
   const router = useRouter();
@@ -42,8 +41,8 @@ export default function ChatPage() {
       console.log('connection ID : ', socket.id);
 
       // ログイン情報を取得
-      const user = getCurrentUser();
-      console.log('user:', user);
+      // const user = getCurrentUser();
+      // console.log('user:', user);
 
       // 仮のユーザー情報をセット
       const senderData = {
@@ -82,7 +81,7 @@ export default function ChatPage() {
     return () => {
       socket.disconnect();
     };
-  }, [socket]);
+  }, [socket, getCurrentUser, participants]);
 
   useEffect(() => {
     if (!socket) return;
@@ -95,7 +94,7 @@ export default function ChatPage() {
     return () => {
       socket.off('chatLogs');
     };
-  }, [roomID, roomchatLogs]);
+  }, [roomID, roomchatLogs, socket]);
 
   useEffect(() => {
     console.log('Room chat logs updated:', roomchatLogs);
@@ -106,14 +105,14 @@ export default function ChatPage() {
     console.log(`${sender.name} submitting message, '${message}'`);
     socket.emit('talk', { selectedRoom, sender: { ...sender, icon: sender.icon }, message });
     setMessage('');
-  }, [selectedRoom, sender, message]);
+  }, [selectedRoom, sender, message, socket]);
 
   const onClickCreateRoom = useCallback(() => {
     if (!socket) return;
     console.log(`${sender.name} create new room: ${newRoomName}`);
     socket.emit('createRoom', { sender, roomName: newRoomName });
     setNewRoomName('');
-  }, [sender, newRoomName]);
+  }, [sender, newRoomName, socket]);
 
   const handleRoomChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
     if (!socket) return;
@@ -150,12 +149,12 @@ export default function ChatPage() {
       delete updatedLogs[selectedRoom];
       setRoomChatLogs(updatedLogs);
     }
-  }, [selectedRoom, roomchatLogs, sender]);
+  }, [selectedRoom, roomchatLogs, sender, socket]);
 
   const onClickDeleteRoom = useCallback(() => {
     if (!socket) return;
     if (selectedRoom) {
-      console.log(`${(sender as UserInfo).name} deleted Room: ${selectedRoom}`);
+      console.log(`${sender.name} deleted Room: ${selectedRoom}`);
       socket.emit('deleteRoom', { sender, room: selectedRoom });
       setSelectedRoom(null);
       setDeleteButtonVisible(false); // ボタンが押されたら非表示にする
@@ -168,7 +167,7 @@ export default function ChatPage() {
       const newRoomList = roomList.filter((room) => room !== selectedRoom);
       setRoomList(newRoomList);
     }
-  }, [selectedRoom, roomList, sender]);
+  }, [selectedRoom, roomList, sender, roomchatLogs, socket]);
 
   const handleLinkClick = (recipient: UserInfo) => {
     if (!socket) return;
@@ -188,7 +187,7 @@ export default function ChatPage() {
               key={index}
               className="onlineuser"
             >
-              <img
+              <Image
                 src={onlineUser.icon}
                 alt={onlineUser.name}
                 className="onlineusers-icon"
@@ -196,9 +195,10 @@ export default function ChatPage() {
                 height={50}
               />
               <div className="onlineuser-name">{onlineUser.name}</div>
-              <Link href={`/chat/${onlineUser.name}`}>
+              <button onClick={() => handleLinkClick(onlineUser)}>Send DM</button>
+              {/* <Link href={`/chat/${onlineUser.name}`}>
                 <button>Send DM</button>
-              </Link>
+              </Link> */}
             </div>
           ))}
         </div>

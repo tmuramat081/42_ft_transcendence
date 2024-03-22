@@ -1,21 +1,17 @@
-/* eslint-disable */
 'use client';
 import React, { useState, useEffect, useCallback } from 'react';
 import Image from 'next/image';
 // import io from 'socket.io-client';
 import { useRouter } from 'next/navigation';
 import { useWebSocket } from '@/providers/webSocketProvider';
-import { useAuth } from '@/providers/useAuth';
-import { useRouterGuard } from '@/hooks/routes/useRouterGuard';
+// import { useAuth } from '@/providers/useAuth';
 import { UserInfo, DirectMessage } from '@/types/chat/chat';
 import './dmPage.css';
 
-// const socket = io('http://localhost:3001');
-
 export default function DMPage({ params }: { params: string }) {
-  const { socket } = useWebSocket();
   const router = useRouter(); //Backボタンを使うためのrouter
-  const { getCurrentUser } = useAuth();
+  const { socket } = useWebSocket();
+  // const { getCurrentUser } = useAuth();
   const [message, setMessage] = useState('');
   const [sender, setSender] = useState<UserInfo>({
     ID: -1,
@@ -30,30 +26,15 @@ export default function DMPage({ params }: { params: string }) {
   const [dmLogs, setDMLogs] = useState<DirectMessage[]>([]);
 
   useEffect(() => {
-    if (!socket || !params) return;
-
-    const fetchInitialData = async () => {
-      try {
-        // ログインユーザー情報の取得
-        // const user = getCurrentUser();
-        // console.log('user:', user);
-
-        socket.emit('getCurrentUser');
-        socket.emit('getRecipient', params);
-      } catch (error) {
-        console.error('Error fetching initial data:', error);
-      }
-    };
-
-    fetchInitialData();
-
-    return () => {
-      socket.disconnect();
-    };
-  }, [socket, params]);
-
-  useEffect(() => {
     if (!socket) return;
+
+    socket.on('connect', () => {
+      // ログインユーザー情報の取得
+      // const user = getCurrentUser();
+      // console.log('user:', user);
+      socket.emit('getCurrentUser');
+      socket.emit('getRecipient', params);
+    });
 
     socket.on('currentUser', (user: UserInfo) => {
       const sender: UserInfo = {
@@ -78,7 +59,7 @@ export default function DMPage({ params }: { params: string }) {
     return () => {
       socket.disconnect();
     };
-  }, [socket]);
+  }, [socket, params]);
 
   useEffect(() => {
     if (!socket) return;
@@ -87,7 +68,7 @@ export default function DMPage({ params }: { params: string }) {
       socket.emit('startDM', { sender: sender, receiver: receiver });
       socket.emit('getDMLogs', { sender: sender, receiver: receiver });
     }
-  }, [sender, receiver]);
+  }, [sender, receiver, socket]);
 
   useEffect(() => {
     if (!socket) return;
@@ -100,14 +81,14 @@ export default function DMPage({ params }: { params: string }) {
     return () => {
       socket.off('dmLogs');
     };
-  }, [socket]);
+  }, [socket, dmLogs]);
 
   const onClickSubmit = useCallback(() => {
     if (!socket) return;
     console.log(`${sender.name} submitting DM to ${receiver.name}: ${message}`);
     socket.emit('sendDM', { sender: sender, receiver: receiver, message: message });
     setMessage('');
-  }, [sender, receiver, message]);
+  }, [sender, receiver, message, socket]);
 
   return (
     <div className="dm-container">
