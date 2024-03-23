@@ -19,6 +19,27 @@ import * as dotenv from 'dotenv';
 import * as Joi from 'joi';
 import { JwtService } from '@nestjs/jwt';
 
+
+const mockUser1: User = {
+  userId: 1,
+  userName: 'test',
+  email: 'test@test',
+  password: 'test',
+  icon: '',
+  createdAt: new Date('2023-01-01T00:00:00Z'),
+  deletedAt: new Date('2023-01-01T00:00:00Z'),
+  name42: '',
+  twoFactorAuth: false,
+  twoFactorAuthSecret: '',
+  friends: [],
+  blocked: [],
+  gameRooms: [],
+  matchResults: [],
+  gameEntries: [],
+  matchesAsPlayer1: [],
+  matchesAsPlayer2: [],
+};
+
 const mockAuthService = () => ({
   signUp: jest.fn(),
   signIn: jest.fn(),
