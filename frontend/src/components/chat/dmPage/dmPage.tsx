@@ -7,7 +7,7 @@ import { useWebSocket } from '@/providers/webSocketProvider';
 import { UserInfo, DirectMessage } from '@/types/chat/chat';
 import './dmPage.css';
 
-export default function DMPage({ params }: { params: UserInfo }) {
+export default function DMPage({ params }: { params: string }) {
   const router = useRouter(); //Backボタンを使うためのrouter
   const { socket } = useWebSocket();
   // const { getCurrentUser } = useAuth();
