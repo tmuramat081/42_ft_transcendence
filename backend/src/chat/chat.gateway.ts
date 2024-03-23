@@ -89,15 +89,10 @@ export class ChatGateway {
 
       // 空のオンラインユーザーを削除
       await this.deleteEmptyOnlineUsers();
-      // 重複したオンラインユーザーを削除
-      await this.deleteDuplicateOnlineUsers();
 
-      // Bobのmeをtrueにして保存
-      const me = await this.onlineUsersRepository.findOne({ where: { name: 'Bob' } });
-      if (me) {
-        me.me = true;
-        await this.onlineUsersRepository.save(me);
-      }
+      // 重複したオンラインユーザーを削除
+      // 画面遷移後じにエラーが出るのでコメントアウト
+      // await this.deleteDuplicateOnlineUsers();
 
       // データベースからオンラインユーザーリストを取得
       const onlineUsers = await this.onlineUsersRepository.find();

@@ -24,21 +24,20 @@ export default function DMPage({ params }: { params: UserInfo }) {
   });
   const [dmLogs, setDMLogs] = useState<DirectMessage[]>([]);
 
-  useEffect(() => {
-    console.log('params:', params);
-    console.log('params.name:', params.name);
-  });
+  // ログインユーザー情報の取得
+  // const user = getCurrentUser();
+  // console.log('user:', user);
 
   useEffect(() => {
     if (!socket) return;
+    console.log('params:', params);
 
-    socket.on('connect', () => {
-      // ログインユーザー情報の取得
-      // const user = getCurrentUser();
-      // console.log('user:', user);
-      socket.emit('getCurrentUser');
-      socket.emit('getRecipient', params);
-    });
+    socket.emit('getCurrentUser');
+    socket.emit('getRecipient', params);
+  }, [socket, params]);
+
+  useEffect(() => {
+    if (!socket) return;
 
     socket.on('currentUser', (user: UserInfo) => {
       const sender: UserInfo = {
@@ -61,7 +60,8 @@ export default function DMPage({ params }: { params: UserInfo }) {
     });
 
     return () => {
-      socket.disconnect();
+      socket.off('currentUser');
+      socket.off('recipient');
     };
   }, [socket, params]);
 

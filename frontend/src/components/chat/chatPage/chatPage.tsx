@@ -27,29 +27,28 @@ export default function ChatPage() {
   const [participants, setParticipants] = useState<UserInfo[]>([]);
   const [onlineUsers, setOnlineUsers] = useState<UserInfo[]>([]);
 
-  // useEffect(() => {
   //   // ログイン情報を取得
   //   const user = getCurrentUser();
   //   setSender(user);
   //   console.log('user:', user);
-  // }, [getCurrentUser]);
 
   useEffect(() => {
     if (!socket) return;
-    socket.on('connect', () => {
-      console.log('connection ID : ', socket.id);
 
-      // 仮のユーザー情報をセット
-      const senderData = {
-        ID: 1,
-        name: 'Bob',
-        icon: 'https://pics.prcm.jp/db3b34efef8a0/86032013/jpeg/86032013.jpeg',
-      };
-      setSender(senderData);
-      console.log('sender:', senderData);
-      socket.emit('getRoomList', senderData);
-      socket.emit('getOnlineUsers', senderData);
-    });
+    // 仮のユーザー情報をセット
+    const senderData = {
+      ID: 1,
+      name: 'Bob',
+      icon: 'https://pics.prcm.jp/db3b34efef8a0/86032013/jpeg/86032013.jpeg',
+    };
+    setSender(senderData);
+    console.log('sender:', senderData);
+    socket.emit('getRoomList', senderData);
+    socket.emit('getOnlineUsers', senderData);
+  }, [socket]);
+
+  useEffect(() => {
+    if (!socket) return;
 
     socket.on('roomList', (rooms: Room[]) => {
       console.log('Received roomList from server:', rooms);
@@ -306,6 +305,15 @@ export default function ChatPage() {
             </div>
           </div>
         ))}
+      </div>
+      <div className="back-button">
+        <button
+          onClick={() => {
+            router.back();
+          }}
+        >
+          Back
+        </button>
       </div>
     </div>
   );
