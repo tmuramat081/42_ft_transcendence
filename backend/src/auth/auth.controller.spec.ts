@@ -58,6 +58,8 @@ const mockAuthService = () => ({
   verify2fa: jest.fn(),
   disable2fa: jest.fn(),
   get2faCode: jest.fn(),
+  generate2faAuthSecret: jest.fn(),
+  generate2faQrCode: jest.fn(),
 });
 
 dotenv.config();
@@ -281,7 +283,9 @@ describe('AuthController', () => {
         clearCookie: jest.fn().mockReturnThis(),
       } as unknown as Response;
 
-      const expectedResult = mockUser1;
+      //const expectedResult = mockUser1;
+
+      const expectedResult = '{\"message\":\"2fa disabled\"}';
 
       const result = await controller.disable2fa(mockRequest, mockResponse);
 
@@ -293,7 +297,9 @@ describe('AuthController', () => {
   // get2faCode
   describe('get2faCode', () => {
     it('should return a QR code', async () => {
-      jest.spyOn(authService, 'get2faCode').mockResolvedValue('QR code');
+      jest.spyOn(authService, 'generate2faAuthSecret').mockResolvedValue('QR code');
+      jest.spyOn(authService, 'generate2faQrCode').mockResolvedValue('QR code');
+
       const mockRequest = {
         user: {
           userId: mockUser1.userId,
@@ -312,7 +318,7 @@ describe('AuthController', () => {
         clearCookie: jest.fn().mockReturnThis(),
       } as unknown as Response;
 
-      const expectedResult = 'QR code';
+      const expectedResult = '{\"qrCord\":\"QR code\"}';
 
       const result = await controller.get2faCode(mockRequest);
 
