@@ -70,6 +70,9 @@ jest.mock('speakeasy', () => ({
     base32: 'NVZVKZTUFBUVCY3GIFJEI3TCJZAEWQ3Y',
   })),
   otpauthURL: jest.fn().mockImplementation(() => 'otpauth://totp/test?secret=JZPG4QK5OAYWQMTTJVBU6RZUORNE2XTW&issuer=ft_transcendence'),
+  totp: {
+    verify: jest.fn().mockImplementation(() => true),
+  },
 }));
 
 dotenv.config();
@@ -132,6 +135,8 @@ describe('AuthService', () => {
         AuthService,
         JwtAuthGuard,
         JwtStrategy,
+        IntraAuthGuard,
+        IntraStrategy,
         { provide: UsersService, useFactory: mockUserRepository },
         { provide: UserRepository, useFactory: mockUserRepository },
       ],
@@ -151,7 +156,7 @@ describe('AuthService', () => {
   // one time passwordがうまくモック できない
   // speakasyのモックができない
 
-  verify2fa
+  //verify2fa
   describe('verify2fa', () => {
     it('should return true if the code is correct', async () => {
       const expected = true;

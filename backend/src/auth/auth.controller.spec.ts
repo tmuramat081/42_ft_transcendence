@@ -18,6 +18,12 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import * as dotenv from 'dotenv';
 import * as Joi from 'joi';
 import { JwtService } from '@nestjs/jwt';
+import { JwtStrategy } from '../users/strategy/jwt.strategy';
+import { JwtAuthGuard } from '../users/guards/jwt-auth.guard';
+
+import { Validate2FACodeDto } from './dto/2fa';
+import { Response } from 'express';
+import { UserRepository } from '../users/users.repository';
 
 
 const mockUser1: User = {
@@ -48,6 +54,10 @@ const mockAuthService = () => ({
   findOneByName: jest.fn(),
   currentUser: jest.fn(),
   generateJwt: jest.fn(),
+  validateUser: jest.fn(),
+  verify2fa: jest.fn(),
+  disable2fa: jest.fn(),
+  get2faCode: jest.fn(),
 });
 
 dotenv.config();
@@ -57,6 +67,7 @@ describe('AuthController', () => {
   let authService: AuthService;
   let usersService: UsersService;
   let jwtService: JwtService;
+  let userRepository: UserRepository;
 
 
   beforeEach(async () => {
@@ -111,9 +122,11 @@ describe('AuthController', () => {
       providers: [
         IntraStrategy, 
         IntraAuthGuard, 
-        JwtService,
+        JwtAuthGuard,
+        JwtStrategy,
         { provide: AuthService, useFactory: mockAuthService },
         { provide: UsersService, useFactory: mockAuthService },
+        { provide: UserRepository, useFactory: mockAuthService}, 
       ],
       exports: [IntraStrategy, IntraAuthGuard],
     }).compile();
@@ -122,9 +135,188 @@ describe('AuthController', () => {
     authService = module.get<AuthService>(AuthService);
     usersService = module.get<UsersService>(UsersService);
     jwtService = module.get<JwtService>(JwtService);
+    userRepository = module.get<UserRepository>(UserRepository);
   });
 
   it('should be defined', () => {
     expect(controller).toBeDefined();
+  });
+
+  // callback42
+  // redirectのテストは難しい
+  // describe('callback42', () => {
+  //   it('should return a user', async () => {
+  //     const mockRequest = {
+  //       user: {
+  //         userId: mockUser1.userId,
+  //         userName: mockUser1.userName,
+  //         email: mockUser1.email,
+  //         password: mockUser1.password,
+  //         passwordConfirm: mockUser1.password,
+  //       },
+  //     };
+
+  //     const mockResponse = {
+  //       status: jest.fn().mockReturnThis(),
+  //       json: jest.fn().mockReturnThis(),
+  //       send: jest.fn().mockReturnThis(),
+  //       cookie: jest.fn().mockReturnThis(),
+  //       // 他に必要なメソッドをモック化
+  //     } as unknown as Response;
+      
+  //     const expectedResult = { userId: undefined, status: 'SUCCESS' };
+  //     const result = await controller.callback42(mockRequest, mockResponse);
+
+  //     expect(result).toEqual(expectedResult);
+  //   });
+  // });
+
+
+  // login42
+  describe('login42', () => {
+    it('should return a user', async () => {
+      const mockAccessToken = 'fake_access_token';
+      const mockPayload = {
+        email: 'test@example.com',
+        userName: 'testUser',
+        icon: 'testIcon',
+      };
+
+      const mockRequest = {
+        cookies: {
+          'login42': mockAccessToken,
+        },
+        user: {
+          userId: mockUser1.userId,
+          userName: mockUser1.userName,
+          email: mockUser1.email,
+          password: mockUser1.password,
+          passwordConfirm: mockUser1.password,
+        },
+      };
+
+      const mockResponse = {
+        status: jest.fn().mockReturnThis(),
+        json: jest.fn().mockReturnThis(),
+        send: jest.fn().mockReturnThis(),
+        cookie: jest.fn().mockReturnThis(),
+        clearCookie: jest.fn().mockReturnThis(),
+      } as unknown as Response;
+
+      // jwtServiceのモック
+      jest.spyOn(jwtService, 'decode').mockReturnValue(mockPayload);
+      jest.spyOn(jwtService, 'sign').mockReturnValue('new_access_token');
+
+      // authServiceのモック
+      jest.spyOn(authService, 'validateUser').mockResolvedValue(mockUser1);
+
+      const expectedResult = { userId: undefined, status: 'SUCCESS' };
+      const result = await controller.login42(mockRequest, mockResponse);
+
+      expect(result).toEqual(expectedResult);
+      // expect(mockResponse.cookie).toHaveBeenCalledWith('jwt', 'new_access_token', { httpOnly: true });
+      // expect(mockResponse.clearCookie).toHaveBeenCalledWith('login42');
+    });
+  });
+
+  // verify2fa
+  describe('verify2fa', () => {
+    it('should return true if the code is correct', async () => {
+      jest.spyOn(usersService, 'findOne').mockResolvedValue(mockUser1);
+      jest.spyOn(authService, 'verify2fa').mockResolvedValue(true);
+      jest.spyOn(usersService, 'generateJwt').mockResolvedValue('token');
+
+      const mockRequest = {
+        user: {
+          userId: mockUser1.userId,
+          userName: mockUser1.userName,
+          email: mockUser1.email,
+          password: mockUser1.password,
+          passwordConfirm: mockUser1.password,
+        },
+      };
+
+      const mockDto: Validate2FACodeDto = {
+        userId: mockUser1.userId,
+        code: '123456',
+      };
+
+      const mockResponse = {
+        status: jest.fn().mockReturnThis(),
+        json: jest.fn().mockReturnThis(),
+        send: jest.fn().mockReturnThis(),
+        cookie: jest.fn().mockReturnThis(),
+        clearCookie: jest.fn().mockReturnThis(),
+      } as unknown as Response;
+
+      const expectedResult = '{\"accessToken\":\"token\"}';
+
+      const result = await controller.verify2fa(mockDto, mockRequest, mockResponse);
+
+      expect(result).toEqual(expectedResult);
+    });
+  });
+
+
+  // disable2fa
+  describe('disable2fa', () => {
+    it('should return a user with twoFactorAuth set to false', async () => {
+      jest.spyOn(authService, 'disable2fa').mockResolvedValue(mockUser1);
+      
+      const mockRequest = {
+        user: {
+          userId: mockUser1.userId,
+          userName: mockUser1.userName,
+          email: mockUser1.email,
+          password: mockUser1.password,
+          passwordConfirm: mockUser1.password,
+        },
+      };
+
+      const mockResponse = {
+        status: jest.fn().mockReturnThis(),
+        json: jest.fn().mockReturnThis(),
+        send: jest.fn().mockReturnThis(),
+        cookie: jest.fn().mockReturnThis(),
+        clearCookie: jest.fn().mockReturnThis(),
+      } as unknown as Response;
+
+      const expectedResult = mockUser1;
+
+      const result = await controller.disable2fa(mockRequest, mockResponse);
+
+      expect(result).toEqual(expectedResult);
+    });
+  });
+
+
+  // get2faCode
+  describe('get2faCode', () => {
+    it('should return a QR code', async () => {
+      jest.spyOn(authService, 'get2faCode').mockResolvedValue('QR code');
+      const mockRequest = {
+        user: {
+          userId: mockUser1.userId,
+          userName: mockUser1.userName,
+          email: mockUser1.email,
+          password: mockUser1.password,
+          passwordConfirm: mockUser1.password,
+        },
+      };
+
+      const mockResponse = {
+        status: jest.fn().mockReturnThis(),
+        json: jest.fn().mockReturnThis(),
+        send: jest.fn().mockReturnThis(),
+        cookie: jest.fn().mockReturnThis(),
+        clearCookie: jest.fn().mockReturnThis(),
+      } as unknown as Response;
+
+      const expectedResult = 'QR code';
+
+      const result = await controller.get2faCode(mockRequest);
+
+      expect(result).toEqual(expectedResult);
+    });
   });
 });
