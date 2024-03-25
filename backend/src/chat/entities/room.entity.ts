@@ -6,7 +6,7 @@ export class Room {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column()
+  @Column({ nullable: false })
   roomName: string;
 
   @Column('json', { nullable: true })
