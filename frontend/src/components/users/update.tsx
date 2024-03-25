@@ -358,6 +358,8 @@ export default function Form() {
             />
             </div>
     
+            {!loginUser.name42 && (
+            <>
             <div>
             <label htmlFor="password">新しいパスワード:</label>
             <input
@@ -387,6 +389,8 @@ export default function Form() {
             onChange={(e) => setPassword(e.target.value)}
             /> 
             </div>
+            </>
+            )}
 
             {/* <div>
             <label htmlFor="2faToggle">2FA：</label>
