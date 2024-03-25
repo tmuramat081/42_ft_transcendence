@@ -5,15 +5,15 @@ export class DmLog {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column()
+  @Column({ nullable: false })
   senderName: string;
 
-  @Column()
+  @Column({ nullable: false })
   recipientName: string;
 
   @Column()
   message: string;
 
-  @Column()
+  @Column({ nullable: false })
   timestamp: string;
 }

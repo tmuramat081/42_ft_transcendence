@@ -6,11 +6,11 @@ export class Room {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column()
+  @Column({ nullable: false })
   roomName: string;
 
   @Column('json', { nullable: true })
-  roomParticipants: { id: string; name: string; icon: string }[];
+  roomParticipants: { id: number; name: string; icon: string }[];
 
   // // OneToManyリレーションシップを定義する
   // @OneToMany(() => ChatLog, (chatLog) => chatLog.roomName)

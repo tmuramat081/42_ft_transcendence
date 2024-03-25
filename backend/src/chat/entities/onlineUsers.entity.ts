@@ -5,10 +5,10 @@ export class OnlineUsers {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column()
-  userId: string;
+  @Column({ nullable: false })
+  userId: number;
 
-  @Column()
+  @Column({ nullable: false })
   name: string;
 
   @Column()

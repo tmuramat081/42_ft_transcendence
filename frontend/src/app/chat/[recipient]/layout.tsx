@@ -1,4 +1,4 @@
-/* eslint-disable */
+import React from 'react';
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
@@ -6,6 +6,6 @@ export const metadata: Metadata = {
   description: 'direct message page.',
 };
 
-export default function DMLayout({ children }: { children: React.ReactNode }) {
+export default function Layout({ children }: { children: React.ReactNode }) {
   return <section>{children}</section>;
 }

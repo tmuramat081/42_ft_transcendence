@@ -18,7 +18,7 @@ import { OnlineUsers } from './entities/onlineUsers.entity';
 import { formatDate } from './tools';
 
 interface UserInfo {
-  ID: string;
+  ID: number;
   name: string;
   icon: string;
 }
@@ -62,7 +62,13 @@ export class DMGateway {
       const currentUser = await this.onlineUsersRepository.findOne({ where: { me: true } });
       if (currentUser) {
         this.logger.log(`currentUser found: ${JSON.stringify(currentUser)}`);
-        this.server.to(socket.id).emit('currentUser', currentUser);
+        // currentUserをUserInfoに変換
+        const userInfo: UserInfo = {
+          ID: currentUser.id,
+          name: currentUser.name,
+          icon: currentUser.icon,
+        };
+        this.server.to(socket.id).emit('currentUser', userInfo);
       } else {
         this.logger.error('No current user found');
       }
@@ -81,7 +87,13 @@ export class DMGateway {
       });
       if (recipientUser) {
         this.logger.log(`Recipient found: ${JSON.stringify(recipientUser)}`);
-        this.server.to(socket.id).emit('recipient', recipientUser);
+        // recipientUserをUserInfoに変換
+        const recipient: UserInfo = {
+          ID: recipientUser.id,
+          name: recipientUser.name,
+          icon: recipientUser.icon,
+        };
+        this.server.to(socket.id).emit('recipient', recipient);
       } else {
         this.logger.error('No recipient found');
       }
@@ -107,6 +119,47 @@ export class DMGateway {
     }
   }
 
+  @SubscribeMessage('getDMLogs')
+  async handleGetDMLogs(
+    @MessageBody() payload: { sender: UserInfo; receiver: UserInfo },
+    @ConnectedSocket() socket: Socket,
+  ) {
+    try {
+      if (!payload.sender || !payload.receiver) {
+        this.logger.error('Invalid DM data:', payload);
+        return;
+      }
+      this.logger.log(
+        `getDMLogs: ${payload.sender.name} requested DM logs with ${payload.receiver.name}`,
+      );
+
+      // DMログを取得
+      const dmLogs = await this.dmLogRepository.find({
+        where: [
+          { senderName: payload.sender.name, recipientName: payload.receiver.name },
+          { senderName: payload.receiver.name, recipientName: payload.sender.name },
+        ],
+        order: { timestamp: 'ASC' },
+      });
+      this.logger.log(`dmLogs: ${JSON.stringify(dmLogs)}`);
+
+      // dmLongsをdirectMessage[]に変換
+      const directMessages: DirectMessage[] = dmLogs.map((dmLog) => {
+        return {
+          sender: dmLog.senderName,
+          recipient: dmLog.recipientName,
+          text: dmLog.message,
+          timestamp: dmLog.timestamp,
+        };
+      });
+
+      this.server.to(socket.id).emit('dmLogs', directMessages);
+    } catch (error) {
+      this.logger.error('Error getting DM logs:', error);
+      throw error;
+    }
+  }
+
   @SubscribeMessage('sendDM')
   async handleSendDM(
     @MessageBody() payload: { sender: UserInfo; receiver: UserInfo; message: string },
@@ -128,19 +181,31 @@ export class DMGateway {
       dmLog.message = payload.message;
       dmLog.timestamp = formatDate(new Date());
       await this.dmLogRepository.save(dmLog);
-      this.logger.log(`timestamp: ${dmLog.timestamp}`);
       this.logger.log(`Saved dmLog: ${JSON.stringify(dmLog)}`);
 
-      const directMessage: DirectMessage = {
-        sender: payload.sender.name,
-        recipient: payload.receiver.name,
-        text: payload.message,
-        timestamp: dmLog.timestamp,
-      };
+      // DMログを取得
+      const dmLogs = await this.dmLogRepository.find({
+        where: [
+          { senderName: payload.sender.name, recipientName: payload.receiver.name },
+          { senderName: payload.receiver.name, recipientName: payload.sender.name },
+        ],
+        order: { timestamp: 'ASC' },
+      });
+      this.logger.log(`dmLogs: ${JSON.stringify(dmLogs)}`);
 
-      this.server.to(socket.id).emit('directMessage', directMessage);
+      // dmLongsをdirectMessage[]に変換
+      const directMessages: DirectMessage[] = dmLogs.map((dmLog) => {
+        return {
+          sender: dmLog.senderName,
+          recipient: dmLog.recipientName,
+          text: dmLog.message,
+          timestamp: dmLog.timestamp,
+        };
+      });
+
+      this.server.to(socket.id).emit('dmLogs', directMessages);
     } catch (error) {
-      this.logger.error('Error sending DM:', error);
+      this.logger.error('Error sending DM logs:', error);
       throw error;
     }
   }
