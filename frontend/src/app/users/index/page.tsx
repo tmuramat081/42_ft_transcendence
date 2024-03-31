@@ -5,6 +5,8 @@
 
 import Avatar from '@mui/material/Avatar';
 
+import Link from 'next/link'
+
 type User = {
     userId: string;
     userName: string;
@@ -70,16 +72,21 @@ export default async function Page({ params }: { params: { name: string } }) {
     //console.log("users: ", users);
     
   return (
-    <div>
+    <>
         {users.map((user: User) => (
             <div key={user.userId}>
                 <h1>{user.userName}</h1>
+                <li>
+                    <Link href={"/friend/" + user.userName}>
+                        フレンド追加ページ
+                    </Link>
+                </li>
                 <p>{user.email}</p>
                 <p>{user.userId}</p>
                 <p>{user.icon}</p>
                 <Avatar alt={user.userName} src={"http://localhost:3001/api/uploads/" + user.icon} />
             </div>
         ))}
-    </div>
+    </>
   );
 }

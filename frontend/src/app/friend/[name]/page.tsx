@@ -173,7 +173,17 @@ export default function functionPage({ params }: { params: { name: string } }) {
                 return (
                     <div>
                         <p key={friend.userName}>{friend.userName}</p>
-                        <Avatar alt={user.userName} src={"http://localhost:3001/api/uploads/" + friend.icon} />
+                        <Avatar alt={block.userName} src={"http://localhost:3001/api/uploads/" + friend.icon} />
+                    </div>
+                )
+            })}
+
+            <h2>Block List</h2>
+            {loginUser !== null && loginUser.blocked.map((block) => {
+                return (
+                    <div>
+                        <p key={block.userName}>{block.userName}</p>
+                        <Avatar alt={block.userName} src={"http://localhost:3001/api/uploads/" + block.icon} />
                     </div>
                 )
             })}

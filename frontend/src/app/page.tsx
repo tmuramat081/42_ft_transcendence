@@ -38,6 +38,11 @@ export default function Home() {
               ユーザー情報更新
             </Link>
           </li>
+          <li>
+            <Link href="./users/index">
+              ユーザー一覧
+            </Link>
+          </li>
         </ul>
       </main>
     </>
