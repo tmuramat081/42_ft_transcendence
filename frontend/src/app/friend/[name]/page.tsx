@@ -51,6 +51,9 @@ export default function functionPage({ params }: { params: { name: string } }) {
     }, []);
 
     const handleAddFriend = () => {
+        if (user === null) {
+            return;
+        }
         console.log('friend');
         
         fetch("http://localhost:3001/users/friend/add/" + user.userName, {
@@ -71,6 +74,9 @@ export default function functionPage({ params }: { params: { name: string } }) {
     }
 
     const handleRemoveFriend = () => {
+        if (user === null) {
+            return;
+        }
         console.log('friend');
         
         fetch("http://localhost:3001/users/friend/remove/" + user.userName, {
@@ -92,6 +98,9 @@ export default function functionPage({ params }: { params: { name: string } }) {
 
 
     const handleBlockUser = () => {
+        if (user === null) {
+            return;
+        }
         console.log('block');
 
         fetch("http://localhost:3001/users/block/" + user.userName, {
@@ -112,6 +121,9 @@ export default function functionPage({ params }: { params: { name: string } }) {
     }
 
     const handleUnblockUser = () => {
+        if (user === null) {
+            return;
+        }
         console.log('unblock');
 
         fetch("http://localhost:3001/users/unblock/" + user.userName, {
