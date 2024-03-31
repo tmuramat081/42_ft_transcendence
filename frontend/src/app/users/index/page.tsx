@@ -31,6 +31,7 @@ export default async function Page({ params }: { params: { name: string } }) {
         method: "GET",
         headers: { "Content-Type": "application/json" },
         credentials: 'include',
+        cache: 'no-store',
       })
       .then((res) => res.json())
       .then((data) => {

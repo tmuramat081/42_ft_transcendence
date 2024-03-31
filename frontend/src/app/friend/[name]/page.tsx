@@ -173,7 +173,7 @@ export default function functionPage({ params }: { params: { name: string } }) {
                 return (
                     <div>
                         <p key={friend.userName}>{friend.userName}</p>
-                        <Avatar alt={block.userName} src={"http://localhost:3001/api/uploads/" + friend.icon} />
+                        <Avatar alt={friend.userName} src={"http://localhost:3001/api/uploads/" + friend.icon} />
                     </div>
                 )
             })}

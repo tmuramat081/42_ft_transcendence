@@ -588,6 +588,8 @@ export class UsersController {
             twoFactorAuthNow: false
         }
 
+        console.log("user: ", user)
+
         return JSON.stringify({"user": user});
 
     }
