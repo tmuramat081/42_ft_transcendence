@@ -144,8 +144,6 @@ export default function functionPage({ params }: { params: { name: string } }) {
         });
     }
 
-    console.log("user: ", loginUser?.friends.filter((friend) => friend.userId === user?.userId).length > 0);
-
     
   return (
     <div>
