@@ -1,12 +1,6 @@
-/* eslint-disable */
-"use client";
-import { useState } from 'react';
-import Form from '@/components/auth/signup';
-import SignUp from '@/components/auth/signup_mui';
+'use client';
+import SignUp from '@/components/auth/signup/signup_mui';
 
 export default function Page() {
-    return (
-        //<Form />
-        <SignUp />
-    )
+  return <SignUp />;
 }

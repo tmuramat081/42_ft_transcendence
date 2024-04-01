@@ -29,7 +29,7 @@ const GlobalHeader = () => {
   return (
     <Box sx={{ flexGrow: 1 }}>
       <AppBar
-        position='static'
+        position="static"
         sx={{
           backgroundColor: 'primary',
           top: 0,

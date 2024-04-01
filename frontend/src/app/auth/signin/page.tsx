@@ -8,12 +8,12 @@ import { Box } from '@mui/material';
 export default function Page() {
   return (
     <Box
-      display='flex'
-      justifyContent='center'
-      alignItems='center'
-      height='80vh'
+      display="flex"
+      justifyContent="center"
+      alignItems="center"
+      height="80vh"
     >
       <SignIn />
     </Box>
-  ); 
+  );
 }

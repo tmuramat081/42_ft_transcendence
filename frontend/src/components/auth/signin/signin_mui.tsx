@@ -1,3 +1,4 @@
+/* eslint-disable */
 import * as React from 'react';
 import Avatar from '@mui/material/Avatar';
 import Button from '@mui/material/Button';
@@ -13,11 +14,11 @@ import Container from '@mui/material/Container';
 import { createTheme } from '@mui/material/styles';
 
 import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation'
+import { useRouter } from 'next/navigation';
 import { useAuth } from '@/providers/useAuth';
 //import Modal from '../../components/users/2fa/modal'; // Modalコンポーネントをインポート
 import CircularProgress from '@mui/material/CircularProgress';
-import { MuiOtpInput } from 'mui-one-time-password-input'
+import { MuiOtpInput } from 'mui-one-time-password-input';
 import Modal from '@mui/material/Modal';
 
 import { APP_ROUTING } from '@/constants/routing.constant';
@@ -27,9 +28,17 @@ const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
 function _Copyright(props: any) {
   return (
-    <Typography variant="body2" color="text.secondary" align="center" {...props}>
+    <Typography
+      variant="body2"
+      color="text.secondary"
+      align="center"
+      {...props}
+    >
       {'Copyright © '}
-      <Link color="inherit" href="https://mui.com/">
+      <Link
+        color="inherit"
+        href="https://mui.com/"
+>
         Your Website
       </Link>{' '}
       {new Date().getFullYear()}
@@ -44,135 +53,130 @@ const _defaultTheme = createTheme();
 export default function SignIn() {
   const theme = useTheme();
 
-    const [userName, setUserName] = useState<string>('');
-    const [password, setPassword] = useState<string>('');
+  const [userName, setUserName] = useState<string>('');
+  const [password, setPassword] = useState<string>('');
 
-    const [validationUserId, setValidationUserId] = useState<number>(0);
-    const [show2Fa, setShow2Fa] = useState<boolean>(false);
-    const [code, setCode] = useState<string>('');
+  const [validationUserId, setValidationUserId] = useState<number>(0);
+  const [show2Fa, setShow2Fa] = useState<boolean>(false);
+  const [code, setCode] = useState<string>('');
 
-    const router = useRouter();
-    const {signin, loginUser, getCurrentUser, loading} = useAuth();
+  const router = useRouter();
+  const { signin, loginUser, getCurrentUser, loading } = useAuth();
 
-    // useEffect
-    useEffect(() => {
-      getCurrentUser();
-    }, []);
+  // useEffect
+  useEffect(() => {
+    getCurrentUser();
+  }, []);
 
-    //field修正
-    
-    // handleSubmit修正
+  //field修正
 
-    const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
-        e.preventDefault();
-        const data = new FormData(e.currentTarget);
+  // handleSubmit修正
 
-        console.log('Submitted data:', data.get('name'), data.get('password'))
-        
-        // ここでフォームのデータを処理します
-        fetch(`${API_URL}/users/signin`, {
-            method: 'POST',
-            credentials: 'include',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            //body: JSON.stringify({ userName, password }),
-            body: JSON.stringify({ userName: data.get('name'), password: data.get('password') }),
-        })
-        .then ((res) => {
-            // /console.log(res.json());
-            return res.json();
-        })
-        //.then((res) => res.json())
-        .then((data) => {
-            if (data.status === "SUCCESS" && data.userId === undefined) {
-                //console.log('Success:', data.accessToken);
-                getCurrentUser();
-                // ダッシュボート画面へ遷移
-                router.push(APP_ROUTING.DASHBOARD.path);
-            } else if (data.status === "2FA_REQUIRED" && data.userId !== undefined) {
-                setValidationUserId(data.userId);
-                setShow2Fa(true);
-            }
-        })
-        .catch((error) => {
-            console.error('Error:', error);
-        });
+  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    const data = new FormData(e.currentTarget);
 
-        //console.log('送信されたデータ:', { userName, password });
-        console.log('送信されたデータ:', { name: data.get('name'), password: data.get('password') });
+    console.log('Submitted data:', data.get('name'), data.get('password'));
 
+    // ここでフォームのデータを処理します
+    fetch(`${API_URL}/users/signin`, {
+      method: 'POST',
+      credentials: 'include',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      //body: JSON.stringify({ userName, password }),
+      body: JSON.stringify({ userName: data.get('name'), password: data.get('password') }),
+    })
+      .then((res) => {
+        // /console.log(res.json());
+        return res.json();
+      })
+      //.then((res) => res.json())
+      .then((data) => {
+        if (data.status === 'SUCCESS' && data.userId === undefined) {
+          //console.log('Success:', data.accessToken);
+          getCurrentUser();
+          // ダッシュボート画面へ遷移
+          router.push(APP_ROUTING.DASHBOARD.path);
+        } else if (data.status === '2FA_REQUIRED' && data.userId !== undefined) {
+          setValidationUserId(data.userId);
+          setShow2Fa(true);
+        }
+      })
+      .catch((error) => {
+        console.error('Error:', error);
+      });
 
-        //signin( userName, password );
-        //getCurrentUser();
-        // 送信後の処理（例: フォームをクリアする）
-        // setUserName('');
-        // setPassword('');
-    };
+    //console.log('送信されたデータ:', { userName, password });
+    console.log('送信されたデータ:', { name: data.get('name'), password: data.get('password') });
 
-    //React.FormEvent<HTMLFormElement>
-    const handleSubmit2fa = (e: React.FormEvent<HTMLFormElement>) => {
-        e.preventDefault();
-        //const data = new FormData(e.currentTarget);
-        // ここに2FAコードを検証するロジックを追加
-        console.log('Submitted 2FA code:', code);
-        console.log('validationUserId:', validationUserId);
-  
-        fetch(`${API_URL}/auth/2fa/verify`, {
-          method: 'POST',
-          credentials: 'include',
-          headers: {
-                'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({ userId: validationUserId, code: code }),
-          })
-          .then((res) => {
-              //console.log(res.data);
-              return res.json();
-          })
-          .then((data) => {
-            if (data.accessToken !== undefined) {
-                console.log('Success:', data.accessToken);
-                //setToken(data.accessToken);
-                //router.push('/');
-                getCurrentUser();
-            } else {
-                // errorメッセージを表示
+    //signin( userName, password );
+    //getCurrentUser();
+    // 送信後の処理（例: フォームをクリアする）
+    // setUserName('');
+    // setPassword('');
+  };
 
+  //React.FormEvent<HTMLFormElement>
+  const handleSubmit2fa = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    //const data = new FormData(e.currentTarget);
+    // ここに2FAコードを検証するロジックを追加
+    console.log('Submitted 2FA code:', code);
+    console.log('validationUserId:', validationUserId);
 
-            }
-          })
-          .catch((error) => {
-              console.error('Error:', error);
-  
-              // redirect
-          });
-      };
+    fetch(`${API_URL}/auth/2fa/verify`, {
+      method: 'POST',
+      credentials: 'include',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ userId: validationUserId, code: code }),
+    })
+      .then((res) => {
+        //console.log(res.data);
+        return res.json();
+      })
+      .then((data) => {
+        if (data.accessToken !== undefined) {
+          console.log('Success:', data.accessToken);
+          //setToken(data.accessToken);
+          //router.push('/');
+          getCurrentUser();
+        } else {
+          // errorメッセージを表示
+        }
+      })
+      .catch((error) => {
+        console.error('Error:', error);
 
-      const handleOpen = () => {
-        setShow2Fa(true);
-      };
-      const handleClose = () => {
-        setShow2Fa(false);
-      };
+        // redirect
+      });
+  };
 
+  const handleOpen = () => {
+    setShow2Fa(true);
+  };
+  const handleClose = () => {
+    setShow2Fa(false);
+  };
 
+  //   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+  //     event.preventDefault();
+  //     const data = new FormData(event.currentTarget);
+  //     console.log({
+  //       email: data.get('email'),
+  //       password: data.get('password'),
+  //     });
+  //   };
 
-//   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
-//     event.preventDefault();
-//     const data = new FormData(event.currentTarget);
-//     console.log({
-//       email: data.get('email'),
-//       password: data.get('password'),
-//     });
-//   };
-
-    // 読み込み中はローディングを表示
-    // 一瞬見れる問題を解決
-    if (loading || loginUser) {
-        // return <p>loading...</p>
-        return <CircularProgress color="secondary" />
-    }
+  // 読み込み中はローディングを表示
+  // 一瞬見れる問題を解決
+  if (loading || loginUser) {
+    // return <p>loading...</p>
+    return <CircularProgress color="secondary" />;
+  }
 
   return (
     <>
@@ -187,7 +191,10 @@ export default function SignIn() {
         </Alert>
       </Stack>
       */}
-      <Container component="main" maxWidth="xs">
+      <Container
+        component="main"
+        maxWidth="xs"
+      >
         <Box
           sx={{
             marginTop: 8,
@@ -201,16 +208,20 @@ export default function SignIn() {
             borderRadius: 2,
           }}
         >
-          <Avatar sx={{ m: 1, bgcolor: theme.palette.primary.main}}>
+          <Avatar sx={{ m: 1, bgcolor: theme.palette.primary.main }}>
             <LockOutlinedIcon />
           </Avatar>
-          <Typography component="h1" variant="h5">
+          <Typography
+            component="h1"
+            variant="h5"
+          >
             Sign in
           </Typography>
-          <Box 
-            component="form" 
-            onSubmit={handleSubmit} 
-            noValidate sx={{ mt: 1 }}
+          <Box
+            component="form"
+            onSubmit={handleSubmit}
+            noValidate
+            sx={{ mt: 1 }}
           >
             <TextField
               margin="normal"
@@ -233,7 +244,12 @@ export default function SignIn() {
               autoComplete="current-password"
             />
             <FormControlLabel
-              control={<Checkbox value="remember" color="primary" />}
+              control={
+                <Checkbox
+                  value="remember"
+                  color="primary"
+                />
+              }
               label="Remember me"
             />
             <Button
@@ -241,20 +257,31 @@ export default function SignIn() {
               fullWidth
               variant="contained"
               color="primary"
-              sx={{ 
+              sx={{
                 my: 1,
               }}
             >
               Sign In
             </Button>
             <Grid container>
-              <Grid item xs>
-                <Link href="#" variant="body2" sx={{ color: theme.palette.text.primary }}>
+              <Grid
+                item
+                xs
+              >
+                <Link
+                  href="#"
+                  variant="body2"
+                  sx={{ color: theme.palette.text.primary }}
+                >
                   Forgot password?
                 </Link>
               </Grid>
               <Grid item>
-                <Link href="#" variant="body2" sx={{ color: theme.palette.text.primary }}>
+                <Link
+                  href="#"
+                  variant="body2"
+                  sx={{ color: theme.palette.text.primary }}
+                >
                   {"Don't have an account? Sign Up"}
                 </Link>
               </Grid>
@@ -264,15 +291,15 @@ export default function SignIn() {
           {/* 2FA用モーダル */}
           <Modal
             open={show2Fa}
-            onClose={ () => {}}
+            onClose={() => {}}
             aria-labelledby="child-modal-title"
             aria-describedby="child-modal-description"
           >
-            <Box 
-              component="form" 
-              onSubmit={handleSubmit2fa} 
-              noValidate 
-              sx={{ 
+            <Box
+              component="form"
+              onSubmit={handleSubmit2fa}
+              noValidate
+              sx={{
                 position: 'absolute' as 'absolute',
                 top: '50%',
                 left: '50%',
@@ -284,22 +311,24 @@ export default function SignIn() {
                 pt: 2,
                 px: 4,
                 pb: 3,
-               }}>
+              }}
+            >
               <h2 id="child-modal-title">Text in a child modal</h2>
-                <p id="child-modal-description">
-                  Lorem ipsum, dolor sit amet consectetur adipisicing elit.
-                </p>
-                <MuiOtpInput
-                  value={code}
-                  onChange={setCode}
-                  length={6}
-                />
+              <p id="child-modal-description">
+                Lorem ipsum, dolor sit amet consectetur adipisicing elit.
+              </p>
+              <MuiOtpInput
+                value={code}
+                onChange={setCode}
+                length={6}
+              />
               <Button
                 type="submit"
                 fullWidth
                 variant="contained"
                 sx={{ mt: 3, mb: 2 }}
-              >Submit
+              >
+                Submit
               </Button>
             </Box>
           </Modal>
@@ -311,18 +340,24 @@ export default function SignIn() {
               alignItems: 'center',
             }}
           >
-            <Button 
-              onClick={ () => { router.push('/auth/signup') } } 
-              variant="contained" 
+            <Button
+              onClick={() => {
+                router.push('/auth/signup');
+              }}
+              variant="contained"
               color="primary"
             >
               SignUp
             </Button>
-            <Button 
-              variant="contained" 
+            <Button
+              variant="contained"
               color="primary"
-              onClick={() => { router.push(`${API_URL}/auth/callback/42`)}}
-            >42ログイン</Button>
+              onClick={() => {
+                router.push(`${API_URL}/auth/callback/42`);
+              }}
+            >
+              42ログイン
+            </Button>
           </Box>
         </Box>
       </Container>
