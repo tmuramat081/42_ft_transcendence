@@ -46,7 +46,12 @@ export default function RoomList(_prop: Props) {
     userName: 'tmuramat',
     email: 'muramatsu@gmail.com',
     icon: 'https://www.gravatar.com/avatar/205e460b479e2e5b48aec07710c08d50',
+    createdAt: new Date('2023-01-01T00:00:00Z'),
+    deletedAt: new Date('2023-01-01T00:00:00Z'),
+    name42: '',
     twoFactorAuth: false,
+    friends: [],
+    blocked: [],
   };
 
   // ゲームルーム一覧取得APIコール
