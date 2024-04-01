@@ -1,4 +1,5 @@
 // サンプル用クライアントレンダリングでしかできなさそう
+/* eslint-disable */
 
 'use client';
 
@@ -8,8 +9,8 @@ import { useAuth } from '@/providers/useAuth';
 import { User } from '@/types/user';
 
 export default function functionPage({ params }: { params: { name: string } }) {
-  console.log( params.name );
-  const [user, setUser] = useState<User | null>(null);
+  console.log(params.name);
+  const [ user, setUser ] = useState<User | null>(null);
   const { loginUser, getCurrentUser } = useAuth();
 
   useEffect(() => {

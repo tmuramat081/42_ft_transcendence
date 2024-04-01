@@ -1,3 +1,5 @@
+/* eslint-disable */
+
 "use client";
 
 export default function Page({ params }: { params: { name: string } }) {
