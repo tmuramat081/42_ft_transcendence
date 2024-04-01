@@ -6,6 +6,7 @@ import GlobalHeader from '@/components/common/header/globalHeader';
 import GlobalThemeProvider from '@/providers/globalThemeProvider';
 import GlobalFooter from '@/components/common/footer/globalFooter';
 import { WebSocketProvider } from '@/providers/webSocketProvider';
+import { CssBaseline } from '@mui/material';
 
 export const metadata: Metadata = {
   title: 'ft_transcendence',
@@ -15,6 +16,7 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <>
+      <CssBaseline />
       <GlobalThemeProvider>
         <LoginUserProvider>
           <AccessControlProvider>

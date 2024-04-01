@@ -1,8 +1,6 @@
-/* eslint-disable */
 import * as React from 'react';
 import Avatar from '@mui/material/Avatar';
 import Button from '@mui/material/Button';
-import CssBaseline from '@mui/material/CssBaseline';
 import TextField from '@mui/material/TextField';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import Checkbox from '@mui/material/Checkbox';
@@ -12,7 +10,7 @@ import Box from '@mui/material/Box';
 import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
 import Typography from '@mui/material/Typography';
 import Container from '@mui/material/Container';
-import { createTheme, ThemeProvider } from '@mui/material/styles';
+import { createTheme } from '@mui/material/styles';
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation'
@@ -22,24 +20,12 @@ import CircularProgress from '@mui/material/CircularProgress';
 import { MuiOtpInput } from 'mui-one-time-password-input'
 import Modal from '@mui/material/Modal';
 
-import Alert from '@mui/material/Alert';
-import Stack from '@mui/material/Stack';
+import { APP_ROUTING } from '@/constants/routing.constant';
+import { useTheme } from '@mui/material/styles';
 
-const style = {
-    position: 'absolute' as 'absolute',
-    top: '50%',
-    left: '50%',
-    transform: 'translate(-50%, -50%)',
-    width: '70%',
-    bgcolor: 'background.paper',
-    border: '2px solid #000',
-    boxShadow: 24,
-    pt: 2,
-    px: 4,
-    pb: 3,
-  };
+const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
-function Copyright(props: any) {
+function _Copyright(props: any) {
   return (
     <Typography variant="body2" color="text.secondary" align="center" {...props}>
       {'Copyright © '}
@@ -53,9 +39,10 @@ function Copyright(props: any) {
 }
 
 // TODO remove, this demo shouldn't need to reset the theme.
-const defaultTheme = createTheme();
+const _defaultTheme = createTheme();
 
 export default function SignIn() {
+  const theme = useTheme();
 
     const [userName, setUserName] = useState<string>('');
     const [password, setPassword] = useState<string>('');
@@ -69,7 +56,7 @@ export default function SignIn() {
 
     // useEffect
     useEffect(() => {
-        getCurrentUser();
+      getCurrentUser();
     }, []);
 
     //field修正
@@ -83,7 +70,7 @@ export default function SignIn() {
         console.log('Submitted data:', data.get('name'), data.get('password'))
         
         // ここでフォームのデータを処理します
-        fetch('http://localhost:3001/users/signin', {
+        fetch(`${API_URL}/users/signin`, {
             method: 'POST',
             credentials: 'include',
             headers: {
@@ -101,7 +88,8 @@ export default function SignIn() {
             if (data.status === "SUCCESS" && data.userId === undefined) {
                 //console.log('Success:', data.accessToken);
                 getCurrentUser();
-                router.push('/');
+                // ダッシュボート画面へ遷移
+                router.push(APP_ROUTING.DASHBOARD.path);
             } else if (data.status === "2FA_REQUIRED" && data.userId !== undefined) {
                 setValidationUserId(data.userId);
                 setShow2Fa(true);
@@ -130,7 +118,7 @@ export default function SignIn() {
         console.log('Submitted 2FA code:', code);
         console.log('validationUserId:', validationUserId);
   
-        fetch('http://localhost:3001/auth/2fa/verify', {
+        fetch(`${API_URL}/auth/2fa/verify`, {
           method: 'POST',
           credentials: 'include',
           headers: {
@@ -187,33 +175,43 @@ export default function SignIn() {
     }
 
   return (
-    <ThemeProvider theme={defaultTheme}>
+    <>
+      {/* アラートの表示
       <Stack sx={{ width: '100%' }} spacing={2}>
         <Alert severity="success">This is a success Alert.</Alert>
         <Alert severity="info">This is an info Alert.</Alert>
         <Alert severity="warning">This is a warning Alert.</Alert>
         <Alert severity="error">This is an error Alert.</Alert>
         <Alert severity="warning" onClose={() => {}}>
-        This Alert displays the default close icon.
+          This Alert displays the default close icon.
         </Alert>
       </Stack>
+      */}
       <Container component="main" maxWidth="xs">
-        <CssBaseline />
         <Box
           sx={{
             marginTop: 8,
+            p: 3,
             display: 'flex',
             flexDirection: 'column',
             alignItems: 'center',
+            bgcolor: theme.palette.background.paper,
+            borderTop: '5px solid #00babc',
+            boxShadow: 4,
+            borderRadius: 2,
           }}
         >
-          <Avatar sx={{ m: 1, bgcolor: 'secondary.main' }}>
+          <Avatar sx={{ m: 1, bgcolor: theme.palette.primary.main}}>
             <LockOutlinedIcon />
           </Avatar>
           <Typography component="h1" variant="h5">
             Sign in
           </Typography>
-          <Box component="form" onSubmit={handleSubmit} noValidate sx={{ mt: 1 }}>
+          <Box 
+            component="form" 
+            onSubmit={handleSubmit} 
+            noValidate sx={{ mt: 1 }}
+          >
             <TextField
               margin="normal"
               required
@@ -242,59 +240,92 @@ export default function SignIn() {
               type="submit"
               fullWidth
               variant="contained"
-              sx={{ mt: 3, mb: 2 }}
+              color="primary"
+              sx={{ 
+                my: 1,
+              }}
             >
               Sign In
             </Button>
             <Grid container>
               <Grid item xs>
-                <Link href="#" variant="body2">
+                <Link href="#" variant="body2" sx={{ color: theme.palette.text.primary }}>
                   Forgot password?
                 </Link>
               </Grid>
               <Grid item>
-                <Link href="#" variant="body2">
+                <Link href="#" variant="body2" sx={{ color: theme.palette.text.primary }}>
                   {"Don't have an account? Sign Up"}
                 </Link>
               </Grid>
             </Grid>
           </Box>
 
-      <Modal
-        open={show2Fa}
-        onClose={ () => {}}
-        aria-labelledby="child-modal-title"
-        aria-describedby="child-modal-description"
-      >
-
-
-        <Box component="form" onSubmit={handleSubmit2fa} noValidate sx={{ ...style }}>
-                <h2 id="child-modal-title">Text in a child modal</h2>
+          {/* 2FA用モーダル */}
+          <Modal
+            open={show2Fa}
+            onClose={ () => {}}
+            aria-labelledby="child-modal-title"
+            aria-describedby="child-modal-description"
+          >
+            <Box 
+              component="form" 
+              onSubmit={handleSubmit2fa} 
+              noValidate 
+              sx={{ 
+                position: 'absolute' as 'absolute',
+                top: '50%',
+                left: '50%',
+                transform: 'translate(-50%, -50%)',
+                width: '70%',
+                bgcolor: 'background.paper',
+                border: '2px solid #000',
+                boxShadow: 24,
+                pt: 2,
+                px: 4,
+                pb: 3,
+               }}>
+              <h2 id="child-modal-title">Text in a child modal</h2>
                 <p id="child-modal-description">
-                    Lorem ipsum, dolor sit amet consectetur adipisicing elit.
+                  Lorem ipsum, dolor sit amet consectetur adipisicing elit.
                 </p>
                 <MuiOtpInput
-                    value={code}
-                    onChange={setCode}
-                    length={6}
+                  value={code}
+                  onChange={setCode}
+                  length={6}
                 />
-                <Button
-                  type="submit"
-                  fullWidth
-                  variant="contained"
-                  sx={{ mt: 3, mb: 2 }}
-                >Submit</Button>
+              <Button
+                type="submit"
+                fullWidth
+                variant="contained"
+                sx={{ mt: 3, mb: 2 }}
+              >Submit
+              </Button>
+            </Box>
+          </Modal>
+
+          <Box
+            sx={{
+              display: 'flex',
+              gap: 4,
+              alignItems: 'center',
+            }}
+          >
+            <Button 
+              onClick={ () => { router.push('/auth/signup') } } 
+              variant="contained" 
+              color="primary"
+            >
+              SignUp
+            </Button>
+            <Button 
+              variant="contained" 
+              color="primary"
+              onClick={() => { router.push(`${API_URL}/auth/callback/42`)}}
+            >42ログイン</Button>
+          </Box>
         </Box>
-      </Modal>
-
-
-          <Button onClick={ () => { router.push('/auth/signup') } } variant="contained" color="primary">SignUp</Button>
-
-          <Button variant="contained" color="primary" onClick={() => { router.push('http://localhost:3001/auth/callback/42')}}>42ログイン</Button>
-
-        </Box>
-        <Copyright sx={{ mt: 8, mb: 4 }} />
       </Container>
-    </ThemeProvider>
+    </>
   );
 }

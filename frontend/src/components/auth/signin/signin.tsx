@@ -12,7 +12,7 @@ import { jwtDecode } from "jwt-decode";
 import { useAuth } from '@/providers/useAuth';
 
 import { usePublicRoute } from '@/hooks/routes/usePublicRoute';
-import Modal from '../../components/users/2fa/modal'; // Modalコンポーネントをインポート
+import Modal from '../../users/2fa/modal'; // Modalコンポーネントをインポート
 
 
 // SSRならできる。useEffectは使えなくなる
@@ -225,7 +225,8 @@ export default function Form() {
     const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
         // ここでフォームのデータを処理します
-        fetch('http://localhost:3001/users/signin', {
+        const API_URL = process.env.NEXT_PUBLIC_API_URL;
+        fetch(`${API_URL}/users/signin`, {
             method: 'POST',
             credentials: 'include',
             headers: {
@@ -308,23 +309,23 @@ export default function Form() {
     }
 
     return (
-        <div>
+      <div>
         <form onSubmit={handleSubmit}>
-            <label htmlFor="username">名前:</label>
+          <label htmlFor="username">名前:</label>
             <input
             type="text"
             id="userName"
             value={userName}
             onChange={(e) => setUserName(e.target.value)}
-            />
+          />
     
-            <label htmlFor="password">パスワード:</label>
+          <label htmlFor="password">パスワード:</label>
             <input
             type="password"
             id="password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            />
+          />
     
             <button type="submit">送信</button>
 
@@ -360,6 +361,6 @@ export default function Form() {
         <button>
             <a href="http://localhost:3001/auth/callback/42">42ログイン</a>
         </button>
-        </div>
+      </div>
     )
 }

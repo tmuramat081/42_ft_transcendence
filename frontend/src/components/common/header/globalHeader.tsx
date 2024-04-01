@@ -1,4 +1,5 @@
 'use client';
+import { APP_ROUTING } from '@/constants/routing.constant';
 import { SOCKET_EVENTS } from '@/constants/socket.constant';
 import { useWebSocket } from '@/providers/webSocketProvider';
 import { AppBar, Box, Link, Toolbar } from '@mui/material';
@@ -28,7 +29,7 @@ const GlobalHeader = () => {
   return (
     <Box sx={{ flexGrow: 1 }}>
       <AppBar
-        position="fixed"
+        position='static'
         sx={{
           backgroundColor: 'primary',
           top: 0,
@@ -37,7 +38,7 @@ const GlobalHeader = () => {
       >
         <Toolbar>
           <Link
-            href="/"
+            href={APP_ROUTING.DASHBOARD.path}
             color="secondary"
             variant="h6"
           >

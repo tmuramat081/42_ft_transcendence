@@ -3,6 +3,10 @@ export const APP_ROUTING = {
     path: '/',
     name: 'トップ',
   },
+  DASHBOARD: {
+    path: '/dashboard',
+    name: 'ダッシュボード',
+  },
   GAME: {
     path: '/game',
     name: 'ゲーム',
