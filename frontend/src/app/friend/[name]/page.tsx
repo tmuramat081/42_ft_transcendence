@@ -1,22 +1,15 @@
 // サンプル用クライアントレンダリングでしかできなさそう
 
-"use client";
+'use client';
 
 import Avatar from '@mui/material/Avatar';
-import {useEffect, useState} from 'react';
+import { useEffect, useState } from 'react';
 import { useAuth } from '@/providers/useAuth';
 import { User } from '@/types/user';
 
 export default function functionPage({ params }: { params: { name: string } }) {
-    console.log(params.name);
-
-    // user情報を取得する
-
-    //const res = await fetch(`http://localhost:3001/users/${params.name}`);
-
+    console.log( params.name );
     const [user, setUser] = useState<User | null>(null);
-    // すでに友達かどうか
-
     const { loginUser, getCurrentUser } = useAuth();
 
     useEffect(() => {
@@ -42,13 +35,6 @@ export default function functionPage({ params }: { params: { name: string } }) {
 
             console.log(error);
         });
-
-        // テスト
-        //console.log("res: ", res);
-
-        //const user = res.user;
-
-        //setUser(res.user);
     }, []);
 
     const handleAddFriend = () => {
@@ -151,50 +137,50 @@ export default function functionPage({ params }: { params: { name: string } }) {
 
       {user !== null && (
         <div>
-            <h1>{user.userName}</h1>
-            <p>{user.email}</p>
-            <p>{user.userId}</p>
-            <p>{user.icon}</p>
-            <Avatar alt={user.userName} src={"http://localhost:3001/api/uploads/" + user.icon} />
+            <h1>{ user.userName }</h1>
+            <p>{ user.email }</p>
+            <p>{ user.userId }</p>
+            <p>{ user.icon }</p>
+            <Avatar alt={user.userName} src={ 'http://localhost:3001/api/uploads/' + user.icon } />
 
-            {loginUser !== null && loginUser.userId !== user.userId && loginUser.friends.filter((friend) => friend.userId === user.userId).length <= 0 &&
+            { loginUser !== null && loginUser.userId !== user.userId && loginUser.friends.filter((friend) => friend.userId === user.userId).length <= 0 &&
                 (
                     <button onClick={handleAddFriend}>友達になる</button>
                 )
             }  
-            {loginUser !== null && loginUser.userId !== user.userId && loginUser.friends.filter((friend) => friend.userId === user.userId).length > 0 &&
+            { loginUser !== null && loginUser.userId !== user.userId && loginUser.friends.filter((friend) => friend.userId === user.userId).length > 0 &&
                 (
                     <button onClick={handleRemoveFriend}>友達を外す</button>
                 )
             }  
 
-            {loginUser !== null && loginUser.userId !== user.userId && loginUser.blocked.filter((friend) => friend.userId === user.userId).length <= 0 &&
+            { loginUser !== null && loginUser.userId !== user.userId && loginUser.blocked.filter((friend) => friend.userId === user.userId).length <= 0 &&
                 (
                     <button onClick={handleBlockUser}>ブロックする</button>
                 )
             }  
-            {loginUser !== null && loginUser.userId !== user.userId && loginUser.blocked.filter((friend) => friend.userId === user.userId).length > 0 &&
+            { loginUser !== null && loginUser.userId !== user.userId && loginUser.blocked.filter((friend) => friend.userId === user.userId).length > 0 &&
                 (
                     <button onClick={handleUnblockUser}>アンブロック</button>
                 )
             }  
 
             <h2>Friend List</h2>
-            {loginUser !== null && loginUser.friends.map((friend) => {
+            { loginUser !== null && loginUser.friends.map((friend) => {
                 return (
                     <div>
-                        <p key={friend.userName}>{friend.userName}</p>
-                        <Avatar alt={friend.userName} src={"http://localhost:3001/api/uploads/" + friend.icon} />
+                        <p key={ friend.userName }>{ friend.userName }</p>
+                        <Avatar alt={ friend.userName } src={ 'http://localhost:3001/api/uploads/' + friend.icon } />
                     </div>
                 )
             })}
 
             <h2>Block List</h2>
-            {loginUser !== null && loginUser.blocked.map((block) => {
+            { loginUser !== null && loginUser.blocked.map((block) => {
                 return (
                     <div>
-                        <p key={block.userName}>{block.userName}</p>
-                        <Avatar alt={block.userName} src={"http://localhost:3001/api/uploads/" + block.icon} />
+                        <p key={ block.userName }>{ block.userName }</p>
+                        <Avatar alt={ block.userName } src={'http://localhost:3001/api/uploads/' + block.icon } />
                     </div>
                 )
             })}
