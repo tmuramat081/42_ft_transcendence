@@ -5,6 +5,7 @@
 import Avatar from '@mui/material/Avatar';
 import {useEffect, useState} from 'react';
 import { useAuth } from '@/providers/useAuth';
+import { User } from '@/types/user';
 
 export default function functionPage({ params }: { params: { name: string } }) {
     console.log(params.name);
@@ -13,7 +14,7 @@ export default function functionPage({ params }: { params: { name: string } }) {
 
     //const res = await fetch(`http://localhost:3001/users/${params.name}`);
 
-    const [user, setUser] = useState(null);
+    const [user, setUser] = useState<User | null>(null);
     // すでに友達かどうか
 
     const { loginUser, getCurrentUser } = useAuth();

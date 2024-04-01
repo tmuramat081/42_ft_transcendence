@@ -99,7 +99,7 @@ export class User {
 
   @DeleteDateColumn({ name: 'deleted_at', type: 'timestamp', nullable: true })
   @Factory((faker) => faker.helpers.arrayElement([null, faker.date.future()]))
-  deletedAt: Date;
+    deletedAt: Date;
 
   @Column({ type: 'varchar', length: 20, default: '' })
     name42: string;
