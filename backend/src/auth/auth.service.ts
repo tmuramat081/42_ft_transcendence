@@ -1,5 +1,8 @@
 /* eslint-disable */
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { Injectable, UnauthorizedException, BadRequestException,
+  NotFoundException, ForbiddenException,
+	HttpException,
+	InternalServerErrorException } from '@nestjs/common';
 import { UserDto42 } from '../users/dto/user42.dto';
 import { UsersService } from '../users/users.service';
 import { User } from '../users/entities/user.entity';
@@ -50,7 +53,9 @@ export class AuthService {
     const user = await this.usersService.findOne(userId);
 
     if (!user) {
-      return false;
+      //return false;
+      throw new NotFoundException('User not found');
+      
     }
 
     console.log('user: ', user);
@@ -78,6 +83,8 @@ export class AuthService {
     //const secret = speakeasy.generateSecret({});
     const secret = speakeasy.generateSecret({ length: 20 });
 
+    console.log('secret: ', secret);
+
     //QRコードの画像生成
     // QRCode.toDataURL(secret.otpauth_url, (err, qrcode) => {
     //     console.log(qrcode); // base64のQRコードの画像パスが入ってきます
@@ -88,6 +95,8 @@ export class AuthService {
       label: user.userName,
       issuer: 'ft_transcendence',
     });
+
+    console.log('otpAuthUrl: ', otpAuthUrl);
 
     // ユーザーの更新
     user.twoFactorAuthSecret = secret.base32;

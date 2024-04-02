@@ -22,6 +22,9 @@ import CircularProgress from '@mui/material/CircularProgress';
 import { MuiOtpInput } from 'mui-one-time-password-input'
 import Modal from '@mui/material/Modal';
 
+import Alert from '@mui/material/Alert';
+import Stack from '@mui/material/Stack';
+
 const style = {
     position: 'absolute' as 'absolute',
     top: '50%',
@@ -185,6 +188,15 @@ export default function SignIn() {
 
   return (
     <ThemeProvider theme={defaultTheme}>
+      <Stack sx={{ width: '100%' }} spacing={2}>
+        <Alert severity="success">This is a success Alert.</Alert>
+        <Alert severity="info">This is an info Alert.</Alert>
+        <Alert severity="warning">This is a warning Alert.</Alert>
+        <Alert severity="error">This is an error Alert.</Alert>
+        <Alert severity="warning" onClose={() => {}}>
+        This Alert displays the default close icon.
+        </Alert>
+      </Stack>
       <Container component="main" maxWidth="xs">
         <CssBaseline />
         <Box

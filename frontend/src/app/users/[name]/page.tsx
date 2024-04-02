@@ -15,7 +15,7 @@ export default async function Page({ params }: { params: { name: string } }) {
 
     // サーバーサイドでの処理なのでhttp://localhost:3001は使えない
     // そのため、http://backend:3000を使う
-    const res = await fetch("http://backend:3000/users/test1", {
+    const res = await fetch("http://backend:3000/users/" + params.name, {
         method: "GET",
         headers: { "Content-Type": "application/json" },
         credentials: 'include',

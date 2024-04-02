@@ -5,6 +5,8 @@
 
 import Avatar from '@mui/material/Avatar';
 
+import Link from 'next/link'
+
 type User = {
     userId: string;
     userName: string;
@@ -13,6 +15,8 @@ type User = {
     twoFactorAuth: boolean;
     twoFactorAuthNow: boolean;
 }
+
+// user 一覧を取得する
 
 export default async function Page({ params }: { params: { name: string } }) {
     //console.log(params.name);
@@ -27,6 +31,7 @@ export default async function Page({ params }: { params: { name: string } }) {
         method: "GET",
         headers: { "Content-Type": "application/json" },
         credentials: 'include',
+        cache: 'no-store',
       })
       .then((res) => res.json())
       .then((data) => {
@@ -68,16 +73,21 @@ export default async function Page({ params }: { params: { name: string } }) {
     //console.log("users: ", users);
     
   return (
-    <div>
+    <>
         {users.map((user: User) => (
             <div key={user.userId}>
                 <h1>{user.userName}</h1>
+                <li>
+                    <Link href={"/friend/" + user.userName}>
+                        フレンド追加ページ
+                    </Link>
+                </li>
                 <p>{user.email}</p>
                 <p>{user.userId}</p>
                 <p>{user.icon}</p>
                 <Avatar alt={user.userName} src={"http://localhost:3001/api/uploads/" + user.icon} />
             </div>
         ))}
-    </div>
+    </>
   );
 }

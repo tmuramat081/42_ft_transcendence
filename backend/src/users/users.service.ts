@@ -1,5 +1,9 @@
 /* eslint-disable */
-import { Injectable, StreamableFile } from '@nestjs/common';
+import { Injectable, StreamableFile, BadRequestException,
+  NotFoundException, ForbiddenException,
+	HttpException,
+	InternalServerErrorException,
+	UnauthorizedException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, Connection } from 'typeorm';
 import { User } from './entities/user.entity';
@@ -53,21 +57,52 @@ export class UsersService {
   // }
 
   async signUp(userData: SignUpUserDto): Promise<User> {
+    if (!userData.email || !userData.password || !userData.userName || (userData.password !== userData.passwordConfirm)) {
+      //return null;
+      throw new BadRequestException('Invalid credentials');
+    }
     const user: User = new User({});
     user.userName = userData.userName;
     user.email = userData.email;
     user.password = userData.password;
 
+    // try catch　にする
     // ユーザーの作成
-    const resultUser: User = await this.userRepository.createUser(user);
+    // const resultUser: User = await this.userRepository.createUser(user);
 
-    if (user && bcrypt.compare(userData.password, user.password)) {
-      //throw new ForbiddenException("Passwords do not match");
-      //return res.status(400).json({ message: 'Passwords do not match' });
-      return resultUser;
-    } else {
-      return null;
-      //return await this.userRepository.createUser(user);
+    // if (user && bcrypt.compare(userData.password, user.password)) {
+    //   //throw new ForbiddenException("Passwords do not match");
+    //   //return res.status(400).json({ message: 'Passwords do not match' });
+    //   return resultUser;
+    // } else {
+    //   console.log('error')
+    //   return null;
+    //   //return await this.userRepository.createUser(user);
+    // }
+
+
+    try {
+      // ユーザーの作成
+      const resultUser: User = await this.userRepository.createUser(user);
+
+      // console.log('resultUser: ', resultUser.password);
+      // console.log('userData.password: ', userData.password);
+
+      // console.log(await bcrypt.compare(userData.password, resultUser.password))
+
+      if (user && await bcrypt.compare(userData.password, resultUser.password)) {
+        return resultUser;
+      // } else {
+        //throw new BadRequestException('Passwords do not match');
+        throw new UnauthorizedException('Invalid credentials');
+      }
+    } catch (error) {
+      if (error instanceof UnauthorizedException) {
+        // ここをerrorをそのまま返したい
+        throw error;
+      } else {
+        throw new InternalServerErrorException();
+      }
     }
   }
 
@@ -154,46 +189,69 @@ export class UsersService {
   // }
 
   async signIn(userData: SignInUserDto): Promise<User> {
+    if (!userData.userName || !userData.password) {
+      //return null;
+      throw new BadRequestException('Invalid credentials');
+    }
     // ユーザーの検索
     //const user: User = await this.userRepository.findOneByName(userData.userName);
-    const user: User = await this.userRepository.findOne({
-      where: { userName: userData.userName },
-    });
+    // const user: User = await this.userRepository.findOne({
+    //   where: { userName: userData.userName },
+    // });
 
-    // パスワードをハッシュ化
-    // これでは確認できない
-    // const salt = await bcrypt.genSalt();
-    // const hashedPassword = await bcrypt.hash(userData.password, salt);
+    // // パスワードをハッシュ化
+    // // これでは確認できない
+    // // const salt = await bcrypt.genSalt();
+    // // const hashedPassword = await bcrypt.hash(userData.password, salt);
 
-    // console.log("user.password: " + user.password)
-    // console.log("userData.password: " + hashedPassword)
+    // // console.log("user.password: " + user.password)
+    // // console.log("userData.password: " + hashedPassword)
 
-    // パスワードの検証
-    // bcrypt.compare(userData.password, user.password) は、true or false を返す　ハッシュ値を比較している
-    /*
-            bcrypt.compare(userData.password, user.password) というコードが true を返す理由は、bcrypt ライブラリの比較メカニズムの仕組みにあります。bcrypt は、生のパスワード（ハッシュされていないパスワード）と、そのパスワードから生成されたハッシュ値を比較するために設計されています。
+    // // パスワードの検証
+    // // bcrypt.compare(userData.password, user.password) は、true or false を返す　ハッシュ値を比較している
+    // /*
+    //         bcrypt.compare(userData.password, user.password) というコードが true を返す理由は、bcrypt ライブラリの比較メカニズムの仕組みにあります。bcrypt は、生のパスワード（ハッシュされていないパスワード）と、そのパスワードから生成されたハッシュ値を比較するために設計されています。
 
-            ここでの動作は以下の通りです：
+    //         ここでの動作は以下の通りです：
 
-            ハッシュ生成: ユーザーがアカウントを作成する際、生のパスワード（userData.password）は bcrypt によってハッシュ化され、このハッシュ値がデータベースに保存されます（この例では user.password として参照されます）。
+    //         ハッシュ生成: ユーザーがアカウントを作成する際、生のパスワード（userData.password）は bcrypt によってハッシュ化され、このハッシュ値がデータベースに保存されます（この例では user.password として参照されます）。
 
-            パスワード検証: ユーザーがログインする際、入力された生のパスワード（userData.password）と、データベースに保存されたハッシュ値（user.password）が bcrypt.compare 関数に渡されます。
+    //         パスワード検証: ユーザーがログインする際、入力された生のパスワード（userData.password）と、データベースに保存されたハッシュ値（user.password）が bcrypt.compare 関数に渡されます。
 
-            ハッシュの比較: bcrypt.compare 関数は、入力された生のパスワードを同じハッシュ化プロセスで処理します。その後、この新しいハッシュ値をデータベースに保存されたハッシュ値と比較します。
+    //         ハッシュの比較: bcrypt.compare 関数は、入力された生のパスワードを同じハッシュ化プロセスで処理します。その後、この新しいハッシュ値をデータベースに保存されたハッシュ値と比較します。
 
-            結果: もし入力されたパスワードが正しければ、同じハッシュ化プロセスによって同じハッシュ値が生成されるため、比較結果は true になります。パスワードが異なれば、異なるハッシュ値が生成され、結果は false になります。
+    //         結果: もし入力されたパスワードが正しければ、同じハッシュ化プロセスによって同じハッシュ値が生成されるため、比較結果は true になります。パスワードが異なれば、異なるハッシュ値が生成され、結果は false になります。
 
-            この方法により、セキュリティを確保しつつ、ユーザーが正しいパスワードを入力したかどうかを確認できます。重要なのは、実際のパスワード自体がデータベースに保存されることはなく、そのハッシュ値のみが保存されることです。これにより、もしデータベースが何らかの方法で漏洩した場合でも、実際のパスワードは保護されます。
-        */
-    if (user && bcrypt.compare(userData.password, user.password)) {
-      // JWTを返す？ userを返すように変更
-      // const payload: JwtPayload = { userId: user.userId, userName: user.userName, email: user.email, twoFactorAuth: false };
-      // const accessToken: string = this.jwtService.sign(payload);
-      // return accessToken
-      return user;
-    } else {
-      //console.log("error")
-      return null;
+    //         この方法により、セキュリティを確保しつつ、ユーザーが正しいパスワードを入力したかどうかを確認できます。重要なのは、実際のパスワード自体がデータベースに保存されることはなく、そのハッシュ値のみが保存されることです。これにより、もしデータベースが何らかの方法で漏洩した場合でも、実際のパスワードは保護されます。
+    //     */
+    // if (user && bcrypt.compare(userData.password, user.password)) {
+    //   // JWTを返す？ userを返すように変更
+    //   // const payload: JwtPayload = { userId: user.userId, userName: user.userName, email: user.email, twoFactorAuth: false };
+    //   // const accessToken: string = this.jwtService.sign(payload);
+    //   // return accessToken
+    //   return user;
+    // } else {
+    //   //console.log("error")
+    //   return null;
+    // }
+
+    try {
+      const user: User = await this.userRepository.findOne({
+        where: { userName: userData.userName },
+      });
+
+      if (user && await bcrypt.compare(userData.password, user.password)) {
+        return user;
+      } else {
+        throw new UnauthorizedException('Invalid credentials');
+      }
+    }
+    catch (error) {
+      if (error instanceof UnauthorizedException) {
+        throw error;
+      } else {
+        throw new InternalServerErrorException();
+      }
     }
   }
 
@@ -205,22 +263,24 @@ export class UsersService {
       email: user.email,
       twoFactorAuth: false,
     };
+    // await?
     const accessToken: string = this.jwtService.sign(payload);
     return accessToken;
   }
 
+  // not used
   // Partial<User> は User の一部のプロパティを表す
-  async currentUser(userData: SignUpUserDto): Promise<Partial<User>> {
-    // ユーザーの検索
-    //const user: User = await this.userRepository.findOneByName(userData.userName);
-    const user: User = await this.userRepository.findOne({
-      where: { userName: userData.userName },
-    });
+  // async currentUser(userData: SignUpUserDto): Promise<Partial<User>> {
+  //   // ユーザーの検索
+  //   //const user: User = await this.userRepository.findOneByName(userData.userName);
+  //   const user: User = await this.userRepository.findOne({
+  //     where: { userName: userData.userName },
+  //   });
 
-    const { password, ...result } = user;
-    return result;
-    //return user
-  }
+  //   const { password, ...result } = user;
+  //   return result;
+  //   //return user
+  // }
 
   // async updateUser(userName: string, updateUser: UpdateUserDto): Promise<string> {
   //     const user = await this.userRepository.findOne({ where : { userName: userName }});
@@ -300,9 +360,13 @@ export class UsersService {
   async updateUser(user: User, updateUser: UpdateUserDto): Promise<User> {
     // passwordの確認
     // updateUserのpasswordとuserのpasswordが一致するか確認
-    if (!bcrypt.compare(updateUser.password, user.password)) {
-      console.log('passwords do not match');
-      return null;
+    // console.log(user.password)
+    // console.log(updateUser.password)
+    // console.log(await bcrypt.compare(updateUser.password, user.password))
+    if (!(await bcrypt.compare(updateUser.password, user.password))) {
+      //console.log('passwords do not match');
+      //return null;
+      throw new UnauthorizedException('Invalid credentials');
     }
 
     // データ更新
@@ -310,8 +374,9 @@ export class UsersService {
     // 懸念として、DBのユーザーとjwtのユーザーが異なる場合がある・・・？
     const targetUser = await this.userRepository.findOne({ where: { userName: user.userName } });
     if (!targetUser) {
-      console.log('user not found');
-      return null;
+      //console.log('user not found');
+      //return null;
+      throw new NotFoundException('User not found');
     }
 
     // パスワードの更新
@@ -320,7 +385,8 @@ export class UsersService {
       const salt = await bcrypt.genSalt();
       targetUser.password = await bcrypt.hash(updateUser.newPassword, salt);
     } else if (updateUser.newPassword && updateUser.newPassword !== updateUser.newPasswordConfirm) {
-      return null;
+      //return null;
+      throw new BadRequestException('Passwords do not match');
     }
     
     targetUser.userName = updateUser.userName ? updateUser.userName : targetUser.userName;
@@ -336,7 +402,8 @@ export class UsersService {
   async updateUserIcon(userName: string, icon): Promise<User> {
     const user = await this.userRepository.findOne({ where: { userName: userName } });
     if (!user || !icon) {
-      return null
+      //return null
+      throw new NotFoundException('User not found');
     }
 
     // delete Old Image
@@ -345,14 +412,16 @@ export class UsersService {
       const filePath = path.join(process.cwd(), process.env.AVATAR_IMAGE_DIR, user.icon);
       fs.stat(filePath, (err: any, stats: any) => {
         if (err) {
-          console.error(err);
-          return;
+          //console.error(err);
+          //return;
+          throw new NotFoundException('Image not found');
         }
         // 削除
         fs.unlink(filePath, (err: any) => {
           if (err) {
-            console.error(err);
-            return;
+            //console.error(err);
+            //return;
+            throw new InternalServerErrorException();
           }
         });
       });
@@ -364,7 +433,8 @@ export class UsersService {
     const resultUser: User = await this.userRepository.saveUser(user);
 
     if (!resultUser) {
-      return null;
+      //return null;
+      throw new InternalServerErrorException();
     }
 
     //console.log('resultUser: ', resultUser);
@@ -393,7 +463,8 @@ export class UsersService {
     const user = await this.userRepository.findOne({ where: { userName: userName } });
     if (!user) {
       // 例外を投げる
-      return null;
+      //return null;
+      throw new NotFoundException('User not found');
     }
     user.twoFactorAuth = twoFactorAuth;
 
@@ -414,7 +485,8 @@ export class UsersService {
     const user = await this.userRepository.findOne({ where: { userName: userName } });
     if (!user) {
       // 例外を投げる
-      return null;
+      //return null;
+      throw new NotFoundException('User not found');
     }
     user.twoFactorAuthSecret = twoFactorAuthSecret;
     const resultUser: User = await this.userRepository.saveUser(user);
@@ -447,12 +519,14 @@ export class UsersService {
     return await this.userRepository.findAll();
   }
 
+  // TODO: relation: friend, block
   async findOne(id: number): Promise<User | undefined> {
-    return await this.userRepository.findOne({ where: { userId: id } });
+    return await this.userRepository.findOne({ where: { userId: id }, relations: ['friends', 'blocked'] });
   }
 
+  // releation: friend, block
   async findOneByName(name: string): Promise<User | undefined> {
-    return await this.userRepository.findOne({ where: { userName: name } });
+    return await this.userRepository.findOne({ where: { userName: name }, relations: ['friends', 'blocked'] });
   }
 
   async validateUser42(userData: UserDto42): Promise<User> {
@@ -484,5 +558,33 @@ export class UsersService {
     newUser.twoFactorAuthSecret = '';
     newUser = await this.userRepository.createUser42(newUser);
     return newUser;
+  }
+
+  // friend
+  async addFriend(user: User, friendName: string): Promise<User> {
+    return this.userRepository.addFriend(user, friendName);
+    //return null;
+  }
+
+  async removeFriend(user: User, friendName: string): Promise<User> {
+    return this.userRepository.removeFriend(user, friendName);
+    //return null;
+  }
+
+  async getFriends(user: User): Promise<User[]> {
+    return this.userRepository.getFriends(user);
+  }
+
+  // block
+  async blockUser(user: User, blockName: string): Promise<User> {
+    return this.userRepository.blockUser(user, blockName);
+  }
+
+  async unblockUser(user: User, blockName: string): Promise<User> {
+    return this.userRepository.unblockUser(user, blockName);
+  }
+
+  async getBlockeds(user: User): Promise<User[]> {
+    return this.userRepository.getBlockedUsers(user);
   }
 }
