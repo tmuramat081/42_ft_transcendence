@@ -18,7 +18,7 @@ import { OnlineUsers } from './entities/onlineUsers.entity';
 import { formatDate } from './tools';
 
 export interface UserInfo {
-  ID: string;
+  ID: number;
   name: string;
   icon: string;
 }
@@ -54,6 +54,135 @@ export class ChatGateway {
     private onlineUsersRepository: Repository<OnlineUsers>,
   ) {}
 
+  @SubscribeMessage('getRoomList')
+  async handleGetRoomList(@MessageBody() sender: UserInfo, @ConnectedSocket() socket: Socket) {
+    try {
+      this.logger.log(`Get room list: ${sender.name}`);
+      // データベースからルームリストを取得
+      const roomList = await this.roomRepository.find();
+      // ルームリストをクライアントに送信
+      socket.emit('roomList', roomList);
+    } catch (error) {
+      this.logger.error(`Error getting room list: ${(error as Error).message}`);
+      throw error;
+    }
+  }
+
+  @SubscribeMessage('getOnlineUsers')
+  async handleGetOnlineUsers(@MessageBody() sender: UserInfo, @ConnectedSocket() socket: Socket) {
+    try {
+      if (!sender || !sender.ID || !sender.name || !sender.icon) {
+        throw new Error('Invalid sender data.');
+      }
+      this.logger.log(`Get online users: ${sender.name}`);
+
+      // ダミーユーザーを登録
+      // await this.createDummyUsers();
+
+      // OnlineUsersエンティティのインスタンスを作成し、データベースに保存
+      const onlineUser = new OnlineUsers();
+      onlineUser.userId = sender.ID;
+      onlineUser.name = sender.name;
+      onlineUser.icon = sender.icon;
+      onlineUser.me = true;
+      await this.onlineUsersRepository.save(onlineUser);
+
+      // 空のオンラインユーザーを削除
+      await this.deleteEmptyOnlineUsers();
+
+      // 重複したオンラインユーザーを削除
+      // 画面遷移後じにエラーが出るのでコメントアウト
+      // await this.deleteDuplicateOnlineUsers();
+
+      // データベースからオンラインユーザーリストを取得
+      const onlineUsers = await this.onlineUsersRepository.find();
+
+      this.logger.log(`Online users: ${JSON.stringify(onlineUsers)}`);
+
+      // sender以外のオンラインユーザーリストをクライアントに送信
+      socket.emit(
+        'onlineUsers',
+        onlineUsers.filter((user) => user.name !== sender.name),
+      );
+    } catch (error) {
+      this.logger.error(`Error getting online users: ${(error as Error).message}`);
+      throw error;
+    }
+  }
+
+  async deleteEmptyOnlineUsers() {
+    // 空のオンラインユーザーを取得
+    const emptyOnlineUsers = await this.onlineUsersRepository.find({
+      where: {
+        userId: -1,
+        name: '',
+        icon: '',
+      },
+    });
+
+    // 取得した空のオンラインユーザーを削除
+    await Promise.all(emptyOnlineUsers.map((user) => this.onlineUsersRepository.remove(user)));
+    console.log('Empty online users deleted:', emptyOnlineUsers);
+  }
+
+  async deleteDuplicateOnlineUsers() {
+    // オンラインユーザーを全て取得
+    const allOnlineUsers = await this.onlineUsersRepository.find();
+
+    // 名前とアイコンが一致するユーザーを検索して削除
+    for (let i = 0; i < allOnlineUsers.length; i++) {
+      const currentUser = allOnlineUsers[i];
+      for (let j = i + 1; j < allOnlineUsers.length; j++) {
+        const nextUser = allOnlineUsers[j];
+        if (currentUser.name === nextUser.name && currentUser.icon === nextUser.icon) {
+          await this.onlineUsersRepository.remove(nextUser);
+          console.log('Duplicate online user deleted:', nextUser);
+        }
+      }
+    }
+  }
+
+  // ダミーユーザーを登録
+  async createDummyUsers() {
+    const dummyUsers: UserInfo[] = [
+      {
+        ID: 2,
+        name: 'Patrick',
+        icon: 'https://www.plazastyle.com/images/charapla-spongebob/img_character02.png',
+      },
+      {
+        ID: 3,
+        name: 'plankton',
+        icon: 'https://www.plazastyle.com/images/charapla-spongebob/img_character05.png',
+      },
+      {
+        ID: 4,
+        name: 'sandy',
+        icon: 'https://www.plazastyle.com/images/charapla-spongebob/img_character06.png',
+      },
+      {
+        ID: 5,
+        name: 'Mr.krabs',
+        icon: 'https://www.plazastyle.com/images/charapla-spongebob/img_character04.png',
+      },
+      {
+        ID: 6,
+        name: 'gary',
+        icon: 'https://www.plazastyle.com/images/charapla-spongebob/img_character07.png',
+      },
+    ];
+    await Promise.all(
+      dummyUsers.map(async (user) => {
+        const onlineUser = new OnlineUsers();
+        onlineUser.userId = user.ID;
+        onlineUser.name = user.name;
+        onlineUser.icon = user.icon;
+        onlineUser.me = false;
+        await this.onlineUsersRepository.save(onlineUser);
+      }),
+    );
+  }
+
   @SubscribeMessage('talk')
   async handleMessage(
     @MessageBody() data: { selectedRoom: string; sender: UserInfo; message: string },
@@ -70,28 +199,33 @@ export class ChatGateway {
         this.logger.error('Invalid chat message data:', data);
         return;
       }
-      this.logger.log(
-        `${data.selectedRoom} received ${data.message} from ${data.sender.name} ${data.sender.ID}`,
-      );
+      this.logger.log(`${data.selectedRoom} received ${data.message} from ${data.sender.name}`);
 
       // チャットログを保存
       const chatLog = new ChatLog();
       chatLog.roomName = data.selectedRoom;
-      chatLog.sender = data.sender.ID;
+      chatLog.sender = data.sender.name;
       chatLog.icon = data.sender.icon;
       chatLog.message = data.message;
       chatLog.timestamp = formatDate(new Date());
       await this.chatLogRepository.save(chatLog);
       this.logger.log(`Saved chatLog: ${JSON.stringify(chatLog)}`);
 
-      const chatMessage: ChatMessage = {
-        user: data.sender.ID,
-        photo: data.sender.icon,
-        text: data.message,
-        timestamp: chatLog.timestamp,
-      };
-
-      this.server.to(data.selectedRoom).emit('update', chatMessage);
+      // チャットログを取得
+      const chatLogs = await this.chatLogRepository.find({
+        where: { roomName: data.selectedRoom },
+      });
+      this.logger.log(`Chat logs: ${JSON.stringify(chatLogs)}`);
+      // chatLogsをchatmessage[]に変換
+      const chatMessages: ChatMessage[] = chatLogs.map((log) => {
+        return {
+          user: log.sender,
+          photo: log.icon,
+          text: log.message,
+          timestamp: log.timestamp,
+        };
+      });
+      this.server.to(data.selectedRoom).emit('chatLogs', chatMessages);
     } catch (error) {
       this.logger.error(`Error handling message: ${(error as Error).message}`);
       throw error;
@@ -180,6 +314,23 @@ export class ChatGateway {
       } else {
         this.logger.error(`Error getting updated room.`);
       }
+      // チャットログを取得してクライアントに送信
+      const chatLogs = await this.chatLogRepository.find({ where: { roomName: join.room } });
+      if (chatLogs) {
+        this.logger.log(`Chat logs: ${JSON.stringify(chatLogs)}`);
+        // chatLogsをchatmessage[]に変換
+        const chatMessages: ChatMessage[] = chatLogs.map((log) => {
+          return {
+            user: log.sender,
+            photo: log.icon,
+            text: log.message,
+            timestamp: log.timestamp,
+          };
+        });
+        this.server.to(join.room).emit('chatLogs', chatMessages);
+      } else {
+        this.logger.error(`Error getting chat logs.`);
+      }
     } catch (error) {
       const errorMessage = (error as Error).message;
       this.logger.error(`Error joining room: ${errorMessage}`);
@@ -253,141 +404,5 @@ export class ChatGateway {
       this.logger.error(`Error deleting room: ${(error as Error).message}`);
       throw error;
     }
-  }
-
-  @SubscribeMessage('getRoomList')
-  async handleGetRoomList(@MessageBody() sender: UserInfo, @ConnectedSocket() socket: Socket) {
-    try {
-      this.logger.log(`Get room list: ${sender.ID}`);
-      // データベースからルームリストを取得
-      const roomList = await this.roomRepository.find();
-      // ルームリストをクライアントに送信
-      socket.emit('roomList', roomList);
-    } catch (error) {
-      this.logger.error(`Error getting room list: ${(error as Error).message}`);
-      throw error;
-    }
-  }
-
-  @SubscribeMessage('getOnlineUsers')
-  async handleGetOnlineUsers(@MessageBody() sender: UserInfo, @ConnectedSocket() socket: Socket) {
-    try {
-      this.logger.log(`Get online users: ${sender.ID}`);
-
-      // 空のオンラインユーザーを削除
-      await this.deleteEmptyOnlineUsers();
-
-      if (!sender || !sender.ID || !sender.name || !sender.icon) {
-        throw new Error('Invalid sender data. Cannot save to database.');
-      }
-
-      // ダミーユーザーを登録
-      // await this.createDummyUsers();
-
-      // OnlineUsersエンティティのインスタンスを作成し、データベースに保存
-      const onlineUser = new OnlineUsers();
-      onlineUser.userId = sender.ID;
-      onlineUser.name = sender.name;
-      onlineUser.icon = sender.icon;
-      onlineUser.me = true;
-      await this.onlineUsersRepository.save(onlineUser);
-
-      // 重複したオンラインユーザーを削除
-      await this.deleteDuplicateOnlineUsers();
-
-      // id=1のオンラインユーザーのmeをtrueにして保存
-      const me = await this.onlineUsersRepository.findOne({ where: { name: 'Bob' } });
-      if (me) {
-        me.me = true;
-        await this.onlineUsersRepository.save(me);
-      }
-
-      // データベースからオンラインユーザーリストを取得
-      const onlineUsers = await this.onlineUsersRepository.find();
-
-      this.logger.log(`Online users: ${JSON.stringify(onlineUsers)}`);
-
-      // sender以外のオンラインユーザーリストをクライアントに送信
-      socket.emit(
-        'onlineUsers',
-        onlineUsers.filter((user) => user.name !== sender.name),
-      );
-    } catch (error) {
-      this.logger.error(`Error getting online users: ${(error as Error).message}`);
-      throw error;
-    }
-  }
-
-  async deleteEmptyOnlineUsers() {
-    // 空のオンラインユーザーを取得
-    const emptyOnlineUsers = await this.onlineUsersRepository.find({
-      where: {
-        userId: '',
-        name: '',
-        icon: '',
-      },
-    });
-
-    // 取得した空のオンラインユーザーを削除
-    await Promise.all(emptyOnlineUsers.map((user) => this.onlineUsersRepository.remove(user)));
-
-    console.log('Empty online users deleted:', emptyOnlineUsers);
-  }
-
-  async deleteDuplicateOnlineUsers() {
-    // オンラインユーザーを全て取得
-    const allOnlineUsers = await this.onlineUsersRepository.find();
-
-    // 名前とアイコンが一致するユーザーを検索して削除
-    for (let i = 0; i < allOnlineUsers.length; i++) {
-      const currentUser = allOnlineUsers[i];
-      for (let j = i + 1; j < allOnlineUsers.length; j++) {
-        const nextUser = allOnlineUsers[j];
-        if (currentUser.name === nextUser.name && currentUser.icon === nextUser.icon) {
-          await this.onlineUsersRepository.remove(nextUser);
-          console.log('Duplicate online user deleted:', nextUser);
-        }
-      }
-    }
-  }
-
-  // ダミーユーザーを登録
-  async createDummyUsers() {
-    const dummyUsers: UserInfo[] = [
-      {
-        ID: 'dummy1',
-        name: 'Patrick',
-        icon: 'https://www.plazastyle.com/images/charapla-spongebob/img_character02.png',
-      },
-      {
-        ID: 'dummy2',
-        name: 'plankton',
-        icon: 'https://www.plazastyle.com/images/charapla-spongebob/img_character05.png',
-      },
-      {
-        ID: 'dummy3',
-        name: 'sandy',
-        icon: 'https://www.plazastyle.com/images/charapla-spongebob/img_character06.png',
-      },
-      {
-        ID: 'dummy4',
-        name: 'Mr.krabs',
-        icon: 'https://www.plazastyle.com/images/charapla-spongebob/img_character04.png',
-      },
-      {
-        ID: 'dummy5',
-        name: 'gary',
-        icon: 'https://www.plazastyle.com/images/charapla-spongebob/img_character07.png',
-      },
-    ];
-    await Promise.all(
-      dummyUsers.map(async (user) => {
-        const onlineUser = new OnlineUsers();
-        onlineUser.userId = user.ID;
-        onlineUser.name = user.name;
-        onlineUser.icon = user.icon;
-        await this.onlineUsersRepository.save(onlineUser);
-      }),
-    );
   }
 }

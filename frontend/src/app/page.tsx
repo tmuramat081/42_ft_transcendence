@@ -1,8 +1,8 @@
 /* eslint-disable */
-"use client";
-import styles from "./page.module.css";
+'use client';
+import styles from './page.module.css';
 
-import Link from 'next/link'
+import Link from 'next/link';
 
 /**
  * TOPページ
@@ -24,19 +24,13 @@ export default function Home() {
             <Link href="./chat">チャット</Link>
           </li>
           <li>
-            <Link href="./auth/signup">
-              サインアップ
-            </Link>
+            <Link href="./auth/signup">サインアップ</Link>
           </li>
           <li>
-            <Link href="./auth/signin">
-              サインイン
-            </Link>
+            <Link href="./auth/signin">サインイン</Link>
           </li>
           <li>
-            <Link href="./users/update">
-              ユーザー情報更新
-            </Link>
+            <Link href="./users/update">ユーザー情報更新</Link>
           </li>
           <li>
             <Link href="./users/index">
