@@ -36,7 +36,7 @@ export default function ChatPage() {
     const senderData = {
       userId: 1,
       userName: 'Bob',
-      icon: 'https://pics.prcm.jp/db3b34efef8a0/86032013/jpeg/86032013.jpeg',
+      icon: 'https://www.plazastyle.com/images/charapla-spongebob/img_character01.png',
     };
     // const senderData = getCurrentUser();
     setSender(senderData);
