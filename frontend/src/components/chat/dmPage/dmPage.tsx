@@ -13,13 +13,13 @@ export default function DMPage({ params }: { params: string }) {
   // const { getCurrentUser } = useAuth();
   const [message, setMessage] = useState('');
   const [sender, setSender] = useState<UserInfo>({
-    ID: -1,
-    name: '',
+    userId: -1,
+    userName: '',
     icon: '',
   });
   const [receiver, setReceiver] = useState<UserInfo>({
-    ID: -1,
-    name: '',
+    userId: -1,
+    userName: '',
     icon: '',
   });
   const [dmLogs, setDMLogs] = useState<DirectMessage[]>([]);
@@ -41,8 +41,8 @@ export default function DMPage({ params }: { params: string }) {
 
     socket.on('currentUser', (user: UserInfo) => {
       const sender: UserInfo = {
-        ID: user.ID,
-        name: user.name,
+        userId: user.userId,
+        userName: user.userName,
         icon: user.icon,
       };
       setSender(sender);
@@ -51,8 +51,8 @@ export default function DMPage({ params }: { params: string }) {
 
     socket.on('recipient', (recipient: UserInfo) => {
       const receiver: UserInfo = {
-        ID: recipient.ID,
-        name: recipient.name,
+        userId: recipient.userId,
+        userName: recipient.userName,
         icon: recipient.icon,
       };
       setReceiver(receiver);
@@ -67,8 +67,8 @@ export default function DMPage({ params }: { params: string }) {
 
   useEffect(() => {
     if (!socket) return;
-    if (sender.name && receiver.name) {
-      console.log(`${sender.name} start DM with ${receiver.name}`);
+    if (sender.userName && receiver.userName) {
+      console.log(`${sender.userName} start DM with ${receiver.userName}`);
       socket.emit('startDM', { sender: sender, receiver: receiver });
       socket.emit('getDMLogs', { sender: sender, receiver: receiver });
     }
@@ -89,7 +89,7 @@ export default function DMPage({ params }: { params: string }) {
 
   const onClickSubmit = useCallback(() => {
     if (!socket) return;
-    console.log(`${sender.name} submitting DM to ${receiver.name}: ${message}`);
+    console.log(`${sender.userName} submitting DM to ${receiver.userName}: ${message}`);
     socket.emit('sendDM', { sender: sender, receiver: receiver, message: message });
     setMessage('');
   }, [sender, receiver, message, socket]);
@@ -102,12 +102,12 @@ export default function DMPage({ params }: { params: string }) {
         <h4>Recipient</h4>
         <Image
           src={receiver.icon || ''}
-          alt={receiver.name || ''}
+          alt={receiver.userName || ''}
           className="recipient-icon"
           width={50}
           height={50}
         />
-        <div className="recipient-name">{receiver?.name}</div>
+        <div className="recipient-name">{receiver?.userName}</div>
       </div>
       {/* DM 履歴 */}
       <div
@@ -117,10 +117,10 @@ export default function DMPage({ params }: { params: string }) {
         {dmLogs.map((message, index) => (
           <div
             key={index}
-            className={`message-bubble ${message.sender === sender.name ? 'self' : 'other'}`}
+            className={`message-bubble ${message.sender === sender.userName ? 'self' : 'other'}`}
           >
             <Image
-              src={message.sender === sender.name ? sender.icon : receiver.icon}
+              src={message.sender === sender.userName ? sender.icon : receiver.icon}
               alt="User Icon"
               className="icon"
               width={50}

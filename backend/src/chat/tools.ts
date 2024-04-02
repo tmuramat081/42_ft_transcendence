@@ -1,4 +1,22 @@
-/* eslint-disable */
+export interface UserInfo {
+  userId: number;
+  userName: string;
+  icon: string;
+}
+
+export interface ChatMessage {
+  user: string;
+  photo: string;
+  text: string;
+  timestamp: string;
+}
+
+export interface DirectMessage {
+  sender: string;
+  recipient: string;
+  text: string;
+  timestamp: string;
+}
 
 export function formatDate(date: Date): string {
   const options: Intl.DateTimeFormatOptions = {

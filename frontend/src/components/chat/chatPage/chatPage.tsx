@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation';
 import { useWebSocket } from '@/providers/webSocketProvider';
 import { useAuth } from '@/providers/useAuth';
 import { UserInfo, ChatMessage, Room } from '@/types/chat/chat';
+// import { User } from '@/types/user';
 import './chatPage.css';
 
 export default function ChatPage() {
@@ -18,8 +19,8 @@ export default function ChatPage() {
   const [roomList, setRoomList] = useState<string[]>([]);
   const [selectedRoom, setSelectedRoom] = useState<string | null>(null);
   const [sender, setSender] = useState<UserInfo>({
-    ID: -1,
-    name: '',
+    userId: -1,
+    userName: '',
     icon: '',
   });
   const [roomchatLogs, setRoomChatLogs] = useState<{ [roomId: string]: ChatMessage[] }>({});
@@ -27,20 +28,17 @@ export default function ChatPage() {
   const [participants, setParticipants] = useState<UserInfo[]>([]);
   const [onlineUsers, setOnlineUsers] = useState<UserInfo[]>([]);
 
-  //   // ログイン情報を取得
-  //   const user = getCurrentUser();
-  //   setSender(user);
-  //   console.log('user:', user);
-
   useEffect(() => {
     if (!socket) return;
 
+    // ログイン情報を取得
     // 仮のユーザー情報をセット
     const senderData = {
-      ID: 1,
-      name: 'Bob',
+      userId: 1,
+      userName: 'Bob',
       icon: 'https://pics.prcm.jp/db3b34efef8a0/86032013/jpeg/86032013.jpeg',
     };
+    // const senderData = getCurrentUser();
     setSender(senderData);
     console.log('sender:', senderData);
     socket.emit('getRoomList', senderData);
@@ -98,14 +96,14 @@ export default function ChatPage() {
 
   const onClickSubmit = useCallback(() => {
     if (!socket) return;
-    console.log(`${sender.name} submitting message, '${message}'`);
+    console.log(`${sender.userName} submitting message, '${message}'`);
     socket.emit('talk', { selectedRoom, sender: { ...sender, icon: sender.icon }, message });
     setMessage('');
   }, [selectedRoom, sender, message, socket]);
 
   const onClickCreateRoom = useCallback(() => {
     if (!socket) return;
-    console.log(`${sender.name} create new room: ${newRoomName}`);
+    console.log(`${sender.userName} create new room: ${newRoomName}`);
     socket.emit('createRoom', { sender, roomName: newRoomName });
     setNewRoomName('');
   }, [sender, newRoomName, socket]);
@@ -123,7 +121,7 @@ export default function ChatPage() {
       return;
     }
     console.log('newRoomID', newRoomID);
-    console.log(`${sender.name} joined room: ${roomList[Number(newRoomID)]}`);
+    console.log(`${sender.userName} joined room: ${roomList[Number(newRoomID)]}`);
     setRoomID(newRoomID);
     setSelectedRoom(roomList[Number(newRoomID)]);
     setMessage(''); // ルームが変更されたら新しいメッセージもリセット
@@ -134,7 +132,7 @@ export default function ChatPage() {
   const onClickLeaveRoom = useCallback(() => {
     if (!socket) return;
     if (selectedRoom) {
-      console.log(`${sender.name} left Room: ${selectedRoom}`);
+      console.log(`${sender.userName} left Room: ${selectedRoom}`);
       socket.emit('leaveRoom', { sender, room: selectedRoom });
       setSelectedRoom(null);
       setDeleteButtonVisible(false); // ボタンが押されたら非表示にする
@@ -150,7 +148,7 @@ export default function ChatPage() {
   const onClickDeleteRoom = useCallback(() => {
     if (!socket) return;
     if (selectedRoom) {
-      console.log(`${sender.name} deleted Room: ${selectedRoom}`);
+      console.log(`${sender.userName} deleted Room: ${selectedRoom}`);
       socket.emit('deleteRoom', { sender, room: selectedRoom });
       setSelectedRoom(null);
       setDeleteButtonVisible(false); // ボタンが押されたら非表示にする
@@ -167,8 +165,8 @@ export default function ChatPage() {
 
   const handleLinkClick = (recipient: UserInfo) => {
     if (!socket) return;
-    const href = `/chat/${recipient.name}?recipient=${JSON.stringify(recipient)}`;
-    const as = `/chat/${recipient.name}`;
+    const href = `/chat/${recipient.userName}?recipient=${JSON.stringify(recipient)}`;
+    const as = `/chat/${recipient.userName}`;
     router.push(href);
     router.push(as);
   };
@@ -187,12 +185,12 @@ export default function ChatPage() {
             >
               <Image
                 src={onlineUser.icon}
-                alt={onlineUser.name}
+                alt={onlineUser.userName}
                 className="onlineusers-icon"
                 width={50}
                 height={50}
               />
-              <div className="onlineuser-name">{onlineUser.name}</div>
+              <div className="onlineuser-name">{onlineUser.userName}</div>
               <button onClick={() => handleLinkClick(onlineUser)}>Send DM</button>
               {/* <Link href={`/chat/${onlineUser.name}`}>
                 <button>Send DM</button>
@@ -261,12 +259,12 @@ export default function ChatPage() {
             >
               <Image
                 src={participant.icon}
-                alt={participant.name}
+                alt={participant.userName}
                 className="participant-icon"
                 width={50}
                 height={50}
               />
-              <div className="participant-name">{participant.name}</div>
+              <div className="participant-name">{participant.userName}</div>
             </div>
           ))}
         </div>
@@ -290,7 +288,7 @@ export default function ChatPage() {
         {roomchatLogs[roomID]?.map((message, index) => (
           <div
             key={index}
-            className={`message-bubble ${message.user === sender.name ? 'self' : 'other'}`}
+            className={`message-bubble ${message.user === sender.userName ? 'self' : 'other'}`}
           >
             <Image
               src={message.photo}

@@ -15,20 +15,7 @@ import { Room } from './entities/room.entity';
 import { User } from '../users/entities/user.entity';
 import { DmLog } from './entities/dmLog.entity';
 import { OnlineUsers } from './entities/onlineUsers.entity';
-import { formatDate } from './tools';
-
-interface UserInfo {
-  ID: number;
-  name: string;
-  icon: string;
-}
-
-interface DirectMessage {
-  sender: string;
-  recipient: string;
-  text: string;
-  timestamp: string;
-}
+import { UserInfo, DirectMessage, formatDate } from './tools';
 
 @WebSocketGateway({ cors: { origin: '*' } })
 export class DMGateway {
@@ -64,8 +51,8 @@ export class DMGateway {
         this.logger.log(`currentUser found: ${JSON.stringify(currentUser)}`);
         // currentUserをUserInfoに変換
         const userInfo: UserInfo = {
-          ID: currentUser.id,
-          name: currentUser.name,
+          userId: currentUser.id,
+          userName: currentUser.name,
           icon: currentUser.icon,
         };
         this.server.to(socket.id).emit('currentUser', userInfo);
@@ -89,8 +76,8 @@ export class DMGateway {
         this.logger.log(`Recipient found: ${JSON.stringify(recipientUser)}`);
         // recipientUserをUserInfoに変換
         const recipient: UserInfo = {
-          ID: recipientUser.id,
-          name: recipientUser.name,
+          userId: recipientUser.id,
+          userName: recipientUser.name,
           icon: recipientUser.icon,
         };
         this.server.to(socket.id).emit('recipient', recipient);
@@ -112,7 +99,9 @@ export class DMGateway {
         this.logger.error('Invalid DM data:', payload);
         return;
       }
-      this.logger.log(`startDM: ${payload.sender.name} started DM with ${payload.receiver.name}`);
+      this.logger.log(
+        `startDM: ${payload.sender.userName} started DM with ${payload.receiver.userName}`,
+      );
     } catch (error) {
       this.logger.error(`Error starting DM: ${(error as Error).message}`);
       throw error;
@@ -130,14 +119,14 @@ export class DMGateway {
         return;
       }
       this.logger.log(
-        `getDMLogs: ${payload.sender.name} requested DM logs with ${payload.receiver.name}`,
+        `getDMLogs: ${payload.sender.userName} requested DM logs with ${payload.receiver.userName}`,
       );
 
       // DMログを取得
       const dmLogs = await this.dmLogRepository.find({
         where: [
-          { senderName: payload.sender.name, recipientName: payload.receiver.name },
-          { senderName: payload.receiver.name, recipientName: payload.sender.name },
+          { senderName: payload.sender.userName, recipientName: payload.receiver.userName },
+          { senderName: payload.receiver.userName, recipientName: payload.sender.userName },
         ],
         order: { timestamp: 'ASC' },
       });
@@ -171,13 +160,13 @@ export class DMGateway {
         return { success: false, message: 'Invalid DM data' };
       }
       this.logger.log(
-        `sendDM: ${payload.sender.name} sent DM to ${payload.receiver.name}: ${payload.message}`,
+        `sendDM: ${payload.sender.userName} sent DM to ${payload.receiver.userName}: ${payload.message}`,
       );
 
       // DirectMessageを保存
       const dmLog = new DmLog();
-      dmLog.senderName = payload.sender.name;
-      dmLog.recipientName = payload.receiver.name;
+      dmLog.senderName = payload.sender.userName;
+      dmLog.recipientName = payload.receiver.userName;
       dmLog.message = payload.message;
       dmLog.timestamp = formatDate(new Date());
       await this.dmLogRepository.save(dmLog);
@@ -186,8 +175,8 @@ export class DMGateway {
       // DMログを取得
       const dmLogs = await this.dmLogRepository.find({
         where: [
-          { senderName: payload.sender.name, recipientName: payload.receiver.name },
-          { senderName: payload.receiver.name, recipientName: payload.sender.name },
+          { senderName: payload.sender.userName, recipientName: payload.receiver.userName },
+          { senderName: payload.receiver.userName, recipientName: payload.sender.userName },
         ],
         order: { timestamp: 'ASC' },
       });

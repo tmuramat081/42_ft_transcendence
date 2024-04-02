@@ -15,20 +15,7 @@ import { Room } from './entities/room.entity';
 import { User } from '../users/entities/user.entity';
 import { DmLog } from './entities/dmLog.entity';
 import { OnlineUsers } from './entities/onlineUsers.entity';
-import { formatDate } from './tools';
-
-export interface UserInfo {
-  ID: number;
-  name: string;
-  icon: string;
-}
-
-export interface ChatMessage {
-  user: string;
-  photo: string;
-  text: string;
-  timestamp: string;
-}
+import { UserInfo, ChatMessage, formatDate } from './tools';
 
 @WebSocketGateway({ cors: { origin: '*' } })
 export class ChatGateway {
@@ -57,7 +44,7 @@ export class ChatGateway {
   @SubscribeMessage('getRoomList')
   async handleGetRoomList(@MessageBody() sender: UserInfo, @ConnectedSocket() socket: Socket) {
     try {
-      this.logger.log(`Get room list: ${sender.name}`);
+      this.logger.log(`Get room list: ${sender.userName}`);
       // データベースからルームリストを取得
       const roomList = await this.roomRepository.find();
       // ルームリストをクライアントに送信
@@ -71,18 +58,18 @@ export class ChatGateway {
   @SubscribeMessage('getOnlineUsers')
   async handleGetOnlineUsers(@MessageBody() sender: UserInfo, @ConnectedSocket() socket: Socket) {
     try {
-      if (!sender || !sender.ID || !sender.name || !sender.icon) {
+      if (!sender || !sender.userId || !sender.userName || !sender.icon) {
         throw new Error('Invalid sender data.');
       }
-      this.logger.log(`Get online users: ${sender.name}`);
+      this.logger.log(`Get online users: ${sender.userName}`);
 
       // ダミーユーザーを登録
       // await this.createDummyUsers();
 
       // OnlineUsersエンティティのインスタンスを作成し、データベースに保存
       const onlineUser = new OnlineUsers();
-      onlineUser.userId = sender.ID;
-      onlineUser.name = sender.name;
+      onlineUser.userId = sender.userId;
+      onlineUser.name = sender.userName;
       onlineUser.icon = sender.icon;
       onlineUser.me = true;
       await this.onlineUsersRepository.save(onlineUser);
@@ -91,7 +78,6 @@ export class ChatGateway {
       await this.deleteEmptyOnlineUsers();
 
       // 重複したオンラインユーザーを削除
-      // 画面遷移後じにエラーが出るのでコメントアウト
       // await this.deleteDuplicateOnlineUsers();
 
       // データベースからオンラインユーザーリストを取得
@@ -100,10 +86,11 @@ export class ChatGateway {
       this.logger.log(`Online users: ${JSON.stringify(onlineUsers)}`);
 
       // sender以外のオンラインユーザーリストをクライアントに送信
-      socket.emit(
-        'onlineUsers',
-        onlineUsers.filter((user) => user.name !== sender.name),
-      );
+      // socket.emit(
+      //   'onlineUsers',
+      //   onlineUsers.filter((user) => user.name !== sender.userName),
+      // );
+      socket.emit('onlineUsers', onlineUsers);
     } catch (error) {
       this.logger.error(`Error getting online users: ${(error as Error).message}`);
       throw error;
@@ -146,36 +133,36 @@ export class ChatGateway {
   async createDummyUsers() {
     const dummyUsers: UserInfo[] = [
       {
-        ID: 2,
-        name: 'Patrick',
+        userId: 2,
+        userName: 'Patrick',
         icon: 'https://www.plazastyle.com/images/charapla-spongebob/img_character02.png',
       },
       {
-        ID: 3,
-        name: 'plankton',
+        userId: 3,
+        userName: 'plankton',
         icon: 'https://www.plazastyle.com/images/charapla-spongebob/img_character05.png',
       },
       {
-        ID: 4,
-        name: 'sandy',
+        userId: 4,
+        userName: 'sandy',
         icon: 'https://www.plazastyle.com/images/charapla-spongebob/img_character06.png',
       },
       {
-        ID: 5,
-        name: 'Mr.krabs',
+        userId: 5,
+        userName: 'Mr.krabs',
         icon: 'https://www.plazastyle.com/images/charapla-spongebob/img_character04.png',
       },
       {
-        ID: 6,
-        name: 'gary',
+        userId: 6,
+        userName: 'gary',
         icon: 'https://www.plazastyle.com/images/charapla-spongebob/img_character07.png',
       },
     ];
     await Promise.all(
       dummyUsers.map(async (user) => {
         const onlineUser = new OnlineUsers();
-        onlineUser.userId = user.ID;
-        onlineUser.name = user.name;
+        onlineUser.userId = user.userId;
+        onlineUser.name = user.userName;
         onlineUser.icon = user.icon;
         onlineUser.me = false;
         await this.onlineUsersRepository.save(onlineUser);
@@ -191,20 +178,20 @@ export class ChatGateway {
     try {
       if (
         !data.sender ||
-        !data.sender.ID ||
-        !data.sender.name ||
+        !data.sender.userId ||
+        !data.sender.userName ||
         !data.sender.icon ||
         !data.message
       ) {
         this.logger.error('Invalid chat message data:', data);
         return;
       }
-      this.logger.log(`${data.selectedRoom} received ${data.message} from ${data.sender.name}`);
+      this.logger.log(`${data.selectedRoom} received ${data.message} from ${data.sender.userName}`);
 
       // チャットログを保存
       const chatLog = new ChatLog();
       chatLog.roomName = data.selectedRoom;
-      chatLog.sender = data.sender.name;
+      chatLog.sender = data.sender.userName;
       chatLog.icon = data.sender.icon;
       chatLog.message = data.message;
       chatLog.timestamp = formatDate(new Date());
@@ -238,7 +225,7 @@ export class ChatGateway {
     @ConnectedSocket() socket: Socket,
   ) {
     try {
-      this.logger.log(`createRoom: ${create.sender.name} create ${create.roomName}`);
+      this.logger.log(`createRoom: ${create.sender.userName} create ${create.roomName}`);
       // ルーム名が空かどうかを確認
       if (!create.roomName || !create.roomName.trim()) {
         this.logger.error('Invalid room name:', create.roomName);
@@ -278,7 +265,7 @@ export class ChatGateway {
     @ConnectedSocket() socket: Socket,
   ) {
     try {
-      this.logger.log(`joinRoom: ${join.sender.name} joined ${join.room}`);
+      this.logger.log(`joinRoom: ${join.sender.userName} joined ${join.room}`);
       const rooms = [...socket.rooms].slice(0);
       // 既に部屋に入っている場合は退出
       if (rooms.length == 2) socket.leave(rooms[1]);
@@ -296,8 +283,8 @@ export class ChatGateway {
           return;
         }
         room.roomParticipants.push({
-          id: join.sender.ID,
-          name: join.sender.name,
+          id: join.sender.userId,
+          name: join.sender.userName,
           icon: join.sender.icon,
         });
         await this.roomRepository.save(room);
@@ -344,7 +331,7 @@ export class ChatGateway {
     @ConnectedSocket() socket: Socket,
   ) {
     try {
-      this.logger.log(`leaveRoom: ${leave.sender.name} left ${leave.room}`);
+      this.logger.log(`leaveRoom: ${leave.sender.userName} left ${leave.room}`);
       // データベースから部屋を取得
       const room = await this.roomRepository.findOne({ where: { roomName: leave.room } });
 
@@ -352,7 +339,7 @@ export class ChatGateway {
       if (room) {
         if (room.roomParticipants) {
           room.roomParticipants = room.roomParticipants.filter(
-            (participant) => participant.name !== leave.sender.name,
+            (participant) => participant.name !== leave.sender.userName,
           );
           await this.roomRepository.save(room);
         }
@@ -382,7 +369,7 @@ export class ChatGateway {
   @SubscribeMessage('deleteRoom')
   async handleDeleteRoom(@MessageBody() delet: { sender: UserInfo; room: string }) {
     try {
-      this.logger.log(`${delet.sender.name} deleted Room: ${delet.room}`);
+      this.logger.log(`${delet.sender.userName} deleted Room: ${delet.room}`);
 
       // データベースから指定のルームを削除
       const deletedRoom = await this.roomRepository.findOne({

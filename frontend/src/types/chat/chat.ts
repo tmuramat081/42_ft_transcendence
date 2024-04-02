@@ -1,6 +1,6 @@
 export type UserInfo = {
-  ID: number;
-  name: string;
+  userId: number;
+  userName: string;
   icon: string;
 };
 
