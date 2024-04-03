@@ -71,12 +71,7 @@ dotenv.config();
           Match,
         ], // 直接エンティティを指定
         synchronize: true,
-        ssl: true,
-        extra: {
-          ssl: {
-            rejectUnauthorized: false,
-          },
-        },
+        ssl: false,
       }),
     }),
     UsersModule,
