@@ -136,4 +136,8 @@ export class GamesService {
       await this.gameEntryRepository.createGameEntry(entry, manager);
     });
   }
+
+
+  // maoyagi ver
+  
 }

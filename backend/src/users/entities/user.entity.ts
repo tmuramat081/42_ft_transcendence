@@ -51,6 +51,8 @@ import { Factory } from 'nestjs-seeder';
 // 出力フィールドを制御するために、class-transformerパッケージを使用する
 import { Exclude } from 'class-transformer';
 
+import { GameRecord } from '@/games/entities/gameRecord';
+
 // entityはデータベースのテーブルを表す
 // Uniqueはユニーク制約
 @Entity('users')
@@ -175,4 +177,27 @@ export class User {
   constructor(partial: Partial<User>) {
     Object.assign(this, partial);
   }
+
+  @ManyToMany(() => GameRecord)
+  @JoinTable({
+    // テーブル名
+    name: "user_game_record",
+    // 自分のカラム名
+    joinColumn: {
+      name: "user",
+      referencedColumnName: "userId"
+    },
+    // 相手のカラム名
+    inverseJoinColumn: {
+      name: "gameRecord",
+      referencedColumnName: "gameRecordId"
+    }
+  })
+    gameRecords: GameRecord[];
+
+  @OneToMany(() => GameRecord, (gameRecord) => gameRecord.loser)
+    gameRecordsAsLoser: GameRecord[];
+
+  @OneToMany(() => GameRecord, (gameRecord) => gameRecord.winner)
+    gameRecordsAsWinner: GameRecord[];
 }

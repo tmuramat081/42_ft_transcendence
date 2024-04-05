@@ -17,6 +17,7 @@ import { Room } from './chat/entities/room.entity';
 import { ChatLog } from './chat/entities/chatLog.entity';
 import { OnlineUsers } from './chat/entities/onlineUsers.entity';
 import { DmLog } from './chat/entities/dmLog.entity';
+import { GameRecord } from './games/entities/gameRecord';
 
 // .envを読み込む
 dotenv.config();
@@ -48,6 +49,7 @@ dotenv.config();
           GameEntry,
           MatchResult,
           Match,
+          GameRecord,
         ]),
         ConfigModule,
       ],
@@ -69,6 +71,7 @@ dotenv.config();
           GameEntry,
           MatchResult,
           Match,
+          GameRecord,
         ], // 直接エンティティを指定
         synchronize: true,
       }),
