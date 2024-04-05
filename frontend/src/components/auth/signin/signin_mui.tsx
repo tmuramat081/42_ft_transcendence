@@ -26,30 +26,6 @@ import { useTheme } from '@mui/material/styles';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
-function _Copyright(props: any) {
-  return (
-    <Typography
-      variant="body2"
-      color="text.secondary"
-      align="center"
-      {...props}
-    >
-      {'Copyright © '}
-      <Link
-        color="inherit"
-        href="https://mui.com/"
->
-        Your Website
-      </Link>{' '}
-      {new Date().getFullYear()}
-      {'.'}
-    </Typography>
-  );
-}
-
-// TODO remove, this demo shouldn't need to reset the theme.
-const _defaultTheme = createTheme();
-
 export default function SignIn() {
   const theme = useTheme();
 
@@ -197,7 +173,7 @@ export default function SignIn() {
       >
         <Box
           sx={{
-            marginTop: 8,
+            marginTop: 4,
             p: 3,
             display: 'flex',
             flexDirection: 'column',

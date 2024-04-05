@@ -12,31 +12,18 @@ import Box from '@mui/material/Box';
 import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
 import Typography from '@mui/material/Typography';
 import Container from '@mui/material/Container';
-import { createTheme, ThemeProvider } from '@mui/material/styles';
+import { createTheme, ThemeProvider, useTheme } from '@mui/material/styles';
 
 import CircularProgress from '@mui/material/CircularProgress';
 
-import { useRouter } from 'next/navigation'
+import { useRouter } from 'next/navigation';
 import { useAuth } from '@/providers/useAuth';
 import { useState, useEffect } from 'react';
 
-function Copyright(props: any) {
-  return (
-    <Typography variant="body2" color="text.secondary" align="center" {...props}>
-      {'Copyright © '}
-      <Link color="inherit" href="https://mui.com/">
-        Your Website
-      </Link>{' '}
-      {new Date().getFullYear()}
-      {'.'}
-    </Typography>
-  );
-}
-
-// TODO remove, this demo shouldn't need to reset the theme.
-const defaultTheme = createTheme();
+const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
 export default function SignUp() {
+  const theme = useTheme();
 
   const [userName, setUserName] = useState('');
   const [email, setEmail] = useState('');
@@ -47,20 +34,18 @@ export default function SignUp() {
   const [token, setToken] = useState('');
 
   const router = useRouter();
-  const {signin, loginUser, getCurrentUser, loading} = useAuth();
+  const { signin, loginUser, getCurrentUser, loading } = useAuth();
 
   useEffect(() => {
     //if (token == '' || token === undefined) return;
     getCurrentUser();
   }, []);
 
+  //field修正
 
-    //field修正
+  // handleSubmit修正
 
-    // handleSubmit修正
-
-    
-    // ボタンを押した時の処理
+  // ボタンを押した時の処理
   // const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
   //   event.preventDefault();
   //   const data = new FormData(event.currentTarget);
@@ -72,37 +57,52 @@ export default function SignUp() {
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-
     const data = new FormData(e.currentTarget);
 
-    console.log('Submitted data:', data.get('name'), data.get('email'), data.get('password'), data.get('passwordConfirm'))
+    console.log(
+      'Submitted data:',
+      data.get('name'),
+      data.get('email'),
+      data.get('password'),
+      data.get('passwordConfirm'),
+    );
 
     // // ここでフォームのデータを処理します
     // // axios.post('localhost:3001/users/login', { username, email });
-    fetch('http://localhost:3001/users/signup', {
-        method: 'POST',
-        credentials: 'include',
-        headers: {
-            'Content-Type': 'application/json',
-        },
-        //body: JSON.stringify({ userName, email, password, passwordConfirm }),
-        body: JSON.stringify({userName: data.get('name'), email: data.get('email'), password: data.get('password'), passwordConfirm: data.get('passwordConfirm')}),
+    fetch(`${API_URL}/users/signup`, {
+      method: 'POST',
+      credentials: 'include',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      //body: JSON.stringify({ userName, email, password, passwordConfirm }),
+      body: JSON.stringify({
+        userName: data.get('name'),
+        email: data.get('email'),
+        password: data.get('password'),
+        passwordConfirm: data.get('passwordConfirm'),
+      }),
     })
-    .then ((res) => {
+      .then((res) => {
         // /console.log(res.json());
         return res.json();
-    })
-    //.then((res) => res.json())
-    .then((data) => {
+      })
+      //.then((res) => res.json())
+      .then((data) => {
         console.log('Success:', data.accessToken);
         setToken(data.accessToken);
         getCurrentUser();
-    })
-    .catch((error) => {
+      })
+      .catch((error) => {
         console.error('Error:', error);
-    });
+      });
 
-    console.log('送信されたデータ:', { name: data.get('name'), email: data.get('email'), password: data.get('password'), passwordConfirm: data.get('passwordConfirm') });
+    console.log('送信されたデータ:', {
+      name: data.get('name'),
+      email: data.get('email'),
+      password: data.get('password'),
+      passwordConfirm: data.get('passwordConfirm'),
+    });
 
     // console.log('送信されたデータ:', { userName, password });
     // // 送信後の処理（例: フォームをクリアする）
@@ -117,26 +117,48 @@ export default function SignUp() {
   }
 
   return (
-    <ThemeProvider theme={defaultTheme}>
-      <Container component="main" maxWidth="xs">
-        <CssBaseline />
+    <>
+      <Container
+        component="main"
+        maxWidth="xs"
+      >
         <Box
           sx={{
-            marginTop: 8,
+            marginTop: 24,
+            p: 3,
             display: 'flex',
             flexDirection: 'column',
             alignItems: 'center',
+            bgcolor: theme.palette.background.paper,
+            borderTop: '5px solid #00babc',
+            boxShadow: 4,
+            borderRadius: 2,
           }}
         >
-          <Avatar sx={{ m: 1, bgcolor: 'secondary.main' }}>
+          <Avatar sx={{ m: 1, bgcolor: theme.palette.primary.main }}>
             <LockOutlinedIcon />
           </Avatar>
-          <Typography component="h1" variant="h5">
+          <Typography
+            component="h1"
+            variant="h5"
+          >
             Sign up
           </Typography>
-          <Box component="form" noValidate onSubmit={handleSubmit} sx={{ mt: 3 }}>
-            <Grid container spacing={2}>
-              <Grid item xs={12} sm={6}>
+          <Box
+            component="form"
+            noValidate
+            onSubmit={handleSubmit}
+            sx={{ mt: 1 }}
+          >
+            <Grid
+              container
+              spacing={1}
+            >
+              <Grid
+                item
+                xs={12}
+                sm={6}
+              >
                 <TextField
                   margin="normal"
                   required
@@ -148,7 +170,11 @@ export default function SignUp() {
                   autoFocus
                 />
               </Grid>
-              <Grid item xs={12} sm={6}>
+              <Grid
+                item
+                xs={12}
+                sm={6}
+              >
                 <TextField
                   margin="normal"
                   required
@@ -159,7 +185,10 @@ export default function SignUp() {
                   autoComplete="email"
                 />
               </Grid>
-              <Grid item xs={12}>
+              <Grid
+                item
+                xs={12}
+              >
                 <TextField
                   margin="normal"
                   required
@@ -171,7 +200,10 @@ export default function SignUp() {
                   autoComplete="current-password"
                 />
               </Grid>
-              <Grid item xs={12}>
+              <Grid
+                item
+                xs={12}
+              >
                 <TextField
                   required
                   fullWidth
@@ -182,36 +214,59 @@ export default function SignUp() {
                   autoComplete="new-password"
                 />
               </Grid>
-              <Grid item xs={12}>
-                <FormControlLabel
-                  control={<Checkbox value="allowExtraEmails" color="primary" />}
-                  label="I want to receive inspiration, marketing promotions and updates via email."
-                />
-              </Grid>
             </Grid>
+
             <Button
               type="submit"
               fullWidth
               variant="contained"
-              sx={{ mt: 3, mb: 2 }}
+              sx={{ mt: 1, mb: 1 }}
             >
               Sign Up
             </Button>
-            <Grid container justifyContent="flex-end">
+            <Grid
+              container
+              justifyContent="flex-end"
+            >
               <Grid item>
-                <Link href="#" variant="body2">
-                  Already have an account? Sign in
+                <Link
+                  href="#"
+                  variant="body2"
+                >
+                  <Typography sx={{ fontSize: 12 }}>Already have an account? Sign in</Typography>
                 </Link>
               </Grid>
             </Grid>
           </Box>
 
-          <Button onClick={ () => { router.push('/auth/signup') } } variant="contained" color="primary">SignUp</Button>
-
-          <Button variant="contained" color="primary" onClick={() => { router.push('http://localhost:3001/auth/callback/42')}}>42ログイン</Button>
+          <Box
+            sx={{
+              display: 'flex',
+              gap: 4,
+              alignItems: 'center',
+            }}
+          >
+            <Button
+              onClick={() => {
+                router.push('/auth/signup');
+              }}
+              variant="contained"
+              color="primary"
+            >
+              SignUp
+            </Button>
+            <Button
+              variant="contained"
+              color="primary"
+              onClick={() => {
+                router.push(`${API_URL}/auth/callback/42`);
+              }}
+            >
+              42ログイン
+            </Button>
+          </Box>
         </Box>
-        <Copyright sx={{ mt: 5 }} />
       </Container>
-    </ThemeProvider>
+    </>
   );
 }
