@@ -242,6 +242,7 @@ export default function SignIn() {
               variant="body2"
               sx={{
                 color: theme.palette.text.primary,
+                ml: 2,
               }}
             >
               Sign Up
