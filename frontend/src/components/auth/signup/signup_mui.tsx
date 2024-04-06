@@ -1,43 +1,42 @@
-/* eslint-disable */
 import * as React from 'react';
 import Avatar from '@mui/material/Avatar';
 import Button from '@mui/material/Button';
-import CssBaseline from '@mui/material/CssBaseline';
 import TextField from '@mui/material/TextField';
-import FormControlLabel from '@mui/material/FormControlLabel';
-import Checkbox from '@mui/material/Checkbox';
-import Link from '@mui/material/Link';
 import Grid from '@mui/material/Grid';
 import Box from '@mui/material/Box';
 import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
 import Typography from '@mui/material/Typography';
 import Container from '@mui/material/Container';
-import { createTheme, ThemeProvider, useTheme } from '@mui/material/styles';
+import { useTheme } from '@mui/material/styles';
 
 import CircularProgress from '@mui/material/CircularProgress';
 
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/providers/useAuth';
-import { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
+import { APP_ROUTING } from '@/constants/routing.constant';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
 export default function SignUp() {
+  // スタイルテーマ
   const theme = useTheme();
-
-  const [userName, setUserName] = useState('');
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [passwordConfirm, setPasswordConfirm] = useState('');
-  const [user, setUser] = useState({});
-
-  const [token, setToken] = useState('');
-
+  // ルーティング用
   const router = useRouter();
-  const { signin, loginUser, getCurrentUser, loading } = useAuth();
+  // 認証情報
+  const { loginUser, getCurrentUser, loading } = useAuth();
+  // トークン
+  const [_token, setToken] = useState<string | null>('');
+  // エラー状態
+  const [errorFields, setErrorFields] = useState<{[key: string]: string}>({
+    name: '',
+    email: '',
+    password: '',
+    passwordConfirm: '',
+  });
 
+  // セッション取得
   useEffect(() => {
-    //if (token == '' || token === undefined) return;
     getCurrentUser();
   }, []);
 
@@ -55,6 +54,44 @@ export default function SignUp() {
   //   });
   // };
 
+  // validation
+  const validate = (data: FormData) => {
+    let isValid = true;
+    const errors: { [key: string]: string } = {};
+    // 必須チェック
+    if (!data.get('name')) {
+      errors.name = 'Please enter your name';
+      isValid = false;
+    }
+    if (!data.get('email')) {
+      errors.email = 'Please enter your email';
+      isValid = false;
+    }
+    if (!data.get('password')) {
+      errors.password = 'Please enter your password';
+      isValid = false;
+    }
+    if (!data.get('passwordConfirm')) {
+      errors.passwordConfirm = 'Please enter your password confirmation';
+      isValid = false;
+    }
+    // 桁数チェック
+    if (data.get('password')) {
+      const password = data.get('password')?.toString();
+      if (password && password.length > 20 ) {
+        errors.password = 'Please enter at least 8 characters';
+        isValid = false;
+      }
+    }
+    // 相関チェック
+    if (data.get('password') !== data.get('passwordConfirm')) {
+      errors.passwordConfirm = 'Passwords do not match';
+      isValid = false;
+    }
+    setErrorFields(errors);
+    return isValid;
+  };
+
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const data = new FormData(e.currentTarget);
@@ -66,6 +103,11 @@ export default function SignUp() {
       data.get('password'),
       data.get('passwordConfirm'),
     );
+
+    // バリデーション
+    if (!validate(data)) {
+      return;
+    }
 
     // // ここでフォームのデータを処理します
     // // axios.post('localhost:3001/users/login', { username, email });
@@ -91,7 +133,7 @@ export default function SignUp() {
       .then((data) => {
         console.log('Success:', data.accessToken);
         setToken(data.accessToken);
-        getCurrentUser();
+        router.push(APP_ROUTING.DASHBOARD.path);
       })
       .catch((error) => {
         console.error('Error:', error);
@@ -112,6 +154,7 @@ export default function SignUp() {
     // setPasswordConfirm('');
   };
 
+  // ローディングアニメーション
   if (loading || loginUser) {
     return <CircularProgress />;
   }
@@ -144,11 +187,11 @@ export default function SignUp() {
           >
             Sign up
           </Typography>
+
           <Box
             component="form"
             noValidate
             onSubmit={handleSubmit}
-            sx={{ mt: 1 }}
           >
             <Grid
               container
@@ -157,7 +200,6 @@ export default function SignUp() {
               <Grid
                 item
                 xs={12}
-                sm={6}
               >
                 <TextField
                   margin="normal"
@@ -168,12 +210,13 @@ export default function SignUp() {
                   name="name"
                   autoComplete="name"
                   autoFocus
+                  error={!!errorFields.name}
+                  helperText={errorFields.name}
                 />
               </Grid>
               <Grid
                 item
                 xs={12}
-                sm={6}
               >
                 <TextField
                   margin="normal"
@@ -183,6 +226,8 @@ export default function SignUp() {
                   label="Email Address"
                   name="email"
                   autoComplete="email"
+                  error={!!errorFields.email}
+                  helperText={errorFields.email}
                 />
               </Grid>
               <Grid
@@ -198,6 +243,8 @@ export default function SignUp() {
                   type="password"
                   id="password"
                   autoComplete="current-password"
+                  error={!!errorFields.password}
+                  helperText={errorFields.password}
                 />
               </Grid>
               <Grid
@@ -209,9 +256,11 @@ export default function SignUp() {
                   fullWidth
                   name="passwordConfirm"
                   label="PasswordConfirm"
-                  type="passwordConfirm"
+                  type="password"
                   id="passwordConfirm"
                   autoComplete="new-password"
+                  error={!!errorFields.passwordConfirm}
+                  helperText={errorFields.passwordConfirm}
                 />
               </Grid>
             </Grid>
@@ -224,19 +273,6 @@ export default function SignUp() {
             >
               Sign Up
             </Button>
-            <Grid
-              container
-              justifyContent="flex-end"
-            >
-              <Grid item>
-                <Link
-                  href="#"
-                  variant="body2"
-                >
-                  <Typography sx={{ fontSize: 12 }}>Already have an account? Sign in</Typography>
-                </Link>
-              </Grid>
-            </Grid>
           </Box>
 
           <Box
@@ -246,25 +282,18 @@ export default function SignUp() {
               alignItems: 'center',
             }}
           >
-            <Button
-              onClick={() => {
-                router.push('/auth/signup');
-              }}
-              variant="contained"
-              color="primary"
-            >
-              SignUp
-            </Button>
-            <Button
-              variant="contained"
-              color="primary"
-              onClick={() => {
-                router.push(`${API_URL}/auth/callback/42`);
-              }}
-            >
-              42ログイン
-            </Button>
           </Box>
+          <Typography
+            variant="body2"
+            color="textSecondary"
+          >
+            Already have an account?
+            <Button
+              onClick={() => router.push('/auth/signin')}
+            >
+              Login here.
+            </Button>
+          </Typography>
         </Box>
       </Container>
     </>

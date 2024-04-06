@@ -3,6 +3,16 @@ export const APP_ROUTING = {
     path: '/',
     name: 'トップ',
   },
+  AUTH: {
+    SIGN_UP: {
+      path: '/auth/signup',
+      name: 'サインアップ',
+    },
+    SIGN_IN: {
+      path: '/auth/signin',
+      name: 'サインイン',
+    },
+  },
   DASHBOARD: {
     path: '/dashboard',
     name: 'ダッシュボード',
