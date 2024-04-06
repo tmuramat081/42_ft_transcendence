@@ -13,10 +13,16 @@ import CircularProgress from '@mui/material/CircularProgress';
 
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/providers/useAuth';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { APP_ROUTING } from '@/constants/routing.constant';
+import Link from '@mui/material/Link';
+import { useAsyncEffect } from '@/hooks/effect/useAsyncEffect';
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL;
+const API_URL = process.env.NEXT_PUBLIC_API_URL ?? '';
+
+type SignUpResponse = {
+  accessToken: string;
+};
 
 export default function SignUp() {
   // スタイルテーマ
@@ -28,17 +34,12 @@ export default function SignUp() {
   // トークン
   const [_token, setToken] = useState<string | null>('');
   // エラー状態
-  const [errorFields, setErrorFields] = useState<{[key: string]: string}>({
+  const [errorFields, setErrorFields] = useState<{ [key: string]: string }>({
     name: '',
     email: '',
     password: '',
     passwordConfirm: '',
   });
-
-  // セッション取得
-  useEffect(() => {
-    getCurrentUser();
-  }, []);
 
   //field修正
 
@@ -78,7 +79,7 @@ export default function SignUp() {
     // 桁数チェック
     if (data.get('password')) {
       const password = data.get('password')?.toString();
-      if (password && password.length > 20 ) {
+      if (password && password.length > 20) {
         errors.password = 'Please enter at least 8 characters';
         isValid = false;
       }
@@ -92,6 +93,7 @@ export default function SignUp() {
     return isValid;
   };
 
+  // リクエスト送信処理
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const data = new FormData(e.currentTarget);
@@ -126,11 +128,9 @@ export default function SignUp() {
       }),
     })
       .then((res) => {
-        // /console.log(res.json());
         return res.json();
       })
-      //.then((res) => res.json())
-      .then((data) => {
+      .then((data: SignUpResponse) => {
         console.log('Success:', data.accessToken);
         setToken(data.accessToken);
         router.push(APP_ROUTING.DASHBOARD.path);
@@ -153,6 +153,11 @@ export default function SignUp() {
     // setPassword('');
     // setPasswordConfirm('');
   };
+
+  // 認証情報の取得
+  useAsyncEffect(async () => {
+    await getCurrentUser();
+  }, []);
 
   // ローディングアニメーション
   if (loading || loginUser) {
@@ -281,18 +286,19 @@ export default function SignUp() {
               gap: 4,
               alignItems: 'center',
             }}
-          >
-          </Box>
+          ></Box>
           <Typography
             variant="body2"
             color="textSecondary"
           >
             Already have an account?
-            <Button
-              onClick={() => router.push('/auth/signin')}
+            <Link
+              href={APP_ROUTING.AUTH.SIGN_IN.path}
+              variant="body2"
+              sx={{ ml: 2 }}
             >
               Login here.
-            </Button>
+            </Link>
           </Typography>
         </Box>
       </Container>
