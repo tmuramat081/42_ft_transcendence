@@ -41,7 +41,7 @@ export default function SignIn() {
   });
 
   // validation
-  const validate = (data: FormData) => {
+  const validate = (data: FormData): boolean => {
     let isValid = true;
     const errors: { [key: string]: string } = {};
     // 必須チェック
@@ -53,11 +53,6 @@ export default function SignIn() {
       errors.password = 'Please enter your password';
       isValid = false;
     }
-    // 相関チェック
-    if (data.get('password') !== data.get('passwordConfirm')) {
-      errors.passwordConfirm = 'Passwords do not match';
-      isValid = false;
-    }
     setErrorFields(errors);
     return isValid;
   };
@@ -66,6 +61,7 @@ export default function SignIn() {
     e.preventDefault();
     const data = new FormData(e.currentTarget);
 
+    // バリデーション
     if (!validate(data)) {
       return;
     }

@@ -3,16 +3,18 @@
 import { useEffect } from 'react'
 import { usePathname, useRouter } from 'next/navigation'
 import { useAuth } from '@/providers/useAuth'
+import { APP_ROUTING } from '@/constants/routing.constant';
 
 // ユーザーの認証状態をチェックし、認証されていなければリダイレクトするカスタムフック
 export const useRouterGuard = () => {
     const router = useRouter();
-    const { loginUser, getCurrentUser, loading } = useAuth();
+    const { loginUser, loading } = useAuth();
     const pathname = usePathname();
 
 
     const privateRoutes = [
         '/users/update', 
+        '/dashboard'
     ];
 
     const publicRoutes = [
@@ -29,22 +31,17 @@ export const useRouterGuard = () => {
       //console.log("loading: ", loading)
       if (loading) return;
 
-      console.log("useRouterGuard: ", loginUser)
-
-
-
       // ユーザー認証状態をチェックするロジック  
-      //if (protectedRoutes.includes(pathname) && user != null) {
       if (publicRoutes.includes(pathname) && loginUser) {
-        // ユーザーが認証されていなければ、/loginにリダイレクト
-        //router.push('/');
-        router.replace('/');
+        // ユーザーが認証されていれば、/dashboardにリダイレクト
+        console.log("useRouterGuard: dashboard", loginUser)
+        router.push(APP_ROUTING.DASHBOARD.path);
       }
 
       if (privateRoutes.includes(pathname) && !loginUser) {
         // ユーザーが認証されていなければ、/loginにリダイレクト
-        //router.push('/auth/signin');
-        router.replace('/auth/signin');
+        console.log("useRouterGuard: login", loginUser)
+        router.push(APP_ROUTING.AUTH.SIGN_IN.path);
       }
     }, [loginUser, loading, pathname]);
   }

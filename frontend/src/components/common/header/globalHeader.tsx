@@ -4,10 +4,32 @@ import { SOCKET_EVENTS } from '@/constants/socket.constant';
 import { useWebSocket } from '@/providers/webSocketProvider';
 import { AppBar, Box, Link, Toolbar } from '@mui/material';
 import { useEffect, useState } from 'react';
+import LogoutIcon from '@mui/icons-material/Logout';
+
+const API_URL = process.env.NEXT_PUBLIC_API_URL ?? '';
 
 const GlobalHeader = () => {
   const { socket } = useWebSocket();
-  const [isConnected, setIsConnected] = useState(false);
+  const [_isConnected, setIsConnected] = useState(false);
+
+  const handleSignOut = (e: React.MouseEvent<HTMLButtonElement>) => {
+    e.preventDefault();
+
+    // ログアウト処理
+    fetch(`${API_URL}/users/signout`, {
+      method: 'POST',
+      credentials: 'include',
+    })
+      .then(() => {
+        // ソケットを切断
+        socket?.disconnect();
+        // ログイン画面に遷移
+        window.location.href = APP_ROUTING.AUTH.SIGN_IN.path;
+      })
+      .catch((error) => {
+        console.error(error);
+      });
+  };
 
   useEffect(() => {
     if (!socket) return;
@@ -37,6 +59,7 @@ const GlobalHeader = () => {
         }}
       >
         <Toolbar>
+          {/* サイトロゴ */}
           <Link
             href={APP_ROUTING.DASHBOARD.path}
             color="secondary"
@@ -44,7 +67,17 @@ const GlobalHeader = () => {
           >
             Ping-Pong!
           </Link>
-          {isConnected && <span style={{ marginLeft: 'auto' }}>connected</span>}
+          {/* ログアウトボタン */}
+          <Box sx={{ ml: 'auto' }}>
+            <Link
+              color="secondary"
+              variant="h6"
+              onClick={handleSignOut}
+              component="button"
+            >
+              <LogoutIcon />
+            </Link>
+          </Box>
         </Toolbar>
       </AppBar>
     </Box>
