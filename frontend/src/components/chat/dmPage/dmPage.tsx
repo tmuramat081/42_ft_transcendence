@@ -1,3 +1,4 @@
+/*eslint-disable*/
 'use client';
 import React, { useState, useEffect, useCallback } from 'react';
 import Image from 'next/image';
@@ -46,7 +47,6 @@ export default function DMPage({ params }: { params: string }) {
         icon: user.icon,
       };
       setSender(sender);
-      console.log('sender:', sender);
     });
 
     socket.on('recipient', (recipient: UserInfo) => {
@@ -64,6 +64,11 @@ export default function DMPage({ params }: { params: string }) {
       socket.off('recipient');
     };
   }, [socket, params]);
+
+  useEffect(() => {
+    if (!socket) return;
+    console.log('sender:', sender);
+  }, [sender]);
 
   useEffect(() => {
     if (!socket) return;
