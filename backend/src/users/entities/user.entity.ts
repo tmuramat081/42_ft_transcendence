@@ -51,7 +51,7 @@ import { Factory } from 'nestjs-seeder';
 // 出力フィールドを制御するために、class-transformerパッケージを使用する
 import { Exclude } from 'class-transformer';
 
-import { GameRecord } from '@/games/entities/gameRecord';
+import { GameRecord } from '@/games/entities/gameRecord.entity';
 
 // entityはデータベースのテーブルを表す
 // Uniqueはユニーク制約

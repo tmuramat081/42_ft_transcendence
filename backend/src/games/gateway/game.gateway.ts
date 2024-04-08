@@ -99,4 +99,6 @@ export class GameGateway {
         this.rooms[roomIdToDelete]?.map((client) => client.userId),
       );
   }
+
+  //maoyagi ver
 }
