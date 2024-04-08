@@ -1,6 +1,6 @@
 /*eslint-disable*/
 'use client';
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, use } from 'react';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { useWebSocket } from '@/providers/webSocketProvider';
@@ -38,7 +38,6 @@ export default function ChatPage() {
       icon: 'https://www.plazastyle.com/images/charapla-spongebob/img_character01.png',
     };
     setSender(senderData);
-    console.log('sender:', sender);
     socket.emit('getRoomList', senderData);
     socket.emit('getOnlineUsers', senderData);
 
@@ -65,6 +64,11 @@ export default function ChatPage() {
 
   useEffect(() => {
     if (!socket) return;
+    console.log('sender:', sender);
+  }, [sender]);
+
+  useEffect(() => {
+    if (!socket) return;
 
     socket.on('roomList', (rooms: Room[]) => {
       console.log('Received roomList from server:', rooms);
@@ -75,13 +79,13 @@ export default function ChatPage() {
     socket.on('onlineUsers', (users: UserInfo[]) => {
       console.log('Received online users from server:', users);
       setOnlineUsers(users);
-      console.log('onlineUsers:', onlineUsers);
+      // console.log('onlineUsers:', onlineUsers);
     });
 
     socket.on('roomParticipants', (roomParticipants: UserInfo[]) => {
       console.log('Received roomParticipants from server:', roomParticipants);
       setParticipants(roomParticipants);
-      console.log('participants:', participants);
+      // console.log('participants:', participants);
     });
 
     socket.on('roomError', (error) => {

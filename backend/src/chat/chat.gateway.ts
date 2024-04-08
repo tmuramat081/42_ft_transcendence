@@ -91,7 +91,7 @@ export class ChatGateway {
 
       this.logger.log(`Online users: ${JSON.stringify(onlineUsers)}`);
 
-      // onlineUsersををUserInfoに変換
+      // onlineUsersをUserInfoに変換
       const onlineUsersInfo: UserInfo[] = onlineUsers.map((user) => {
         return {
           userId: user.userId,
@@ -311,7 +311,15 @@ export class ChatGateway {
       const updatedRoom = await this.roomRepository.findOne({ where: { roomName: join.room } });
       if (updatedRoom) {
         this.logger.log(`Updated room: ${JSON.stringify(updatedRoom)}`);
-        this.server.to(join.room).emit('roomParticipants', updatedRoom.roomParticipants);
+        // updatedRoom.roomParticipantsをUserInfoに変換
+        const roomParticipants: UserInfo[] = updatedRoom.roomParticipants.map((participant) => {
+          return {
+            userId: participant.id,
+            userName: participant.name,
+            icon: participant.icon,
+          };
+        });
+        this.server.to(join.room).emit('roomParticipants', roomParticipants);
       } else {
         this.logger.error(`Error getting updated room.`);
       }
