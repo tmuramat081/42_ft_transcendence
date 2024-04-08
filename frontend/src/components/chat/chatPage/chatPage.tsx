@@ -105,7 +105,7 @@ export default function ChatPage() {
     socket.on('chatLogs', (chatMessages: ChatMessage[]) => {
       console.log('Received chatLogs from server:', chatMessages);
       setRoomChatLogs((prevRoomChatLogs) => ({ ...prevRoomChatLogs, [roomID]: chatMessages }));
-      console.log('roomchatLogs:', roomchatLogs);
+      // console.log('roomchatLogs:', roomchatLogs);
     });
 
     return () => {
