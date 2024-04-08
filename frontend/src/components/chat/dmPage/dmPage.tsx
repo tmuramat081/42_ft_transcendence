@@ -29,7 +29,7 @@ export default function DMPage({ params }: { params: string }) {
   // console.log('user:', user);
 
   useEffect(() => {
-    if (!socket) return;
+    if (!socket || !params) return;
     console.log('params:', params);
 
     socket.emit('getCurrentUser');

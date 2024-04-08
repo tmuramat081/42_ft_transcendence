@@ -66,31 +66,45 @@ export class ChatGateway {
       // ダミーユーザーを登録
       // await this.createDummyUsers();
 
-      // OnlineUsersエンティティのインスタンスを作成し、データベースに保存
-      const onlineUser = new OnlineUsers();
-      onlineUser.userId = sender.userId;
-      onlineUser.name = sender.userName;
-      onlineUser.icon = sender.icon;
-      onlineUser.me = true;
-      await this.onlineUsersRepository.save(onlineUser);
+      // すでにログインユーザーが存在するかどうかを確認
+      const existingUser = await this.onlineUsersRepository.findOne({
+        where: { userId: sender.userId },
+      });
+      if (!existingUser) {
+        // OnlineUsersエンティティのインスタンスを作成し、データベースに保存
+        const onlineUser = new OnlineUsers();
+        onlineUser.userId = sender.userId;
+        onlineUser.name = sender.userName;
+        onlineUser.icon = sender.icon;
+        onlineUser.me = true;
+        await this.onlineUsersRepository.save(onlineUser);
+      }
 
       // 空のオンラインユーザーを削除
       await this.deleteEmptyOnlineUsers();
 
       // 重複したオンラインユーザーを削除
-      // await this.deleteDuplicateOnlineUsers();
+      await this.deleteDuplicateOnlineUsers();
 
       // データベースからオンラインユーザーリストを取得
       const onlineUsers = await this.onlineUsersRepository.find();
 
       this.logger.log(`Online users: ${JSON.stringify(onlineUsers)}`);
 
-      // sender以外のオンラインユーザーリストをクライアントに送信
-      // socket.emit(
-      //   'onlineUsers',
-      //   onlineUsers.filter((user) => user.name !== sender.userName),
-      // );
-      socket.emit('onlineUsers', onlineUsers);
+      // onlineUsersををUserInfoに変換
+      const onlineUsersInfo: UserInfo[] = onlineUsers.map((user) => {
+        return {
+          userId: user.userId,
+          userName: user.name,
+          icon: user.icon,
+        };
+      });
+
+      // sender以外のonlineUsersInfoをクライアントに送信
+      socket.emit(
+        'onlineUsers',
+        onlineUsersInfo.filter((user) => user.userName !== sender.userName),
+      );
     } catch (error) {
       this.logger.error(`Error getting online users: ${(error as Error).message}`);
       throw error;

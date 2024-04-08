@@ -1,12 +1,12 @@
+/*eslint-disable*/
 'use client';
 import React, { useState, useEffect, useCallback } from 'react';
 import Image from 'next/image';
-// import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useWebSocket } from '@/providers/webSocketProvider';
 import { useAuth } from '@/providers/useAuth';
 import { UserInfo, ChatMessage, Room } from '@/types/chat/chat';
-// import { User } from '@/types/user';
+import { User } from '@/types/user';
 import './chatPage.css';
 
 export default function ChatPage() {
@@ -31,18 +31,36 @@ export default function ChatPage() {
   useEffect(() => {
     if (!socket) return;
 
-    // ログイン情報を取得
     // 仮のユーザー情報をセット
     const senderData = {
       userId: 1,
       userName: 'Bob',
       icon: 'https://www.plazastyle.com/images/charapla-spongebob/img_character01.png',
     };
-    // const senderData = getCurrentUser();
     setSender(senderData);
-    console.log('sender:', senderData);
+    console.log('sender:', sender);
     socket.emit('getRoomList', senderData);
     socket.emit('getOnlineUsers', senderData);
+
+    // const setSenderData = async () => {
+    //   try {
+    //     const user: User | null = await getCurrentUser(); // Promiseをawaitで待機
+    //     if (user) {
+    //       const senderData = {
+    //         userId: user.userId,
+    //         userName: user.userName,
+    //         icon: user.icon,
+    //       };
+    //       setSender(senderData);
+    //       console.log('sender:', sender);
+    //       socket.emit('getRoomList', senderData);
+    //       socket.emit('getOnlineUsers', senderData);
+    //     }
+    //   } catch (error) {
+    //     console.error(error);
+    //   }
+    // };
+    // setSenderData().catch((error) => console.error(error));
   }, [socket]);
 
   useEffect(() => {
@@ -57,6 +75,7 @@ export default function ChatPage() {
     socket.on('onlineUsers', (users: UserInfo[]) => {
       console.log('Received online users from server:', users);
       setOnlineUsers(users);
+      console.log('onlineUsers:', onlineUsers);
     });
 
     socket.on('roomParticipants', (roomParticipants: UserInfo[]) => {
@@ -192,9 +211,6 @@ export default function ChatPage() {
               />
               <div className="onlineuser-name">{onlineUser.userName}</div>
               <button onClick={() => handleLinkClick(onlineUser)}>Send DM</button>
-              {/* <Link href={`/chat/${onlineUser.name}`}>
-                <button>Send DM</button>
-              </Link> */}
             </div>
           ))}
         </div>

@@ -42,7 +42,7 @@ export class DMGateway {
   ) {}
 
   @SubscribeMessage('getCurrentUser')
-  async handleGetCurrentUser(@ConnectedSocket() socket: Socket) {
+  async handle(@ConnectedSocket() socket: Socket) {
     try {
       this.logger.log(`getCurrentUser`);
       // データベースからcurrentUserを取得
