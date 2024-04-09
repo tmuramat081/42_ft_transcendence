@@ -5,7 +5,7 @@ import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { useWebSocket } from '@/providers/webSocketProvider';
 // import { useAuth } from '@/providers/useAuth';
-import { UserInfo, DirectMessage } from '@/types/chat/chat';
+import { UserInfo, UserData, DirectMessage } from '@/types/chat/chat';
 import './dmPage.css';
 
 export default function DMPage({ params }: { params: string }) {
@@ -23,6 +23,16 @@ export default function DMPage({ params }: { params: string }) {
     userName: '',
     icon: '',
   });
+  const [userinfo, setUserInfo] = useState<UserData>({
+    user: {
+      userId: -1,
+      userName: '',
+      icon: '',
+    },
+    email: '',
+    createdAt: new Date(),
+    name42: '',
+  });
   const [dmLogs, setDMLogs] = useState<DirectMessage[]>([]);
 
   // ログインユーザー情報の取得
@@ -31,10 +41,11 @@ export default function DMPage({ params }: { params: string }) {
 
   useEffect(() => {
     if (!socket || !params) return;
-    console.log('params:', params);
+    // console.log('params:', params);
 
     socket.emit('getCurrentUser');
     socket.emit('getRecipient', params);
+    socket.emit('getUserInfo', params);
   }, [socket, params]);
 
   useEffect(() => {
@@ -59,6 +70,10 @@ export default function DMPage({ params }: { params: string }) {
       console.log('receiver', receiver);
     });
 
+    socket.on('userInfo', (userData: UserData) => {
+      setUserInfo(userData);
+    });
+
     return () => {
       socket.off('currentUser');
       socket.off('recipient');
@@ -73,7 +88,7 @@ export default function DMPage({ params }: { params: string }) {
   useEffect(() => {
     if (!socket) return;
     if (sender.userName && receiver.userName) {
-      console.log(`${sender.userName} start DM with ${receiver.userName}`);
+      // console.log(`${sender.userName} start DM with ${receiver.userName}`);
       socket.emit('startDM', { sender: sender, receiver: receiver });
       socket.emit('getDMLogs', { sender: sender, receiver: receiver });
     }
@@ -99,21 +114,36 @@ export default function DMPage({ params }: { params: string }) {
     setMessage('');
   }, [sender, receiver, message, socket]);
 
+  const handleBlockUser = useCallback(() => {
+    if (!socket) return;
+    console.log(`${sender.userName} blocking ${receiver.userName}`);
+    socket.emit('blockUser', { sender: sender, receiver: receiver });
+  }, [sender, receiver, socket]);
+
   return (
     <div className="dm-container">
-      <h1>Direct Messages</h1>
       {/* DM 相手の情報 */}
       <div className="recipient-info">
-        <h4>Recipient</h4>
-        <Image
-          src={receiver.icon || ''}
-          alt={receiver.userName || ''}
-          className="recipient-icon"
-          width={50}
-          height={50}
-        />
-        <div className="recipient-name">{receiver?.userName}</div>
+        <div className="user">
+          <h4>User</h4>
+          <Image
+            src={receiver.icon || ''}
+            alt={receiver.userName || ''}
+            className="recipient-icon"
+            width={50}
+            height={50}
+          />
+          <div className="recipient-name">{receiver?.userName}</div>
+        </div>
+        {/* ユーザーの追加情報（例：emailなど） */}
+        <div className="user-info">
+          <p>Email: {userinfo.email}</p>
+          <p>Created At: {userinfo.createdAt.toString()}</p>
+          <p>42 Name: {userinfo.name42}</p>
+        </div>
       </div>
+      {/* ブロックボタン */}
+      <button onClick={handleBlockUser}>Block</button>
       {/* DM 履歴 */}
       <div
         className="dm-messages"

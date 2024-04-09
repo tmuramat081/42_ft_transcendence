@@ -15,7 +15,7 @@ import { Room } from './entities/room.entity';
 import { User } from '../users/entities/user.entity';
 import { DmLog } from './entities/dmLog.entity';
 import { OnlineUsers } from './entities/onlineUsers.entity';
-import { UserInfo, DirectMessage, formatDate } from './tools';
+import { UserInfo, UserData, DirectMessage, formatDate } from './tools';
 
 @WebSocketGateway({ cors: { origin: '*' } })
 export class DMGateway {
@@ -83,6 +83,34 @@ export class DMGateway {
         this.server.to(socket.id).emit('recipient', recipient);
       } else {
         this.logger.error('No recipient found');
+      }
+    } catch (error) {
+      this.logger.error(error);
+    }
+  }
+
+  // userRepositoryからユーザー情報を取得
+  @SubscribeMessage('getUserInfo')
+  async handleGetUserInfo(@MessageBody() userName: string, @ConnectedSocket() socket: Socket) {
+    try {
+      this.logger.log(`getUserInfo: ${userName}`);
+      const user = await this.userRepository.findOne({ where: { userName: userName } });
+      if (user) {
+        this.logger.log(`User found: ${JSON.stringify(user)}`);
+        // userをUserDataに変換
+        const userInfo: UserData = {
+          user: {
+            userId: user.userId,
+            userName: user.userName,
+            icon: user.icon,
+          },
+          email: user.email,
+          createdAt: user.createdAt,
+          name42: user.name42,
+        };
+        this.server.to(socket.id).emit('userInfo', userInfo);
+      } else {
+        this.logger.error('No user found');
       }
     } catch (error) {
       this.logger.error(error);

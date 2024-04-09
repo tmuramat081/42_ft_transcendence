@@ -4,6 +4,13 @@ export interface UserInfo {
   icon: string;
 }
 
+export interface UserData {
+  user: UserInfo;
+  email: string;
+  createdAt: Date;
+  name42: string;
+}
+
 export interface ChatMessage {
   user: string;
   photo: string;

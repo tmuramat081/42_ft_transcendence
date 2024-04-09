@@ -6,6 +6,19 @@
     height: 100vh;
   }
 
+  .recipient-info {
+    display: flex;
+    align-items: center;
+    padding: 10px;
+    border-bottom: 1px solid #ddd;
+  }
+
+  .user-info {
+    font-size: 14px;
+    align-items: center;
+    margin-left: 20px;
+  }
+
   .dm-input {
     margin-top: 20px;
     align-self: flex-end;

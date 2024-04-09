@@ -4,6 +4,13 @@ export type UserInfo = {
   icon: string;
 };
 
+export type UserData = {
+  user: UserInfo;
+  email: string;
+  createdAt: Date;
+  name42: string;
+};
+
 export type Room = {
   id: number;
   roomName: string;
