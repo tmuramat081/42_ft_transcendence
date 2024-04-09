@@ -221,15 +221,19 @@ export default function ChatPage() {
   const handleInviteGame = (event: React.ChangeEvent<HTMLSelectElement>) => {
     const invitedGame = event.target.value;
     if (!socket || !invitedGame || invitees.length === 0) return;
-    setSelectedGame(invitedGame);
-    console.log(`${sender.userName} invited users to ${invitedGame}:`, invitees);
+    console.log(`${sender.userName} invited users to play ${invitedGame}:`, invitees);
     // 選択された全てのユーザーを招待する
     invitees.forEach((invitee) => {
       socket.emit('inviteToGame', { sender, game: invitedGame, invitee });
     });
-    setNotification(`you invited users to play ${invitedGame}`);
+    setNotification(
+      `you invited users to play ${invitedGame}: ${invitees
+        .map((invitee) => invitee.userName)
+        .join(', ')}`,
+    );
     // 招待を送信した後、inviteesをリセットする
     setInvitees([]);
+    setSelectedGame(null);
   };
 
   const onClickInviteRoom = useCallback(() => {
