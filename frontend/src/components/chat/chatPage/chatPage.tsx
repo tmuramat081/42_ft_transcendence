@@ -274,19 +274,29 @@ export default function ChatPage() {
                   checked={invitees.some((invitee) => invitee.userId === onlineUser.userId)}
                   onChange={() => handleCheckboxChange(onlineUser)}
                 />
-                {/* アイコン */}
-                <Image
-                  src={onlineUser.icon}
-                  alt={onlineUser.userName}
-                  className="onlineusers-icon"
-                  width={50}
-                  height={50}
-                />
+                {/* アイコンとクリックハンドラーをラップする */}
+                <button
+                  className="onlineuser-wrapper"
+                  onClick={() => handleLinkClick(onlineUser)}
+                  style={{
+                    border: 'none', // 枠線を削除
+                    background: 'none', // 背景を削除
+                    padding: 0, // パディングを削除
+                  }}
+                >
+                  {/* アイコン */}
+                  <Image
+                    src={onlineUser.icon}
+                    alt={onlineUser.userName}
+                    className="onlineusers-icon"
+                    width={50}
+                    height={50}
+                  />
+                </button>
               </div>
               {/* ユーザー名とDMボタン */}
               <div className="onlineuser-info">
                 <div className="onlineuser-name">{onlineUser.userName}</div>
-                <button onClick={() => handleLinkClick(onlineUser)}>Send DM</button>
               </div>
             </div>
           ))}
