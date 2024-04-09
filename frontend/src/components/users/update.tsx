@@ -33,7 +33,7 @@ export default function UpdateUserForm() {
   const { fields, handleFieldChange, setFields } = useFormValidation(inputFields);
   // アップロード画像
   const [file, setFile] = useState<File | null>(null);
-  const [previewUrl, setPreviewUrl] = useState<string>(null);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   // 2FA認証 有効・無効トグル
   const [twoFactorAuth, setTwoFactorAuth] = useState(false);
   // 2FA認証 モーダル表示

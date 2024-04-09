@@ -1,9 +1,10 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Modal } from '@mui/material';
 import Image from 'next/image';
 import { HTTP_METHOD } from '@/constants/api.constant';
 import useApi from '@/hooks/httpClient/useApi';
 import { User } from '@/types/user';
+import { Generate2faResponse } from '@/types/user/generate2fa';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? '';
 
@@ -14,8 +15,9 @@ type Props = {
 };
 
 export default function Update2FaModal({ showModal, onClose, loginUser }: Props) {
-  const [code, setCode] = React.useState<string>('');
-  const [qrCodeUrl, setQrCodeUrl] = React.useState<string>('');
+  const [code, setCode] = useState<string>('');
+  const [qrCodeUrl, setQrCodeUrl] = useState<string>('');
+  const [_twoFactorAuth, setTwoFactorAuth] = useState(false);
 
   const { fetchData: verify2Fa } = useApi({
     path: 'auth/2fa/verify',
@@ -38,10 +40,10 @@ export default function Update2FaModal({ showModal, onClose, loginUser }: Props)
   };
 
   // 2FA有効化時にモーダルを表示
-  const enableTwoFactorAuth = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const _enableTwoFactorAuth = (e: React.ChangeEvent<HTMLInputElement>) => {
     setTwoFactorAuth(e.target.checked);
     if (e.target.checked) {
-      setShowModal(true);
+      // setShowModal(true);
 
       fetch(`${API_URL}/auth/2fa/generate`, {
         method: 'GET',
@@ -54,9 +56,8 @@ export default function Update2FaModal({ showModal, onClose, loginUser }: Props)
           //console.log(res.data);
           return res.json();
         })
-        .then((data) => {
-          console.log('Success:', data.qrCord);
-          setQrCodeUrl(data.qrCord);
+        .then((data: Generate2faResponse) => {
+          setQrCodeUrl(data.qrCode);
         })
         .catch((error) => {
           console.error('Error:', error);
