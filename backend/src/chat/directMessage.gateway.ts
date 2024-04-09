@@ -182,7 +182,7 @@ export class DMGateway {
       });
       this.logger.log(`dmLogs: ${JSON.stringify(dmLogs)}`);
 
-      // dmLongsをdirectMessage[]に変換
+      // dmLogsをdirectMessage[]に変換
       const directMessages: DirectMessage[] = dmLogs.map((dmLog) => {
         return {
           sender: dmLog.senderName,

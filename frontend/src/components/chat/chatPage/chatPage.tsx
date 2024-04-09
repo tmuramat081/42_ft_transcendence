@@ -1,6 +1,7 @@
 /*eslint-disable*/
 'use client';
 import React, { useState, useEffect, useCallback, use } from 'react';
+import Notification from './Notification';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { useWebSocket } from '@/providers/webSocketProvider';
@@ -27,6 +28,9 @@ export default function ChatPage() {
   const [isDeleteButtonVisible, setDeleteButtonVisible] = useState(false);
   const [participants, setParticipants] = useState<UserInfo[]>([]);
   const [onlineUsers, setOnlineUsers] = useState<UserInfo[]>([]);
+  const [invitee, setInvitee] = useState<UserInfo | null>(null);
+  const [invitees, setInvitees] = useState<UserInfo[]>([]);
+  const [notification, setNotification] = useState<string | null>(null);
 
   useEffect(() => {
     if (!socket) return;
@@ -88,6 +92,11 @@ export default function ChatPage() {
       // console.log('participants:', participants);
     });
 
+    socket.on('roomInvitation', (sender: UserInfo, room: string) => {
+      console.log('Received roomInvitation from server:', sender, room);
+      setNotification(`${sender.userName} invited you to join ${room}`);
+    });
+
     socket.on('roomError', (error) => {
       console.error(error);
     });
@@ -96,6 +105,7 @@ export default function ChatPage() {
       socket.off('roomList');
       socket.off('onlineUsers');
       socket.off('roomParticipants');
+      socket.off('roomInvitation');
       socket.off('roomError');
     };
   }, [socket, getCurrentUser, participants]);
@@ -194,9 +204,46 @@ export default function ChatPage() {
     router.push(as);
   };
 
+  const onClickInviteRoom = useCallback(() => {
+    if (!socket || !selectedRoom || invitees.length === 0) return;
+    console.log(`${sender.userName} invited users to ${selectedRoom}:`, invitees);
+
+    // 選択された全てのユーザーを招待する
+    invitees.forEach((invitee) => {
+      socket.emit('inviteToRoom', { sender, room: selectedRoom, invitee });
+    });
+
+    // 招待を送信した後、inviteesをリセットする
+    setInvitees([]);
+  }, [sender, selectedRoom, invitees, socket]);
+
+  // チェックボックスの状態を管理するハンドラー
+  const handleCheckboxChange = (user: UserInfo) => {
+    // チェックされたユーザーを追加または削除する
+    if (invitees.some((invitee) => invitee.userId === user.userId)) {
+      // ユーザーが既に招待リストにあれば削除する
+      setInvitees(invitees.filter((invitee) => invitee.userId !== user.userId));
+    } else {
+      // ユーザーが招待リストになければ追加する
+      setInvitees([...invitees, user]);
+    }
+  };
+
+  // 通知を閉じる関数
+  const closeNotification = () => {
+    setNotification(null);
+  };
+
   return (
     <div className="chat-container">
       <h1>Chat Page</h1>
+      {/* 通知があれば表示 */}
+      {notification && (
+        <Notification
+          message={notification}
+          onClose={closeNotification}
+        />
+      )}
       {/* ログイン中の参加者リスト */}
       <div className="onlineusers">
         <h4>Logined friends</h4>
@@ -206,15 +253,31 @@ export default function ChatPage() {
               key={index}
               className="onlineuser"
             >
-              <Image
-                src={onlineUser.icon}
-                alt={onlineUser.userName}
-                className="onlineusers-icon"
-                width={50}
-                height={50}
-              />
-              <div className="onlineuser-name">{onlineUser.userName}</div>
-              <button onClick={() => handleLinkClick(onlineUser)}>Send DM</button>
+              {/* アイコンとチェックボックスをラップする */}
+              <div className="onlineuser-wrapper">
+                {/* isDeleteButtonVisible が true の場合にのみチェックボックスを表示 */}
+                {isDeleteButtonVisible && (
+                  <input
+                    type="checkbox"
+                    id={`user_${index}`}
+                    checked={invitees.some((invitee) => invitee.userId === onlineUser.userId)}
+                    onChange={() => handleCheckboxChange(onlineUser)}
+                  />
+                )}
+                {/* アイコン */}
+                <Image
+                  src={onlineUser.icon}
+                  alt={onlineUser.userName}
+                  className="onlineusers-icon"
+                  width={50}
+                  height={50}
+                />
+              </div>
+              {/* ユーザー名とDMボタン */}
+              <div className="onlineuser-info">
+                <div className="onlineuser-name">{onlineUser.userName}</div>
+                <button onClick={() => handleLinkClick(onlineUser)}>Send DM</button>
+              </div>
             </div>
           ))}
         </div>
@@ -248,6 +311,14 @@ export default function ChatPage() {
               </option>
             ))}
           </select>
+          {isDeleteButtonVisible && (
+            <button
+              className="btn-small"
+              onClick={onClickInviteRoom}
+            >
+              Invite Room
+            </button>
+          )}
           {/* Leave Room ボタン */}
           {isDeleteButtonVisible && (
             <button

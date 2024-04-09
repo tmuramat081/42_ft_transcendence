@@ -414,4 +414,25 @@ export class ChatGateway {
       throw error;
     }
   }
+  @SubscribeMessage('inviteToRoom')
+  async handleInviteToRoom(
+    @MessageBody() data: { sender: UserInfo; room: string; invitee: UserInfo },
+    @ConnectedSocket() socket: Socket,
+  ) {
+    try {
+      // 招待情報をログに記録
+      this.logger.log(
+        `Invite to room: ${data.sender.userName} invited ${data.invitee.userName} to ${data.room}`,
+      );
+
+      // クライアントに招待情報を送信
+      this.server.to(String(data.invitee.userId)).emit('roomInvitation', {
+        sender: data.sender,
+        room: data.room,
+      });
+    } catch (error) {
+      this.logger.error(`Error inviting to room: ${(error as Error).message}`);
+      throw error;
+    }
+  }
 }

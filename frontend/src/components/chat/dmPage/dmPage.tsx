@@ -84,7 +84,7 @@ export default function DMPage({ params }: { params: string }) {
     socket.on('dmLogs', (directMessages: DirectMessage[]) => {
       console.log('Received DMLogs from server:', directMessages);
       setDMLogs(directMessages);
-      console.log('dmLogs:', dmLogs);
+      // console.log('dmLogs:', dmLogs);
     });
 
     return () => {
