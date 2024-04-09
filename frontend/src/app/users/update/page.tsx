@@ -1,10 +1,15 @@
-/* eslint-disable */
-"use client";
-import { useState } from 'react';
-import Form from '@/components/users/update';
+'use client';
+import UpdateUserForm from '@/components/users/update';
+import { Box } from '@mui/material';
 
 export default function Page() {
-    return (
-        <Form />
-    )
+  return (
+    <Box
+      display="flex"
+      justifyContent="center"
+      alignItems="center"
+    >
+      <UpdateUserForm />;
+    </Box>
+  );
 }

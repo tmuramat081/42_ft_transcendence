@@ -16,6 +16,13 @@ export const APP_ROUTING = {
       public: true,
     },
   },
+  USER: {
+    UPDATE: {
+      path: '/users/update',
+      name: 'ユーザー情報更新',
+      public: false,
+    },
+  },
   DASHBOARD: {
     path: '/dashboard',
     name: 'ダッシュボード',

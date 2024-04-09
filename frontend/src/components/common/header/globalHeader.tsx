@@ -1,16 +1,17 @@
 'use client';
 import { APP_ROUTING } from '@/constants/routing.constant';
-import { SOCKET_EVENTS } from '@/constants/socket.constant';
 import { useWebSocket } from '@/providers/webSocketProvider';
-import { AppBar, Box, Link, Toolbar } from '@mui/material';
-import { useEffect, useState } from 'react';
+import { AppBar, Avatar, Box, Link, Toolbar } from '@mui/material';
 import LogoutIcon from '@mui/icons-material/Logout';
+import { useAuth } from '@/providers/useAuth';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? '';
 
 const GlobalHeader = () => {
   const { socket } = useWebSocket();
-  const [_isConnected, setIsConnected] = useState(false);
+  const { loginUser } = useAuth();
+
+  // セッション情報
 
   const handleSignOut = (e: React.MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
@@ -31,23 +32,6 @@ const GlobalHeader = () => {
       });
   };
 
-  useEffect(() => {
-    if (!socket) return;
-
-    socket.on(SOCKET_EVENTS.COMMON.CONNECT, () => {
-      setIsConnected(true);
-    });
-
-    socket.on(SOCKET_EVENTS.COMMON.DISCONNECT, () => {
-      setIsConnected(false);
-    });
-
-    return () => {
-      socket.off(SOCKET_EVENTS.COMMON.CONNECT);
-      socket.off(SOCKET_EVENTS.COMMON.DISCONNECT);
-    };
-  });
-
   return (
     <Box sx={{ flexGrow: 1 }}>
       <AppBar
@@ -67,8 +51,23 @@ const GlobalHeader = () => {
           >
             Ping-Pong!
           </Link>
-          {/* ログアウトボタン */}
-          <Box sx={{ ml: 'auto' }}>
+          <Box sx={{ ml: 'auto', display: 'flex', alignItems: 'center', gap: 2 }}>
+            {/* ユーザーアイコン */}
+            {loginUser && (
+              <Link
+                href={APP_ROUTING.USER.UPDATE.path}
+                color="inherit"
+              >
+                <Avatar
+                  alt={loginUser.userName}
+                  src={`${API_URL}/api/uploads/${loginUser.icon}`}
+                  sx={{ width: 32, height: 32 }}
+                >
+                  {loginUser.icon}
+                </Avatar>
+              </Link>
+            )}
+            {/* ログアウトボタン */}
             <Link
               color="secondary"
               variant="h6"
