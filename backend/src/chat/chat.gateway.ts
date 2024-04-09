@@ -88,6 +88,23 @@ export class ChatGateway {
       // ダミーユーザーを登録
       // await this.createDummyUsers();
 
+      // userRepositoryのデータをオンラインユーザーリストに追加
+      const user = await this.userRepository.find();
+      await Promise.all(
+        user.map(async (user) => {
+          const onlineUser = new OnlineUsers();
+          onlineUser.userId = user.userId;
+          onlineUser.name = user.userName;
+          onlineUser.icon = user.icon;
+          //iconが空の場合はダミーアイコンを設定
+          if (!onlineUser.icon) {
+            onlineUser.icon = 'https://pics.prcm.jp/db3b34efef8a0/86032013/jpeg/86032013.jpeg';
+          }
+          onlineUser.me = false;
+          await this.onlineUsersRepository.save(onlineUser);
+        }),
+      );
+
       // すでにログインユーザーが存在するかどうかを確認
       const existingUser = await this.onlineUsersRepository.findOne({
         where: { userId: sender.userId },
@@ -107,6 +124,13 @@ export class ChatGateway {
 
       // 重複したオンラインユーザーを削除
       await this.deleteDuplicateOnlineUsers();
+
+      // iconが空のユーザーを削除
+      // const emptyIconUsers = await this.onlineUsersRepository.find({
+      //   where: { icon: '' },
+      // });
+      // await Promise.all(emptyIconUsers.map((user) => this.onlineUsersRepository.remove(user)));
+      // console.log('Empty icon users deleted:', emptyIconUsers);
 
       // データベースからオンラインユーザーリストを取得
       const onlineUsers = await this.onlineUsersRepository.find();

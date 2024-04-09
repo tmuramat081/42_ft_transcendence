@@ -47,26 +47,7 @@ export default function ChatPage() {
     socket.emit('getRoomList', senderData);
     socket.emit('getGameList', senderData);
     socket.emit('getOnlineUsers', senderData);
-
-    // const setSenderData = async () => {
-    //   try {
-    //     const user: User | null = await getCurrentUser(); // Promiseをawaitで待機
-    //     if (user) {
-    //       const senderData = {
-    //         userId: user.userId,
-    //         userName: user.userName,
-    //         icon: user.icon,
-    //       };
-    //       setSender(senderData);
-    //       console.log('sender:', sender);
-    //       socket.emit('getRoomList', senderData);
-    //       socket.emit('getOnlineUsers', senderData);
-    //     }
-    //   } catch (error) {
-    //     console.error(error);
-    //   }
-    // };
-    // setSenderData().catch((error) => console.error(error));
+    // socket.emit('getCurrentUser', getCurrentUser());
   }, [socket]);
 
   useEffect(() => {
