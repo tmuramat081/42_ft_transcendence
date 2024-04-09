@@ -10,4 +10,3 @@ export type User = {
   friends: User[];
   blocked: User[];
 };
-
