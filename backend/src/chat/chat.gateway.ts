@@ -15,6 +15,7 @@ import { Room } from './entities/room.entity';
 import { User } from '../users/entities/user.entity';
 import { DmLog } from './entities/dmLog.entity';
 import { OnlineUsers } from './entities/onlineUsers.entity';
+import { GameRoom } from '../games/entities/gameRoom.entity';
 import { UserInfo, ChatMessage, formatDate } from './tools';
 
 @WebSocketGateway({ cors: { origin: '*' } })
@@ -39,6 +40,9 @@ export class ChatGateway {
 
     @InjectRepository(OnlineUsers)
     private onlineUsersRepository: Repository<OnlineUsers>,
+
+    @InjectRepository(GameRoom)
+    private gameRoomRepository: Repository<GameRoom>,
   ) {}
 
   @SubscribeMessage('getRoomList')
@@ -47,10 +51,28 @@ export class ChatGateway {
       this.logger.log(`Get room list: ${sender.userName}`);
       // データベースからルームリストを取得
       const roomList = await this.roomRepository.find();
+      this.logger.log(`Room list: ${JSON.stringify(roomList)}`);
       // ルームリストをクライアントに送信
       socket.emit('roomList', roomList);
     } catch (error) {
       this.logger.error(`Error getting room list: ${(error as Error).message}`);
+      throw error;
+    }
+  }
+
+  @SubscribeMessage('getGameList')
+  async handleGetGameList(@MessageBody() sender: UserInfo, @ConnectedSocket() socket: Socket) {
+    try {
+      this.logger.log(`Get game list: ${sender.userName}`);
+      // データベースからゲームルームリストを取得
+      const gameList = await this.gameRoomRepository.find();
+      this.logger.log(`Game list: ${JSON.stringify(gameList)}`);
+      // gameListをstring[]に変換
+      const games: string[] = gameList.map((game) => game.roomName);
+      // ゲームルームリストをクライアントに送信
+      socket.emit('gameList', games);
+    } catch (error) {
+      this.logger.error(`Error getting game list: ${(error as Error).message}`);
       throw error;
     }
   }
@@ -414,13 +436,13 @@ export class ChatGateway {
       throw error;
     }
   }
+
   @SubscribeMessage('inviteToRoom')
   async handleInviteToRoom(
     @MessageBody() data: { sender: UserInfo; room: string; invitee: UserInfo },
     @ConnectedSocket() socket: Socket,
   ) {
     try {
-      // 招待情報をログに記録
       this.logger.log(
         `Invite to room: ${data.sender.userName} invited ${data.invitee.userName} to ${data.room}`,
       );
@@ -432,6 +454,27 @@ export class ChatGateway {
       });
     } catch (error) {
       this.logger.error(`Error inviting to room: ${(error as Error).message}`);
+      throw error;
+    }
+  }
+
+  @SubscribeMessage('inviteToGame')
+  async handleInviteToGame(
+    @MessageBody() data: { sender: UserInfo; game: string; invitee: UserInfo },
+    @ConnectedSocket() socket: Socket,
+  ) {
+    try {
+      this.logger.log(
+        `Invite to game: ${data.sender.userName} invited ${data.invitee.userName} to game: ${data.game}`,
+      );
+
+      // クライアントに招待情報を送信
+      this.server.to(String(data.invitee.userId)).emit('gameInvitation', {
+        sender: data.sender,
+        game: data.game,
+      });
+    } catch (error) {
+      this.logger.error(`Error inviting to game: ${(error as Error).message}`);
       throw error;
     }
   }

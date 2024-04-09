@@ -7,9 +7,10 @@ import { ChatLog } from './entities/chatLog.entity';
 import { User } from '../users/entities/user.entity';
 import { DmLog } from './entities/dmLog.entity';
 import { OnlineUsers } from './entities/onlineUsers.entity';
+import { GameRoom } from '../games/entities/gameRoom.entity';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Room, ChatLog, User, DmLog, OnlineUsers])],
+  imports: [TypeOrmModule.forFeature([Room, ChatLog, User, DmLog, OnlineUsers, GameRoom])],
   providers: [ChatGateway, DMGateway],
 })
 export class ChatModule {}

@@ -31,6 +31,8 @@ export default function ChatPage() {
   const [invitee, setInvitee] = useState<UserInfo | null>(null);
   const [invitees, setInvitees] = useState<UserInfo[]>([]);
   const [notification, setNotification] = useState<string | null>(null);
+  const [gameList, setGameList] = useState<string[]>([]);
+  const [selectedGame, setSelectedGame] = useState<string | null>(null);
 
   useEffect(() => {
     if (!socket) return;
@@ -43,6 +45,7 @@ export default function ChatPage() {
     };
     setSender(senderData);
     socket.emit('getRoomList', senderData);
+    socket.emit('getGameList', senderData);
     socket.emit('getOnlineUsers', senderData);
 
     // const setSenderData = async () => {
@@ -80,6 +83,11 @@ export default function ChatPage() {
       setRoomList(roomNames);
     });
 
+    socket.on('gameList', (games: string[]) => {
+      console.log('Received gameList from server:', games);
+      setGameList(games);
+    });
+
     socket.on('onlineUsers', (users: UserInfo[]) => {
       console.log('Received online users from server:', users);
       setOnlineUsers(users);
@@ -97,12 +105,18 @@ export default function ChatPage() {
       setNotification(`${sender.userName} invited you to join ${room}`);
     });
 
+    socket.on('gameInvitation', (sender: UserInfo, game: string) => {
+      console.log('Received gameInvitation from server:', sender, game);
+      setNotification(`${sender.userName} invited you to play ${game}`);
+    });
+
     socket.on('roomError', (error) => {
       console.error(error);
     });
 
     return () => {
       socket.off('roomList');
+      socket.off('gameList');
       socket.off('onlineUsers');
       socket.off('roomParticipants');
       socket.off('roomInvitation');
@@ -204,6 +218,20 @@ export default function ChatPage() {
     router.push(as);
   };
 
+  const handleInviteGame = (event: React.ChangeEvent<HTMLSelectElement>) => {
+    const invitedGame = event.target.value;
+    if (!socket || !invitedGame || invitees.length === 0) return;
+    setSelectedGame(invitedGame);
+    console.log(`${sender.userName} invited users to ${invitedGame}:`, invitees);
+    // 選択された全てのユーザーを招待する
+    invitees.forEach((invitee) => {
+      socket.emit('inviteToGame', { sender, game: invitedGame, invitee });
+    });
+    setNotification(`you invited users to play ${invitedGame}`);
+    // 招待を送信した後、inviteesをリセットする
+    setInvitees([]);
+  };
+
   const onClickInviteRoom = useCallback(() => {
     if (!socket || !selectedRoom || invitees.length === 0) return;
     console.log(`${sender.userName} invited users to ${selectedRoom}:`, invitees);
@@ -255,15 +283,12 @@ export default function ChatPage() {
             >
               {/* アイコンとチェックボックスをラップする */}
               <div className="onlineuser-wrapper">
-                {/* isDeleteButtonVisible が true の場合にのみチェックボックスを表示 */}
-                {isDeleteButtonVisible && (
-                  <input
-                    type="checkbox"
-                    id={`user_${index}`}
-                    checked={invitees.some((invitee) => invitee.userId === onlineUser.userId)}
-                    onChange={() => handleCheckboxChange(onlineUser)}
-                  />
-                )}
+                <input
+                  type="checkbox"
+                  id={`user_${index}`}
+                  checked={invitees.some((invitee) => invitee.userId === onlineUser.userId)}
+                  onChange={() => handleCheckboxChange(onlineUser)}
+                />
                 {/* アイコン */}
                 <Image
                   src={onlineUser.icon}
@@ -311,6 +336,24 @@ export default function ChatPage() {
               </option>
             ))}
           </select>
+          {/* Gameの選択UI */}
+          <select
+            onChange={(event) => {
+              handleInviteGame(event);
+            }}
+            value={selectedGame || ''}
+          >
+            <option value="">Invite Game</option>
+            {gameList.map((game, index) => (
+              <option
+                key={index}
+                value={game}
+              >
+                {game}
+              </option>
+            ))}
+          </select>
+          {/* Invite Room ボタン */}
           {isDeleteButtonVisible && (
             <button
               className="btn-small"
