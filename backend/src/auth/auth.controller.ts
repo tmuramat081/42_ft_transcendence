@@ -226,11 +226,9 @@ export class AuthController {
 
   @UseGuards(JwtAuthGuard)
   @Post('/2fa/disable')
-  async disable2fa(@Req() req, @Res({ passthrough: true }) res) {
+  async disable2fa(@Req() req, @Res({ passthrough: true } ) _res: Response) {
       const user = req.user;
-      console.log('disable');
-      const resultUser = await this.authService.disable2fa(user);
-      //res.status(200).json({ message: '2fa disabled' });
+      await this.authService.disable2fa(user);
       return JSON.stringify({'message': '2fa disabled'});
   }
 
@@ -243,13 +241,9 @@ export class AuthController {
   async get2faCode(@Req() req) {
       const user = req.user;
 
-      console.log('generate');
-      // const code = await this.authService.get2faCode(user)
       const code = await this.authService.generate2faAuthSecret(user);
       const qrcode = await this.authService.generate2faQrCode(code);
-      //const img: string = "<img src=" + qrcode + ">"
-      //return img
 
-      return JSON.stringify({'qrCord': qrcode});
+      return JSON.stringify({'qrCord': qrcode });
   }
 }

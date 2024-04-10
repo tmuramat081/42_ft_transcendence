@@ -356,9 +356,6 @@ export class UsersController {
     //@UseGuards(JwtAuthGuard, TwoFactorAuthGuard)
     @Post('/update')
     async UpdateUser(@Body () userData: UpdateUserDto, @Req() req,  @Res({ passthrough: true }) res: Response) {
-        console.log("UpdateUser")
-        console.log("userData: ", userData)
-        console.log("req.user: ", req.user)
         // // リクエストハンドリング
         // if (!userData.userName || !userData.email) {
         //     throw new ForbiddenException("Please enter all fields");
