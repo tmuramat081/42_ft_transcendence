@@ -1,4 +1,4 @@
-//ブロックボタンのハンドル
+//ブロックボタンのサーバー側の実装まだ
 
 /*eslint-disable*/
 'use client';
@@ -36,10 +36,7 @@ export default function DMPage({ params }: { params: string }) {
     name42: '',
   });
   const [dmLogs, setDMLogs] = useState<DirectMessage[]>([]);
-
-  // ログインユーザー情報の取得
-  // const user = getCurrentUser();
-  // console.log('user:', user);
+  const [blocked, setBlocked] = useState(false);
 
   useEffect(() => {
     if (!socket || !params) return;
@@ -118,9 +115,16 @@ export default function DMPage({ params }: { params: string }) {
 
   const handleBlockUser = useCallback(() => {
     if (!socket) return;
-    console.log(`${sender.userName} blocking ${receiver.userName}`);
-    socket.emit('blockUser', { sender: sender, receiver: receiver });
-  }, [sender, receiver, socket]);
+    if (blocked) {
+      console.log(`${sender.userName} unblocking ${receiver.userName}`);
+      socket.emit('unblockUser', { sender: sender, receiver: receiver });
+      setBlocked(false);
+    } else {
+      console.log(`${sender.userName} blocking ${receiver.userName}`);
+      socket.emit('blockUser', { sender: sender, receiver: receiver });
+      setBlocked(true);
+    }
+  }, [sender, receiver, socket, blocked]);
 
   return (
     <div className="dm-container">
@@ -135,17 +139,21 @@ export default function DMPage({ params }: { params: string }) {
             width={50}
             height={50}
           />
-          {/* <div className="recipient-name">{receiver?.userName}</div> */}
+          {/* ブロックボタン */}
+          <button
+            className="block-button"
+            onClick={handleBlockUser}
+          >
+            {blocked ? 'Unblock' : 'Block'}
+          </button>
         </div>
-        {/* ユーザーの追加情報（例：emailなど） */}
+        {/* ユーザーの追加情報 */}
         <div className="user-info">
           <p>Email: {userinfo.email}</p>
-          <p>Created At: {userinfo.createdAt.toString()}</p>
+          <p>Created At: {userinfo.createdAt}</p>
           <p>42 Name: {userinfo.name42}</p>
         </div>
       </div>
-      {/* ブロックボタン */}
-      <button onClick={handleBlockUser}>Block</button>
       {/* DM 履歴 */}
       <div
         className="dm-messages"

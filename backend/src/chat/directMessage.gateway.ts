@@ -9,12 +9,14 @@ import {
 import { Logger } from '@nestjs/common';
 import { Server, Socket } from 'socket.io';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Repository, Not, In } from 'typeorm';
 import { ChatLog } from './entities/chatLog.entity';
 import { Room } from './entities/room.entity';
 import { User } from '../users/entities/user.entity';
 import { DmLog } from './entities/dmLog.entity';
 import { OnlineUsers } from './entities/onlineUsers.entity';
+import { UserBlock } from './entities/userBlock.entity';
+import { BlockedUser } from './entities/blockedUser.entity';
 import { UserInfo, UserData, DirectMessage, formatDate } from './tools';
 
 @WebSocketGateway({ cors: { origin: '*' } })
@@ -39,6 +41,12 @@ export class DMGateway {
 
     @InjectRepository(OnlineUsers)
     private onlineUsersRepository: Repository<OnlineUsers>,
+
+    @InjectRepository(UserBlock)
+    private userBlockRepository: Repository<UserBlock>,
+
+    @InjectRepository(BlockedUser)
+    private blockedUserRepository: Repository<BlockedUser>,
   ) {}
 
   @SubscribeMessage('getCurrentUser')
@@ -150,11 +158,27 @@ export class DMGateway {
         `getDMLogs: ${payload.sender.userName} requested DM logs with ${payload.receiver.userName}`,
       );
 
+      // ブロックされたユーザーの一覧を取得
+      const blockedUsers = await this.userBlockRepository.find({
+        where: { userName: payload.receiver.userName },
+        relations: ['blockedBy'],
+      });
+
+      // ブロックされたユーザーのリストを作成
+      const blockedUsernames = blockedUsers.map((userBlock) => userBlock.blockedBy.userName);
+
       // DMログを取得
       const dmLogs = await this.dmLogRepository.find({
         where: [
-          { senderName: payload.sender.userName, recipientName: payload.receiver.userName },
-          { senderName: payload.receiver.userName, recipientName: payload.sender.userName },
+          {
+            senderName: payload.sender.userName,
+            recipientName: payload.receiver.userName,
+          },
+          {
+            recipientName: payload.sender.userName,
+            // ブロックされたユーザーとのDMを除外
+            senderName: Not(In(blockedUsernames)),
+          },
         ],
         order: { timestamp: 'ASC' },
       });
@@ -187,6 +211,7 @@ export class DMGateway {
         console.error('Invalid DM data:', payload);
         return { success: false, message: 'Invalid DM data' };
       }
+
       this.logger.log(
         `sendDM: ${payload.sender.userName} sent DM to ${payload.receiver.userName}: ${payload.message}`,
       );
@@ -203,8 +228,21 @@ export class DMGateway {
       // DMログを取得
       const dmLogs = await this.dmLogRepository.find({
         where: [
-          { senderName: payload.sender.userName, recipientName: payload.receiver.userName },
-          { senderName: payload.receiver.userName, recipientName: payload.sender.userName },
+          {
+            recipientName: payload.receiver.userName,
+            // 送信者がブロックされている場合は除外する
+            senderName: Not(
+              In(
+                await this.userBlockRepository
+                  .find({ where: { userName: payload.receiver.userName } })
+                  .then((userBlock) => userBlock.map((ub) => ub.userName)),
+              ),
+            ),
+          },
+          {
+            senderName: payload.receiver.userName,
+            recipientName: payload.sender.userName,
+          },
         ],
         order: { timestamp: 'ASC' },
       });
@@ -223,6 +261,60 @@ export class DMGateway {
       this.server.to(socket.id).emit('dmLogs', directMessages);
     } catch (error) {
       this.logger.error('Error sending DM logs:', error);
+      throw error;
+    }
+  }
+
+  @SubscribeMessage('blockUser')
+  async handleBlockUser(
+    @MessageBody() payload: { sender: UserInfo; receiver: UserInfo },
+    @ConnectedSocket() socket: Socket,
+  ) {
+    try {
+      if (!payload.sender || !payload.receiver) {
+        console.error('Invalid DM data:', payload);
+        return { success: false, message: 'Invalid User data' };
+      }
+      // ブロックされたユーザーのエンティティを作成し、関係を設定する
+      const blockedUser = new BlockedUser();
+      blockedUser.userName = payload.receiver.userName;
+
+      const userBlock = new UserBlock();
+      userBlock.userName = payload.sender.userName;
+      userBlock.blockedUsers = [blockedUser];
+
+      // ユーザーブロックエンティティを保存する
+      await this.userBlockRepository.save(userBlock);
+
+      this.logger.log(`${payload.sender.userName} blocked ${payload.receiver.userName}`);
+
+      // 成功のレスポンスを返す
+      return { success: true, message: 'User blocked successfully' };
+    } catch (error) {
+      this.logger.error('Error blocking user:', error);
+      throw error;
+    }
+  }
+
+  @SubscribeMessage('unblockUser')
+  async handleUnblockUser(
+    @MessageBody() payload: { sender: UserInfo; receiver: UserInfo },
+    @ConnectedSocket() socket: Socket,
+  ) {
+    try {
+      if (!payload.sender || !payload.receiver) {
+        console.error('Invalid DM data:', payload);
+        return { success: false, message: 'Invalid User data' };
+      }
+      // ブロックされたユーザーのエンティティを削除する
+      await this.blockedUserRepository.delete({ userName: payload.receiver.userName });
+
+      this.logger.log(`${payload.sender.userName} unblocked ${payload.receiver.userName}`);
+
+      // 成功のレスポンスを返す
+      return { success: true, message: 'User unblocked successfully' };
+    } catch (error) {
+      this.logger.error('Error unblocking user:', error);
       throw error;
     }
   }
