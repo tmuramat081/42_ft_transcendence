@@ -10,6 +10,6 @@ export class BlockedUser {
   userName: string;
 
   // ブロックされたユーザーが誰によってブロックされたかを示す関係を定義する
-  @ManyToOne(() => UserBlock, (user) => user.blockedUsers)
+  @ManyToOne(() => UserBlock, (userBlock) => userBlock.blockedUsers)
   blockedBy: UserBlock;
 }

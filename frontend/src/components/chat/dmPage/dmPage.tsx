@@ -119,10 +119,12 @@ export default function DMPage({ params }: { params: string }) {
       console.log(`${sender.userName} unblocking ${receiver.userName}`);
       socket.emit('unblockUser', { sender: sender, receiver: receiver });
       setBlocked(false);
+      socket.emit('getDMLogs', { sender: sender, receiver: receiver });
     } else {
       console.log(`${sender.userName} blocking ${receiver.userName}`);
       socket.emit('blockUser', { sender: sender, receiver: receiver });
       setBlocked(true);
+      setDMLogs([]);
     }
   }, [sender, receiver, socket, blocked]);
 

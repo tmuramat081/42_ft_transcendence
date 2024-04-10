@@ -158,14 +158,16 @@ export class DMGateway {
         `getDMLogs: ${payload.sender.userName} requested DM logs with ${payload.receiver.userName}`,
       );
 
-      // ブロックされたユーザーの一覧を取得
+      // ブロックしたユーザーのリストを取得
       const blockedUsers = await this.userBlockRepository.find({
-        where: { userName: payload.receiver.userName },
-        relations: ['blockedBy'],
+        where: { userName: payload.sender.userName },
+        relations: ['blockedUsers'],
       });
 
-      // ブロックされたユーザーのリストを作成
-      const blockedUsernames = blockedUsers.map((userBlock) => userBlock.blockedBy.userName);
+      // ブロックしたユーザーのリストを作成
+      const blockedUsernames = blockedUsers
+        .map((userBlock) => userBlock.blockedUsers.map((bu) => bu.userName))
+        .flat();
 
       // DMログを取得
       const dmLogs = await this.dmLogRepository.find({
@@ -176,7 +178,7 @@ export class DMGateway {
           },
           {
             recipientName: payload.sender.userName,
-            // ブロックされたユーザーとのDMを除外
+            // ブロックしたユーザーとのDMを除外
             senderName: Not(In(blockedUsernames)),
           },
         ],
