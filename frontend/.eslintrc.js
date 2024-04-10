@@ -25,7 +25,7 @@ module.exports = {
     '@typescript-eslint/explicit-module-boundary-types': 'off', // エクスポートされる関数の型指定はチェックしない
     indent: ['error', 2, { SwitchCase: 1 }], // インデントは2スペース
     semi: ['error', 'always'], // セミコロン必須
-    quotes: ['error', 'single'], // シングルクォートのみ許可
+    quotes: ['error', 'single', { avoidEscape: true }], // シングルクォートのみ許可
     'react/react-in-jsx-scope': 'off',
     "@typescript-eslint/no-unused-vars": [
       "error",

@@ -58,15 +58,11 @@ export class AuthService {
       
     }
 
-    console.log('user: ', user);
-
     const verified = speakeasy.totp.verify({
       secret: user.twoFactorAuthSecret,
       encoding: 'base32',
       token: code,
     });
-
-    console.log('verified: ', verified);
 
     // first time
     // update2fa
@@ -83,8 +79,6 @@ export class AuthService {
     //const secret = speakeasy.generateSecret({});
     const secret = speakeasy.generateSecret({ length: 20 });
 
-    console.log('secret: ', secret);
-
     //QRコードの画像生成
     // QRCode.toDataURL(secret.otpauth_url, (err, qrcode) => {
     //     console.log(qrcode); // base64のQRコードの画像パスが入ってきます
@@ -95,8 +89,6 @@ export class AuthService {
       label: user.userName,
       issuer: 'ft_transcendence',
     });
-
-    console.log('otpAuthUrl: ', otpAuthUrl);
 
     // ユーザーの更新
     user.twoFactorAuthSecret = secret.base32;
