@@ -7,7 +7,7 @@ export type UserInfo = {
 export type UserData = {
   user: UserInfo;
   email: string;
-  createdAt: Date;
+  createdAt: string;
   name42: string;
 };
 

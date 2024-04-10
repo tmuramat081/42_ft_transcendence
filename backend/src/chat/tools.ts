@@ -7,7 +7,7 @@ export interface UserInfo {
 export interface UserData {
   user: UserInfo;
   email: string;
-  createdAt: Date;
+  createdAt: string;
   name42: string;
 }
 

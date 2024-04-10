@@ -1,3 +1,5 @@
+//ブロックボタンのハンドル
+
 /*eslint-disable*/
 'use client';
 import React, { useState, useEffect, useCallback } from 'react';
@@ -30,7 +32,7 @@ export default function DMPage({ params }: { params: string }) {
       icon: '',
     },
     email: '',
-    createdAt: new Date(),
+    createdAt: '',
     name42: '',
   });
   const [dmLogs, setDMLogs] = useState<DirectMessage[]>([]);
@@ -125,7 +127,7 @@ export default function DMPage({ params }: { params: string }) {
       {/* DM 相手の情報 */}
       <div className="recipient-info">
         <div className="user">
-          <h4>User</h4>
+          <h4>{receiver.userName}</h4>
           <Image
             src={receiver.icon || ''}
             alt={receiver.userName || ''}
@@ -133,7 +135,7 @@ export default function DMPage({ params }: { params: string }) {
             width={50}
             height={50}
           />
-          <div className="recipient-name">{receiver?.userName}</div>
+          {/* <div className="recipient-name">{receiver?.userName}</div> */}
         </div>
         {/* ユーザーの追加情報（例：emailなど） */}
         <div className="user-info">

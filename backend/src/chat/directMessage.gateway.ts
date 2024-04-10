@@ -105,7 +105,7 @@ export class DMGateway {
             icon: user.icon,
           },
           email: user.email,
-          createdAt: user.createdAt,
+          createdAt: formatDate(user.createdAt),
           name42: user.name42,
         };
         this.server.to(socket.id).emit('userInfo', userInfo);
