@@ -77,6 +77,29 @@ export class ChatGateway {
     }
   }
 
+  @SubscribeMessage(`getCurrentUser`)
+  async handleGetCurrentUser(@MessageBody() user: UserInfo, @ConnectedSocket() socket: Socket) {
+    try {
+      const userId = user.userId;
+      const loginUser = await this.userRepository.findOne({ where: { userId: Number(userId) } });
+      this.logger.log(`login user name: ${user.userName}`);
+      if (!loginUser) {
+        this.logger.error(`User not found: ${userId}`);
+        return;
+      }
+      const sender: UserInfo = {
+        userId: loginUser.userId,
+        userName: loginUser.userName,
+        icon: loginUser.icon,
+      };
+      this.logger.log(`Current user: ${JSON.stringify(sender)}`);
+      socket.emit('currentUser', sender);
+    } catch (error) {
+      this.logger.error(`Error getting current user: ${(error as Error).message}`);
+      throw error;
+    }
+  }
+
   @SubscribeMessage('getOnlineUsers')
   async handleGetOnlineUsers(@MessageBody() sender: UserInfo, @ConnectedSocket() socket: Socket) {
     try {
@@ -192,6 +215,11 @@ export class ChatGateway {
   // ダミーユーザーを登録
   async createDummyUsers() {
     const dummyUsers: UserInfo[] = [
+      {
+        userId: 1,
+        userName: 'Bob',
+        icon: 'https://www.plazastyle.com/images/charapla-spongebob/img_character01.png',
+      },
       {
         userId: 2,
         userName: 'Patrick',

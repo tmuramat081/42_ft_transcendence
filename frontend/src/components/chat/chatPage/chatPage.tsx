@@ -9,11 +9,12 @@ import { useAuth } from '@/providers/useAuth';
 import { UserInfo, ChatMessage, Room } from '@/types/chat/chat';
 import { User } from '@/types/user';
 import './chatPage.css';
+import { get } from 'node_modules/axios/index.cjs';
 
 export default function ChatPage() {
   const router = useRouter();
   const { socket } = useWebSocket();
-  const { getCurrentUser } = useAuth();
+  const { getCurrentUser, loginUser } = useAuth();
   const [message, setMessage] = useState('');
   const [roomID, setRoomID] = useState('');
   const [newRoomName, setNewRoomName] = useState('');
@@ -33,21 +34,40 @@ export default function ChatPage() {
   const [notification, setNotification] = useState<string | null>(null);
   const [gameList, setGameList] = useState<string[]>([]);
   const [selectedGame, setSelectedGame] = useState<string | null>(null);
+  const [CurrentUser, setCurrentUser] = useState<User | null>(null);
 
   useEffect(() => {
     if (!socket) return;
 
+    getCurrentUser()
+      .then((user) => {
+        console.log(user); // ユーザーオブジェクトをコンソールに出力
+        socket.emit('getCurrentUser', user);
+      })
+      .catch((error) => {
+        console.error('Error getting current user:', error); // エラーが発生した場合はコンソールにエラーメッセージを出力
+      });
+
+    // console.log('getCurrentUser:', getCurrentUser());
+
     // 仮のユーザー情報をセット
-    const senderData = {
-      userId: 1,
-      userName: 'Bob',
-      icon: 'https://www.plazastyle.com/images/charapla-spongebob/img_character01.png',
-    };
-    setSender(senderData);
-    socket.emit('getRoomList', senderData);
-    socket.emit('getGameList', senderData);
-    socket.emit('getOnlineUsers', senderData);
-    // socket.emit('getCurrentUser', getCurrentUser());
+    // const senderData = {
+    //   userId: 1,
+    //   userName: 'Bob',
+    //   icon: 'https://www.plazastyle.com/images/charapla-spongebob/img_character01.png',
+    // };
+    // setSender(senderData);
+    if (CurrentUser) {
+      const senderData = {
+        userId: CurrentUser.userId,
+        userName: CurrentUser.userName,
+        icon: CurrentUser.icon,
+      };
+      setSender(senderData);
+      socket.emit('getRoomList', senderData);
+      socket.emit('getGameList', senderData);
+      socket.emit('getOnlineUsers', senderData);
+    }
   }, [socket]);
 
   useEffect(() => {
@@ -75,6 +95,11 @@ export default function ChatPage() {
       // console.log('onlineUsers:', onlineUsers);
     });
 
+    socket.on('currentUser', (user: User) => {
+      console.log('Received currentUser from server:', user);
+      setCurrentUser(user);
+    });
+
     socket.on('roomParticipants', (roomParticipants: UserInfo[]) => {
       console.log('Received roomParticipants from server:', roomParticipants);
       setParticipants(roomParticipants);
@@ -99,6 +124,7 @@ export default function ChatPage() {
       socket.off('roomList');
       socket.off('gameList');
       socket.off('onlineUsers');
+      socket.off('currentUser');
       socket.off('roomParticipants');
       socket.off('roomInvitation');
       socket.off('roomError');
