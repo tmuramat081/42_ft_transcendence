@@ -183,7 +183,10 @@ export class UsersController {
             //cookieにアクセストークンを保存
             // localstrageよりcookieの方が安全
             // XSS, 有効期限の観点からもcookieの方が良い
-            res.cookie('jwt', accessToken, { httpOnly: true })
+            res.cookie('jwt', accessToken, { 
+                httpOnly: true,
+                sameSite: 'none',
+            })
 
             // //redisにアクセストークンを保存
 
@@ -322,7 +325,10 @@ export class UsersController {
                 //return res.status(400).json({ message: 'Invalid credentials' });
             }
             //cookieにアクセストークンを保存
-            res.cookie('jwt', accessToken, { httpOnly: true })
+            res.cookie('jwt', accessToken, { 
+                httpOnly: true,
+                sameSite: 'none',
+             })
 
             //console.log("accessToken: " + accessToken);
 
@@ -431,7 +437,10 @@ export class UsersController {
             //cookieにアクセストークンを保存
             // localstrageよりcookieの方が安全
             // XSS, 有効期限の観点からもcookieの方が良い
-            res.cookie('jwt', accessToken, { httpOnly: true })
+            res.cookie('jwt', accessToken, { 
+                httpOnly: true,
+                sameSite: 'none',
+            })
 
             // //redisにアクセストークンを保存
 

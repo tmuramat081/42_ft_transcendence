@@ -61,7 +61,10 @@ export class AuthController {
     const jwtPayload = {userId: req.user.userId, userName: req.user.userName, email: req.user.email, icon: req.user.icon};
 
     const accessToken: string = await this.jwtService.sign(jwtPayload);
-    res.cookie('login42', accessToken, { httpOnly: true });
+    res.cookie('login42', accessToken, { 
+      httpOnly: true,
+      sameSite: 'none',
+    });
     res.redirect(process.env.FRONTEND_URL + '/auth/signin-oauth');
   }
 
@@ -166,7 +169,10 @@ export class AuthController {
       // const payload2: JwtPayload = { userId: user.userId, userName: user.userName, email: user.email, twoFactorAuth: false };
       // const accessToken2: string = this.jwtService.sign(payload2);
       const accessToken2 = await this.usersService.generateJwt(user);
-      res.cookie('jwt', accessToken2, { httpOnly: true });
+      res.cookie('jwt', accessToken2, { 
+        httpOnly: true,
+        sameSite: 'none',
+      });
 
       // cookie削除
       res.clearCookie('login42');
@@ -217,7 +223,10 @@ export class AuthController {
       // const payload: JwtPayload = { userId: user.userId, userName: user.userName, email: user.email, twoFactorAuth: true };
       // const accessToken: string = this.jwtService.sign(payload);
       const accessToken = await this.usersService.generateJwt(user);
-      res.cookie('jwt', accessToken, { httpOnly: true });
+      res.cookie('jwt', accessToken, { 
+        httpOnly: true,
+        sameSite: 'none', 
+      });
       return JSON.stringify({'accessToken': accessToken});
     } catch (error) {
       throw error;
