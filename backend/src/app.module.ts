@@ -24,7 +24,7 @@ dotenv.config();
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
-      envFilePath: '.env',
+      envFilePath: process.env.NODE_ENV === 'production' ? '.env.production' : '.env',
       //バリデーション
       //required()は必須項目
       validationSchema: Joi.object({
@@ -71,6 +71,7 @@ dotenv.config();
           Match,
         ], // 直接エンティティを指定
         synchronize: true,
+        ssl: false,
       }),
     }),
     UsersModule,
@@ -82,3 +83,6 @@ dotenv.config();
   providers: [],
 })
 export class AppModule {}
+
+// for development
+console.log('process.env.NODE_ENV: ', process.env.NODE_ENV);
