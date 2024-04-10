@@ -63,6 +63,7 @@ export class AuthController {
     const accessToken: string = await this.jwtService.sign(jwtPayload);
     res.cookie('login42', accessToken, { 
       httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
       sameSite: 'none',
     });
     res.redirect(process.env.FRONTEND_URL + '/auth/signin-oauth');
@@ -171,6 +172,7 @@ export class AuthController {
       const accessToken2 = await this.usersService.generateJwt(user);
       res.cookie('jwt', accessToken2, { 
         httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
         sameSite: 'none',
       });
 
@@ -225,6 +227,7 @@ export class AuthController {
       const accessToken = await this.usersService.generateJwt(user);
       res.cookie('jwt', accessToken, { 
         httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
         sameSite: 'none', 
       });
       return JSON.stringify({'accessToken': accessToken});

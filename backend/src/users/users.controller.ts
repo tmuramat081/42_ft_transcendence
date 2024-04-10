@@ -185,6 +185,9 @@ export class UsersController {
             // XSS, 有効期限の観点からもcookieの方が良い
             res.cookie('jwt', accessToken, { 
                 httpOnly: true,
+                
+                
+                
                 sameSite: 'none',
             })
 
@@ -327,6 +330,7 @@ export class UsersController {
             //cookieにアクセストークンを保存
             res.cookie('jwt', accessToken, { 
                 httpOnly: true,
+                secure: process.env.NODE_ENV === 'production',
                 sameSite: 'none',
              })
 
@@ -439,6 +443,7 @@ export class UsersController {
             // XSS, 有効期限の観点からもcookieの方が良い
             res.cookie('jwt', accessToken, { 
                 httpOnly: true,
+                secure: process.env.NODE_ENV === 'production',
                 sameSite: 'none',
             })
 
