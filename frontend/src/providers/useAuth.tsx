@@ -18,6 +18,7 @@ import {User} from "../types/user"
 
 // API毎回呼び出すのは非効率なので、contextに保存しておく
 
+const API_URL = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3001';
 
 type LoginUserContextType = {
     loginUser: User | null;
@@ -46,7 +47,7 @@ export const LoginUserProvider = (props: {children: ReactNode}) => {
     // 不要かも
     const signup = async (userName: string, email: string, password: string, passwordConfirm: string) => {
         // const {router} = useRouter();
-        await fetch('http://localhost:3001/users/signup', {
+        await fetch(`${API_URL}/users/signup`, {
             method: 'POST',
             credentials: 'include',
             headers: {
@@ -118,7 +119,7 @@ export const LoginUserProvider = (props: {children: ReactNode}) => {
 
     // 不要かも
     const signin = async (userName: string, password: string) => {
-        await fetch('http://localhost:3001/users/signin', {
+        await fetch(`${API_URL}/users/signin`, {
             method: 'POST',
             credentials: 'include',
             headers: {
@@ -209,7 +210,7 @@ export const LoginUserProvider = (props: {children: ReactNode}) => {
         //     return loginUser;
         setLoading(true);
         try {
-            const response = await fetch('http://localhost:3001/users/me', {
+            const response = await fetch(`${API_URL}/users/me`, {
                 method: 'GET',
                 credentials: 'include',
             });

@@ -2,7 +2,7 @@ import { HTTP_METHOD } from '@/constants/api.constant';
 import { Valueof } from './../../../../backend/src/common/types/global.d';
 import { useState } from 'react';
 
-const API_URL = process.env.API_URL ?? 'http://localhost:3001';
+const API_URL = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3001';
 export interface UseApiReturnType<T> {
   // レスポンスデータ
   data: T | null;
