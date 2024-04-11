@@ -50,19 +50,26 @@ export class DMGateway {
   ) {}
 
   @SubscribeMessage('getCurrentUser')
-  async handle(@ConnectedSocket() socket: Socket) {
+  async handle(@MessageBody() user: User, @ConnectedSocket() socket: Socket) {
     try {
       this.logger.log(`getCurrentUser`);
-      // データベースからcurrentUserを取得
-      const currentUser = await this.onlineUsersRepository.findOne({ where: { me: true } });
+      // データベースからuser.userIdと同じユーザーを取得
+      const currentUser = await this.userRepository.findOne({
+        where: {
+          userId: user.userId,
+        },
+      });
       if (currentUser) {
         this.logger.log(`currentUser found: ${JSON.stringify(currentUser)}`);
         // currentUserをUserInfoに変換
         const userInfo: UserInfo = {
-          userId: currentUser.id,
-          userName: currentUser.name,
+          userId: currentUser.userId,
+          userName: currentUser.userName,
           icon: currentUser.icon,
         };
+        if (!userInfo.icon) {
+          userInfo.icon = 'https://pics.prcm.jp/db3b34efef8a0/86032013/jpeg/86032013.jpeg';
+        }
         this.server.to(socket.id).emit('currentUser', userInfo);
       } else {
         this.logger.error('No current user found');
@@ -77,17 +84,20 @@ export class DMGateway {
   async handleGetRecipient(@MessageBody() recipient: string, @ConnectedSocket() socket: Socket) {
     try {
       this.logger.log(`getRecipient: ${recipient}`);
-      const recipientUser = await this.onlineUsersRepository.findOne({
-        where: { name: recipient },
+      const recipientUser = await this.userRepository.findOne({
+        where: { userName: recipient },
       });
       if (recipientUser) {
         this.logger.log(`Recipient found: ${JSON.stringify(recipientUser)}`);
         // recipientUserをUserInfoに変換
         const recipient: UserInfo = {
-          userId: recipientUser.id,
-          userName: recipientUser.name,
+          userId: recipientUser.userId,
+          userName: recipientUser.userName,
           icon: recipientUser.icon,
         };
+        if (!recipient.icon) {
+          recipient.icon = 'https://pics.prcm.jp/db3b34efef8a0/86032013/jpeg/86032013.jpeg';
+        }
         this.server.to(socket.id).emit('recipient', recipient);
       } else {
         this.logger.error('No recipient found');
@@ -125,24 +135,24 @@ export class DMGateway {
     }
   }
 
-  @SubscribeMessage('startDM')
-  async handleStartDM(
-    @MessageBody() payload: { sender: UserInfo; receiver: UserInfo },
-    @ConnectedSocket() socket: Socket,
-  ) {
-    try {
-      if (!payload.sender || !payload.receiver) {
-        this.logger.error('Invalid DM data:', payload);
-        return;
-      }
-      this.logger.log(
-        `startDM: ${payload.sender.userName} started DM with ${payload.receiver.userName}`,
-      );
-    } catch (error) {
-      this.logger.error(`Error starting DM: ${(error as Error).message}`);
-      throw error;
-    }
-  }
+  // @SubscribeMessage('startDM')
+  // async handleStartDM(
+  //   @MessageBody() payload: { sender: UserInfo; receiver: UserInfo },
+  //   @ConnectedSocket() socket: Socket,
+  // ) {
+  //   try {
+  //     if (!payload.sender || !payload.receiver) {
+  //       this.logger.error('Invalid DM data:', payload);
+  //       return;
+  //     }
+  //     this.logger.log(
+  //       `startDM: ${payload.sender.userName} started DM with ${payload.receiver.userName}`,
+  //     );
+  //   } catch (error) {
+  //     this.logger.error(`Error starting DM: ${(error as Error).message}`);
+  //     throw error;
+  //   }
+  // }
 
   @SubscribeMessage('getDMLogs')
   async handleGetDMLogs(

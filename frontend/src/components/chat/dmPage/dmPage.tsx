@@ -1,30 +1,21 @@
-// ログインユーザーをBobから変更したい
-
 /*eslint-disable*/
 'use client';
 import React, { useState, useEffect, useCallback } from 'react';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { useWebSocket } from '@/providers/webSocketProvider';
-// import { useAuth } from '@/providers/useAuth';
+import { useAuth } from '@/providers/useAuth';
 import { UserInfo, UserData, DirectMessage } from '@/types/chat/chat';
+import { User } from '@/types/user';
 import './dmPage.css';
 
 export default function DMPage({ params }: { params: string }) {
   const router = useRouter(); //Backボタンを使うためのrouter
   const { socket } = useWebSocket();
-  // const { getCurrentUser } = useAuth();
+  const { getCurrentUser, loginUser } = useAuth();
   const [message, setMessage] = useState('');
-  const [sender, setSender] = useState<UserInfo>({
-    userId: -1,
-    userName: '',
-    icon: '',
-  });
-  const [receiver, setReceiver] = useState<UserInfo>({
-    userId: -1,
-    userName: '',
-    icon: '',
-  });
+  const [sender, setSender] = useState<UserInfo>({ userId: 0, userName: '', icon: '' });
+  const [receiver, setReceiver] = useState<UserInfo>({ userId: 0, userName: '', icon: '' });
   const [userinfo, setUserInfo] = useState<UserData>({
     user: {
       userId: -1,
@@ -42,21 +33,22 @@ export default function DMPage({ params }: { params: string }) {
     if (!socket || !params) return;
     // console.log('params:', params);
 
-    socket.emit('getCurrentUser');
+    getCurrentUser()
+      .then((user) => {
+        socket.emit('getCurrentUser', user);
+      })
+      .catch((error) => {
+        console.error('Error getting user:', error);
+      });
     socket.emit('getRecipient', params);
     socket.emit('getUserInfo', params);
-  }, [socket, params]);
+  }, [socket]);
 
   useEffect(() => {
     if (!socket) return;
 
     socket.on('currentUser', (user: UserInfo) => {
-      const sender: UserInfo = {
-        userId: user.userId,
-        userName: user.userName,
-        icon: user.icon,
-      };
-      setSender(sender);
+      setSender(user);
     });
 
     socket.on('recipient', (recipient: UserInfo) => {
@@ -88,8 +80,7 @@ export default function DMPage({ params }: { params: string }) {
   useEffect(() => {
     if (!socket) return;
     if (sender.userName && receiver.userName) {
-      // console.log(`${sender.userName} start DM with ${receiver.userName}`);
-      socket.emit('startDM', { sender: sender, receiver: receiver });
+      // socket.emit('startDM', { sender: sender, receiver: receiver });
       socket.emit('getDMLogs', { sender: sender, receiver: receiver });
     }
   }, [sender, receiver, socket]);
@@ -99,7 +90,6 @@ export default function DMPage({ params }: { params: string }) {
     socket.on('dmLogs', (directMessages: DirectMessage[]) => {
       console.log('Received DMLogs from server:', directMessages);
       setDMLogs(directMessages);
-      // console.log('dmLogs:', dmLogs);
     });
 
     return () => {

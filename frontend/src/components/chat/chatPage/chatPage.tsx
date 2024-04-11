@@ -1,6 +1,6 @@
 /*eslint-disable*/
 'use client';
-import React, { useState, useEffect, useCallback, use } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import Notification from './Notification';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
@@ -19,11 +19,7 @@ export default function ChatPage() {
   const [newRoomName, setNewRoomName] = useState('');
   const [roomList, setRoomList] = useState<string[]>([]);
   const [selectedRoom, setSelectedRoom] = useState<string | null>(null);
-  const [sender, setSender] = useState<UserInfo>({
-    userId: -1,
-    userName: '',
-    icon: '',
-  });
+  const [sender, setSender] = useState<UserInfo | null>(null);
   const [roomchatLogs, setRoomChatLogs] = useState<{ [roomId: string]: ChatMessage[] }>({});
   const [isDeleteButtonVisible, setDeleteButtonVisible] = useState(false);
   const [participants, setParticipants] = useState<UserInfo[]>([]);
