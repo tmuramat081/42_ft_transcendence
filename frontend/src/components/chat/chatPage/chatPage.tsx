@@ -9,7 +9,6 @@ import { useAuth } from '@/providers/useAuth';
 import { UserInfo, ChatMessage, Room } from '@/types/chat/chat';
 import { User } from '@/types/user';
 import './chatPage.css';
-import { get } from 'node_modules/axios/index.cjs';
 
 export default function ChatPage() {
   const router = useRouter();

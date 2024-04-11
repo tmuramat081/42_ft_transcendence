@@ -108,21 +108,21 @@ export class ChatGateway {
       // await this.createDummyUsers();
 
       // userRepositoryのデータをオンラインユーザーリストに追加
-      const user = await this.userRepository.find();
-      await Promise.all(
-        user.map(async (user) => {
-          const onlineUser = new OnlineUsers();
-          onlineUser.userId = user.userId;
-          onlineUser.name = user.userName;
-          onlineUser.icon = user.icon;
-          //iconが空の場合はダミーアイコンを設定
-          if (!onlineUser.icon) {
-            onlineUser.icon = 'https://pics.prcm.jp/db3b34efef8a0/86032013/jpeg/86032013.jpeg';
-          }
-          onlineUser.me = false;
-          await this.onlineUsersRepository.save(onlineUser);
-        }),
-      );
+      // const user = await this.userRepository.find();
+      // await Promise.all(
+      //   user.map(async (user) => {
+      //     const onlineUser = new OnlineUsers();
+      //     onlineUser.userId = user.userId;
+      //     onlineUser.name = user.userName;
+      //     onlineUser.icon = user.icon;
+      //     //iconが空の場合はダミーアイコンを設定
+      //     if (!onlineUser.icon) {
+      //       onlineUser.icon = 'https://pics.prcm.jp/db3b34efef8a0/86032013/jpeg/86032013.jpeg';
+      //     }
+      //     onlineUser.me = false;
+      //     await this.onlineUsersRepository.save(onlineUser);
+      //   }),
+      // );
 
       /* ここまで後で削除する */
 
@@ -135,6 +135,9 @@ export class ChatGateway {
         onlineUser.userId = sender.userId;
         onlineUser.name = sender.userName;
         onlineUser.icon = sender.icon;
+        if (!onlineUser.icon) {
+          onlineUser.icon = 'https://pics.prcm.jp/db3b34efef8a0/86032013/jpeg/86032013.jpeg';
+        }
         onlineUser.me = true;
         await this.onlineUsersRepository.save(onlineUser);
       }
@@ -188,13 +191,14 @@ export class ChatGateway {
   async deleteDuplicateOnlineUsers() {
     // オンラインユーザーを全て取得
     const allOnlineUsers = await this.onlineUsersRepository.find();
+    this.logger.log(`All online users: ${JSON.stringify(allOnlineUsers)}`);
 
-    // 名前とアイコンが一致するユーザーを検索して削除
+    // 名前とidが一致するユーザーを検索して削除
     for (let i = 0; i < allOnlineUsers.length; i++) {
       const currentUser = allOnlineUsers[i];
       for (let j = i + 1; j < allOnlineUsers.length; j++) {
         const nextUser = allOnlineUsers[j];
-        if (currentUser.name === nextUser.name && currentUser.icon === nextUser.icon) {
+        if (currentUser.name === nextUser.name && currentUser.userId === nextUser.userId) {
           await this.onlineUsersRepository.remove(nextUser);
           console.log('Duplicate online user deleted:', nextUser);
         }
