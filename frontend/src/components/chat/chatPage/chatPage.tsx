@@ -19,12 +19,12 @@ export default function ChatPage() {
   const [newRoomName, setNewRoomName] = useState('');
   const [roomList, setRoomList] = useState<string[]>([]);
   const [selectedRoom, setSelectedRoom] = useState<string | null>(null);
-  const [sender, setSender] = useState<UserInfo | null>(null);
+  const [sender, setSender] = useState<UserInfo>({ userId: 0, userName: '', icon: '' });
   const [roomchatLogs, setRoomChatLogs] = useState<{ [roomId: string]: ChatMessage[] }>({});
   const [isDeleteButtonVisible, setDeleteButtonVisible] = useState(false);
   const [participants, setParticipants] = useState<UserInfo[]>([]);
   const [onlineUsers, setOnlineUsers] = useState<UserInfo[]>([]);
-  const [invitee, setInvitee] = useState<UserInfo | null>(null);
+  const [invitee, setInvitee] = useState<UserInfo>({ userId: 0, userName: '', icon: '' });
   const [invitees, setInvitees] = useState<UserInfo[]>([]);
   const [notification, setNotification] = useState<string | null>(null);
   const [gameList, setGameList] = useState<string[]>([]);
