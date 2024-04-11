@@ -64,7 +64,7 @@ export class AuthController {
     res.cookie('login42', accessToken, { 
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
-      sameSite: 'none',
+      sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
     });
     res.redirect(process.env.FRONTEND_URL + '/auth/signin-oauth');
   }
@@ -173,7 +173,7 @@ export class AuthController {
       res.cookie('jwt', accessToken2, { 
         httpOnly: true,
         secure: process.env.NODE_ENV === 'production',
-        sameSite: 'none',
+        sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
       });
 
       // cookie削除
@@ -228,7 +228,7 @@ export class AuthController {
       res.cookie('jwt', accessToken, { 
         httpOnly: true,
         secure: process.env.NODE_ENV === 'production',
-        sameSite: 'none', 
+        sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
       });
       return JSON.stringify({'accessToken': accessToken});
     } catch (error) {
