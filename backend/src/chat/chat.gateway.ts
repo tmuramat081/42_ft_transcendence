@@ -254,27 +254,27 @@ export class ChatGateway {
 
   @SubscribeMessage('talk')
   async handleMessage(
-    @MessageBody() data: { selectedRoom: string; sender: UserInfo; message: string },
+    @MessageBody() data: { selectedRoom: string; loginUser: User; message: string },
     @ConnectedSocket() socket: Socket,
   ) {
     try {
-      if (
-        !data.sender ||
-        !data.sender.userId ||
-        !data.sender.userName ||
-        !data.sender.icon ||
-        !data.message
-      ) {
+      this.logger.log(`loginUser: ${data.loginUser}`);
+      if (!data.selectedRoom || !data.loginUser || !data.message) {
         this.logger.error('Invalid chat message data:', data);
         return;
       }
-      this.logger.log(`${data.selectedRoom} received ${data.message} from ${data.sender.userName}`);
+      this.logger.log(
+        `${data.selectedRoom} received ${data.message} from ${data.loginUser.userName}`,
+      );
 
       // チャットログを保存
       const chatLog = new ChatLog();
       chatLog.roomName = data.selectedRoom;
-      chatLog.sender = data.sender.userName;
-      chatLog.icon = data.sender.icon;
+      chatLog.sender = data.loginUser.userName;
+      chatLog.icon = data.loginUser.icon;
+      if (!chatLog.icon) {
+        chatLog.icon = 'https://pics.prcm.jp/db3b34efef8a0/86032013/jpeg/86032013.jpeg';
+      }
       chatLog.message = data.message;
       chatLog.timestamp = formatDate(new Date());
       await this.chatLogRepository.save(chatLog);
@@ -348,7 +348,6 @@ export class ChatGateway {
   ) {
     try {
       this.logger.log(`joinRoom: ${join.loginUser.userName} joined ${join.room}`);
-      this.logger.log(`icon: ${join.loginUser.icon}`);
       const rooms = [...socket.rooms].slice(0);
       // 既に部屋に入っている場合は退出
       if (rooms.length == 2) socket.leave(rooms[1]);

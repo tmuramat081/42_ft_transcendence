@@ -136,7 +136,7 @@ export default function ChatPage() {
   const onClickSubmit = useCallback(() => {
     if (!socket) return;
     console.log(`${sender.userName} submitting message, '${message}'`);
-    socket.emit('talk', { selectedRoom, sender: { ...sender, icon: sender.icon }, message });
+    socket.emit('talk', { selectedRoom, loginUser, message });
     setMessage('');
   }, [selectedRoom, sender, message, socket]);
 
