@@ -76,6 +76,7 @@ export default function DMPage({ params }: { params: string }) {
     return () => {
       socket.off('currentUser');
       socket.off('recipient');
+      socket.off('userInfo');
     };
   }, [socket, params]);
 

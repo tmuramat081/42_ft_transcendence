@@ -254,7 +254,17 @@ export default function ChatPage() {
 
   return (
     <div className="chat-container">
-      <h1>Chat Page</h1>
+      {/* <h1>Chat Page</h1> */}
+      {/* 戻るボタン */}
+      <div className="back-button">
+        <button
+          onClick={() => {
+            router.back();
+          }}
+        >
+          Back
+        </button>
+      </div>
       {/* 通知があれば表示 */}
       {notification && (
         <Notification
@@ -383,70 +393,67 @@ export default function ChatPage() {
         </div>
       </div>
       {/* ROOM参加者リスト */}
-      <div className="participants">
-        <h4>Room friends</h4>
-        <div className="participant-icons">
-          {participants.map((participant, index) => (
+      {isDeleteButtonVisible && (
+        <div className="participants">
+          {/* <h4>Room friends</h4> */}
+          <div className="participant-icons">
+            {participants.map((participant, index) => (
+              <div
+                key={index}
+                className="participant"
+              >
+                <Image
+                  src={participant.icon}
+                  alt={participant.userName}
+                  className="participant-icon"
+                  width={50}
+                  height={50}
+                />
+                <div className="participant-name">{participant.userName}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+      {/* チャット入力欄 */}
+      {isDeleteButtonVisible && (
+        <div className="chat-input">
+          <input
+            id="message"
+            type="text"
+            placeholder="Enter message"
+            value={message}
+            onChange={(event) => setMessage(event.target.value)}
+          />
+          <button onClick={onClickSubmit}>Send</button>
+        </div>
+      )}
+      {/* チャットログ */}
+      {isDeleteButtonVisible && (
+        <div
+          className="chat-messages"
+          style={{ overflowY: 'auto', maxHeight: '300px' }}
+        >
+          {roomchatLogs[roomID]?.map((message, index) => (
             <div
               key={index}
-              className="participant"
+              className={`message-bubble ${message.user === sender.userName ? 'self' : 'other'}`}
             >
               <Image
-                src={participant.icon}
-                alt={participant.userName}
-                className="participant-icon"
+                src={message.photo}
+                alt="User Icon"
+                className="icon"
                 width={50}
                 height={50}
               />
-              <div className="participant-name">{participant.userName}</div>
+              <div>
+                <div>{message.text}</div>
+                <div className="timestamp">{message.timestamp}</div>
+              </div>
             </div>
           ))}
         </div>
-      </div>
-      {/* チャット入力欄 */}
-      <div className="chat-input">
-        <input
-          id="message"
-          type="text"
-          placeholder="Enter message"
-          value={message}
-          onChange={(event) => setMessage(event.target.value)}
-        />
-        <button onClick={onClickSubmit}>Send</button>
-      </div>
-      {/* チャットログ */}
-      <div
-        className="chat-messages"
-        style={{ overflowY: 'auto', maxHeight: '300px' }}
-      >
-        {roomchatLogs[roomID]?.map((message, index) => (
-          <div
-            key={index}
-            className={`message-bubble ${message.user === sender.userName ? 'self' : 'other'}`}
-          >
-            <Image
-              src={message.photo}
-              alt="User Icon"
-              className="icon"
-              width={50}
-              height={50}
-            />
-            <div>
-              <div>{message.text}</div>
-              <div className="timestamp">{message.timestamp}</div>
-            </div>
-          </div>
-        ))}
-      </div>
-      <div className="back-button">
-        <button
-          onClick={() => {
-            router.back();
-          }}
-        >
-          Back
-        </button>
-      </div>
+      )}
     </div>
   );
 }
