@@ -1,3 +1,5 @@
+//currentUserが2種類出てる？
+
 /*eslint-disable*/
 'use client';
 import React, { useState, useEffect, useCallback, use } from 'react';
@@ -34,21 +36,19 @@ export default function ChatPage() {
   const [notification, setNotification] = useState<string | null>(null);
   const [gameList, setGameList] = useState<string[]>([]);
   const [selectedGame, setSelectedGame] = useState<string | null>(null);
-  const [CurrentUser, setCurrentUser] = useState<User | null>(null);
+  const [LoginUser, setLoginUser] = useState<User | null>(null);
 
   useEffect(() => {
     if (!socket) return;
 
     getCurrentUser()
       .then((user) => {
-        console.log(user); // ユーザーオブジェクトをコンソールに出力
-        socket.emit('getCurrentUser', user);
+        // console.log(user);
+        socket.emit('getLoginUser', user);
       })
       .catch((error) => {
-        console.error('Error getting current user:', error); // エラーが発生した場合はコンソールにエラーメッセージを出力
+        console.error('Error getting user:', error);
       });
-
-    // console.log('getCurrentUser:', getCurrentUser());
 
     // 仮のユーザー情報をセット
     // const senderData = {
@@ -56,12 +56,12 @@ export default function ChatPage() {
     //   userName: 'Bob',
     //   icon: 'https://www.plazastyle.com/images/charapla-spongebob/img_character01.png',
     // };
-    // setSender(senderData);
-    if (CurrentUser) {
+
+    if (LoginUser) {
       const senderData = {
-        userId: CurrentUser.userId,
-        userName: CurrentUser.userName,
-        icon: CurrentUser.icon,
+        userId: LoginUser.userId,
+        userName: LoginUser.userName,
+        icon: LoginUser.icon,
       };
       setSender(senderData);
       socket.emit('getRoomList', senderData);
@@ -92,18 +92,16 @@ export default function ChatPage() {
     socket.on('onlineUsers', (users: UserInfo[]) => {
       console.log('Received online users from server:', users);
       setOnlineUsers(users);
-      // console.log('onlineUsers:', onlineUsers);
     });
 
-    socket.on('currentUser', (user: User) => {
-      console.log('Received currentUser from server:', user);
-      setCurrentUser(user);
+    socket.on('loginUser', (user: User) => {
+      console.log('Received LoginUser from server:', user);
+      setLoginUser(user);
     });
 
     socket.on('roomParticipants', (roomParticipants: UserInfo[]) => {
       console.log('Received roomParticipants from server:', roomParticipants);
       setParticipants(roomParticipants);
-      // console.log('participants:', participants);
     });
 
     socket.on('roomInvitation', (sender: UserInfo, room: string) => {
@@ -124,7 +122,7 @@ export default function ChatPage() {
       socket.off('roomList');
       socket.off('gameList');
       socket.off('onlineUsers');
-      socket.off('currentUser');
+      socket.off('loginUser');
       socket.off('roomParticipants');
       socket.off('roomInvitation');
       socket.off('roomError');

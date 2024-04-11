@@ -77,25 +77,19 @@ export class ChatGateway {
     }
   }
 
-  @SubscribeMessage(`getCurrentUser`)
-  async handleGetCurrentUser(@MessageBody() user: UserInfo, @ConnectedSocket() socket: Socket) {
+  @SubscribeMessage(`getLoginUser`)
+  async handleGetCurrentUser(@MessageBody() user: User, @ConnectedSocket() socket: Socket) {
     try {
       const userId = user.userId;
       const loginUser = await this.userRepository.findOne({ where: { userId: Number(userId) } });
-      this.logger.log(`login user name: ${user.userName}`);
       if (!loginUser) {
         this.logger.error(`User not found: ${userId}`);
         return;
       }
-      const sender: UserInfo = {
-        userId: loginUser.userId,
-        userName: loginUser.userName,
-        icon: loginUser.icon,
-      };
-      this.logger.log(`Current user: ${JSON.stringify(sender)}`);
-      socket.emit('currentUser', sender);
+      this.logger.log(`Login user: ${JSON.stringify(loginUser)}`);
+      socket.emit('loginUser', loginUser);
     } catch (error) {
-      this.logger.error(`Error getting current user: ${(error as Error).message}`);
+      this.logger.error(`Error getting user: ${(error as Error).message}`);
       throw error;
     }
   }
