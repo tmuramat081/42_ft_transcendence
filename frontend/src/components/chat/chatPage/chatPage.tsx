@@ -145,6 +145,7 @@ export default function ChatPage() {
     console.log(`${sender.userName} create new room: ${newRoomName}`);
     socket.emit('createRoom', { sender, roomName: newRoomName });
     setNewRoomName('');
+    setSelectedRoom('');
   }, [sender, newRoomName, socket]);
 
   const handleRoomChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
@@ -165,7 +166,7 @@ export default function ChatPage() {
     setSelectedRoom(roomList[Number(newRoomID)]);
     setMessage(''); // ルームが変更されたら新しいメッセージもリセット
     setDeleteButtonVisible(true);
-    socket.emit('joinRoom', { sender, room: roomList[Number(newRoomID)] });
+    socket.emit('joinRoom', { loginUser, room: roomList[Number(newRoomID)] });
   };
 
   const onClickLeaveRoom = useCallback(() => {

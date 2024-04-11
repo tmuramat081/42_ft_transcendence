@@ -343,11 +343,12 @@ export class ChatGateway {
 
   @SubscribeMessage('joinRoom')
   async handleJoinRoom(
-    @MessageBody() join: { sender: UserInfo; room: string },
+    @MessageBody() join: { loginUser: User; room: string },
     @ConnectedSocket() socket: Socket,
   ) {
     try {
-      this.logger.log(`joinRoom: ${join.sender.userName} joined ${join.room}`);
+      this.logger.log(`joinRoom: ${join.loginUser.userName} joined ${join.room}`);
+      this.logger.log(`icon: ${join.loginUser.icon}`);
       const rooms = [...socket.rooms].slice(0);
       // 既に部屋に入っている場合は退出
       if (rooms.length == 2) socket.leave(rooms[1]);
@@ -364,11 +365,26 @@ export class ChatGateway {
           socket.emit('roomError', 'Room is full.');
           return;
         }
-        room.roomParticipants.push({
-          id: join.sender.userId,
-          name: join.sender.userName,
-          icon: join.sender.icon,
-        });
+        // ユーザーが存在してないか確認
+        const existingUser = room.roomParticipants.find(
+          (participant) => participant.name === join.loginUser.userName,
+          (participant) => participant.id === join.loginUser.userId,
+        );
+        if (!existingUser) {
+          // onlineUsersRepositoryからユーザー情報を取得して追加
+          const user = await this.onlineUsersRepository.findOne({
+            where: { userId: join.loginUser.userId },
+          });
+          if (!user) {
+            this.logger.error(`User ${join.loginUser.userName} not found in the database.`);
+            return;
+          }
+          room.roomParticipants.push({
+            id: user.userId,
+            name: user.name,
+            icon: user.icon,
+          });
+        }
         await this.roomRepository.save(room);
       } else {
         this.logger.error(`Room ${join.room} not found in the database.`);

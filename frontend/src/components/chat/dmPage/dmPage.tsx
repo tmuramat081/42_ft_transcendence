@@ -131,6 +131,16 @@ export default function DMPage({ params }: { params: string }) {
 
   return (
     <div className="dm-container">
+      {/* Backボタン */}
+      <div className="back-button">
+        <button
+          onClick={() => {
+            router.back();
+          }}
+        >
+          Back
+        </button>
+      </div>
       {/* DM 相手の情報 */}
       <div className="recipient-info">
         <div className="user">
@@ -191,15 +201,6 @@ export default function DMPage({ params }: { params: string }) {
           onChange={(event) => setMessage(event.target.value)}
         />
         <button onClick={onClickSubmit}>Send</button>
-      </div>
-      <div className="back-button">
-        <button
-          onClick={() => {
-            router.back();
-          }}
-        >
-          Back
-        </button>
       </div>
     </div>
   );
