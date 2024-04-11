@@ -1,5 +1,3 @@
-//currentUserが2種類出てる？
-
 /*eslint-disable*/
 'use client';
 import React, { useState, useEffect, useCallback, use } from 'react';
@@ -43,36 +41,27 @@ export default function ChatPage() {
 
     getCurrentUser()
       .then((user) => {
-        // console.log(user);
         socket.emit('getLoginUser', user);
+        if (user) {
+          const senderData = {
+            userId: user.userId,
+            userName: user.userName,
+            icon: user.icon,
+          };
+          setSender(senderData);
+        }
       })
       .catch((error) => {
         console.error('Error getting user:', error);
       });
-
-    // 仮のユーザー情報をセット
-    // const senderData = {
-    //   userId: 1,
-    //   userName: 'Bob',
-    //   icon: 'https://www.plazastyle.com/images/charapla-spongebob/img_character01.png',
-    // };
-
-    if (LoginUser) {
-      const senderData = {
-        userId: LoginUser.userId,
-        userName: LoginUser.userName,
-        icon: LoginUser.icon,
-      };
-      setSender(senderData);
-      socket.emit('getRoomList', senderData);
-      socket.emit('getGameList', senderData);
-      socket.emit('getOnlineUsers', senderData);
-    }
   }, [socket]);
 
   useEffect(() => {
     if (!socket) return;
     console.log('sender:', sender);
+    socket.emit('getRoomList', sender);
+    socket.emit('getGameList', sender);
+    socket.emit('getOnlineUsers', sender);
   }, [sender]);
 
   useEffect(() => {
@@ -134,7 +123,6 @@ export default function ChatPage() {
     socket.on('chatLogs', (chatMessages: ChatMessage[]) => {
       console.log('Received chatLogs from server:', chatMessages);
       setRoomChatLogs((prevRoomChatLogs) => ({ ...prevRoomChatLogs, [roomID]: chatMessages }));
-      // console.log('roomchatLogs:', roomchatLogs);
     });
 
     return () => {
@@ -187,7 +175,7 @@ export default function ChatPage() {
       console.log(`${sender.userName} left Room: ${selectedRoom}`);
       socket.emit('leaveRoom', { sender, room: selectedRoom });
       setSelectedRoom(null);
-      setDeleteButtonVisible(false); // ボタンが押されたら非表示にする
+      setDeleteButtonVisible(false);
       setMessage('');
       setRoomID('');
       // チャットログをクリアする
@@ -203,7 +191,7 @@ export default function ChatPage() {
       console.log(`${sender.userName} deleted Room: ${selectedRoom}`);
       socket.emit('deleteRoom', { sender, room: selectedRoom });
       setSelectedRoom(null);
-      setDeleteButtonVisible(false); // ボタンが押されたら非表示にする
+      setDeleteButtonVisible(false);
       setParticipants([]);
       // チャットログをクリアする
       const updatedLogs = { ...roomchatLogs };
@@ -236,7 +224,6 @@ export default function ChatPage() {
         .map((invitee) => invitee.userName)
         .join(', ')}`,
     );
-    // 招待を送信した後、inviteesをリセットする
     setInvitees([]);
     setSelectedGame(null);
   };
@@ -249,19 +236,14 @@ export default function ChatPage() {
     invitees.forEach((invitee) => {
       socket.emit('inviteToRoom', { sender, room: selectedRoom, invitee });
     });
-
-    // 招待を送信した後、inviteesをリセットする
     setInvitees([]);
   }, [sender, selectedRoom, invitees, socket]);
 
-  // チェックボックスの状態を管理するハンドラー
   const handleCheckboxChange = (user: UserInfo) => {
     // チェックされたユーザーを追加または削除する
     if (invitees.some((invitee) => invitee.userId === user.userId)) {
-      // ユーザーが既に招待リストにあれば削除する
       setInvitees(invitees.filter((invitee) => invitee.userId !== user.userId));
     } else {
-      // ユーザーが招待リストになければ追加する
       setInvitees([...invitees, user]);
     }
   };

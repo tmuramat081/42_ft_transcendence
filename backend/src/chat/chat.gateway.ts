@@ -97,10 +97,12 @@ export class ChatGateway {
   @SubscribeMessage('getOnlineUsers')
   async handleGetOnlineUsers(@MessageBody() sender: UserInfo, @ConnectedSocket() socket: Socket) {
     try {
-      if (!sender || !sender.userId || !sender.userName || !sender.icon) {
+      if (!sender || !sender.userId || !sender.userName) {
         throw new Error('Invalid sender data.');
       }
       this.logger.log(`Get online users: ${sender.userName}`);
+
+      /* ここから後で削除する */
 
       // ダミーユーザーを登録
       // await this.createDummyUsers();
@@ -122,12 +124,13 @@ export class ChatGateway {
         }),
       );
 
+      /* ここまで後で削除する */
+
       // すでにログインユーザーが存在するかどうかを確認
       const existingUser = await this.onlineUsersRepository.findOne({
-        where: { userId: sender.userId },
+        where: { userId: sender.userId, name: sender.userName },
       });
       if (!existingUser) {
-        // OnlineUsersエンティティのインスタンスを作成し、データベースに保存
         const onlineUser = new OnlineUsers();
         onlineUser.userId = sender.userId;
         onlineUser.name = sender.userName;
@@ -141,13 +144,6 @@ export class ChatGateway {
 
       // 重複したオンラインユーザーを削除
       await this.deleteDuplicateOnlineUsers();
-
-      // iconが空のユーザーを削除
-      // const emptyIconUsers = await this.onlineUsersRepository.find({
-      //   where: { icon: '' },
-      // });
-      // await Promise.all(emptyIconUsers.map((user) => this.onlineUsersRepository.remove(user)));
-      // console.log('Empty icon users deleted:', emptyIconUsers);
 
       // データベースからオンラインユーザーリストを取得
       const onlineUsers = await this.onlineUsersRepository.find();
@@ -166,7 +162,7 @@ export class ChatGateway {
       // sender以外のonlineUsersInfoをクライアントに送信
       socket.emit(
         'onlineUsers',
-        onlineUsersInfo.filter((user) => user.userName !== sender.userName),
+        onlineUsersInfo.filter((user) => user.userId !== sender.userId),
       );
     } catch (error) {
       this.logger.error(`Error getting online users: ${(error as Error).message}`);
@@ -210,32 +206,32 @@ export class ChatGateway {
   async createDummyUsers() {
     const dummyUsers: UserInfo[] = [
       {
-        userId: 1,
+        userId: 11,
         userName: 'Bob',
         icon: 'https://www.plazastyle.com/images/charapla-spongebob/img_character01.png',
       },
       {
-        userId: 2,
+        userId: 12,
         userName: 'Patrick',
         icon: 'https://www.plazastyle.com/images/charapla-spongebob/img_character02.png',
       },
       {
-        userId: 3,
+        userId: 13,
         userName: 'plankton',
         icon: 'https://www.plazastyle.com/images/charapla-spongebob/img_character05.png',
       },
       {
-        userId: 4,
+        userId: 14,
         userName: 'sandy',
         icon: 'https://www.plazastyle.com/images/charapla-spongebob/img_character06.png',
       },
       {
-        userId: 5,
+        userId: 15,
         userName: 'Mr.krabs',
         icon: 'https://www.plazastyle.com/images/charapla-spongebob/img_character04.png',
       },
       {
-        userId: 6,
+        userId: 16,
         userName: 'gary',
         icon: 'https://www.plazastyle.com/images/charapla-spongebob/img_character07.png',
       },
