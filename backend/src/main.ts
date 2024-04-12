@@ -14,7 +14,7 @@ async function bootstrap() {
 
   // CORSを有効化
   app.enableCors({
-    origin: true,
+    origin: process.env.FRONTEND_URL,
     // ブラウザからはすべてのリクエストを受け付ける為、下記の設定は不要
     //origin: [process.env.FRONTEND_URL],
     //origin: "http://localhost:3000",
@@ -57,6 +57,7 @@ async function bootstrap() {
   const port = process.env.PORT || 3000;
   await app.listen(port, '0.0.0.0');
  
+  console.log('process.env.NODE_ENV: ', process.env.NODE_ENV);
   console.log(`Server running on http://localhost:${port}`);
 }
 
