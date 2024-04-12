@@ -102,8 +102,6 @@ export class ChatGateway {
       }
       this.logger.log(`Get online users: ${sender.userName}`);
 
-      /* ここから後で削除する */
-
       // ダミーユーザーを登録
       // await this.createDummyUsers();
 
@@ -119,12 +117,9 @@ export class ChatGateway {
       //     if (!onlineUser.icon) {
       //       onlineUser.icon = 'https://pics.prcm.jp/db3b34efef8a0/86032013/jpeg/86032013.jpeg';
       //     }
-      //     onlineUser.me = false;
       //     await this.onlineUsersRepository.save(onlineUser);
       //   }),
       // );
-
-      /* ここまで後で削除する */
 
       // すでにログインユーザーが存在するかどうかを確認
       const existingUser = await this.onlineUsersRepository.findOne({
@@ -138,7 +133,6 @@ export class ChatGateway {
         if (!onlineUser.icon) {
           onlineUser.icon = 'https://pics.prcm.jp/db3b34efef8a0/86032013/jpeg/86032013.jpeg';
         }
-        onlineUser.me = true;
         await this.onlineUsersRepository.save(onlineUser);
       }
 
@@ -246,7 +240,6 @@ export class ChatGateway {
         onlineUser.userId = user.userId;
         onlineUser.name = user.userName;
         onlineUser.icon = user.icon;
-        onlineUser.me = false;
         await this.onlineUsersRepository.save(onlineUser);
       }),
     );

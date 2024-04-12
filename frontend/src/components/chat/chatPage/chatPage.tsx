@@ -98,6 +98,11 @@ export default function ChatPage() {
       setNotification(`${sender.userName} invited you to play ${game}`);
     });
 
+    socket.on('newDM', (sender: UserInfo) => {
+      console.log('Received newDM from server:', sender);
+      setNotification(`${sender.userName} sent you a new message`);
+    });
+
     socket.on('roomError', (error) => {
       console.error(error);
     });

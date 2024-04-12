@@ -246,6 +246,7 @@ export class DMGateway {
             senderName: Not(
               In(
                 await this.userBlockRepository
+                  // ブロックされたユーザーのリストを取得
                   .find({ where: { userName: payload.receiver.userName } })
                   .then((userBlock) => userBlock.map((ub) => ub.userName)),
               ),
@@ -269,8 +270,12 @@ export class DMGateway {
           timestamp: dmLog.timestamp,
         };
       });
-
+      // senderにdmLogsを送信
       this.server.to(socket.id).emit('dmLogs', directMessages);
+      // receiverにdmLogsを送信
+      this.server.to(String(payload.receiver.userId)).emit('dmLogs', directMessages);
+      // receiverに通知
+      this.server.to(String(payload.receiver.userId)).emit('newDM', payload.sender.userName);
     } catch (error) {
       this.logger.error('Error sending DM logs:', error);
       throw error;

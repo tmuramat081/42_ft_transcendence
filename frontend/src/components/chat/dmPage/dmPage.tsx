@@ -80,7 +80,6 @@ export default function DMPage({ params }: { params: string }) {
   useEffect(() => {
     if (!socket) return;
     if (sender.userName && receiver.userName) {
-      // socket.emit('startDM', { sender: sender, receiver: receiver });
       socket.emit('getDMLogs', { sender: sender, receiver: receiver });
     }
   }, [sender, receiver, socket]);
@@ -160,7 +159,7 @@ export default function DMPage({ params }: { params: string }) {
       {/* DM 履歴 */}
       <div
         className="dm-messages"
-        style={{ overflowY: 'auto', maxHeight: '300px' }}
+        style={{ overflowY: 'auto', maxHeight: '400px' }}
       >
         {dmLogs.map((message, index) => (
           <div
