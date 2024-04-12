@@ -19,6 +19,8 @@ COPY package.*json ./
 RUN npm install --only=prod
 COPY --from=development /backend/dist ./dist
 EXPOSE 8080
+ENV PORT 8080
 ENV HOSTNAME "0.0.0.0"
+ENV HOST 0.0.0.0
 
 CMD ["npm", "run", "start:prod"]
