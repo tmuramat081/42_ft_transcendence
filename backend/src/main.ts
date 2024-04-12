@@ -14,7 +14,7 @@ async function bootstrap() {
 
   // CORSを有効化
   app.enableCors({
-    origin: process.env.FRONTEND_URL,
+    origin: [process.env.FRONTEND_URL],
     // ブラウザからはすべてのリクエストを受け付ける為、下記の設定は不要
     //origin: [process.env.FRONTEND_URL],
     //origin: "http://localhost:3000",

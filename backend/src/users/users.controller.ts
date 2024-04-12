@@ -328,8 +328,8 @@ export class UsersController {
             //cookieにアクセストークンを保存
             res.cookie('jwt', accessToken, { 
                 httpOnly: true,
-                secure: process.env.NODE_ENV === 'production',
-                sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
+                secure: true,
+                sameSite: 'none',
              })
 
             //console.log("accessToken: " + accessToken);
