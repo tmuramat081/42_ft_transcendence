@@ -14,11 +14,11 @@ CMD ["npm", "run", "start:dev"]
 FROM node:20 AS production
 
 ENV NODE_ENV=production
-ENV HOSTNAME "0.0.0.0"
 WORKDIR /backend
 COPY package.*json ./
 RUN npm install --only=prod
 COPY --from=development /backend/dist ./dist
 EXPOSE 8080
+ENV HOSTNAME "0.0.0.0"
 
 CMD ["npm", "run", "start:prod"]
