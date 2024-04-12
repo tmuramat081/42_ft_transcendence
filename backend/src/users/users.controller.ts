@@ -330,7 +330,7 @@ export class UsersController {
                 maxAge: 24 * 60 * 60 * 100,
                 httpOnly: true,
                 secure: true,
-                sameSite: 'none',
+                sameSite: false,
              })
 
             //console.log("accessToken: " + accessToken);
