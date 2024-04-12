@@ -42,9 +42,9 @@ export class TwoFactorAuthStrategy extends PassportStrategy(Strategy, '2fa') {
     // ペイロードからユーザーIDとユーザー名を取得 自動で検証される
     const { userName, twoFactorAuth } = payload;
 
-    console.log('payload: ', payload);
-    console.log('userName: ', userName);
-    console.log('twoFactorAuth: ', twoFactorAuth);
+    // console.log('payload: ', payload);
+    // console.log('userName: ', userName);
+    // console.log('twoFactorAuth: ', twoFactorAuth);
 
     // ユーザーの検索
     const user = await this.userRepository.findOneByName(userName);
@@ -53,13 +53,13 @@ export class TwoFactorAuthStrategy extends PassportStrategy(Strategy, '2fa') {
 
     // 2faが違う場合はエラー
     if (user.twoFactorAuth && twoFactorAuth != user.twoFactorAuth) {
-      console.log('twoFactorAuth: ', twoFactorAuth);
-      console.log('twoFactorAuth: ', user.twoFactorAuth);
+      //console.log('twoFactorAuth: ', twoFactorAuth);
+      //console.log('twoFactorAuth: ', user.twoFactorAuth);
       throw new UnauthorizedException();
     }
 
     if (user) {
-      console.log('user: ', user);
+      //console.log('user: ', user);
       return user;
     }
     // ユーザーが見つからない場合はエラー

@@ -4,7 +4,7 @@ import { DefaultEventsMap } from 'socket.io/dist/typed-events';
 
 // 型定義
 
-// enumeでも良い
+// enumでも良い
 // オブジェクト定義
 // as const: TypeScriptのconstアサーションを使用して、文字列リテラル型を作成
 // as consrがない場合、GameStateは文字列リテラル型ではなく、文字列型として推論される
@@ -47,6 +47,7 @@ export type DiffucultyLevel = (typeof DiffucultyLevel)[keyof typeof DiffucultyLe
 // ユーザーの状態
 export const UserStatus = {
     ONLINE: 'ONLINE',
+    PLAYING: 'PLAYING',
     OFFLINE: 'OFFLINE',
 } as const;
 
@@ -98,7 +99,7 @@ export type RoomInfo = {
     barLength: number;
     // バーの速度設定
     barSpeed: number;
-    initialHeight: number;q
+    initialHeight: number;
     lowestPosition: number;
     rewards: number;
     gameState: GameState;

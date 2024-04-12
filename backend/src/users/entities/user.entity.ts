@@ -200,4 +200,9 @@ export class User {
 
   @OneToMany(() => GameRecord, (gameRecord) => gameRecord.winner)
     gameRecordsAsWinner: GameRecord[];
+
+    // ゲームのポイント
+  @Column({ name: 'point', type: 'integer', default: 10000})
+  @IsNotEmpty()
+  point: number;
 }

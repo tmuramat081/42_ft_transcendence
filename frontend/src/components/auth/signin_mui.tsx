@@ -66,6 +66,7 @@ export default function SignIn() {
 
     const router = useRouter();
     const {signin, loginUser, getCurrentUser, loading} = useAuth();
+    const socket = useSocketStore();
 
     // useEffect
     useEffect(() => {

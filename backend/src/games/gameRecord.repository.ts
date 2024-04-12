@@ -8,7 +8,7 @@ import { GameRecordWithUserName } from './interfaces/records.interface';
 // 見直し
 
 @Injectable()
-export class RecordsService {
+export class RecordsRepository {
   constructor(
     @InjectRepository(GameRecord)
     private gameRecordRepository: Repository<GameRecord>,
