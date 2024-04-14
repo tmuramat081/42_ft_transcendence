@@ -74,7 +74,7 @@ const storage = {
             cb(null, true);
         }
         else {
-            cb(null, false);
+            cb(new Error('ファイル形式が不正です'), false);
         }
     }, 
 
