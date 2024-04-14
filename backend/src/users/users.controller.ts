@@ -17,6 +17,7 @@ import { v4 as uuidv4 } from 'uuid';
 import * as path from 'path';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { Observable, of } from 'rxjs'
+import * as fs from 'fs';
 
 /*
 分離のポイント
@@ -44,7 +45,14 @@ const validMimeTypes: ValidMimeTypes[] = ['image/png', 'image/jpg', 'image/jpeg'
 const storage = {
     storage: diskStorage({
       // ファイルの保存先
-      destination: process.env.AVATAR_IMAGE_DIR,
+      destination: (req, file, cb) => {
+        const uploadPath: string = process.env.AVATAR_IMAGE_DIR;
+        // 保存先が存在しない場合は作成
+        if (!fs.existsSync(uploadPath)) {
+          fs.mkdirSync(uploadPath, { recursive: true });
+        }
+        cb(null, uploadPath);
+      },
       // ファイル名の設定
       filename: (req, file, cb) => {
         // ファイル名は拡張子のみ保持して、ファイル名自体はuuidに置換
