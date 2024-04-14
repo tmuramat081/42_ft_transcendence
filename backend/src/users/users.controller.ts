@@ -473,7 +473,6 @@ export class UsersController {
 
             return JSON.stringify({"status": "SUCCESS", "icon": user.icon});
         } catch (error) {
-            console.log('error', error);
             throw error;
         }
     }
