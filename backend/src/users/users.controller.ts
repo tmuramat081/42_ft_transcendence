@@ -59,7 +59,7 @@ const storage = {
 
     // ファイルフィルター
     // MIMEタイプが許可されているかどうかを確認する
-    fileFIlter: (req, file, cb) => {
+    fileFilter: (req, file, cb) => {
         const allowedMimeType = validMimeTypes.includes(file.mimetype);
         if (allowedMimeType) {
             // 15の例外
@@ -454,7 +454,6 @@ export class UsersController {
         // console.log("updateUserIcon")
         // console.log("file: ", file)
         // console.log("req.user.userName: ", req.user.userName)
-
         try {
             // 読み込み時にディレクトリを指定する
             const user = await this.usersService.updateUserIcon(req.user.userName, file);
@@ -466,6 +465,7 @@ export class UsersController {
 
             return JSON.stringify({"status": "SUCCESS", "icon": user.icon});
         } catch (error) {
+            console.log('error', error);
             throw error;
         }
     }
