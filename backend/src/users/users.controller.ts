@@ -327,10 +327,9 @@ export class UsersController {
             }
             //cookieにアクセストークンを保存
             res.cookie('jwt', accessToken, { 
-                maxAge: 24 * 60 * 60 * 100,
                 httpOnly: true,
-                secure: true,
-                sameSite: false,
+                secure: process.env.NODE_ENV === 'production',
+                sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
              })
 
             //console.log("accessToken: " + accessToken);
