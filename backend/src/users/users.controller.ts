@@ -459,22 +459,8 @@ export class UsersController {
     @UseInterceptors(FileInterceptor('icon', storage))
     @Post('/update/icon')
     async UpdateIcon(@UploadedFile() file, @Req() req): Promise<string> {
-        // console.log("updateUserIcon")
-        // console.log("file: ", file)
-        // console.log("req.user.userName: ", req.user.userName)
-        try {
-            // 読み込み時にディレクトリを指定する
-            const user = await this.usersService.updateUserIcon(req.user.userName, file);
-
-            //例外を返す？
-            if (!user) {
-                throw new ForbiddenException("Invalid credentials");
-            }
-
-            return JSON.stringify({"status": "SUCCESS", "icon": user.icon});
-        } catch (error) {
-            throw error;
-        }
+      const user = await this.usersService.updateUserIcon(req.user.userName, file);
+      return JSON.stringify({"status": "SUCCESS", "icon": user.icon});
     }
 
     // 使っていない
