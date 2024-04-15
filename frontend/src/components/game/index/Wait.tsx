@@ -20,30 +20,34 @@ type Props = {
 };
 
 type NavigationEventsProps = {
-    pathname: string;
-    searchParams: string;
     cancelPlay: () => void;
 };
 
-// const NavigationEvents = (({pathname, searchParams, cancelPlay }: NavigationEventsProps) =>{
+export const NavigationEvents = (() =>{
+    const pathname = usePathname();
+    const searchParams = useSearchParams();
+    const updatePlayState = usePlayStateStore((store) => store.updatePlayState);
+    const { socket } = useSocketStore();
 
+    useEffect(() => {
+      const url = `${pathname}?${searchParams}`
+      console.log(url)
+      // You can now use the current URL
+      // ...
+      updatePlayState(PlayState.stateNothing);
+      socket.emit("playCancel");
+        //cancelPlay();
+    }, [pathname, searchParams])
    
-//     useEffect(() => {
-//       const url = `${pathname}?${searchParams}`
-//       console.log(url)
-//       // You can now use the current URL
-//       // ...
-//         cancelPlay();
-//     }, [pathname, searchParams])
-   
-//     return null
-// });
+    return null
+});
 
 export const Wait = ({ openMatchError }: Props) => {
     // const pathname = useMemo(() => {usePathname()}, []);
     // const searchParams = useMemo(() => {useSearchParams()}, []);
-    // const pathname = usePathname();
-    // const searchParams = useSearchParams();
+    const pathname = usePathname();
+    const searchParams = useSearchParams();
+
     const updatePlayState = usePlayStateStore((store) => store.updatePlayState);
     const { playState } = usePlayStateStore();
     // 待機画面の表示
@@ -96,7 +100,7 @@ export const Wait = ({ openMatchError }: Props) => {
             socket.off('random:standby');
 
             // cancel
-            socket.emit('playCancel');
+            //socket.emit('playCancel');
         }
 
     }, [socket, loginUser, updatePlayerNames, updatePlayState, router]);
@@ -121,7 +125,7 @@ export const Wait = ({ openMatchError }: Props) => {
     return (
         <Grid item>
             {/* <Suspense fallback={null}>
-                <NavigationEvents pathname={pathname} searchParams={searchParams} cancelPlay={cancelPlay} />
+                <NavigationEvents cancelPlay={cancelPlay} />
             </Suspense> */}
             <Modal open={open} aria-labelledby='modal-modal-title'>
                 <Grid

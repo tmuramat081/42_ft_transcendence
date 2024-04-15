@@ -5,6 +5,7 @@ import {
   IsEmail,
   IsNotEmpty,
   IsString,
+  IsNumber,
   Length,
   Matches,
   MaxLength,
@@ -138,6 +139,16 @@ export class ReturnUserDto {
   blocked: User[];
   // 不要
   twoFactorAuthNow: boolean;
+}
+
+export class UpdatePointDto {
+  @IsNumber()
+  @IsNotEmpty()
+  userId: number;
+
+  @IsNumber()
+  @IsNotEmpty()
+  point: number;
 }
 
 // export function toUserDto(user: User): UserDto {

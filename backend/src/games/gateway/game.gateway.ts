@@ -220,7 +220,7 @@ export class GameGateway {
   // 部屋のプレイヤーをplayingListから削除
   removePlayingUsersFromRoom(room: RoomInfo) {
     room.supporters.map((supporter) => {
-      const supporterId = supporter.id;
+      const supporterId = this.getIdFromSocket(supporter);
       this.removePlayingUserId(supporterId);
     });
 
@@ -319,6 +319,8 @@ export class GameGateway {
     this.logger.log(`Client connected: ${id}!!!!!!!!!!!!!!!!!!!!`);
     // console.log(`Client connected: ${id}!!!!!!!!!!!!!!!!!!!!!!!!`);
 
+    // friendがプロフィール見ていれば、表示される
+    // client側でupdateStatusを受け取るようにする
     this.server.emit('updateStatus', {
       userId: id,
       status: UserStatus.ONLINE,
@@ -409,6 +411,7 @@ export class GameGateway {
     //this.server.to(data.roomId).emit('joinedRoom', data.userId);
 
     console.log('playStart');
+    console.log(this.waitingQueue)
     if (this.isPlayingUserId(data.userId)) {
       return false;
     }
@@ -431,6 +434,9 @@ export class GameGateway {
         height: GameGateway.initialHeight,
         score: 0,
       });
+
+      console.log(this.waitingQueue)
+
       return true;
     // 待機プレイヤーがいる場合
     } else {
@@ -454,11 +460,14 @@ export class GameGateway {
       void this.startGame(player1, player2, 'random')
     }
 
+    console.log(this.waitingQueue)
+
+
     return true;
   }
 
   // ゲームを初期化して開始
-  async startGame(player1: Player, player2: Player2, gameType: string) {
+  async startGame(player1: Player, player2: Player, gameType: string) {
     const roomName = uuidv4();
   
     this.logger.log(`startGame: ${player1.id} vs ${player2.id}`);
@@ -504,5 +513,11 @@ export class GameGateway {
     this.gameRooms.push(newRoom);
 
     this.updatePlayerStatus(player1, player2, gameType);
+  }
+
+  @SubscribeMessage('playCancel')
+  cancelMatching(@ConnectedSocket() socket: Socket) {
+    console.log('playCancel');
+    this.waitingQueue = this.waitingQueue.filter((player) => player.socket.id !== socket.id);
   }
 }

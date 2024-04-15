@@ -4,6 +4,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, Connection } from 'typeorm';
 import { User } from './entities/user.entity';
 import * as bycrypt from 'bcrypt';
+import { UpdatePointDto } from './dto/user.dto';
 
 /*
 Repository
@@ -204,5 +205,16 @@ export class UserRepository {
   async getBlockedUsers(user: User): Promise<User[]> {
     // データ整形が必要？パスワードなどが含まれているかも
     return user.blocked;
+  }
+
+  async updatePoint(data: UpdatePointDto): Promise<User> {
+    const target: User = await this.findOne({ userId: data.userId });
+    if (!target) {
+      //throw new Error('User not found');
+      throw new NotFoundException('User not found');
+    }
+
+    target.point = data.point;
+    return await this.userRepository.save(target);
   }
 }

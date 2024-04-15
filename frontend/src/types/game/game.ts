@@ -58,7 +58,7 @@ export type GameParameters = {
     lowestPos: number;
     sideBarLeft: number;
     sideBarRight: number;
-    lineDashStyle: number;
+    lineDashStyle: number[];
     initialHeight: number;
     ballInitialX: number;
     ballInitialY: number;

@@ -1,7 +1,7 @@
 /* eslint-disable */
 import { Controller, Get, Post, Put, Body, Req, Res, Param, InternalServerErrorException, ForbiddenException, UnauthorizedException, StreamableFile, UploadedFile, UseInterceptors } from '@nestjs/common';
 import { UsersService } from './users.service';
-import { SignUpUserDto, SignInUserDto, UpdateUserDto, ReturnUserDto } from './dto/user.dto';
+import { SignUpUserDto, SignInUserDto, UpdateUserDto, ReturnUserDto, UpdatePointDto } from './dto/user.dto';
 import { User } from './entities/user.entity';
 import { Response, Request } from 'express';
 import * as bcrypt from 'bcrypt'
@@ -74,7 +74,7 @@ const storage = {
     limits: {
         fileSize: 1024 * 1024 * 5
     },
-  };
+};
 
 
 @Controller('users')
@@ -650,5 +650,17 @@ export class UsersController {
     @Get('/blocked/all')
     async findAllBlocked(@Req() req) {
         return await this.usersService.getBlockeds(req.user);
+    }
+
+    @UseGuards(JwtAuthGuard)
+    @Post('/uodate/point')
+    async updatePoint(@Req() req, @Body() data: UpdatePointDto): Promise<string> {
+        try {
+            // reqからユーザーを取得してもいいかも
+            const user = await this.usersService.updatePoint(data);
+            return JSON.stringify({"user": user});
+        } catch (error) {
+            throw error;
+        }
     }
 }

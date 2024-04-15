@@ -8,7 +8,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, Connection } from 'typeorm';
 import { User } from './entities/user.entity';
 import { UserRepository } from './users.repository';
-import { SignUpUserDto, SignInUserDto, UpdateUserDto } from './dto/user.dto';
+import { SignUpUserDto, SignInUserDto, UpdateUserDto, UpdatePointDto } from './dto/user.dto';
 import { JwtService } from '@nestjs/jwt';
 import { JwtPayload } from './interfaces/jwt_payload';
 import * as bcrypt from 'bcrypt';
@@ -586,5 +586,9 @@ export class UsersService {
 
   async getBlockeds(user: User): Promise<User[]> {
     return this.userRepository.getBlockedUsers(user);
+  }
+
+  async updatePoint(data: UpdatePointDto): Promise<User> {
+    return this.userRepository.updatePoint(data);
   }
 }
