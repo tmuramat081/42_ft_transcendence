@@ -36,13 +36,12 @@ async function bootstrap() {
 
   // Helmetを使用（脆弱性対策）
   //https://stackoverflow.com/questions/69243166/err-blocked-by-response-notsameorigin-cors-policy-javascript
-  app.use(helmet.crossOriginResourcePolicy({ policy: "cross-origin" }));
+  app.use(helmet.crossOriginResourcePolicy({ policy: 'cross-origin' }));
 
   // 静的ファイルを提供
   const staticAssetsPath = join(process.cwd(), process.env.AVATAR_IMAGE_DIR);
-  console.log("staticAssetsPath: ", staticAssetsPath)
   app.useStaticAssets(staticAssetsPath, {
-    prefix: "/api/uploads/",
+    prefix: '/api/uploads/',
   });
 
   // Swagger設定
