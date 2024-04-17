@@ -1,12 +1,19 @@
-/* eslint-disable */
-"use client";
-import { useState } from 'react';
-import Form from '@/components/auth/signup';
-import SignUp from '@/components/auth/signup_mui';
+'use client';
+import SignUp from '@/components/auth/signup/signup_mui';
+import { Box } from '@mui/material';
 
+/**
+ * 新規登録ページ
+ */
 export default function Page() {
-    return (
-        //<Form />
-        <SignUp />
-    )
+  return (
+    <Box
+      display="flex"
+      justifyContent="center"
+      alignItems="center"
+      height="60vh"
+    >
+      <SignUp />
+    </Box>
+  );
 }

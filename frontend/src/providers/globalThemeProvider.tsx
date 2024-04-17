@@ -8,18 +8,22 @@ import { ReactNode } from 'react';
 const theme = createTheme({
   palette: {
     primary: {
-      main: '#00babc', // 青
+      main: '#00babc', // light blue
+      light: '#33ffff',
+      dark: '#007f7f',
     },
     secondary: {
-      main: '#ffffff', // 白
+      main: '#29292e', // gray
+      light: '#f5f5f5',
+      dark: '#18181d',
     },
     text: {
-      primary: '#333', // 黒
+      primary: '#333', // black
       secondary: '#666',
     },
     background: {
       default: '#18181d',
-      paper: '#f5f5f5',
+      paper: '#ffffff',
     },
   },
   typography: {

@@ -17,6 +17,8 @@ services:
   backend:
     build:
       context: ./backend
+      dockerfile: Dockerfile
+      target: development
     env_file:
       - .env
     volumes:
