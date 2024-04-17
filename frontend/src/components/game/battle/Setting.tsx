@@ -43,10 +43,10 @@ export const Setting = () => {
         setMatchPoint(val);
     }
 
-    useEffect(() => {
-        //updatePlayState(PlayState.stateSelecting);
+    // useEffect(() => {
+    //     updatePlayState(PlayState.stateSelecting);
 
-    }, []);
+    // }, []);
 
     // useEffect(() => {
     //     updatePlayState(PlayState.stateSelecting);
@@ -54,18 +54,73 @@ export const Setting = () => {
     // }, []);
 
     useEffect(() => {
+        // ゲーム開始
+        socket.on('playStarted', (newSetting: GameSetting) => {
+            updateGameSetting(newSetting);
+            updatePlayState(PlayState.statePlaying);
+        });
 
-    }, []);
+        // エラーが発生した場合
+        socket.on('error', () => {
+            updatePlayState(PlayState.stateNothing);
+            //router.push('/game');
+        });
+
+        // ゲームがキャンセルされた場合
+        socket.on('cancelOngoingBattle', () => {
+            updatePlayState(PlayState.stateCanceled);
+            //router.push('/game');
+        });
+
+        // 例外が発生した場合
+        socket.on('exception', () => {
+            socket.emit('cancelOngoingBattle');
+
+            updatePlayState(PlayState.stateNothing);
+        });
+
+        return () => {
+            socket.off('playStarted');
+            socket.off('error');
+            socket.off('cancelOngoingBattle');
+            socket.off('exception');
+        };
+    }, [socket, updatePlayState, updateGameSetting, router]);
 
     useEffect(() => {
+        if (0 < countDown) {
+            setTimeout(() => {
+                setCountDown(countDown - 1);
+            }, timeoutIntervalInMilSec);
+            // 時間経過してもゲームが開始されない場合はキャンセル
+        } else if (countDown === 0) {
+            socket.emit('cancelOngoingBattle');
+            updatePlayState(PlayState.stateCanceled);
+        }
+    }, [countDown, socket, updatePlayState]);
 
-    }, []);
-
+    // パスが変わったらゲームをキャンセル 
+    // Wait.tsxを参照
     useEffect(() => {
+        const cancelOngoingBattle = () => {
+            socket.emit('cancelOngoingBattle');
+        };
+
 
     }, []);
 
-    // 設定を送信する
+    // 不要では？
+    useEffect(() => {
+        socket.on('cancelOngoingBattle', () => {
+            updatePlayState(PlayState.stateCanceled);
+        });
+
+        return () => {
+            socket.off('cancelOngoingBattle');
+        }
+    }, []);
+
+    // 設定を送信する。ゲーム開始
     const handleSubmit = () => {
         socket.emit('compleateSetting', {difficulty, matchPoint, player1DefaultScore, player2DefaultScore});
     }

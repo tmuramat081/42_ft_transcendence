@@ -108,6 +108,8 @@ type ConnectedUser = {
 export class GameGateway {
   // ゲームの設定
   // インスタンス間で共有するため、staticに設定
+
+  // バーの初期位置
   static initialHeight = 260;
   static ballInitialX = 500;
   static ballInitialY = 300;
@@ -118,8 +120,8 @@ export class GameGateway {
   static ballInitialYVec = 1;
   // ボールの速度
   static ballSpeed = 5;
-  // heightPos, lowestPos ボールの移動範囲　上下
-  static heightPos = 10;
+  // heighestPos, lowestPos ボールの移動範囲　上下
+  static heighestPos = 10;
   static lowestPos = 490;
   // leftEnd, rightEnd ボールの移動範囲　左右
   static leftEnd = 40;
@@ -127,7 +129,7 @@ export class GameGateway {
   // defaultSetting ゲームの初期設定
   static defaultSetting: GameSetting = {
     difficulty: DiffucultyLevel.NORMAL,
-    matchPoint: 5,
+    matchPoints: 5,
     player1Score: 0,
     player2Score: 0,
   };
@@ -399,6 +401,52 @@ export class GameGateway {
 
 
   //maoyagi ver
+
+  // ゲームセッティング完了
+  @SubscribeMessage('compleateSetting')
+  playGame(@ConnectedSocket() socket: Socket, @MessageBody() data: PlayGameDto) {
+    const room = this.gameRooms.find((room) => {
+      room.player1.socket.id === socket.id || room.player2.socket.id === socket.id;
+    });
+    if (!room) {
+      socket.emit('error');
+      const id = this.getIdFromSocket(socket);
+      this.removePlayingUserId(id);
+    } else {
+      this.logger.log(`compleateSetting`, data);
+      // ゲーム設定の更新
+      room.gameSetting = data as GameSetting;
+      room.rewards = data.matchPoints * 10;
+
+      // TDDO:
+      // ball speedも変更
+      switch (data.difficulty) {
+        case DiffucultyLevel.NORMAL:
+          room.barLength = GameGateway.boardHeight / Normal;
+           break;
+        case DiffucultyLevel.HARD:
+          room.barLength = GameGateway.boardHeight / Hard;
+          room.rewards *= 2;
+          break;
+        default:
+          room.barLength = GameGateway.boardHeight / Easy;
+          room.rewards /= 2;
+          break;
+      }
+
+      //?
+      room.initialHeight = GameGateway.initialHeight / 2 - room.barLength / 2;
+      //?
+      room.lowestPosition = GameGateway.boardHeight - GameGateway.heighestPos - room.barLength;
+      room.player1.height = room.initialHeight;
+      room.player2.height = room.initialHeight;
+      room.gameState = GameState.PLAYING;
+
+      // 設定を送信
+      this.server.to(room.roomName).emit('gameStarted', data as GameSetting);
+    }
+  }
+
   //game開始
   @SubscribeMessage('playStart')
   async joinRoom(
@@ -515,9 +563,171 @@ export class GameGateway {
     this.updatePlayerStatus(player1, player2, gameType);
   }
 
+  // マッチングのキャンセル
   @SubscribeMessage('playCancel')
   cancelMatching(@ConnectedSocket() socket: Socket) {
     console.log('playCancel');
     this.waitingQueue = this.waitingQueue.filter((player) => player.socket.id !== socket.id);
+  }
+
+  // バーの移動
+  @SubscribeMessage('barMove')
+  async updatePlayerPos(@ConnectedSocket() socket: Socket, @MessageBody() data: UpdatePlayerPosDto) {
+    let isGameOver = false;
+
+    const room = this.gameRooms.find((room) => {
+      room.player1.socket.id === socket.id || room.player2.socket.id === socket.id || room.supporters.find((s) => s.id === socket.id)
+    });
+    // 存在しない場合
+    if (!room) {
+      socket.emit('error');
+      const id = this.getIdFromSocket(socket);
+      // プレイ中のユーザーから削除
+      this.removePlayingUserId(id);
+      return ;
+    }
+
+    // サポーターの場合
+    if (room.player1.socket.id !== socket.id && room.player2.socket.id !== socket.id) {
+      this.sendGameInfo(room);
+      return ;
+    }
+
+    // プレイヤーを判定
+    const player = room.player1.socket.id === socket.id ? room.player1 : room.player2;
+    const ball = room.ball;
+    const ballVec = room.ballVec;
+
+    // playerの位置を更新
+    const updatedHeight = player.height + (data.move * room.barSpeed);
+    // 上限下限の場合はストップ
+    if (updatedHeight < GameGateway.heighestPos) {
+      player.height = GameGateway.heighestPos;
+      // TODO: lowestPosにする
+    } else if (room.lowestPosition < updatedHeight) {
+      player.height = room.lowestPosition;
+    } else {
+      player.height = updatedHeight;
+    }
+
+    // ボールの移動
+    // 上限下限の場合は反転
+    if ((ballVec.yVec < 0 && ball.y < GameGateway.heighestPos) || (0 < ballVec.yVec && room.lowestPosition + room.barLength < ball.y)) {
+      ballVec.yVec *= -1;
+    }
+
+    if (ball.x < GameGateway.leftEnd) {
+      // 左に向いていて、player1のバーの範囲内の場合
+      if (ballVec.xVec < 0 && room.player1.height <= ball.y && ball.y <= room.player1.height + room.barLength) {
+        // 反転
+        ballVec.xVec = 1;
+        // ? 反転
+        ballVec.yVec = ((ball.y - (room.player1.height + room.barLength / 2)) * 2) / room.barLength;
+      } else {
+        // ゲーム終了
+        isGameOver = true;
+        room.player1.score++;
+      } 
+    } else if (GameGateway.rightEnd < ball.x) {
+        if (0 < ballVec.xVec && room.player2.height <= ball.y && ball.y <= room.player2.height + room.barLength) {
+          ballVec.xVec = -1;
+          ballVec.yVec = ((ball.y - (room.player2.height + room.barLength / 2)) * 2) / room.barLength;
+        } else {
+          isGameOver = true;
+          room.player2.score++;
+        }
+    } 
+
+    // ボールの移動の更新
+    if (!isGameOver) {
+      ball.x += ballVec.xVec * ballVec.speed;
+      ball.y += ballVec.yVec * ballVec.speed;
+    // ゲーム終了の場合、初期位置に戻す
+    } else {
+      ball.x = GameGateway.ballInitialX;
+      ball.y = GameGateway.ballInitialY;
+      // ボールの方向をランダムに設定
+      ballVec.xVec = room.isPlayer1Turn ? 1: -1;
+      ballVec.yVec = this.setBallVec();
+      room.isPlayer1Turn = !room.isPlayer1Turn;
+
+      // ゲーム終了の場合、ポイントを更新
+      if (room.gameSetting.matchPoints === room.player1.score) {
+        await this.finishGame(room, room.player1, room.player2);
+      } else if (room.gameSetting.matchPoints === room.player2.score) {
+        await this.finishGame(room, room.player2, room.player1);
+      } else {
+        // ポイントを更新
+        this.server.to(room.roomName).emit('updateScore', [room.player1.score, room.player2.score]);
+        room.gameSetting.player1Score = room.player1.score;
+        room.gameSetting.player2Score = room.player2.score;
+      }
+    }
+    this.sendGameInfo(room);
+  }
+
+  // playerとballの情報を更新
+  sendGameInfo(room: RoomInfo) {
+    const gameInfo: GameInfo = {
+      height1: room.player1.height,
+      height2: room.player2.height,
+      ball: room.ball,
+    }
+    // ルームの参加者に送信
+    this.server.to(room.roomName).emit('updateGame', gameInfo);
+  }
+
+  // ゲーム終了
+  async finishGame(room: RoomInfo, winner: Player, loser: Player) {
+    const finishedGameInfo: FinishedGameInfo = {
+      winnerName: winner.name,
+      loserName: loser.name,
+      winnerScore: winner.score,
+      loserScore: loser.score,
+    };
+
+    room.supporters.map((supporter) => {
+      // null はscore
+      supporter.emit('gameFinished', null, finishedGameInfo);
+    });
+
+    // ポイントを更新
+    winner.socket.emit('gameFinished', winner.score + room.rewards, finishedGameInfo);
+
+    // ポイントを更新
+    loser.socket.emit('gameFinished', Math.max(loser.score - room.rewards, 0), finishedGameInfo);
+
+    await this.recordsRepository.createGameRecord({
+      winnerId: winner.id,
+      loserId: loser.id,
+      winnerScore: winner.score,
+      loserScore: loser.score,
+    });
+
+    // プレイ中のユーザーから削除 roomメンバー全て
+    this.removePlayingUsersFromRoom(room);
+
+    // roomを削除
+    this.gameRooms = this.gameRooms.filter((r) => r.roomName !== room.roomName);
+  }
+
+  // 開始中のゲームをキャンセル
+  @SubscribeMessage('cancelOngoingBattle')
+  cancelGame(@ConnectedSocket() socket: Socket) {
+    const room = this.gameRooms.find((room) => {
+      room.player1.socket.id === socket.id || room.player2.socket.id === socket.id
+    });
+    if (!room) {
+      socket.emit('error');
+      // プレイ中のユーザーから削除
+      const id = this.getIdFromSocket(socket);
+      this.removePlayingUserId(id);
+    } else {
+      // キャンセルをクライアントに通知
+      this.server.to(room.roomName).emit('cancelOngoingBattle');
+      this.gameRooms = this.gameRooms.filter((room) => room.player1.socket.id !== socket.id && room.player2.socket.id !== socket.id);
+      // プレイ中のユーザーから削除
+      this.removePlayingUsersFromRoom(room);
+    }
   }
 }

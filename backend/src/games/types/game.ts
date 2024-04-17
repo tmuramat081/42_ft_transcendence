@@ -79,7 +79,7 @@ export type BallVec = {
 // ゲームの設定
 export type GameSetting = {
     difficulty: DiffucultyLevel;
-    matchPoint: number;
+    matchPoints: number;
     player1Score: number;
     player2Score: number;
 };
