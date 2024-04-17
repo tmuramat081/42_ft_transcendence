@@ -2,8 +2,7 @@ import { HTTP_METHOD } from '@/constants/api.constant';
 import { Valueof } from './../../../../backend/src/common/types/global.d';
 import { useState } from 'react';
 
-const API_URL = process.env.API_URL ?? 'http://localhost:3001';
-
+const API_URL = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3001';
 export interface UseApiReturnType<T> {
   // レスポンスデータ
   data: T | null;
@@ -57,15 +56,22 @@ export default function useApi<T>(initialRequest: RequestParams): UseApiReturnTy
     setError(null);
     try {
       const { path, method = 'GET', query, body, options = {} } = { ...initialRequest, ...params };
+
       const fetchOptions: RequestInit = {
         method,
+        credentials: 'include',
         headers: {
-          'Content-Type': 'application/json',
           ...options.headers,
-        },
+        } as Record<string, string>,
         ...options,
       };
-      if (method === HTTP_METHOD.POST || method === HTTP_METHOD.PATCH) {
+      if (body instanceof FormData) {
+        fetchOptions.body = body;
+      } else if (
+        (typeof body === 'object' && method === HTTP_METHOD.POST) ||
+        method === HTTP_METHOD.PATCH
+      ) {
+        fetchOptions.headers = { ...fetchOptions.headers, 'Content-Type': 'application/json' };
         fetchOptions.body = JSON.stringify(body);
       }
       const url = new URL(`${API_URL}/${path}`);

@@ -1,5 +1,8 @@
 /* eslint-disable */
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { Injectable, UnauthorizedException, BadRequestException,
+  NotFoundException, ForbiddenException,
+	HttpException,
+	InternalServerErrorException } from '@nestjs/common';
 import { UserDto42 } from '../users/dto/user42.dto';
 import { UsersService } from '../users/users.service';
 import { User } from '../users/entities/user.entity';
@@ -50,18 +53,16 @@ export class AuthService {
     const user = await this.usersService.findOne(userId);
 
     if (!user) {
-      return false;
+      //return false;
+      throw new NotFoundException('User not found');
+      
     }
-
-    console.log('user: ', user);
 
     const verified = speakeasy.totp.verify({
       secret: user.twoFactorAuthSecret,
       encoding: 'base32',
       token: code,
     });
-
-    console.log('verified: ', verified);
 
     // first time
     // update2fa

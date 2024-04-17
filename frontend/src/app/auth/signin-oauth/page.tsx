@@ -1,10 +1,7 @@
 /* eslint-disable */
-"use client";
-import { useState } from 'react';
-import Form from '@/components/auth/signin-oauth';
+'use client';
+import Form from '@/components/auth/signin-oauth/signin-oauth';
 
 export default function Page() {
-    return (
-        <Form />
-    )
+  return <Form />;
 }

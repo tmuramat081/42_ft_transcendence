@@ -1,5 +1,5 @@
 /* eslint-disable */
-"use client"
+'use client';
 import { useState, useEffect } from 'react';
 //import axios from 'axios';
 //import { useHistory, useLocation } from 'react-router-dom';
@@ -7,13 +7,12 @@ import { useState, useEffect } from 'react';
 //import Router from 'next/router'
 //import { redirect } from 'next/navigation'
 //https://nextjs.org/docs/app/building-your-application/routing/linking-and-navigating
-import { useRouter } from 'next/navigation'
-import { jwtDecode } from "jwt-decode";
+import { useRouter } from 'next/navigation';
+import { jwtDecode } from 'jwt-decode';
 import { useAuth } from '@/providers/useAuth';
 
 import { usePublicRoute } from '@/hooks/routes/usePublicRoute';
-import Modal from '../../components/users/2fa/modal'; // Modalコンポーネントをインポート
-
+import Modal from '../../users/2fa/twoFaModal'; // Modalコンポーネントをインポート
 
 // SSRならできる。useEffectは使えなくなる
 //import { cookies } from 'next/headers'
@@ -23,13 +22,12 @@ import Modal from '../../components/users/2fa/modal'; // Modalコンポーネン
 //     return encryptedSessionData ? JSON.parse(jwtDecode(encryptedSessionData)) : null
 // }
 
-
 type User = {
-    userId: number,
-    userName: string,
-    email: string,
-    password: string,
-    createdAt: Date,
+  userId: number;
+  userName: string;
+  email: string;
+  password: string;
+  createdAt: Date;
 };
 
 // export default function Form() {
@@ -111,7 +109,7 @@ type User = {
 //     //     })
 //     //     .catch((error) => {
 //     //         console.error('Error:', error);
-            
+
 //     //         // redirect
 //     //     });
 //     // }
@@ -145,7 +143,6 @@ type User = {
 
 //         // console.log('送信されたデータ:', { userName, password });
 
-
 //         signin( userName, password );
 //         //getCurrentUser();
 //         // 送信後の処理（例: フォームをクリアする）
@@ -158,7 +155,7 @@ type User = {
 //     if (loading || loginUser) {
 //         return <p>loading...</p>
 //     }
-    
+
 //     return (
 //         <div>
 //         <form onSubmit={handleSubmit}>
@@ -169,7 +166,7 @@ type User = {
 //             value={userName}
 //             onChange={(e) => setUserName(e.target.value)}
 //             />
-    
+
 //             <label htmlFor="password">パスワード:</label>
 //             <input
 //             type="password"
@@ -177,14 +174,14 @@ type User = {
 //             value={password}
 //             onChange={(e) => setPassword(e.target.value)}
 //             />
-    
+
 //             <button type="submit">送信</button>
 
 //             {/* <p>AccessToken: {token}</p> */}
-            
-//             { loginUser && 
+
+//             { loginUser &&
 //                 <p>user: {loginUser.userName}</p>
-//             } { !loginUser && 
+//             } { !loginUser &&
 //                 <p>user: </p>
 //             }
 
@@ -200,166 +197,138 @@ type User = {
 // }
 
 export default function Form() {
-    const [userName, setUserName] = useState('');
-    const [password, setPassword] = useState('');
+  const [userName, setUserName] = useState('');
+  const [password, setPassword] = useState('');
 
-    const [validationUserId, setValidationUserId] = useState(0);
-    const [show2Fa, setShow2Fa] = useState(false);
-    const [code, setCode] = useState('');
+  const [validationUserId, setValidationUserId] = useState(0);
+  const [show2Fa, setShow2Fa] = useState(false);
+  const [code, setCode] = useState('');
 
-    const router = useRouter();
-    const {signin, loginUser, getCurrentUser, loading} = useAuth();
+  const router = useRouter();
+  const { signin, loginUser, getCurrentUser, loading } = useAuth();
 
-    // useEffect
-    useEffect(() => {
-        getCurrentUser();
-    }, []);
+  // useEffect
+  useEffect(() => {
+    getCurrentUser();
+  }, []);
 
-    // signin関数をこっちに戻す
-    // id, statusによって2faに飛ばすかどうかを判定
+  // signin関数をこっちに戻す
+  // id, statusによって2faに飛ばすかどうかを判定
 
-    // フォーム
+  // フォーム
 
-    console.log(show2Fa)
+  console.log(show2Fa);
 
-    const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
-        e.preventDefault();
-        // ここでフォームのデータを処理します
-        fetch('http://localhost:3001/users/signin', {
-            method: 'POST',
-            credentials: 'include',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ userName, password }),
-        })
-        .then ((res) => {
-            // /console.log(res.json());
-            return res.json();
-        })
-        //.then((res) => res.json())
-        .then((data) => {
-            if (data.status === "SUCCESS" && data.userId === undefined) {
-                //console.log('Success:', data.accessToken);
-                getCurrentUser();
-                router.push('/');
-            } else if (data.status === "2FA_REQUIRED" && data.userId !== undefined) {
-                setValidationUserId(data.userId);
-                setShow2Fa(true);
-            }
-        })
-        .catch((error) => {
-            console.error('Error:', error);
-        });
+  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    // ここでフォームのデータを処理します
+    const API_URL = process.env.NEXT_PUBLIC_API_URL;
+    fetch(`${API_URL}/users/signin`, {
+      method: 'POST',
+      credentials: 'include',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ userName, password }),
+    })
+      .then((res) => {
+        // /console.log(res.json());
+        return res.json();
+      })
+      //.then((res) => res.json())
+      .then((data) => {
+        if (data.status === 'SUCCESS' && data.userId === undefined) {
+          //console.log('Success:', data.accessToken);
+          getCurrentUser();
+          router.push('/');
+        } else if (data.status === '2FA_REQUIRED' && data.userId !== undefined) {
+          setValidationUserId(data.userId);
+          setShow2Fa(true);
+        }
+      })
+      .catch((error) => {
+        console.error('Error:', error);
+      });
 
-        console.log('送信されたデータ:', { userName, password });
+    console.log('送信されたデータ:', { userName, password });
 
+    //signin( userName, password );
+    //getCurrentUser();
+    // 送信後の処理（例: フォームをクリアする）
+    setUserName('');
+    setPassword('');
+  };
 
-        //signin( userName, password );
-        //getCurrentUser();
-        // 送信後の処理（例: フォームをクリアする）
-        setUserName('');
-        setPassword('');
-    };
+  const handleSubmit2fa = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    // ここに2FAコードを検証するロジックを追加
+    console.log('Submitted 2FA code:', code);
+    console.log('validationUserId:', validationUserId);
 
-    const handleSubmit2fa = (e: React.FormEvent<HTMLFormElement>) => {
-        e.preventDefault();
-        // ここに2FAコードを検証するロジックを追加
-        console.log('Submitted 2FA code:', code);
-        console.log('validationUserId:', validationUserId);
-  
-        fetch('http://localhost:3001/auth/2fa/verify', {
-          method: 'POST',
-          credentials: 'include',
-          headers: {
-                'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({ userId: validationUserId, code: code }),
-          })
-          .then((res) => {
-              //console.log(res.data);
-              return res.json();
-          })
-          .then((data) => {
-            if (data.accessToken !== undefined) {
-                console.log('Success:', data.accessToken);
-                //setToken(data.accessToken);
-                //router.push('/');
-                getCurrentUser();
-            } else {
-                // errorメッセージを表示
+    fetch('http://localhost:3001/auth/2fa/verify', {
+      method: 'POST',
+      credentials: 'include',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ userId: validationUserId, code: code }),
+    })
+      .then((res) => {
+        //console.log(res.data);
+        return res.json();
+      })
+      .then((data) => {
+        if (data.accessToken !== undefined) {
+          console.log('Success:', data.accessToken);
+          //setToken(data.accessToken);
+          //router.push('/');
+          getCurrentUser();
+        } else {
+          // errorメッセージを表示
+        }
+      })
+      .catch((error) => {
+        console.error('Error:', error);
 
+        // redirect
+      });
+  };
 
-            }
-          })
-          .catch((error) => {
-              console.error('Error:', error);
-  
-              // redirect
-          });
-      };
+  // modal
 
-    // modal
+  // 読み込み中はローディングを表示
+  // 一瞬見れる問題を解決
+  if (loading || loginUser) {
+    return <p>loading...</p>;
+  }
 
-    // 読み込み中はローディングを表示
-    // 一瞬見れる問題を解決
-    if (loading || loginUser) {
-        return <p>loading...</p>
-    }
+  return (
+    <div>
+      <form onSubmit={handleSubmit}>
+        <label htmlFor="username">名前:</label>
+        <input
+          type="text"
+          id="userName"
+          value={userName}
+          onChange={(e) => setUserName(e.target.value)}
+        />
+        <label htmlFor="password">パスワード:</label>
+        <input
+          type="password"
+          id="password"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+        />
+        <button type="submit">送信</button>
+        {/* <p>AccessToken: {token}</p> */}
+        {loginUser && <p>user: {(loginUser as User).userName}</p>} {!loginUser && <p>user: </p>}
+      </form>
 
-    return (
-        <div>
-        <form onSubmit={handleSubmit}>
-            <label htmlFor="username">名前:</label>
-            <input
-            type="text"
-            id="userName"
-            value={userName}
-            onChange={(e) => setUserName(e.target.value)}
-            />
-    
-            <label htmlFor="password">パスワード:</label>
-            <input
-            type="password"
-            id="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            />
-    
-            <button type="submit">送信</button>
+      <button onClick={() => router.push('/auth/signup')}>signup</button>
 
-            {/* <p>AccessToken: {token}</p> */}
-            { loginUser && 
-                <p>user: {(loginUser as User).userName}</p>
-            } { !loginUser && 
-                <p>user: </p>
-            }
-
-        </form>
-
-        <Modal show={show2Fa} onClose={() => {
-            // 無効リクエストを送る
-        }}>
-            {/* 2FAフォームコンポーネント */}
-            <form onSubmit={handleSubmit2fa}>
-
-            {/* {qrCodeUrl && <img src={qrCodeUrl} alt="QR Code" />} */}
-            <input
-                type="text"
-                value={code}
-                onChange={(e) => setCode(e.target.value)}
-                placeholder="6桁のコード"
-                maxLength={6}
-            />
-            <button type="submit">確認</button>
-            </form>
-        </Modal>
-
-        <button onClick={() => router.push('/auth/signup')}>signup</button>
-
-        <button>
-            <a href="http://localhost:3001/auth/callback/42">42ログイン</a>
-        </button>
-        </div>
-    )
+      <button>
+        <a href="http://localhost:3001/auth/callback/42">42ログイン</a>
+      </button>
+    </div>
+  );
 }

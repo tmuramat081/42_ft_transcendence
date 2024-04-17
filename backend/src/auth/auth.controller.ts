@@ -27,7 +27,7 @@ import { UsersService } from '../users/users.service';
 @Controller('auth')
 export class AuthController {
   constructor(
-    private httpService: HttpService,
+    //private httpService: HttpService,
     private jwtService: JwtService,
     private authService: AuthService,
     private usersService: UsersService,
@@ -61,7 +61,13 @@ export class AuthController {
     const jwtPayload = {userId: req.user.userId, userName: req.user.userName, email: req.user.email, icon: req.user.icon};
 
     const accessToken: string = await this.jwtService.sign(jwtPayload);
-    res.cookie('login42', accessToken, { httpOnly: true });
+
+    res.cookie('login42', accessToken, { 
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
+    });
+
     res.redirect(process.env.FRONTEND_URL + '/auth/signin-oauth');
   }
 
@@ -136,37 +142,50 @@ export class AuthController {
   async login42(@Req() req, @Res({ passthrough: true }) res: Response) {
       const accessToken = req?.cookies['login42'];
 
-    // アクセストークンを解析
+      // アクセストークンがない場合
+
+      // アクセストークンを解析
       const payload = this.jwtService.decode(accessToken);
 
       const userData: UserDto42 = {
         email: payload.email,
-      password: payload.userName,
-      userName: payload.userName,
-      name42: payload.userName,
+        password: payload.userName,
+        userName: payload.userName,
+        name42: payload.userName,
         icon: payload.icon,
       }; 
 
     // ユーザーを検証
+    //   const user = await this.authService.validateUser(userData);
+
+    // if (!user) {
+    //     throw new UnauthorizedException('Invalid credentials');
+    // }
+
+    try {
       const user = await this.authService.validateUser(userData);
-
-    if (!user) {
-        throw new UnauthorizedException('Invalid credentials');
-    }
-
-    // 2faの検証
-    if (user.twoFactorAuth) {
+          // 2faの検証
+      if (user.twoFactorAuth) {
         return {userId: user.userId, status: '2FA_REQUIRED'};
       }
 
-      const payload2: JwtPayload = { userId: user.userId, userName: user.userName, email: user.email, twoFactorAuth: false };
-      const accessToken2: string = this.jwtService.sign(payload2);
-      res.cookie('jwt', accessToken2, { httpOnly: true });
+      // const payload2: JwtPayload = { userId: user.userId, userName: user.userName, email: user.email, twoFactorAuth: false };
+      // const accessToken2: string = this.jwtService.sign(payload2);
+      const accessToken2 = await this.usersService.generateJwt(user);
 
-    // cookie削除
+      res.cookie('jwt', accessToken2, { 
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
+      });
+
+      // cookie削除
       res.clearCookie('login42');
 
       return {userId: undefined, status: 'SUCCESS'};
+    } catch (error) {
+      throw error;
+    }
   }
 
   // idからuserを取得するようにする
@@ -190,6 +209,7 @@ export class AuthController {
     // res.cookie('jwt', accessToken, { httpOnly: true })
     // return JSON.stringify({"accessToken": accessToken});
 
+    try {
       console.log('verify');
       console.log(dto);
 
@@ -197,27 +217,36 @@ export class AuthController {
 
       console.log(user);
 
-    // dtowを渡すように変更する？ userを渡すようにする？
+      // dtowを渡すように変更する？ userを渡すようにする？
       const verified = await this.authService.verify2fa(dto.userId, dto.code);
-    if (!verified) {
-        throw new UnauthorizedException('Invalid code');
-    }
+      if (!verified) {
+          throw new UnauthorizedException('Invalid code');
+      }
 
       console.log('verified');
 
-      const payload: JwtPayload = { userId: user.userId, userName: user.userName, email: user.email, twoFactorAuth: true };
-      const accessToken: string = this.jwtService.sign(payload);
-      res.cookie('jwt', accessToken, { httpOnly: true });
+      // const payload: JwtPayload = { userId: user.userId, userName: user.userName, email: user.email, twoFactorAuth: true };
+      // const accessToken: string = this.jwtService.sign(payload);
+      const accessToken = await this.usersService.generateJwt(user);
+
+      res.cookie('jwt', accessToken, { 
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
+      });
+
       return JSON.stringify({'accessToken': accessToken});
+    } catch (error) {
+      throw error;
+    }
   }
 
   @UseGuards(JwtAuthGuard)
   @Post('/2fa/disable')
-  async disable2fa(@Req() req, @Res({ passthrough: true }) res) {
+  async disable2fa(@Req() req, @Res({ passthrough: true } ) _res: Response) {
       const user = req.user;
-      console.log('disable');
-      const resultUser = await this.authService.disable2fa(user);
-    res.status(200).json({ message: '2fa disabled' });
+      await this.authService.disable2fa(user);
+      return JSON.stringify({'message': '2fa disabled'});
   }
 
   // // qrcodeを出力
@@ -229,13 +258,9 @@ export class AuthController {
   async get2faCode(@Req() req) {
       const user = req.user;
 
-      console.log('generate');
-    // const code = await this.authService.get2faCode(user)
       const code = await this.authService.generate2faAuthSecret(user);
       const qrcode = await this.authService.generate2faQrCode(code);
-    //const img: string = "<img src=" + qrcode + ">"
-    //return img
 
-      return JSON.stringify({'qrCord': qrcode});
+      return JSON.stringify({'qrCord': qrcode });
   }
 }
