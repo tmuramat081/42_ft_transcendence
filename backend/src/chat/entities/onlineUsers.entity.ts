@@ -13,7 +13,4 @@ export class OnlineUsers {
 
   @Column()
   icon: string;
-
-  @Column({ default: false })
-  me: boolean;
 }

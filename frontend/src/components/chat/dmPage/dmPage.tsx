@@ -1,75 +1,85 @@
+/*eslint-disable*/
 'use client';
 import React, { useState, useEffect, useCallback } from 'react';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { useWebSocket } from '@/providers/webSocketProvider';
-// import { useAuth } from '@/providers/useAuth';
-import { UserInfo, DirectMessage } from '@/types/chat/chat';
+import { useAuth } from '@/providers/useAuth';
+import { UserInfo, UserData, DirectMessage } from '@/types/chat/chat';
+import { User } from '@/types/user';
 import './dmPage.css';
 
 export default function DMPage({ params }: { params: string }) {
   const router = useRouter(); //Backボタンを使うためのrouter
   const { socket } = useWebSocket();
-  // const { getCurrentUser } = useAuth();
+  const { getCurrentUser, loginUser } = useAuth();
   const [message, setMessage] = useState('');
-  const [sender, setSender] = useState<UserInfo>({
-    ID: -1,
-    name: '',
-    icon: '',
-  });
-  const [receiver, setReceiver] = useState<UserInfo>({
-    ID: -1,
-    name: '',
-    icon: '',
+  const [sender, setSender] = useState<UserInfo>({ userId: 0, userName: '', icon: '' });
+  const [receiver, setReceiver] = useState<UserInfo>({ userId: 0, userName: '', icon: '' });
+  const [userinfo, setUserInfo] = useState<UserData>({
+    user: {
+      userId: -1,
+      userName: '',
+      icon: '',
+    },
+    email: '',
+    createdAt: '',
+    name42: '',
   });
   const [dmLogs, setDMLogs] = useState<DirectMessage[]>([]);
-
-  // ログインユーザー情報の取得
-  // const user = getCurrentUser();
-  // console.log('user:', user);
+  const [blocked, setBlocked] = useState(false);
 
   useEffect(() => {
-    if (!socket) return;
-    console.log('params:', params);
+    if (!socket || !params) return;
+    // console.log('params:', params);
 
-    socket.emit('getCurrentUser');
+    getCurrentUser()
+      .then((user) => {
+        socket.emit('getCurrentUser', user);
+      })
+      .catch((error) => {
+        console.error('Error getting user:', error);
+      });
     socket.emit('getRecipient', params);
-  }, [socket, params]);
+    socket.emit('getUserInfo', params);
+  }, [socket]);
 
   useEffect(() => {
     if (!socket) return;
 
     socket.on('currentUser', (user: UserInfo) => {
-      const sender: UserInfo = {
-        ID: user.ID,
-        name: user.name,
-        icon: user.icon,
-      };
-      setSender(sender);
-      console.log('sender:', sender);
+      setSender(user);
     });
 
     socket.on('recipient', (recipient: UserInfo) => {
       const receiver: UserInfo = {
-        ID: recipient.ID,
-        name: recipient.name,
+        userId: recipient.userId,
+        userName: recipient.userName,
         icon: recipient.icon,
       };
       setReceiver(receiver);
       console.log('receiver', receiver);
     });
 
+    socket.on('userInfo', (userData: UserData) => {
+      setUserInfo(userData);
+    });
+
     return () => {
       socket.off('currentUser');
       socket.off('recipient');
+      socket.off('userInfo');
     };
   }, [socket, params]);
 
   useEffect(() => {
     if (!socket) return;
-    if (sender.name && receiver.name) {
-      console.log(`${sender.name} start DM with ${receiver.name}`);
-      socket.emit('startDM', { sender: sender, receiver: receiver });
+    console.log('sender:', sender);
+  }, [sender]);
+
+  useEffect(() => {
+    if (!socket) return;
+    if (sender.userName && receiver.userName) {
       socket.emit('getDMLogs', { sender: sender, receiver: receiver });
     }
   }, [sender, receiver, socket]);
@@ -79,7 +89,6 @@ export default function DMPage({ params }: { params: string }) {
     socket.on('dmLogs', (directMessages: DirectMessage[]) => {
       console.log('Received DMLogs from server:', directMessages);
       setDMLogs(directMessages);
-      console.log('dmLogs:', dmLogs);
     });
 
     return () => {
@@ -89,38 +98,76 @@ export default function DMPage({ params }: { params: string }) {
 
   const onClickSubmit = useCallback(() => {
     if (!socket) return;
-    console.log(`${sender.name} submitting DM to ${receiver.name}: ${message}`);
+    console.log(`${sender.userName} submitting DM to ${receiver.userName}: ${message}`);
     socket.emit('sendDM', { sender: sender, receiver: receiver, message: message });
     setMessage('');
   }, [sender, receiver, message, socket]);
 
+  const handleBlockUser = useCallback(() => {
+    if (!socket) return;
+    if (blocked) {
+      console.log(`${sender.userName} unblocking ${receiver.userName}`);
+      socket.emit('unblockUser', { sender: sender, receiver: receiver });
+      setBlocked(false);
+      socket.emit('getDMLogs', { sender: sender, receiver: receiver });
+    } else {
+      console.log(`${sender.userName} blocking ${receiver.userName}`);
+      socket.emit('blockUser', { sender: sender, receiver: receiver });
+      setBlocked(true);
+      setDMLogs([]);
+    }
+  }, [sender, receiver, socket, blocked]);
+
   return (
     <div className="dm-container">
-      <h1>Direct Messages</h1>
+      {/* Backボタン */}
+      <div className="back-button">
+        <button
+          onClick={() => {
+            router.back();
+          }}
+        >
+          Back
+        </button>
+      </div>
       {/* DM 相手の情報 */}
       <div className="recipient-info">
-        <h4>Recipient</h4>
-        <Image
-          src={receiver.icon || ''}
-          alt={receiver.name || ''}
-          className="recipient-icon"
-          width={50}
-          height={50}
-        />
-        <div className="recipient-name">{receiver?.name}</div>
+        <div className="user">
+          <h4>{receiver.userName}</h4>
+          <Image
+            src={receiver.icon || ''}
+            alt={receiver.userName || ''}
+            className="recipient-icon"
+            width={50}
+            height={50}
+          />
+          {/* ブロックボタン */}
+          <button
+            className="block-button"
+            onClick={handleBlockUser}
+          >
+            {blocked ? 'Unblock' : 'Block'}
+          </button>
+        </div>
+        {/* ユーザーの追加情報 */}
+        <div className="user-info">
+          <p>Email: {userinfo.email}</p>
+          <p>Created At: {userinfo.createdAt}</p>
+          <p>42 Name: {userinfo.name42}</p>
+        </div>
       </div>
       {/* DM 履歴 */}
       <div
         className="dm-messages"
-        style={{ overflowY: 'auto', maxHeight: '300px' }}
+        style={{ overflowY: 'auto', maxHeight: '400px' }}
       >
         {dmLogs.map((message, index) => (
           <div
             key={index}
-            className={`message-bubble ${message.sender === sender.name ? 'self' : 'other'}`}
+            className={`message-bubble ${message.sender === sender.userName ? 'self' : 'other'}`}
           >
             <Image
-              src={message.sender === sender.name ? sender.icon : receiver.icon}
+              src={message.sender === sender.userName ? sender.icon : receiver.icon}
               alt="User Icon"
               className="icon"
               width={50}
@@ -143,15 +190,6 @@ export default function DMPage({ params }: { params: string }) {
           onChange={(event) => setMessage(event.target.value)}
         />
         <button onClick={onClickSubmit}>Send</button>
-      </div>
-      <div className="back-button">
-        <button
-          onClick={() => {
-            router.back();
-          }}
-        >
-          Back
-        </button>
       </div>
     </div>
   );
