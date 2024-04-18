@@ -1,13 +1,16 @@
 'use client';
 import { APP_ROUTING } from '@/constants/routing.constant';
 import { useWebSocket } from '@/providers/webSocketProvider';
-import { AppBar, Avatar, Box, Link, Toolbar } from '@mui/material';
+import { AppBar, Avatar, Badge, Box, Link, Toolbar } from '@mui/material';
 import LogoutIcon from '@mui/icons-material/Logout';
 import { useAuth } from '@/providers/useAuth';
+import { useEffect, useState } from 'react';
+import { SOCKET_EVENTS } from '@/constants/socket.constant';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? '';
 
 const GlobalHeader = () => {
+  const [isConnected, setIsConnected] = useState<boolean>(false);
   const { socket } = useWebSocket();
   const { loginUser } = useAuth();
 
@@ -31,6 +34,27 @@ const GlobalHeader = () => {
         console.error(error);
       });
   };
+
+  useEffect(() => {
+    if (!socket) return;
+
+    socket.on(SOCKET_EVENTS.COMMON.CONNECT, () => {
+      setIsConnected(true);
+    });
+
+    socket.on(SOCKET_EVENTS.COMMON.DISCONNECT, () => {
+      setIsConnected(false);
+    });
+
+    socket.on(SOCKET_EVENTS.COMMON.ERROR, (error: string) => {
+      console.error(error);
+    });
+
+    return () => {
+      socket.off(SOCKET_EVENTS.COMMON.CONNECT);
+      socket.off(SOCKET_EVENTS.COMMON.DISCONNECT);
+    };
+  }, [socket]);
 
   return (
     <Box sx={{ flexGrow: 1 }}>
@@ -58,15 +82,33 @@ const GlobalHeader = () => {
                 href={APP_ROUTING.USER.UPDATE.path}
                 color="inherit"
               >
-                <Avatar
-                  alt={loginUser.userName}
-                  src={`${API_URL}/api/uploads/${loginUser.icon}`}
-                  sx={{ width: 32, height: 32 }}
+                <Badge
+                  overlap="circular"
+                  anchorOrigin={{
+                    vertical: 'bottom',
+                    horizontal: 'right',
+                  }}
+                  variant="dot"
+                  color="default"
+                  invisible={!isConnected}
+                  sx={{
+                    '& .MuiBadge-dot': {
+                      backgroundColor: '#ffeb3b',
+                    }
+                  }}
                 >
-                  {loginUser.icon}
-                </Avatar>
+                  <Avatar
+                    alt={loginUser.userName}
+                    src={`${API_URL}/api/uploads/${loginUser.icon}`}
+                    sx={{ width: 32, height: 32 }}
+                  >
+                    {loginUser.icon}
+                  </Avatar>
+                </Badge>
               </Link>
             )}
+            {/* 通知メニュー TODO */}
+            
             {/* ログアウトボタン */}
             <Link
               color="secondary"
