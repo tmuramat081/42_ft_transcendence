@@ -210,7 +210,11 @@ export class UsersController {
     @Post('/signout')
     async SignOut(@Req() req, @Res({ passthrough: true }) res: Response) : Promise<string> {
         //cookieからアクセストークンを削除
-        res.clearCookie('jwt');
+        res.clearCookie('jwt', {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === 'production',
+            sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
+        });
         return JSON.stringify({"status": "SUCCESS"});
     }
 
