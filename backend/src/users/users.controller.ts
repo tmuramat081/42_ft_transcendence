@@ -211,7 +211,6 @@ export class UsersController {
     async SignOut(@Req() req, @Res({ passthrough: true }) res: Response) : Promise<string> {
         //cookieからアクセストークンを削除
         res.clearCookie('jwt');
-
         return JSON.stringify({"status": "SUCCESS"});
     }
 
@@ -223,94 +222,30 @@ export class UsersController {
     //@UseGuards(JwtAuthGuard, TwoFactorAuthGuard)
     @Post('/update')
     async UpdateUser(@Body () userData: UpdateUserDto, @Req() req,  @Res({ passthrough: true }) res: Response) {
-        // // リクエストハンドリング
-        // if (!userData.userName || !userData.email) {
-        //     throw new ForbiddenException("Please enter all fields");
-        //     //return res.status(400).json({ message: 'Please enter all fields' });
-        // }
-
-        // // パスワードの変更をした場合
-        // // リクエストの検証
-        // if (userData.password !== userData.passwordConfirm) {
-        //     throw new ForbiddenException("Passwords do not match");
-        //     //return res.status(400).json({ message: 'Passwords do not match' });
-        // }
-
-        // // アクセストークンを更新
-        // // idにした方がいい
-        // // var accessToken: string = await this.usersService.updateUser(req.user.userName, userData);
-        // // if (accessToken === null) {
-        // //     //console.log("Invalid credentials");
-        // //     throw new ForbiddenException("Invalid credentials");
-        // //     //return res.status(400).json({ message: 'Invalid credentials' });
-        // // }
-
-        // // update
-        // const user: User = await this.usersService.updateUser(req.user.userId, userData);
-        // if (user === null) {
-        //     throw new ForbiddenException("Invalid credentials");
-        //     //return res.status(400).json({ message: 'Invalid credentials' });
-        // }
-
-        // // passwordの確認
-        // // 入力データと更新後のデータを比較
-        // // if (await bcrypt.compare(userData.password, user.password) === false) {
-        // //     throw new ForbiddenException("Passwords do not match");
-        // //     //return res.status(400).json({ message: 'Passwords do not match' });
-        // // }
-
-        // const accessToken: string = await this.usersService.generateJwt(user);
-        
-        // if (accessToken === null) {
-        //     //console.log("Invalid credentials");
-        //     throw new ForbiddenException("Invalid credentials");
-        //     //return res.status(400).json({ message: 'Invalid credentials' });
-        // }
-
-        // //cookieにアクセストークンを保存
-        // res.cookie('jwt', accessToken, { httpOnly: true })
-
-        // //redisにアクセストークンを保存
-
-        // return JSON.stringify({"accessToken": accessToken});
-
-
-        try {
-            // passwoedは必須
-            //現在パスワードが一致するか確認
-            // 名前からユーザーを取得
-            const user: User = await this.usersService.updateUser(req.user, userData);
-            if (!user) {
-                throw new ForbiddenException("Invalid credentials");
-            }
-
-            console.log("user: ", user);
-
-            //データを更新して、アクセストークンを返す
-            const accessToken: string = await this.usersService.generateJwt(user);
-
-            if (!accessToken) {
-                throw new ForbiddenException("Invalid credentials");
-            }
-
-            console.log("accessToken: " + accessToken);
-
-            //cookieにアクセストークンを保存
-            // localstrageよりcookieの方が安全
-            // XSS, 有効期限の観点からもcookieの方が良い
-            res.cookie('jwt', accessToken, { 
-                httpOnly: true,
-                secure: process.env.NODE_ENV === 'production',
-                sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
-            })
-
-            // //redisにアクセストークンを保存
-
-            //return accessToken;
-            return JSON.stringify({"accessToken": accessToken});
-        } catch (error) {
-            throw error;
+        // passwoedは必須
+        //現在パスワードが一致するか確認
+        // 名前からユーザーを取得
+        const user: User = await this.usersService.updateUser(req.user, userData);
+        if (!user) {
+            throw new ForbiddenException("Invalid credentials");
         }
+
+        //データを更新して、アクセストークンを返す
+        const accessToken: string = await this.usersService.generateJwt(user);
+
+        if (!accessToken) {
+            throw new ForbiddenException("Invalid credentials");
+        }
+
+        //cookieにアクセストークンを保存
+        // localstrageよりcookieの方が安全
+        // XSS, 有効期限の観点からもcookieの方が良い
+        res.cookie('jwt', accessToken, { 
+            httpOnly: true,
+            secure: process.env.NODE_ENV === 'production',
+            sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
+        })
+        return JSON.stringify({"accessToken": accessToken});
     }
 
 
