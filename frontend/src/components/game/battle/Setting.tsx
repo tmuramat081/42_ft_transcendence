@@ -101,13 +101,13 @@ export const Setting = () => {
 
     // パスが変わったらゲームをキャンセル 
     // Wait.tsxを参照
-    useEffect(() => {
-        const cancelOngoingBattle = () => {
-            socket.emit('cancelOngoingBattle');
-        };
+    // useEffect(() => {
+    //     const cancelOngoingBattle = () => {
+    //         socket.emit('cancelOngoingBattle');
+    //     };
 
 
-    }, []);
+    // }, []);
 
     // 不要では？
     useEffect(() => {
@@ -122,7 +122,7 @@ export const Setting = () => {
 
     // 設定を送信する。ゲーム開始
     const handleSubmit = () => {
-        socket.emit('compleateSetting', {difficulty, matchPoint, player1DefaultScore, player2DefaultScore});
+        socket.emit('compleateSetting', {difficulty, matchPoint, player1Score: player1DefaultScore, player2Score: player2DefaultScore});
     }
 
     return (

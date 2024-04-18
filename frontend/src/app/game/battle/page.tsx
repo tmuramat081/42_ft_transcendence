@@ -6,6 +6,7 @@ import { FinishedGameInfo } from "@/types/game/game";
 import { useState } from "react";
 import { Layout } from "@/components/game/common/Layout";
 import { Result } from "@/components/game/battle/Result";
+import { Play} from "@/components/game/battle/Play";
 
 // test
 import { useEffect } from "react";
@@ -18,7 +19,7 @@ const defaultFinishedGameInfo: FinishedGameInfo = {
 };
 
 export default function Battle() {
-    const playState = usePlayStateStore();
+    const { playState } = usePlayStateStore();
     const [finishedGameInfo, setFinishedGameInfo] = useState<FinishedGameInfo>(defaultFinishedGameInfo);
 
     // test
@@ -28,13 +29,18 @@ export default function Battle() {
         //updatePlayState(PlayState.stateFinished);
     }, []);
 
-    console.log(playState);
     return (
         <Layout title='Play'>
-            {/* {(playState === PlayState.stateSelecting || playState === PlayState.stateStandingBy) && <Setting />} */}
-            {/* <Setting /> */}
+            {(playState === PlayState.stateSelecting || 
+                playState === PlayState.stateStandingBy) && <Setting />}
+            {playState === PlayState.statePlaying && (
+                <Play updateFinishedGameInfo={setFinishedGameInfo}/>
+            )}
+            {(playState === PlayState.stateFinished || playState === PlayState.stateCanceled || playState === PlayState.stateNothing) && (
+                <Result finishedGameInfo={finishedGameInfo} />
+            )}
 
-            
+            {/* <Setting /> */}
 
             {/* {(playState === PlayState.stateFinished ||
                 playState === PlayState.stateCanceled ||

@@ -76,7 +76,7 @@ const getGameParameters = ( canvasWidth: number, diffucultyLevel: DiffucultyLeve
     return gameParameters;
 }
 
-export const Game = ({ updateFinishedGameInfo }: Props) => {
+export const Play = ({ updateFinishedGameInfo }: Props) => {
 
     // ?
     const getCanvasWidth = () => {
@@ -212,6 +212,7 @@ export const Game = ({ updateFinishedGameInfo }: Props) => {
         let animationFrameId: number;
 
         const onKeyDown = (e: KeyboardEvent) => {
+            console.log(e.code);
             const key = e.code;
             if (!isArrowDownPressed && !isArrowUpPressed && (key === 'ArrowDown' || key === 'ArrowUp')) {
                 if (key === 'ArrowDown') {
@@ -223,13 +224,22 @@ export const Game = ({ updateFinishedGameInfo }: Props) => {
         };
 
         const onKeyUp = (e: KeyboardEvent) => {
+            console.log(e.code);
             const key = e.code;
-            if (key === 'ArrowDown') {
-                setIsArrowDownPressed(false);
-            } else if (key === 'ArrowUp') {
-                setIsArrowUpPressed(false);
+            // if (key === 'ArrowDown') {
+            //     setIsArrowDownPressed(false);
+            // } else if (key === 'ArrowUp') {
+            //     setIsArrowUpPressed(false);
+            // }
+
+            if (key === 'ArrowDown' || key === 'ArrowUp') {
+                if (isArrowDownPressed) {
+                    setIsArrowDownPressed(false);
+                } else if (isArrowUpPressed) {
+                    setIsArrowUpPressed(false);
+                }
             }
-        }
+        };
 
         document.addEventListener('keydown', onKeyDown);
         document.addEventListener('keyup', onKeyUp);
@@ -267,7 +277,7 @@ export const Game = ({ updateFinishedGameInfo }: Props) => {
                     }
                 }
             }
-            socket.emit('moveBar', move);
+            socket.emit('barMove', { move });
         };
 
         // 
@@ -286,6 +296,7 @@ export const Game = ({ updateFinishedGameInfo }: Props) => {
 
     useEffect(() => {
         socket.on('updateScores', (newScores: [number, number]) => {
+            console.log(newScores);
             updateGameSetting({
                 ...gameSetting,
                 player1Score: newScores[0],
@@ -312,11 +323,13 @@ export const Game = ({ updateFinishedGameInfo }: Props) => {
         });
 
         socket.on('error', () => {
+            console.log('error');
             updatePlayState(PlayState.stateNothing);
         })
 
         socket.on('exception', () => {
-            socket.emmit('cancelOngoingBattle');
+            console.log('exception');
+            socket.emit('cancelOngoingBattle');
 
             updatePlayState(PlayState.stateNothing);
         });
@@ -346,15 +359,15 @@ export const Game = ({ updateFinishedGameInfo }: Props) => {
 
     // パスの変更
     // Wait.tsxをさんこう
-    useEffect(() => {
-        const cancelOngoingBattle = () => {
-            if (playState === PlayState.statePlaying) {
-                socket.emit('cancelOngoingBattle');
-            }
-        };
+    // useEffect(() => {
+    //     const cancelOngoingBattle = () => {
+    //         if (playState === PlayState.statePlaying) {
+    //             socket.emit('cancelOngoingBattle');
+    //         }
+    //     };
 
 
-    })
+    // })
 
     // カウントダウン
     useEffect(() => {

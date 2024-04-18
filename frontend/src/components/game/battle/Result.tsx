@@ -7,8 +7,12 @@ type Props = {
     finishedGameInfo: FinishedGameInfo;
 }
 
+// 結果を表示する
+
 export const Result = ({ finishedGameInfo }: Props) => {
     const { playState } = usePlayStateStore();
+
+    console.log(playState);
 
     return (
         <Grid
@@ -119,12 +123,12 @@ export const Result = ({ finishedGameInfo }: Props) => {
         </Grid>
       )}
       <Grid item>
-        <Link href="/game/home">
+        <Link href="/game/index">
           <Button variant="contained">Back to Home</Button>
         </Link>
       </Grid>
       <Grid item>
-        <Link href="/game/home">
+        <Link href="/game/index">
           <Button variant="contained">Next Game</Button>
         </Link>
       </Grid>

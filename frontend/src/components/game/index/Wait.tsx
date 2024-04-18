@@ -83,16 +83,16 @@ export const Wait = ({ openMatchError }: Props) => {
             updatePlayState(PlayState.stateSelecting);
 
             // パスを変える
-            void router.push('/game/buttle');
+            void router.push('/game/battle');
         });
 
         // スタンバイ
-        socket.on('random:standby', (playerNames: [string, string]) => {
+        socket.on('random:standBy', (playerNames: [string, string]) => {
             updatePlayerNames(playerNames);
             updatePlayState(PlayState.stateStandingBy);
 
             // パスを変える
-            void router.push('/game/buttle');
+            void router.push('/game/battle');
         });
 
         return () => {

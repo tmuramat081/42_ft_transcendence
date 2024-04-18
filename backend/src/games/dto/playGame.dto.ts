@@ -8,7 +8,7 @@ export class PlayGameDto {
     
     @IsNumber()
     @IsNotEmpty()
-    matchPoints: number;
+    matchPoint: number;
 
     @IsNumber()
     @IsNotEmpty()

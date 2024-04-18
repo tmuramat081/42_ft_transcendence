@@ -33,6 +33,8 @@ export const Start = ({ setOpenMatchError }: Props) => {
         // ユーザーの状態を更新
         updatePlayState(PlayState.stateWaiting);
         // マッチング開始
+        // TODO:
+        // 1回線かどうかとユーザー名を送るようにする
         socket.emit("playStart", { userId: loginUser.userId }, ( res: Boolean ) => {
             if (!res) {
                 setOpenMatchError(true);

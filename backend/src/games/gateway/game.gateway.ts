@@ -129,7 +129,7 @@ export class GameGateway {
   // defaultSetting ゲームの初期設定
   static defaultSetting: GameSetting = {
     difficulty: DiffucultyLevel.NORMAL,
-    matchPoints: 5,
+    matchPoint: 5,
     player1Score: 0,
     player2Score: 0,
   };
@@ -401,52 +401,6 @@ export class GameGateway {
 
 
   //maoyagi ver
-
-  // ゲームセッティング完了
-  @SubscribeMessage('compleateSetting')
-  playGame(@ConnectedSocket() socket: Socket, @MessageBody() data: PlayGameDto) {
-    const room = this.gameRooms.find((room) => {
-      room.player1.socket.id === socket.id || room.player2.socket.id === socket.id;
-    });
-    if (!room) {
-      socket.emit('error');
-      const id = this.getIdFromSocket(socket);
-      this.removePlayingUserId(id);
-    } else {
-      this.logger.log(`compleateSetting`, data);
-      // ゲーム設定の更新
-      room.gameSetting = data as GameSetting;
-      room.rewards = data.matchPoints * 10;
-
-      // TDDO:
-      // ball speedも変更
-      switch (data.difficulty) {
-        case DiffucultyLevel.NORMAL:
-          room.barLength = GameGateway.boardHeight / Normal;
-           break;
-        case DiffucultyLevel.HARD:
-          room.barLength = GameGateway.boardHeight / Hard;
-          room.rewards *= 2;
-          break;
-        default:
-          room.barLength = GameGateway.boardHeight / Easy;
-          room.rewards /= 2;
-          break;
-      }
-
-      //?
-      room.initialHeight = GameGateway.initialHeight / 2 - room.barLength / 2;
-      //?
-      room.lowestPosition = GameGateway.boardHeight - GameGateway.heighestPos - room.barLength;
-      room.player1.height = room.initialHeight;
-      room.player2.height = room.initialHeight;
-      room.gameState = GameState.PLAYING;
-
-      // 設定を送信
-      this.server.to(room.roomName).emit('gameStarted', data as GameSetting);
-    }
-  }
-
   //game開始
   @SubscribeMessage('playStart')
   async joinRoom(
@@ -563,6 +517,56 @@ export class GameGateway {
     this.updatePlayerStatus(player1, player2, gameType);
   }
 
+    // ゲームセッティング完了
+    @SubscribeMessage('compleateSetting')
+    playGame(@ConnectedSocket() socket: Socket, @MessageBody() data: PlayGameDto) {
+      console.log(this.gameRooms)
+      console.log(socket.id)
+      const room = this.gameRooms.find((room) => 
+        room.player1.socket.id === socket.id || room.player2.socket.id === socket.id,
+      );
+
+      console.log(room)
+      if (!room) {
+        console.log('error');
+        socket.emit('error');
+        const id = this.getIdFromSocket(socket);
+        this.removePlayingUserId(id);
+      } else {
+        this.logger.log(`compleateSetting`, data);
+        // ゲーム設定の更新
+        room.gameSetting = data as GameSetting;
+        room.rewards = data.matchPoint * 10;
+  
+        // TDDO:
+        // ball speedも変更
+        switch (data.difficulty) {
+          case DiffucultyLevel.NORMAL:
+            room.barLength = GameGateway.boardHeight / Normal;
+             break;
+          case DiffucultyLevel.HARD:
+            room.barLength = GameGateway.boardHeight / Hard;
+            room.rewards *= 2;
+            break;
+          default:
+            room.barLength = GameGateway.boardHeight / Easy;
+            room.rewards /= 2;
+            break;
+        }
+  
+        //?
+        room.initialHeight = GameGateway.initialHeight / 2 - room.barLength / 2;
+        //?
+        room.lowestPosition = GameGateway.boardHeight - GameGateway.heighestPos - room.barLength;
+        room.player1.height = room.initialHeight;
+        room.player2.height = room.initialHeight;
+        room.gameState = GameState.PLAYING;
+  
+        // 設定を送信
+        this.server.to(room.roomName).emit('playStarted', data as GameSetting);
+      }
+    }
+
   // マッチングのキャンセル
   @SubscribeMessage('playCancel')
   cancelMatching(@ConnectedSocket() socket: Socket) {
@@ -573,11 +577,12 @@ export class GameGateway {
   // バーの移動
   @SubscribeMessage('barMove')
   async updatePlayerPos(@ConnectedSocket() socket: Socket, @MessageBody() data: UpdatePlayerPosDto) {
+    console.log('barMove');
     let isGameOver = false;
 
-    const room = this.gameRooms.find((room) => {
+    const room = this.gameRooms.find((room) => 
       room.player1.socket.id === socket.id || room.player2.socket.id === socket.id || room.supporters.find((s) => s.id === socket.id)
-    });
+    );
     // 存在しない場合
     if (!room) {
       socket.emit('error');
@@ -652,13 +657,13 @@ export class GameGateway {
       room.isPlayer1Turn = !room.isPlayer1Turn;
 
       // ゲーム終了の場合、ポイントを更新
-      if (room.gameSetting.matchPoints === room.player1.score) {
+      if (room.gameSetting.matchPoint === room.player1.score) {
         await this.finishGame(room, room.player1, room.player2);
-      } else if (room.gameSetting.matchPoints === room.player2.score) {
+      } else if (room.gameSetting.matchPoint === room.player2.score) {
         await this.finishGame(room, room.player2, room.player1);
       } else {
         // ポイントを更新
-        this.server.to(room.roomName).emit('updateScore', [room.player1.score, room.player2.score]);
+        this.server.to(room.roomName).emit('updateScores', [room.player1.score, room.player2.score]);
         room.gameSetting.player1Score = room.player1.score;
         room.gameSetting.player2Score = room.player2.score;
       }
@@ -674,7 +679,7 @@ export class GameGateway {
       ball: room.ball,
     }
     // ルームの参加者に送信
-    this.server.to(room.roomName).emit('updateGame', gameInfo);
+    this.server.to(room.roomName).emit('updateGameInfo', gameInfo);
   }
 
   // ゲーム終了
@@ -688,14 +693,14 @@ export class GameGateway {
 
     room.supporters.map((supporter) => {
       // null はscore
-      supporter.emit('gameFinished', null, finishedGameInfo);
+      supporter.emit('finishGame', null, finishedGameInfo);
     });
 
     // ポイントを更新
-    winner.socket.emit('gameFinished', winner.score + room.rewards, finishedGameInfo);
+    winner.socket.emit('finishGame', winner.score + room.rewards, finishedGameInfo);
 
     // ポイントを更新
-    loser.socket.emit('gameFinished', Math.max(loser.score - room.rewards, 0), finishedGameInfo);
+    loser.socket.emit('finishGame', Math.max(loser.score - room.rewards, 0), finishedGameInfo);
 
     await this.recordsRepository.createGameRecord({
       winnerId: winner.id,

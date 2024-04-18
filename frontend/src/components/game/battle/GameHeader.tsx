@@ -29,7 +29,7 @@ export const GameHeader = ({ left, center, right }: GameHeaderProps) => {
              item
              xs={2}
              direction='row'
-             alignItem='center'
+             alignItems='center'
              justifyContent='center'
              >
                 <Typography variant='h5' noWrap align='center'>
