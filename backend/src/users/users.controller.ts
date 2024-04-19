@@ -3,20 +3,18 @@ import { Controller, Get, Post, Put, Body, Req, Res, Param, InternalServerErrorE
 import { UsersService } from './users.service';
 import { SignUpUserDto, SignInUserDto, UpdateUserDto, ReturnUserDto } from './dto/user.dto';
 import { User } from './entities/user.entity';
-import { Response, Request } from 'express';
-import * as bcrypt from 'bcrypt'
+import { Response } from 'express';
 import { UseGuards } from '@nestjs/common';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
 import { TwoFactorAuthGuard } from 'src/auth/guards/2fa-auth.guards';
 import { AuthGuard } from '@nestjs/passport';
 //Excludeを使うと、指定したプロパティを除外した型を作成できる
 import { classToPlain } from "class-transformer";
-//import { jwt_decode } from 'jwt-decode';
 import { diskStorage } from 'multer';
 import { v4 as uuidv4 } from 'uuid';
 import * as path from 'path';
 import { FileInterceptor } from '@nestjs/platform-express';
-import { Observable, of } from 'rxjs'
+import { of } from 'rxjs'
 import * as fs from 'fs';
 
 /*
@@ -92,68 +90,10 @@ export class UsersController {
     // users: User[] = [];にならない?なぜ？キャッシュのせい？
     @Get('/')
     async findAll(): Promise<string> {
-        //return this.usersService.findAll();
-
-        console.log("findAll")  
         const users: User[] = await this.usersService.findAll();
-        console.log(JSON.stringify(users))
         return JSON.stringify({"users": users});
     }
-
-    // @Get('/testaaaa')
-    // async test(): Promise<string> {
-    //     //return this.usersService.findAll();
-    //     console.log("test")
-    //     return JSON.stringify({"test": "test"});
-    // }
-
-    // ここ
-    // curl -X POST -H "Content-Type: application/json" -d '{"userName":"test","email":"test@test","password":"test","passwordConfirm":"test"}' http://localhost:3001/users/signup
-    // paththrouth: true は、レスポンスを返すときに、レスポンスヘッダーを変更するために必要
-    //: Promise<User>
-    // @Post('/signup')
-    // async SignUp(@Body () userData: SignUpUserDto, @Res({ passthrough: true }) res: Response) : Promise<string> {
-    //     // リクエストハンドリング
-    //     if (!userData.userName || !userData.email || !userData.password) {
-    //         throw new ForbiddenException("Please enter all fields");
-    //         //return res.status(400).json({ message: 'Please enter all fields' });
-    //     }
-
-    //     // リクエストの検証
-    //     if (userData.password !== userData.passwordConfirm) {
-    //         throw new ForbiddenException("Passwords do not match");
-    //         //return res.status(400).json({ message: 'Passwords do not match' });
-    //     }
-
-    //     if (bcrypt.compare(userData.password, userData.passwordConfirm) === false) {
-    //         throw new ForbiddenException("Passwords do not match");
-    //         //return res.status(400).json({ message: 'Passwords do not match' });
-    //     }
-
-    //     // アクセストークンを作成
-    //     try {
-    //         // saveは例外を投げる為、try-catchで囲む
-    //         const accessToken: string = await this.usersService.signUp(userData);
-
-    //         //cookieにアクセストークンを保存
-    //         // localstrageよりcookieの方が安全
-    //         // XSS, 有効期限の観点からもcookieの方が良い
-    //         res.cookie('jwt', accessToken, { httpOnly: true })
-
-    //         // //redisにアクセストークンを保存
-
-    //         //return accessToken;
-    //         return JSON.stringify({"accessToken": accessToken});
-    //     } catch (error) {
-    //         if (error.code === 'ER_DUP_ENTRY') {
-    //             throw new InternalServerErrorException('User already exists');
-    //             //return res.status(400).json({ message: 'User already exists' });
-    //         }
-    //         throw new InternalServerErrorException("access token error");
-    //         //return res.status(400).json({ message: 'User already exists' });
-    //     }
-    // }
-
+    
     @Post('/signup')
     async SignUp(@Body () userData: SignUpUserDto, @Res({ passthrough: true }) res: Response) : Promise<string> {
         // リクエストハンドリング
