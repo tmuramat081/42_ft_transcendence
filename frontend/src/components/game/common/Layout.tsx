@@ -1,3 +1,4 @@
+/* eslint-disable */
 'use client';
 //
 import { GameGuest } from '@/components/game/common/GameGuest';

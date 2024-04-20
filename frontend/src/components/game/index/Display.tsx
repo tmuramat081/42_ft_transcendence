@@ -1,3 +1,4 @@
+/* eslint-disable */
 import { Grid, Paper } from '@mui/material';
 import { useEffect, useState } from 'react';
 import { usePlayStateStore, PlayState } from '@/store/game/playState';

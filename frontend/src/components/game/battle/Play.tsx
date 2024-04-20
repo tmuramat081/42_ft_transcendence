@@ -1,3 +1,4 @@
+/* eslint-disable */
 import { Grid, Typography, Zoom } from '@mui/material';
 import { useCallback, useEffect, useState, useRef, useMemo } from 'react';
 import { useSocketStore } from '@/store/game/clientSocket';

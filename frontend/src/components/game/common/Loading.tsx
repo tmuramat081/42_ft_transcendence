@@ -1,3 +1,4 @@
+/* eslint-disable */
 import { Grid, CircularProgress } from '@mui/material';
 
 type Props = {

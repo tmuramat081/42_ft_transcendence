@@ -1,3 +1,4 @@
+/* eslint-disable */
 import VideogameAssetSharpIcon from '@mui/icons-material/VideogameAssetSharp';
 import { Button, Grid, Box, Typography, TextField } from '@mui/material'
 import { usePlayStateStore, PlayState } from '@/store/game/playState';

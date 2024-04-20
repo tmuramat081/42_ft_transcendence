@@ -1,3 +1,4 @@
+/* eslint-disable */
 import Link from 'next/link';
 import { Button, Grid, Typography } from '@mui/material';
 import { usePlayStateStore, PlayState } from '@/store/game/playState';

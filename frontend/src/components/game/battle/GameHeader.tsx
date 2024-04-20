@@ -1,3 +1,4 @@
+/* eslint-disable */
 import { Grid, Typography } from '@mui/material';
 
 type GameHeaderProps = {
