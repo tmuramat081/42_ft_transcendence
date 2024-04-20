@@ -32,6 +32,8 @@ export const NavigationEvents = (() =>{
             }
         };
 
+        cancelOngoingBattle();
+
     }, [pathname, searchParams])
    
     return null
@@ -346,6 +348,8 @@ export const Play = ({ updateFinishedGameInfo }: Props) => {
                     //updateUserPoint(loginUser, updatedPoint);
                 }
             }
+            //待っているプレイやーにチャットを通じて通知を送る
+            
             updateFinishedGameInfo(finishedGameInfo);
             updatePlayState(PlayState.stateFinished);
         });
