@@ -22,7 +22,7 @@ type Props = {
 // GlobalHeaderに移植
 
 export const Layout: FC<Props> = ({ title = "PingPong", children }) => {
-  const router = useRouter();
+  //const router = useRouter();
   const { socket } = useSocketStore();
   const [ hosts, setHosts ] = useState<Friend[]>([]);
   const { loginUser, getCurrentUser } = useAuth();
@@ -87,7 +87,7 @@ export const Layout: FC<Props> = ({ title = "PingPong", children }) => {
   // }, [])
 
   // あとでLoadingコンポーネントを作成
-  if (router.pathname === '/' && !loginUser) {
+  if (pathname === '/' && !loginUser) {
     return <Loading />
   }
 
