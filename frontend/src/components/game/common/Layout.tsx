@@ -4,7 +4,7 @@
 import { GameGuest } from '@/components/game/common/GameGuest';
 import { useAuth } from '@/providers/useAuth';
 import Head from 'next/head';
-import { useRouter } from 'next/navigation';
+import { useRouter, usePathname } from 'next/navigation';
 import { FC, ReactNode, useEffect, useMemo, useState } from 'react';
 //
 import { useSocketStore } from '@/store/game/clientSocket';
@@ -28,6 +28,7 @@ export const Layout: FC<Props> = ({ title = "PingPong", children }) => {
   const { loginUser, getCurrentUser } = useAuth();
   const showGuestPath = useMemo(() => [
     'game/index', 'game/battle'], []);
+  const pathname = usePathname();
 
   useEffect(() => {
     getCurrentUser();
@@ -51,39 +52,39 @@ export const Layout: FC<Props> = ({ title = "PingPong", children }) => {
       socket.connect();
     }
 
-    // ゲームページに遷移した時にホスト一覧を取得
-    if (showGuestPath.includes(router.pathname)) {
-      socket.emit('getHosts', (res: Friend[]) => {
-        if (!ignore) {
-          setHosts(res);
-        }
-      });
-    }
+    // // ゲームページに遷移した時にホスト一覧を取得
+    // if (showGuestPath.includes(pathname)) {
+    //   socket.emit('getHosts', (res: Friend[]) => {
+    //     if (!ignore) {
+    //       setHosts(res);
+    //     }
+    //   });
+    // }
     return () => {
       ignore = true;
     }
     //router.pathname?
-  }, [loginUser, router.pathname, socket, showGuestPath]);
+  }, [loginUser, pathname, socket, showGuestPath]);
 
-  useEffect(() => {
-    if (!showGuestPath.includes(router.pathname)) return ;
+  // useEffect(() => {
+  //   if (!showGuestPath.includes(router.pathname)) return ;
 
-    // 招待を受け取る
-    socket.on('inviteFriend', (data: Friend) => {
-      // 既に招待されている場合は削除してから追加
-      setHosts(...hosts.filter((host) => host.userId !== data.userId), data);
-    });
+  //   // 招待を受け取る
+  //   socket.on('inviteFriend', (data: Friend) => {
+  //     // 既に招待されている場合は削除してから追加
+  //     setHosts(...hosts.filter((host) => host.userId !== data.userId), data);
+  //   });
 
-    // 招待をキャンセル
-    socket.on('cancelInvitation', (data: Friend) => {
-      setHosts(hosts.filter((host) => host.userId !== data.userId));
-    });
+  //   // 招待をキャンセル
+  //   socket.on('cancelInvitation', (data: Friend) => {
+  //     setHosts(hosts.filter((host) => host.userId !== data.userId));
+  //   });
 
-    return () => {
-      socket.off('inviteFriend');
-      socket.off('cancelInvitation');
-    }
-  }, [])
+  //   return () => {
+  //     socket.off('inviteFriend');
+  //     socket.off('cancelInvitation');
+  //   }
+  // }, [])
 
   // あとでLoadingコンポーネントを作成
   if (router.pathname === '/' && !loginUser) {
