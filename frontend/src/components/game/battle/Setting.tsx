@@ -65,7 +65,7 @@ export const Setting = () => {
         setDifficulty(val);
     }
 
-    const handleMatchPointSetting = (event: RecordingState.ChangeEvent<HTMLInputElement>) => {
+    const handleMatchPointSetting = (event: React.ChangeEvent<HTMLInputElement>) => {
         const val: number = Number(+event.target.value);
         setMatchPoint(val);
     }
