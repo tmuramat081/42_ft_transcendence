@@ -38,6 +38,8 @@ export default function UpdateUserForm() {
   const [twoFactorAuth, setTwoFactorAuth] = useState(false);
   // 2FA認証 モーダル表示
   const [show2FaModal, setShow2FaModal] = useState(false);
+  // 42認証の利用有無
+  const is42Auth = loginUser?.name42;
 
   // APIリクエスト
   const { fetchData: updateUser } = useApi({
@@ -80,6 +82,13 @@ export default function UpdateUserForm() {
       fields[key].hasError = false;
       fields[key].errorMessages = [];
     });
+
+    // 42認証の場合はパスワードの入力チェックをスキップ
+    if (is42Auth) {
+      fields.newPassword.isRequired = false;
+      fields.newPasswordConfirm.isRequired = false;
+      fields.password.isRequired = false;
+    }
 
     Object.keys(fields).forEach((key) => {
       const field = fields[key as keyof FormFields];
@@ -254,7 +263,7 @@ export default function UpdateUserForm() {
             error={fields.email.hasError}
             helperText={fields.email.errorMessages?.[0]}
           />
-          {!loginUser.name42 && (
+          {!is42Auth && (
             <>
               {/* パスワード（新）*/}
               <TextField
