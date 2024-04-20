@@ -43,31 +43,18 @@ export class AuthController {
   @Get('/callback/42')
   @UseGuards(IntraAuthGuard)
   async callback42(@Res({ passthrough: true }) res: Response, @Req() req) {
-    // userを受け取って、jwtを返す
-    // strategyでuserを受け取る
-
-    // 1
-    // console.log(req.user)
-    // const userName = req.user['userName']
-    // const userId = req.user['userId']
-    // const email = req.user['email']
-    // const payload: JwtPayload = { userId: userId, userName: userName, email: email, twoFactorAuth: false };
-    // //console.log(payload)
-    // const accessToken: string = await this.jwtService.sign(payload)
-    // res.cookie('jwt', accessToken, { httpOnly: true })
-
-    // 2 
-    console.log(req.user);
-    const jwtPayload = {userId: req.user.userId, userName: req.user.userName, email: req.user.email, icon: req.user.icon};
-
+    const jwtPayload = {
+      userId: req.user.userId, 
+      userName: req.user.userName, 
+      email: req.user.email, 
+      icon: req.user.icon
+    };
     const accessToken: string = await this.jwtService.sign(jwtPayload);
-
     res.cookie('login42', accessToken, { 
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
       sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
     });
-
     res.redirect(process.env.FRONTEND_URL + '/auth/signin-oauth');
   }
 
@@ -100,7 +87,7 @@ export class AuthController {
   //             Authorization: `Bearer ${tokenData.access_token}`,
   //         },
   //     });
-
+;
   //     const { email, login, image } = await userResponse.json();
 
   //     // ユーザーが存在するか確認する

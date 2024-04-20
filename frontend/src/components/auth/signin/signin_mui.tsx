@@ -90,9 +90,10 @@ export default function SignIn() {
       .catch((error) => {
         console.error('Error:', error);
       });
+  };
 
-    //console.log('送信されたデータ:', { userName, password });
-    console.log('送信されたデータ:', { name: data.get('name'), password: data.get('password') });
+  const handleClick42Login = () => {
+    router.push(`${API_URL}/auth/callback/42`);
   };
 
   const _handleOpen = () => {
@@ -101,15 +102,6 @@ export default function SignIn() {
   const _handleClose = () => {
     setShow2Fa(false);
   };
-
-  //   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
-  //     event.preventDefault();
-  //     const data = new FormData(event.currentTarget);
-  //     console.log({
-  //       email: data.get('email'),
-  //       password: data.get('password'),
-  //     });
-  //   };
 
   // useEffect
   useAsyncEffect(async () => {
@@ -219,9 +211,7 @@ export default function SignIn() {
                 variant="contained"
                 color="primary"
                 sx={{ fontSize: 14 }}
-                onClick={() => {
-                  router.push(`${API_URL}/auth/callback/42`);
-                }}
+                onClick={handleClick42Login}
               >
                 42 login
               </Button>

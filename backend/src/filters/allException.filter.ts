@@ -55,6 +55,12 @@ export class AllExceptionFilter implements ExceptionFilter {
       } else {
         this.logger.error(errorLog);
       }
+    } else {
+      if (httpStatus >= 500) {
+        this.logger.warn(errorLog);
+      } else {
+        this.logger.error(errorLog);
+      }
     }
 
     // エラーレスポンスを返却
