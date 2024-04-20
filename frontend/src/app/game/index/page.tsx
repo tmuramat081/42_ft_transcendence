@@ -6,7 +6,7 @@ import { Wait, NavigationEvents } from '@/components/game/index/Wait';
 import { Display } from '@/components/game/index/Display';
 
 export default function Page() {
-    const { openMatchError, setOpenMatchError } = useState(false);
+    //const { openMatchError, setOpenMatchError } = useState(false);
     return (
         <>
         {/* <Start setOpenMatchError={setOpenMatchError} />
