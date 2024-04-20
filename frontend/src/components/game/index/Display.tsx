@@ -43,7 +43,7 @@ export const Display = () => {
             sx={{ mt: 1, height: 800}}
           >
             <Grid item xs={5} sx={{minWidth: '430px' }}>
-              <Paper elevetion={3} sx={{height: '100%'}}>
+              <Paper elevation={3} sx={{height: '100%'}}>
                 {playState === PlayState.stateNothing && (
                   <Start setOpenMatchError={setOpenMatchError} />
                 )}
