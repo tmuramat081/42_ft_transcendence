@@ -7,11 +7,35 @@ import { GameHeader } from './GameHeader';
 import { DiffucultyLevel, FinishedGameInfo, GameInfo, GameParameters } from '@/types/game/game';
 import { useAuth } from '@/providers/useAuth';
 import { Loading } from '../common/Loading';
-import { useRouter } from 'next/navigation';
+import { useRouter, usePathname, useSearchParams } from 'next/navigation';
 import { useGameSettingStore } from '@/store/game/gameSetting';
 import { User } from '@/types/user';
 
 // updatePointApiを呼び出すcontroller
+
+export const NavigationEvents = (() =>{
+    const pathname = usePathname();
+    const searchParams = useSearchParams();
+    const updatePlayState = usePlayStateStore((store) => store.updatePlayState);
+    const { socket } = useSocketStore();
+    const { playState } = usePlayStateStore();
+
+
+    useEffect(() => {
+      const url = `${pathname}?${searchParams}`
+      console.log(url)
+      // You can now use the current URL
+      // ...
+        const cancelOngoingBattle = () => {
+            if (playState === PlayState.statePlaying) {
+                socket.emit('cancelOngoingBattle');
+            }
+        };
+
+    }, [pathname, searchParams])
+   
+    return null
+});
 
 type Props = {
     updateFinishedGameInfo: (newFinishedGameInfo: FinishedGameInfo) => void;
@@ -41,17 +65,19 @@ const getGameParameters = ( canvasWidth: number, diffucultyLevel: DiffucultyLeve
     // windowの幅を取得
     const { innerWidth } = window;
 
-    //?
     // topLeftX: キャンバスの左上のX座標
     const topLeftX = innerWidth === canvasWidth ? 0 : convertFloatToInt((innerWidth - canvasWidth) / 2);
 
-    // ?
     const gameParameters: GameParameters = {
         topLeftX,
         canvasWidth,
+        //canvasHeight: キャンバスの高さ。キャンバスの幅の60%に相当する値。
         canvasHeight: convertFloatToInt(canvasWidth * 0.6),
+        //barWidth: ゲーム中のバーの幅。キャンバス幅の2%。
         barWidth: convertFloatToInt(canvasWidth * 0.02),
+        //barLength: バーの長さ。後で計算されます。
         barLength: 0,
+        //player1X と player2X: プレイヤーのバーの位置。プレイヤー1はキャンバスの左端から2%の位置、プレイヤー2は右端から4%の位置に配置。
         player1X: convertFloatToInt(canvasWidth * 0.02 + topLeftX),
         player2X: convertFloatToInt(canvasWidth * 0.96 + topLeftX),
         highestPos: 0,
@@ -66,11 +92,12 @@ const getGameParameters = ( canvasWidth: number, diffucultyLevel: DiffucultyLeve
         widthRatio: 0,
     };
     gameParameters.barLength = getBarLength(gameParameters.canvasHeight, diffucultyLevel);
-    gameParameters.highestPos = gameParameters.canvasHeight - gameParameters.highestPos - gameParameters.barLength;
+    gameParameters.highestPos = convertFloatToInt(gameParameters.canvasHeight / 60);
+    gameParameters.lowestPos = gameParameters.canvasHeight - gameParameters.highestPos - gameParameters.barLength;
     gameParameters.initialHeight = convertFloatToInt(gameParameters.canvasHeight / 2 - gameParameters.barLength / 2);
     gameParameters.ballInitialY = convertFloatToInt(gameParameters.canvasHeight / 2);
 
-    //?
+    //widthRatio: キャンバス幅に対する比率。キャンバス幅を1000で割った値。
     gameParameters.widthRatio = gameParameters.canvasWidth / 1000;
 
     return gameParameters;
@@ -78,7 +105,8 @@ const getGameParameters = ( canvasWidth: number, diffucultyLevel: DiffucultyLeve
 
 export const Play = ({ updateFinishedGameInfo }: Props) => {
 
-    // ?
+    //　キャンバスの幅を取得
+    // 縦長の画面の場合は、画面の高さからヘッダーとフッターの高さを引いた値を0.6で割った値を取得
     const getCanvasWidth = () => {
         const { innerWidth, innerHeight } = window;
         const heightOfHeader = 80;
@@ -109,6 +137,8 @@ export const Play = ({ updateFinishedGameInfo }: Props) => {
     const [changeCount, setChangeCount] = useState(true);
     const [isArrowDownPressed, setIsArrowDownPressed] = useState(false);
     const [isArrowUpPressed, setIsArrowUpPressed] = useState(false);
+
+    const { openMatchError, setOpenMatchError } = useState(false);
     
     // Userのポイントを更新する
     const updateUserPoint = (user: User, updatedPoint: number) => {
@@ -144,7 +174,7 @@ export const Play = ({ updateFinishedGameInfo }: Props) => {
     // 1000 = 1s
     const waitMillSec = 1000 / FPS;
 
-    // ?
+    // フィールドを描画
     const drawField = useCallback((
         ctx: CanvasRenderingContext2D,
         gameInfo: GameInfo,
@@ -205,9 +235,7 @@ export const Play = ({ updateFinishedGameInfo }: Props) => {
 
     // key event
     useEffect(() => {
-        // ?
         const canvas = canvasRef.current as HTMLCanvasElement;
-        //?
         const context = canvas.getContext('2d') as CanvasRenderingContext2D;
         let animationFrameId: number;
 
@@ -252,7 +280,7 @@ export const Play = ({ updateFinishedGameInfo }: Props) => {
 
         render();
 
-        // 
+        // ボール、バーの位置を更新
         socket.on('updateGameInfo', (newGameInfo: GameInfo) => {
             const resCaledGameInfo: GameInfo = {
                 height1: convertFloatToInt(newGameInfo.height1 * gameParameter.widthRatio),
@@ -276,11 +304,11 @@ export const Play = ({ updateFinishedGameInfo }: Props) => {
                         move = -1;
                     }
                 }
+                socket.emit('barMove', { move });
             }
-            socket.emit('barMove', { move });
         };
 
-        // 
+        // バーの移動を定期的に行う
         const intervalId = loginUser && (loginUser.userName === playerNames[0] || loginUser.userName === playerNames[1]) ? setInterval(barMove, waitMillSec) : undefined;
 
         return () => {
@@ -369,7 +397,7 @@ export const Play = ({ updateFinishedGameInfo }: Props) => {
 
     // })
 
-    // カウントダウン
+    // ゲーム開始のカウントダウン
     useEffect(() => {
         if (countDown > 0) {
             setTimeout(() => {

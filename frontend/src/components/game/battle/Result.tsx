@@ -2,6 +2,10 @@ import Link from 'next/link';
 import { Button, Grid, Typography } from '@mui/material';
 import { usePlayStateStore, PlayState } from '@/store/game/playState';
 import { FinishedGameInfo } from '@/types/game/game';
+import { useAuth } from '@/providers/useAuth';
+import { useState, useEffect, useCallback } from 'react';
+import { Wait } from '../index/Wait';
+import { useSocketStore } from '@/store/game/clientSocket';
 
 type Props = {
     finishedGameInfo: FinishedGameInfo;
@@ -11,6 +15,41 @@ type Props = {
 
 export const Result = ({ finishedGameInfo }: Props) => {
     const { playState } = usePlayStateStore();
+    const { updatePlayState } = usePlayStateStore((store) => store.updatePlayState);
+    const { loginUser, getCurrentUser } = useAuth();
+    const [ openMatchError, setOpenMatchError ] = useState(false);
+    const { socket } = useSocketStore();
+
+    useEffect(() => {
+        getCurrentUser();
+        //socket.on("connection")
+    }, []);
+
+
+    // 何回戦目かを送れるようにする
+    // Next Gameを押したら、waitingになるようにする
+    // useCallback: 関数をメモ化する
+    const start = useCallback(() => {
+        // ログインしていない場合はエラー
+        if (!loginUser) {
+            //setOpenMatchError(true);
+            return;
+        }
+        // マッチングエラーを非表示
+        setOpenMatchError(false);
+        // ユーザーの状態を更新
+        updatePlayState(PlayState.stateWaiting);
+        // マッチング開始
+        // TODO:
+        // 1回線かどうかとユーザー名を送るようにする
+        socket.emit("playStart", { userId: loginUser.userId }, ( res: Boolean ) => {
+            if (!res) {
+                setOpenMatchError(true);
+                //updatePlayState(PlayState.stateNothing);
+            }
+        });
+        updatePlayState(PlayState.stateWaiting);
+    }, [loginUser, socket, updatePlayState, setOpenMatchError]);
 
     console.log(playState);
 
@@ -127,11 +166,18 @@ export const Result = ({ finishedGameInfo }: Props) => {
           <Button variant="contained">Back to Home</Button>
         </Link>
       </Grid>
+      
+      {finishedGameInfo.winnerName === loginUser?.userName && (
       <Grid item>
         <Link href="/game/index">
           <Button variant="contained">Next Game</Button>
         </Link>
       </Grid>
+      )}
+
+      {/* {playState === PlayState.stateWaiting && (
+        <Wait openMatchError={openMatchError} />
+      )} */}
       </Grid>
     )
 }

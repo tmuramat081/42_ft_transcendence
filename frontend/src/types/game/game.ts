@@ -63,7 +63,7 @@ export type GameParameters = {
     ballInitialX: number;
     ballInitialY: number;
     ballRadius: number;
-    // ?
+    // フロントとバックエンドの画面比率
     widthRatio: number;
 };
 

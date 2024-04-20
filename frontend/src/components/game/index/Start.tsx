@@ -1,5 +1,5 @@
 import VideogameAssetSharpIcon from '@mui/icons-material/VideogameAssetSharp';
-import { Button, Grid, Box, Typography } from '@mui/material'
+import { Button, Grid, Box, Typography, TextField } from '@mui/material'
 import { usePlayStateStore, PlayState } from '@/store/game/playState';
 import { useSocketStore } from '@/store/game/clientSocket';
 import { useAuth } from '@/providers/useAuth';
@@ -15,6 +15,7 @@ export const Start = ({ setOpenMatchError }: Props) => {
     // playStateの更新関数を取得
     // (store) => store.updatePlayState: storeの中のupdatePlayStateを取得?
     const updatePlayState = usePlayStateStore((store) => store.updatePlayState);
+    const [username, setUsername] = useState<string>("");
 
     useEffect(() => {
         getCurrentUser();
@@ -69,6 +70,20 @@ export const Start = ({ setOpenMatchError }: Props) => {
             direction="column"
             sx={{ height: "100vh" }}  
           >
+            <Grid item xs={12}>
+              <TextField
+                label="Username"
+                variant="outlined"
+                required
+                sx={{
+                  mt: 2, // マージントップ
+                  mb: 2, // マージンボトム
+                  width: '80%' // フィールドの幅
+                }}
+                // onChangeイベントハンドラーでユーザー名の状態を更新します
+                onChange={(e) => setUsername(e.target.value)}
+              />
+            </Grid>
             <Grid item xs={12}>
                 <Button
                   size="large"

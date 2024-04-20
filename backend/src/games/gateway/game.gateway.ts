@@ -429,6 +429,7 @@ export class GameGateway {
         return false;
       }
       this.waitingQueue.push({
+        // TODO: usernameは任意で設定できるようにする
         name: user.userName,
         id: data.userId,
         point: user.point,
@@ -536,6 +537,8 @@ export class GameGateway {
         this.logger.log(`compleateSetting`, data);
         // ゲーム設定の更新
         room.gameSetting = data as GameSetting;
+
+        // どちらかのプレイヤーが連戦の場合は、連戦倍にする
         room.rewards = data.matchPoint * 10;
   
         // TDDO:
@@ -555,7 +558,7 @@ export class GameGateway {
         }
   
         //?
-        room.initialHeight = GameGateway.initialHeight / 2 - room.barLength / 2;
+        room.initialHeight = GameGateway.boardHeight / 2 - room.barLength / 2;
         //?
         room.lowestPosition = GameGateway.boardHeight - GameGateway.heighestPos - room.barLength;
         room.player1.height = room.initialHeight;
@@ -631,7 +634,7 @@ export class GameGateway {
       } else {
         // ゲーム終了
         isGameOver = true;
-        room.player1.score++;
+        room.player2.score++;
       } 
     } else if (GameGateway.rightEnd < ball.x) {
         if (0 < ballVec.xVec && room.player2.height <= ball.y && ball.y <= room.player2.height + room.barLength) {
@@ -639,7 +642,7 @@ export class GameGateway {
           ballVec.yVec = ((ball.y - (room.player2.height + room.barLength / 2)) * 2) / room.barLength;
         } else {
           isGameOver = true;
-          room.player2.score++;
+          room.player1.score++;
         }
     } 
 
