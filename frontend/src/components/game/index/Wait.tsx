@@ -20,9 +20,9 @@ type Props = {
     openMatchError: boolean;
 };
 
-type NavigationEventsProps = {
-    cancelPlay: () => void;
-};
+// type NavigationEventsProps = {
+//     cancelPlay: () => void;
+// };
 
 export const NavigationEvents = (() =>{
     const pathname = usePathname();

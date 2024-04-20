@@ -16,9 +16,9 @@ type Props = {
 
 export const Result = ({ finishedGameInfo }: Props) => {
     const { playState } = usePlayStateStore();
-    const { updatePlayState } = usePlayStateStore((store) => store.updatePlayState);
+    //const { updatePlayState } = usePlayStateStore((store) => store.updatePlayState);
     const { loginUser, getCurrentUser } = useAuth();
-    const [ openMatchError, setOpenMatchError ] = useState(false);
+    //const [ openMatchError, setOpenMatchError ] = useState(false);
     const { socket } = useSocketStore();
 
     useEffect(() => {
@@ -27,30 +27,30 @@ export const Result = ({ finishedGameInfo }: Props) => {
     }, []);
 
 
-    // 何回戦目かを送れるようにする
-    // Next Gameを押したら、waitingになるようにする
-    // useCallback: 関数をメモ化する
-    const start = useCallback(() => {
-        // ログインしていない場合はエラー
-        if (!loginUser) {
-            //setOpenMatchError(true);
-            return;
-        }
-        // マッチングエラーを非表示
-        setOpenMatchError(false);
-        // ユーザーの状態を更新
-        updatePlayState(PlayState.stateWaiting);
-        // マッチング開始
-        // TODO:
-        // 1回線かどうかとユーザー名を送るようにする
-        socket.emit("playStart", { userId: loginUser.userId }, ( res: Boolean ) => {
-            if (!res) {
-                setOpenMatchError(true);
-                //updatePlayState(PlayState.stateNothing);
-            }
-        });
-        updatePlayState(PlayState.stateWaiting);
-    }, [loginUser, socket, updatePlayState, setOpenMatchError]);
+    // // 何回戦目かを送れるようにする
+    // // Next Gameを押したら、waitingになるようにする
+    // // useCallback: 関数をメモ化する
+    // const start = useCallback(() => {
+    //     // ログインしていない場合はエラー
+    //     if (!loginUser) {
+    //         //setOpenMatchError(true);
+    //         return;
+    //     }
+    //     // マッチングエラーを非表示
+    //     setOpenMatchError(false);
+    //     // ユーザーの状態を更新
+    //     updatePlayState(PlayState.stateWaiting);
+    //     // マッチング開始
+    //     // TODO:
+    //     // 1回線かどうかとユーザー名を送るようにする
+    //     socket.emit("playStart", { userId: loginUser.userId }, ( res: Boolean ) => {
+    //         if (!res) {
+    //             setOpenMatchError(true);
+    //             //updatePlayState(PlayState.stateNothing);
+    //         }
+    //     });
+    //     updatePlayState(PlayState.stateWaiting);
+    // }, [loginUser, socket, updatePlayState, setOpenMatchError]);
 
     console.log(playState);
 

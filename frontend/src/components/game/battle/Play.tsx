@@ -17,7 +17,7 @@ import { User } from '@/types/user';
 export const NavigationEvents = (() =>{
     const pathname = usePathname();
     const searchParams = useSearchParams();
-    const updatePlayState = usePlayStateStore((store) => store.updatePlayState);
+    //const updatePlayState = usePlayStateStore((store) => store.updatePlayState);
     const { socket } = useSocketStore();
     const { playState } = usePlayStateStore();
 
@@ -122,7 +122,7 @@ export const Play = ({ updateFinishedGameInfo }: Props) => {
     const { socket } = useSocketStore();
     const canvasRef = useRef<HTMLCanvasElement>(null);
     const { playerNames } = usePlayerNamesStore();
-    const { playState } = usePlayStateStore();
+    //const { playState } = usePlayStateStore();
     const { gameSetting } = useGameSettingStore();
     const updateGameSetting = useGameSettingStore((store) => store.updateGameSetting);
     const updatePlayState = usePlayStateStore((store) => store.updatePlayState);
@@ -141,7 +141,7 @@ export const Play = ({ updateFinishedGameInfo }: Props) => {
     const [isArrowDownPressed, setIsArrowDownPressed] = useState(false);
     const [isArrowUpPressed, setIsArrowUpPressed] = useState(false);
 
-    const { openMatchError, setOpenMatchError } = useState(false);
+    //const { openMatchError, setOpenMatchError } = useState(false);
     
     // Userのポイントを更新する
     const updateUserPoint = (user: User, updatedPoint: number) => {

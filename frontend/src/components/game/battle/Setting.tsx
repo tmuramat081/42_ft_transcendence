@@ -20,7 +20,7 @@ import { DiffucultyLevel, GameSetting } from '@/types/game/game';
 export const NavigationEvents = (() =>{
     const pathname = usePathname();
     const searchParams = useSearchParams();
-    const updatePlayState = usePlayStateStore((store) => store.updatePlayState);
+    //const updatePlayState = usePlayStateStore((store) => store.updatePlayState);
     const { socket } = useSocketStore();
     const { playState } = usePlayStateStore();
 

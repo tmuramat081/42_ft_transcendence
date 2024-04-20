@@ -5,13 +5,13 @@ import { usePlayStateStore, PlayState } from '@/store/game/playState';
 import { Start } from '@/components/game/index/Start';
 import { Wait } from '@/components/game/index/Wait';
 import { useAuth } from '@/providers/useAuth';
-import { useInvitedFriendStrore } from '@/store/game/invitedFriendState';
+//import { useInvitedFriendStrore } from '@/store/game/invitedFriendState';
 
 export const Display = () => {
     const { loginUser, getCurrentUser } = useAuth();
     const { playState } = usePlayStateStore();
     const updatePlayState = usePlayStateStore((store) => store.updatePlayState);
-    const { invitedFriendState } = useInvitedFriendStrore();
+    //const { invitedFriendState } = useInvitedFriendStrore();
     const [ openMatchError, setOpenMatchError ] = useState(false);
 
     useEffect(() => {
