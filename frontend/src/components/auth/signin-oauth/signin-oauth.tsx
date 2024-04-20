@@ -12,7 +12,7 @@ import { jwtDecode } from "jwt-decode";
 import { useAuth } from '@/providers/useAuth';
 
 import { usePublicRoute } from '@/hooks/routes/usePublicRoute';
-import Modal from '../../components/users/2fa/modal'; // Modalコンポーネントをインポート
+import Modal from '../../users/2fa/modal'; // Modalコンポーネントをインポート
 
 export default function Form() {
     // 2faが必要な場合のstate

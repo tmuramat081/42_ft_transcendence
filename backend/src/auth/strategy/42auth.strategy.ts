@@ -20,43 +20,21 @@ export class IntraStrategy extends PassportStrategy(Strategy, '42') {
   }
 
   async validate(
-    accessToken: string,
-    refreshToken: string,
+    _accessToken: string,
+    _refreshToken: string,
     profile: Profile,
-    done: (err: any, user: any, info?: any) => void,
+    _done: (err: any, user: any, info?: any) => void,
   ): Promise<User> {
     const { username, emails, photos } = profile;
-    //avatar_url: photos[0].value,]
-    //email: profile['emails'][0]['value'],
-
-    // const user: User = await this.authService.validateUser(id, username, emails[0].value)
-    // const payload = {
-    //     id: user.userId,
-    //     username: user.userName,
-    //     email: user.email,
-    // }
-    // const jwt: string = await this.authService.login(payload)
-    // const data = {
-    //     jwt: jwt,
-    //     user: user,
-    // }
-
+  
     const user: UserDto42 = {
       email: emails[0].value,
       password: username,
       userName: username,
       name42: username,
-      // undefinedになる
       icon: photos[0].value,
     };
 
-    // console.log(profile)
-
-    // console.log('IntraStrategy validate');
-
     return this.authService.validateUser(user);
-
-    // Promise<any>を返す
-    //done(null, user)
   }
 }

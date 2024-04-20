@@ -43,25 +43,18 @@ export class AuthController {
   @Get('/callback/42')
   @UseGuards(IntraAuthGuard)
   async callback42(@Res({ passthrough: true }) res: Response, @Req() req) {
-    // userを受け取って、jwtを返す
-    // strategyでuserを受け取る
-
-    // 1
-    // console.log(req.user)
-    // const userName = req.user['userName']
-    // const userId = req.user['userId']
-    // const email = req.user['email']
-    // const payload: JwtPayload = { userId: userId, userName: userName, email: email, twoFactorAuth: false };
-    // //console.log(payload)
-    // const accessToken: string = await this.jwtService.sign(payload)
-    // res.cookie('jwt', accessToken, { httpOnly: true })
-
-    // 2 
-    console.log(req.user);
-    const jwtPayload = {userId: req.user.userId, userName: req.user.userName, email: req.user.email, icon: req.user.icon};
-
+    const jwtPayload = {
+      userId: req.user.userId, 
+      userName: req.user.userName, 
+      email: req.user.email, 
+      icon: req.user.icon
+    };
     const accessToken: string = await this.jwtService.sign(jwtPayload);
-    res.cookie('login42', accessToken, { httpOnly: true });
+    res.cookie('login42', accessToken, { 
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
+    });
     res.redirect(process.env.FRONTEND_URL + '/auth/signin-oauth');
   }
 
@@ -94,7 +87,7 @@ export class AuthController {
   //             Authorization: `Bearer ${tokenData.access_token}`,
   //         },
   //     });
-
+;
   //     const { email, login, image } = await userResponse.json();
 
   //     // ユーザーが存在するか確認する
@@ -166,7 +159,12 @@ export class AuthController {
       // const payload2: JwtPayload = { userId: user.userId, userName: user.userName, email: user.email, twoFactorAuth: false };
       // const accessToken2: string = this.jwtService.sign(payload2);
       const accessToken2 = await this.usersService.generateJwt(user);
-      res.cookie('jwt', accessToken2, { httpOnly: true });
+
+      res.cookie('jwt', accessToken2, { 
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
+      });
 
       // cookie削除
       res.clearCookie('login42');
@@ -217,7 +215,13 @@ export class AuthController {
       // const payload: JwtPayload = { userId: user.userId, userName: user.userName, email: user.email, twoFactorAuth: true };
       // const accessToken: string = this.jwtService.sign(payload);
       const accessToken = await this.usersService.generateJwt(user);
-      res.cookie('jwt', accessToken, { httpOnly: true });
+
+      res.cookie('jwt', accessToken, { 
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
+      });
+
       return JSON.stringify({'accessToken': accessToken});
     } catch (error) {
       throw error;
@@ -226,11 +230,9 @@ export class AuthController {
 
   @UseGuards(JwtAuthGuard)
   @Post('/2fa/disable')
-  async disable2fa(@Req() req, @Res({ passthrough: true }) res) {
+  async disable2fa(@Req() req, @Res({ passthrough: true } ) _res: Response) {
       const user = req.user;
-      console.log('disable');
-      const resultUser = await this.authService.disable2fa(user);
-      //res.status(200).json({ message: '2fa disabled' });
+      await this.authService.disable2fa(user);
       return JSON.stringify({'message': '2fa disabled'});
   }
 
@@ -243,13 +245,9 @@ export class AuthController {
   async get2faCode(@Req() req) {
       const user = req.user;
 
-      console.log('generate');
-      // const code = await this.authService.get2faCode(user)
       const code = await this.authService.generate2faAuthSecret(user);
       const qrcode = await this.authService.generate2faQrCode(code);
-      //const img: string = "<img src=" + qrcode + ">"
-      //return img
 
-      return JSON.stringify({'qrCord': qrcode});
+      return JSON.stringify({'qrCord': qrcode });
   }
 }

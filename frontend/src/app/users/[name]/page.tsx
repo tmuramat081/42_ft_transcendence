@@ -5,7 +5,6 @@
 
 import Avatar from '@mui/material/Avatar';
 
-
 export default async function Page({ params }: { params: { name: string } }) {
     console.log(params.name);
 

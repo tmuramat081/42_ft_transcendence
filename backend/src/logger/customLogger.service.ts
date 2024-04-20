@@ -1,5 +1,6 @@
 import { HttpException, Logger, LoggerService } from '@nestjs/common';
 import { ErrorLog } from './dto/errorLog.dto';
+import { v4 } from 'uuid';
 
 export class CustomLogger implements LoggerService {
   private readonly logger: Logger;
@@ -47,6 +48,8 @@ export class CustomLogger implements LoggerService {
     if (!(exception instanceof HttpException)) {
       const error = exception as Error;
       return new ErrorLog({
+        logId: v4(),
+        occurrenceTime: new Date().toISOString(),
         statusCode: httpStatus,
         requestUrl: requestMethodAndUrl,
         functionName: exception.constructor.name,
@@ -54,6 +57,8 @@ export class CustomLogger implements LoggerService {
       });
     }
     return new ErrorLog({
+      logId: v4(),
+      occurrenceTime: new Date().toISOString(),
       statusCode: httpStatus,
       requestUrl: requestMethodAndUrl,
       functionName: exception.constructor.name,

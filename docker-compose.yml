@@ -4,6 +4,8 @@ services:
   frontend:
     build:
       context: ./frontend
+      dockerfile: Dockerfile
+      target: development
     # tty: true
     volumes:
       - ./frontend:/frontend
@@ -17,6 +19,8 @@ services:
   backend:
     build:
       context: ./backend
+      dockerfile: Dockerfile
+      target: development
     env_file:
       - .env
     volumes:

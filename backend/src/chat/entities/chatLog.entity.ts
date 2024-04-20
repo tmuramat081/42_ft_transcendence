@@ -5,10 +5,10 @@ export class ChatLog {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column()
+  @Column({ nullable: false })
   roomName: string;
 
-  @Column()
+  @Column({ nullable: false })
   sender: string;
 
   @Column()
@@ -17,6 +17,6 @@ export class ChatLog {
   @Column()
   message: string;
 
-  @Column()
+  @Column({ nullable: false })
   timestamp: string;
 }
