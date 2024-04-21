@@ -237,6 +237,7 @@ export class GameGateway {
   // ポイントによってゲームの設定をするプレイヤーを決定
   updatePlayerStatus(player1: Player, player2, gameType: string) {
     const playerNames: [string, string] = [player1.name, player2.name];
+    const ariasNames: [string, string] = [player1.ariasName, player2.ariasName];
 
     // 状態
     const select = gameType + ':select'
@@ -411,8 +412,8 @@ export class GameGateway {
     // ルームに参加したことを通知
     //this.server.to(data.roomId).emit('joinedRoom', data.userId);
 
-    console.log('playStart');
-    console.log(this.waitingQueue)
+    // console.log('playStart');
+    // console.log(this.waitingQueue)
     if (this.isPlayingUserId(data.userId)) {
       return false;
     }
@@ -435,9 +436,11 @@ export class GameGateway {
         socket: socket,
         height: GameGateway.initialHeight,
         score: 0,
+        ariasName: data.ariasName,
+        round: data.round,
       });
 
-      console.log(this.waitingQueue)
+      // console.log(this.waitingQueue)
 
       return true;
     // 待機プレイヤーがいる場合
@@ -458,12 +461,13 @@ export class GameGateway {
         socket: socket,
         height: GameGateway.initialHeight,
         score: 0,
+        ariasName: data.ariasName,
+        round: data.round,
       };
       void this.startGame(player1, player2, 'random')
     }
 
-    console.log(this.waitingQueue)
-
+    // console.log(this.waitingQueue)
 
     return true;
   }

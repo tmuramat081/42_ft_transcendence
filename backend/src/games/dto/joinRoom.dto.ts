@@ -1,4 +1,4 @@
-import { IsNotEmpty, IsNumber } from 'class-validator';
+import { IsNotEmpty, IsNumber, IsString } from 'class-validator';
 
 export class JoinRoomDto {
     @IsNumber()
@@ -8,5 +8,15 @@ export class JoinRoomDto {
     // @IsNumber()
     // @IsNotEmpty()
     // roomId: number;
+
+    // 別名
+    @IsString()
+    @IsNotEmpty()
+    ariasName: string;
+
+    // 回戦
+    @IsNumber()
+    @IsNotEmpty()
+    round: number;
 }
     

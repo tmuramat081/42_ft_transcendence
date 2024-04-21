@@ -60,6 +60,8 @@ export type Player = {
     socket: Socket | RemoteSocket<DefaultEventsMap, DefaultEventsMap>;
     height: number;
     score: number;
+    ariasName: string;
+    round: number;
 };
 
 export type Ball = {
