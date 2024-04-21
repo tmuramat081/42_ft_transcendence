@@ -16,7 +16,7 @@ export const Start = ({ setOpenMatchError }: Props) => {
     // playStateの更新関数を取得
     // (store) => store.updatePlayState: storeの中のupdatePlayStateを取得?
     const updatePlayState = usePlayStateStore((store) => store.updatePlayState);
-    const [ariasName, setAriasName] = useState<string>("");
+    const [username, setUsername] = useState<string>("");
 
     useEffect(() => {
         getCurrentUser();
@@ -37,7 +37,7 @@ export const Start = ({ setOpenMatchError }: Props) => {
         // マッチング開始
         // TODO:
         // 1回線かどうかとユーザー名を送るようにする
-        socket.emit("playStart", { userId: loginUser.userId, ariasName: ariasName, round: 1 }, ( res: Boolean ) => {
+        socket.emit("playStart", { userId: loginUser.userId }, ( res: Boolean ) => {
             if (!res) {
                 setOpenMatchError(true);
                 //updatePlayState(PlayState.stateNothing);
@@ -73,7 +73,7 @@ export const Start = ({ setOpenMatchError }: Props) => {
           >
             <Grid item xs={12}>
               <TextField
-                label="AriasName"
+                label="Username"
                 variant="outlined"
                 required
                 sx={{
@@ -82,7 +82,7 @@ export const Start = ({ setOpenMatchError }: Props) => {
                   width: '80%' // フィールドの幅
                 }}
                 // onChangeイベントハンドラーでユーザー名の状態を更新します
-                onChange={(e) => setAriasName(e.target.value)}
+                onChange={(e) => setUsername(e.target.value)}
               />
             </Grid>
             <Grid item xs={12}>

@@ -237,7 +237,6 @@ export class GameGateway {
   // ポイントによってゲームの設定をするプレイヤーを決定
   updatePlayerStatus(player1: Player, player2, gameType: string) {
     const playerNames: [string, string] = [player1.name, player2.name];
-    const ariasNames: [string, string] = [player1.ariasName, player2.ariasName];
 
     // 状態
     const select = gameType + ':select'
@@ -318,7 +317,7 @@ export class GameGateway {
     // maoyagi
     const id = this.getIdFromSocket(socket);
   
-    this.logger.log(`Client connected: ${id}!!!!!!!!!!!!!!!!!!!!`);
+    //this.logger.log(`Client connected: ${id}!!!!!!!!!!!!!!!!!!!!`);
     // console.log(`Client connected: ${id}!!!!!!!!!!!!!!!!!!!!!!!!`);
 
     // friendがプロフィール見ていれば、表示される
@@ -362,7 +361,7 @@ export class GameGateway {
 
     //maoyagi
     const id = this.getIdFromSocket(socket);
-    this.logger.log(`Client disconnected: ${id}`);
+    //this.logger.log(`Client disconnected: ${id}`);
 
     this.removePlayingUserId(id);
 
@@ -436,8 +435,6 @@ export class GameGateway {
         socket: socket,
         height: GameGateway.initialHeight,
         score: 0,
-        ariasName: data.ariasName,
-        round: data.round,
       });
 
       // console.log(this.waitingQueue)
@@ -461,8 +458,6 @@ export class GameGateway {
         socket: socket,
         height: GameGateway.initialHeight,
         score: 0,
-        ariasName: data.ariasName,
-        round: data.round,
       };
       void this.startGame(player1, player2, 'random')
     }
@@ -524,15 +519,15 @@ export class GameGateway {
     // ゲームセッティング完了
     @SubscribeMessage('compleateSetting')
     playGame(@ConnectedSocket() socket: Socket, @MessageBody() data: PlayGameDto) {
-      console.log(this.gameRooms)
-      console.log(socket.id)
+      // console.log(this.gameRooms)
+      // console.log(socket.id)
       const room = this.gameRooms.find((room) => 
         room.player1.socket.id === socket.id || room.player2.socket.id === socket.id,
       );
 
-      console.log(room)
+      // console.log(room)
       if (!room) {
-        console.log('error');
+        // console.log('error');
         socket.emit('error');
         const id = this.getIdFromSocket(socket);
         this.removePlayingUserId(id);
@@ -560,9 +555,9 @@ export class GameGateway {
             break;
         }
   
-        //?
+        ///中央
         room.initialHeight = GameGateway.boardHeight / 2 - room.barLength / 2;
-        //?
+        // 最下部
         room.lowestPosition = GameGateway.boardHeight - GameGateway.heighestPos - room.barLength;
         room.player1.height = room.initialHeight;
         room.player2.height = room.initialHeight;
@@ -576,14 +571,14 @@ export class GameGateway {
   // マッチングのキャンセル
   @SubscribeMessage('playCancel')
   cancelMatching(@ConnectedSocket() socket: Socket) {
-    console.log('playCancel');
+    //console.log('playCancel');
     this.waitingQueue = this.waitingQueue.filter((player) => player.socket.id !== socket.id);
   }
 
   // バーの移動
   @SubscribeMessage('barMove')
   async updatePlayerPos(@ConnectedSocket() socket: Socket, @MessageBody() data: UpdatePlayerPosDto) {
-    console.log('barMove');
+    //console.log('barMove');
     let isGameOver = false;
 
     const room = this.gameRooms.find((room) => 
