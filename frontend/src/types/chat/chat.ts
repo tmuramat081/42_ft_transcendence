@@ -1,3 +1,5 @@
+import { User } from '@/types/user';
+
 export type UserInfo = {
   userId: number;
   userName: string;
@@ -25,8 +27,8 @@ export type ChatMessage = {
 };
 
 export type DirectMessage = {
-  sender: string;
-  recipient: string;
+  sender: User;
+  recipient: User;
   text: string;
   timestamp: string;
 };

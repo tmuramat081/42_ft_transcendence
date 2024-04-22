@@ -60,6 +60,12 @@ export default function ChatPage() {
     socket.emit('getRoomList', sender);
     socket.emit('getGameList', sender);
     socket.emit('getOnlineUsers', sender);
+
+    return () => {
+      socket.off('getRoomList');
+      socket.off('getGameList');
+      socket.off('getOnlineUsers');
+    };
   }, [sender]);
 
   useEffect(() => {
@@ -325,13 +331,14 @@ export default function ChatPage() {
                   }}
                 >
                   {/* アイコン */}
-                  <Image
-                    src={onlineUser.icon}
+                  <Avatar
+                    src={`${API_URL}/api/uploads/${onlineUser?.icon}`}
                     alt={onlineUser.userName}
                     className="onlineusers-icon"
-                    width={50}
-                    height={50}
-                  />
+                    sx={{ width: 50, height: 50 }}
+                  >
+                    {onlineUser.icon}
+                  </Avatar>
                 </button>
               </div>
               {/* ユーザー名とDMボタン */}
@@ -431,8 +438,7 @@ export default function ChatPage() {
                   src={`${API_URL}/api/uploads/${participant.icon}`}
                   alt={participant.userName}
                   className="participant-icon"
-                  width={50}
-                  height={50}
+                  sx={{ width: 50, height: 50 }}
                 >
                   {participant.icon}
                 </Avatar>
@@ -466,13 +472,14 @@ export default function ChatPage() {
               key={index}
               className={`message-bubble ${message.user === sender.userName ? 'self' : 'other'}`}
             >
-              <Image
-                src={message.photo}
+              <Avatar
+                src={`${API_URL}/api/uploads/${message.photo}`}
                 alt="User Icon"
                 className="icon"
-                width={50}
-                height={50}
-              />
+                sx={{ width: 35, height: 35 }}
+              >
+                {message.photo}
+              </Avatar>
               <div>
                 <div>{message.text}</div>
                 <div className="timestamp">{message.timestamp}</div>

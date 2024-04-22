@@ -1,3 +1,5 @@
+import { User } from '../users/entities/user.entity';
+
 export interface UserInfo {
   userId: number;
   userName: string;
@@ -19,8 +21,8 @@ export interface ChatMessage {
 }
 
 export interface DirectMessage {
-  sender: string;
-  recipient: string;
+  sender: User;
+  recipient: User;
   text: string;
   timestamp: string;
 }

@@ -1,4 +1,5 @@
-import { Entity, PrimaryGeneratedColumn, Column } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn } from 'typeorm';
+import { User } from '../../users/entities/user.entity';
 
 @Entity()
 export class DmLog {
@@ -6,10 +7,18 @@ export class DmLog {
   id: number;
 
   @Column({ nullable: false })
-  senderName: string;
+  senderId: number; // ユーザーのIDを参照する外部キー
+
+  @ManyToOne(() => User, { eager: true })
+  @JoinColumn({ name: 'senderId' })
+  sender: User; // ユーザーとの関連付け
 
   @Column({ nullable: false })
-  recipientName: string;
+  recipientId: number; // ユーザーのIDを参照する外部キー
+
+  @ManyToOne(() => User, { eager: true })
+  @JoinColumn({ name: 'recipientId' })
+  recipient: User; // ユーザーとの関連付け
 
   @Column()
   message: string;

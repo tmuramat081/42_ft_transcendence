@@ -61,13 +61,14 @@ export class DMGateway {
       });
       if (currentUser) {
         this.logger.log(`currentUser found: ${JSON.stringify(currentUser)}`);
-        // currentUserをUserInfoに変換
-        const userInfo: UserInfo = {
-          userId: currentUser.userId,
-          userName: currentUser.userName,
-          icon: currentUser.icon,
-        };
-        this.server.to(socket.id).emit('currentUser', userInfo);
+        // // currentUserをUserInfoに変換
+        // const userInfo: UserInfo = {
+        //   userId: currentUser.userId,
+        //   userName: currentUser.userName,
+        //   icon: currentUser.icon,
+        // };
+        // this.server.to(socket.id).emit('currentUser', userInfo);
+        this.server.to(socket.id).emit('currentUser', currentUser);
       } else {
         this.logger.error('No current user found');
       }
@@ -86,13 +87,14 @@ export class DMGateway {
       });
       if (recipientUser) {
         this.logger.log(`Recipient found: ${JSON.stringify(recipientUser)}`);
-        // recipientUserをUserInfoに変換
-        const recipient: UserInfo = {
-          userId: recipientUser.userId,
-          userName: recipientUser.userName,
-          icon: recipientUser.icon,
-        };
-        this.server.to(socket.id).emit('recipient', recipient);
+        // // recipientUserをUserInfoに変換
+        // const recipient: UserInfo = {
+        //   userId: recipientUser.userId,
+        //   userName: recipientUser.userName,
+        //   icon: recipientUser.icon,
+        // };
+        // this.server.to(socket.id).emit('recipient', recipient);
+        this.server.to(socket.id).emit('recipient', recipientUser);
       } else {
         this.logger.error('No recipient found');
       }
@@ -101,37 +103,37 @@ export class DMGateway {
     }
   }
 
-  // userRepositoryからユーザー情報を取得
-  @SubscribeMessage('getUserInfo')
-  async handleGetUserInfo(@MessageBody() userName: string, @ConnectedSocket() socket: Socket) {
-    try {
-      this.logger.log(`getUserInfo: ${userName}`);
-      const user = await this.userRepository.findOne({ where: { userName: userName } });
-      if (user) {
-        this.logger.log(`User found: ${JSON.stringify(user)}`);
-        // userをUserDataに変換
-        const userInfo: UserData = {
-          user: {
-            userId: user.userId,
-            userName: user.userName,
-            icon: user.icon,
-          },
-          email: user.email,
-          createdAt: formatDate(user.createdAt),
-          name42: user.name42,
-        };
-        this.server.to(socket.id).emit('userInfo', userInfo);
-      } else {
-        this.logger.error('No user found');
-      }
-    } catch (error) {
-      this.logger.error(error);
-    }
-  }
+  // // userRepositoryからユーザー情報を取得
+  // @SubscribeMessage('getUserInfo')
+  // async handleGetUserInfo(@MessageBody() userName: string, @ConnectedSocket() socket: Socket) {
+  //   try {
+  //     this.logger.log(`getUserInfo: ${userName}`);
+  //     const user = await this.userRepository.findOne({ where: { userName: userName } });
+  //     if (user) {
+  //       this.logger.log(`User found: ${JSON.stringify(user)}`);
+  //       // userをUserDataに変換
+  //       const userInfo: UserData = {
+  //         user: {
+  //           userId: user.userId,
+  //           userName: user.userName,
+  //           icon: user.icon,
+  //         },
+  //         email: user.email,
+  //         createdAt: formatDate(user.createdAt),
+  //         name42: user.name42,
+  //       };
+  //       this.server.to(socket.id).emit('userInfo', userInfo);
+  //     } else {
+  //       this.logger.error('No user found');
+  //     }
+  //   } catch (error) {
+  //     this.logger.error(error);
+  //   }
+  // }
 
   @SubscribeMessage('getDMLogs')
   async handleGetDMLogs(
-    @MessageBody() payload: { sender: UserInfo; receiver: UserInfo },
+    @MessageBody() payload: { sender: User; receiver: User },
     @ConnectedSocket() socket: Socket,
   ) {
     try {
@@ -158,24 +160,24 @@ export class DMGateway {
       const dmLogs = await this.dmLogRepository.find({
         where: [
           {
-            senderName: payload.sender.userName,
-            recipientName: payload.receiver.userName,
+            sender: payload.sender,
+            recipient: payload.receiver,
           },
           {
-            recipientName: payload.sender.userName,
+            recipient: payload.sender,
             // ブロックしたユーザーとのDMを除外
-            senderName: Not(In(blockedUsernames)),
+            sender: Not(In(blockedUsernames)),
           },
         ],
         order: { timestamp: 'ASC' },
       });
       this.logger.log(`dmLogs: ${JSON.stringify(dmLogs)}`);
 
-      // dmLongsをdirectMessage[]に変換
+      // dmLogsをdirectMessage[]に変換
       const directMessages: DirectMessage[] = dmLogs.map((dmLog) => {
         return {
-          sender: dmLog.senderName,
-          recipient: dmLog.recipientName,
+          sender: dmLog.sender,
+          recipient: dmLog.recipient,
           text: dmLog.message,
           timestamp: dmLog.timestamp,
         };
@@ -190,7 +192,7 @@ export class DMGateway {
 
   @SubscribeMessage('sendDM')
   async handleSendDM(
-    @MessageBody() payload: { sender: UserInfo; receiver: UserInfo; message: string },
+    @MessageBody() payload: { sender: User; receiver: User; message: string },
     @ConnectedSocket() socket: Socket,
   ) {
     try {
@@ -205,8 +207,8 @@ export class DMGateway {
 
       // DirectMessageを保存
       const dmLog = new DmLog();
-      dmLog.senderName = payload.sender.userName;
-      dmLog.recipientName = payload.receiver.userName;
+      dmLog.sender = payload.sender;
+      dmLog.recipient = payload.receiver;
       dmLog.message = payload.message;
       dmLog.timestamp = formatDate(new Date());
       await this.dmLogRepository.save(dmLog);
@@ -216,9 +218,9 @@ export class DMGateway {
       const dmLogs = await this.dmLogRepository.find({
         where: [
           {
-            recipientName: payload.receiver.userName,
+            recipient: payload.receiver,
             // 送信者がブロックされている場合は除外する
-            senderName: Not(
+            sender: Not(
               In(
                 await this.userBlockRepository
                   // ブロックされたユーザーのリストを取得
@@ -228,8 +230,8 @@ export class DMGateway {
             ),
           },
           {
-            senderName: payload.receiver.userName,
-            recipientName: payload.sender.userName,
+            sender: payload.receiver,
+            recipient: payload.sender,
           },
         ],
         order: { timestamp: 'ASC' },
@@ -239,8 +241,8 @@ export class DMGateway {
       // dmLogsをdirectMessage[]に変換
       const directMessages: DirectMessage[] = dmLogs.map((dmLog) => {
         return {
-          sender: dmLog.senderName,
-          recipient: dmLog.recipientName,
+          sender: dmLog.sender,
+          recipient: dmLog.recipient,
           text: dmLog.message,
           timestamp: dmLog.timestamp,
         };
@@ -259,7 +261,7 @@ export class DMGateway {
 
   @SubscribeMessage('blockUser')
   async handleBlockUser(
-    @MessageBody() payload: { sender: UserInfo; receiver: UserInfo },
+    @MessageBody() payload: { sender: User; receiver: User },
     @ConnectedSocket() socket: Socket,
   ) {
     try {
@@ -290,7 +292,7 @@ export class DMGateway {
 
   @SubscribeMessage('unblockUser')
   async handleUnblockUser(
-    @MessageBody() payload: { sender: UserInfo; receiver: UserInfo },
+    @MessageBody() payload: { sender: User; receiver: User },
     @ConnectedSocket() socket: Socket,
   ) {
     try {
