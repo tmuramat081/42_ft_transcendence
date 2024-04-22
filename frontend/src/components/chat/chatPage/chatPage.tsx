@@ -1,6 +1,7 @@
 /*eslint-disable*/
 'use client';
 import React, { useState, useEffect, useCallback } from 'react';
+import { Avatar } from '@mui/material';
 import Notification from './Notification';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
@@ -9,6 +10,8 @@ import { useAuth } from '@/providers/useAuth';
 import { UserInfo, ChatMessage, Room } from '@/types/chat/chat';
 import { User } from '@/types/user';
 import './chatPage.css';
+
+const API_URL = process.env.NEXT_PUBLIC_API_URL ?? '';
 
 export default function ChatPage() {
   const router = useRouter();
@@ -424,13 +427,15 @@ export default function ChatPage() {
                 key={index}
                 className="participant"
               >
-                <Image
-                  src={participant.icon}
+                <Avatar
+                  src={`${API_URL}/api/uploads/${participant.icon}`}
                   alt={participant.userName}
                   className="participant-icon"
                   width={50}
                   height={50}
-                />
+                >
+                  {participant.icon}
+                </Avatar>
                 <div className="participant-name">{participant.userName}</div>
               </div>
             ))}

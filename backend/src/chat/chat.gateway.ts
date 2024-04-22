@@ -341,8 +341,8 @@ export class ChatGateway {
           (participant) => participant.id === join.loginUser.userId,
         );
         if (!existingUser) {
-          // onlineUsersRepositoryからユーザー情報を取得して追加
-          const user = await this.onlineUsersRepository.findOne({
+          // UserRepositoryからユーザー情報を取得して追加
+          const user = await this.userRepository.findOne({
             where: { userId: join.loginUser.userId },
           });
           if (!user) {
@@ -351,7 +351,7 @@ export class ChatGateway {
           }
           room.roomParticipants.push({
             id: user.userId,
-            name: user.name,
+            name: user.userName,
             icon: user.icon,
           });
         }
