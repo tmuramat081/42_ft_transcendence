@@ -105,22 +105,6 @@ export class ChatGateway {
       // ダミーユーザーを登録
       // await this.createDummyUsers();
 
-      // userRepositoryのデータをオンラインユーザーリストに追加
-      // const user = await this.userRepository.find();
-      // await Promise.all(
-      //   user.map(async (user) => {
-      //     const onlineUser = new OnlineUsers();
-      //     onlineUser.userId = user.userId;
-      //     onlineUser.name = user.userName;
-      //     onlineUser.icon = user.icon;
-      //     //iconが空の場合はダミーアイコンを設定
-      //     if (!onlineUser.icon) {
-      //       onlineUser.icon = 'https://pics.prcm.jp/db3b34efef8a0/86032013/jpeg/86032013.jpeg';
-      //     }
-      //     await this.onlineUsersRepository.save(onlineUser);
-      //   }),
-      // );
-
       // すでにログインユーザーが存在するかどうかを確認
       const existingUser = await this.onlineUsersRepository.findOne({
         where: { userId: sender.userId, name: sender.userName },
@@ -130,9 +114,6 @@ export class ChatGateway {
         onlineUser.userId = sender.userId;
         onlineUser.name = sender.userName;
         onlineUser.icon = sender.icon;
-        if (!onlineUser.icon) {
-          onlineUser.icon = 'https://pics.prcm.jp/db3b34efef8a0/86032013/jpeg/86032013.jpeg';
-        }
         await this.onlineUsersRepository.save(onlineUser);
       }
 
@@ -265,9 +246,6 @@ export class ChatGateway {
       chatLog.roomName = data.selectedRoom;
       chatLog.sender = data.loginUser.userName;
       chatLog.icon = data.loginUser.icon;
-      if (!chatLog.icon) {
-        chatLog.icon = 'https://pics.prcm.jp/db3b34efef8a0/86032013/jpeg/86032013.jpeg';
-      }
       chatLog.message = data.message;
       chatLog.timestamp = formatDate(new Date());
       await this.chatLogRepository.save(chatLog);

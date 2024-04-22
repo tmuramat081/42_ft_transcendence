@@ -67,9 +67,6 @@ export class DMGateway {
           userName: currentUser.userName,
           icon: currentUser.icon,
         };
-        if (!userInfo.icon) {
-          userInfo.icon = 'https://pics.prcm.jp/db3b34efef8a0/86032013/jpeg/86032013.jpeg';
-        }
         this.server.to(socket.id).emit('currentUser', userInfo);
       } else {
         this.logger.error('No current user found');
@@ -95,9 +92,6 @@ export class DMGateway {
           userName: recipientUser.userName,
           icon: recipientUser.icon,
         };
-        if (!recipient.icon) {
-          recipient.icon = 'https://pics.prcm.jp/db3b34efef8a0/86032013/jpeg/86032013.jpeg';
-        }
         this.server.to(socket.id).emit('recipient', recipient);
       } else {
         this.logger.error('No recipient found');
@@ -134,25 +128,6 @@ export class DMGateway {
       this.logger.error(error);
     }
   }
-
-  // @SubscribeMessage('startDM')
-  // async handleStartDM(
-  //   @MessageBody() payload: { sender: UserInfo; receiver: UserInfo },
-  //   @ConnectedSocket() socket: Socket,
-  // ) {
-  //   try {
-  //     if (!payload.sender || !payload.receiver) {
-  //       this.logger.error('Invalid DM data:', payload);
-  //       return;
-  //     }
-  //     this.logger.log(
-  //       `startDM: ${payload.sender.userName} started DM with ${payload.receiver.userName}`,
-  //     );
-  //   } catch (error) {
-  //     this.logger.error(`Error starting DM: ${(error as Error).message}`);
-  //     throw error;
-  //   }
-  // }
 
   @SubscribeMessage('getDMLogs')
   async handleGetDMLogs(
