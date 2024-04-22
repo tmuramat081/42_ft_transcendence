@@ -88,10 +88,17 @@ export default function ChatPage() {
       setParticipants(roomParticipants);
     });
 
-    socket.on('roomInvitation', (sender: UserInfo, room: string) => {
-      console.log('Received roomInvitation from server:', sender, room);
-      setNotification(`${sender.userName} invited you to join ${room}`);
+    socket.on('roomInvitation', (invitationData) => {
+      console.log('Received roomInvitation from server:', invitationData);
+      setNotification(
+        `${invitationData.sender.userName} invited you to join ${invitationData.room}`,
+      );
     });
+
+    // socket.on('roomInvitation', (sender: UserInfo, room: string) => {
+    //   console.log('Received roomInvitation from server:', sender, room);
+    //   setNotification(`${sender.userName} invited you to join ${room}`);
+    // });
 
     socket.on('gameInvitation', (sender: UserInfo, game: string) => {
       console.log('Received gameInvitation from server:', sender, game);
@@ -133,6 +140,14 @@ export default function ChatPage() {
   useEffect(() => {
     console.log('Room chat logs updated:', roomchatLogs);
   }, [roomchatLogs]);
+
+  useEffect(() => {
+    console.log('Participants updated:', participants);
+  }, [participants]);
+
+  useEffect(() => {
+    console.log('Notification:', notification);
+  }, [notification]);
 
   const onClickSubmit = useCallback(() => {
     if (!socket) return;
@@ -237,6 +252,11 @@ export default function ChatPage() {
     invitees.forEach((invitee) => {
       socket.emit('inviteToRoom', { sender, room: selectedRoom, invitee });
     });
+    setNotification(
+      `you invited users to ${selectedRoom}: ${invitees
+        .map((invitee) => invitee.userName)
+        .join(', ')}`,
+    );
     setInvitees([]);
   }, [sender, selectedRoom, invitees, socket]);
 
