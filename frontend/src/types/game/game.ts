@@ -24,8 +24,11 @@ export type GameSetting = {
 export type FinishedGameInfo = {
     winnerName: string;
     loserName: string;
+    winnerAliasName: string;
+    loserAliasName: string;
     winnerScore: number;
     loserScore: number;
+    round: number;
 };
 
 export type Invitation = {
@@ -83,3 +86,9 @@ export const GameState = {
 } as const;
 
 export type GameState = (typeof GameState)[keyof typeof GameState];
+
+export type PlayerInfo = {
+    name: string;
+    aliasName: string;
+    round: number;
+};

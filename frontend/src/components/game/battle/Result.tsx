@@ -1,25 +1,29 @@
 /* eslint-disable */
 import Link from 'next/link';
-import { Button, Grid, Typography } from '@mui/material';
+import { Button, Grid, Typography, Box, Paper } from '@mui/material';
 import { usePlayStateStore, PlayState } from '@/store/game/playState';
 import { FinishedGameInfo } from '@/types/game/game';
 import { useAuth } from '@/providers/useAuth';
 import { useState, useEffect, useCallback } from 'react';
 import { Wait } from '../index/Wait';
 import { useSocketStore } from '@/store/game/clientSocket';
+import VideogameAssetSharpIcon from '@mui/icons-material/VideogameAssetSharp';
+import { usePlayersStore } from '@/store/game/player';
 
 type Props = {
     finishedGameInfo: FinishedGameInfo;
+    setOpenMatchError: (open: boolean) => void;
 }
 
 // 結果を表示する
 
-export const Result = ({ finishedGameInfo }: Props) => {
+export const Result = ({ finishedGameInfo, setOpenMatchError }: Props) => {
     const { playState } = usePlayStateStore();
-    //const { updatePlayState } = usePlayStateStore((store) => store.updatePlayState);
+    const updatePlayState = usePlayStateStore((store) => store.updatePlayState);
     const { loginUser, getCurrentUser } = useAuth();
-    //const [ openMatchError, setOpenMatchError ] = useState(false);
+
     const { socket } = useSocketStore();
+    const { players } = usePlayersStore();
 
     useEffect(() => {
         getCurrentUser();
@@ -30,27 +34,28 @@ export const Result = ({ finishedGameInfo }: Props) => {
     // // 何回戦目かを送れるようにする
     // // Next Gameを押したら、waitingになるようにする
     // // useCallback: 関数をメモ化する
-    // const start = useCallback(() => {
-    //     // ログインしていない場合はエラー
-    //     if (!loginUser) {
-    //         //setOpenMatchError(true);
-    //         return;
-    //     }
-    //     // マッチングエラーを非表示
-    //     setOpenMatchError(false);
-    //     // ユーザーの状態を更新
-    //     updatePlayState(PlayState.stateWaiting);
-    //     // マッチング開始
-    //     // TODO:
-    //     // 1回線かどうかとユーザー名を送るようにする
-    //     socket.emit("playStart", { userId: loginUser.userId }, ( res: Boolean ) => {
-    //         if (!res) {
-    //             setOpenMatchError(true);
-    //             //updatePlayState(PlayState.stateNothing);
-    //         }
-    //     });
-    //     updatePlayState(PlayState.stateWaiting);
-    // }, [loginUser, socket, updatePlayState, setOpenMatchError]);
+    const start = useCallback((ariasName: string, round: number) => {
+        // ログインしていない場合はエラー
+        if (!loginUser) {
+            //setOpenMatchError(true);
+            return;
+        }
+        // マッチングエラーを非表示
+        setOpenMatchError(false);
+        // ユーザーの状態を更新
+        updatePlayState(PlayState.stateWaiting);
+        // マッチング開始
+        // TODO:
+        // 1回線かどうかとユーザー名を送るようにする
+        //socket.emit("playStart", { userId: loginUser.userId }, ( res: Boolean ) => {
+        socket.emit("playStart", { userId: loginUser.userId, aliasName: ariasName, round: round }, ( res: Boolean ) => {
+            if (!res) {
+                setOpenMatchError(true);
+                //updatePlayState(PlayState.stateNothing);
+            }
+        });
+        updatePlayState(PlayState.stateWaiting);
+    }, [loginUser, socket, updatePlayState, setOpenMatchError]);
 
     console.log(playState);
 
@@ -167,18 +172,32 @@ export const Result = ({ finishedGameInfo }: Props) => {
           <Button variant="contained">Back to Home</Button>
         </Link>
       </Grid>
-      
+
+      {/** room.roundを表示 */}
+      {/* { finishedGameInfo.round } */}
       {finishedGameInfo.winnerName === loginUser?.userName && (
       <Grid item>
-        <Link href="/game/index">
+        {/* <Link href="/game/index">
           <Button variant="contained">Next Game</Button>
-        </Link>
+        </Link> */}
+          <Button
+            size="large"
+            variant="contained"
+            color="primary"
+            onClick={() => start(finishedGameInfo.winnerAliasName, finishedGameInfo.round + 1)}
+            endIcon={<VideogameAssetSharpIcon />}
+            sx={{
+                mt: 2,
+                mb: 2,
+                boxShadow: 8,
+            }}
+          >
+            <Box fontWeight="fontWeightBold">
+              Next Game
+            </Box>
+          </Button>
       </Grid>
       )}
-
-      {/* {playState === PlayState.stateWaiting && (
-        <Wait openMatchError={openMatchError} />
-      )} */}
       </Grid>
     )
 }

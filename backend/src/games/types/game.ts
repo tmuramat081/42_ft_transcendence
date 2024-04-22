@@ -60,6 +60,8 @@ export type Player = {
     socket: Socket | RemoteSocket<DefaultEventsMap, DefaultEventsMap>;
     height: number;
     score: number;
+    aliasName: string;
+    round: number;
 };
 
 export type Ball = {
@@ -92,7 +94,6 @@ export type RoomInfo = {
     supporters: Socket[];
     ball: Ball;
     ballVec: BallVec;
-    // ?
     isPlayer1Turn: boolean;
     gameSetting: GameSetting;
     // バーの長さ設定
@@ -116,8 +117,11 @@ export type GameInfo = {
 export type FinishedGameInfo = {
     winnerName: string;
     loserName: string;
+    winnerAliasName: string;
+    loserAliasName: string;
     winnerScore: number;
     loserScore: number;
+    round: number;
 };
 
 export type Friend = {
@@ -140,4 +144,10 @@ export type FriendGameInfo = {
     player2Name: string;
     gameState: GameState;
     gameSetting: GameSetting;
+};
+
+export type PlayerInfo = {
+    name: string;
+    aliasName: string;
+    round: number;
 };
