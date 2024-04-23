@@ -19,16 +19,6 @@ export default function DMPage({ params }: { params: string }) {
   const [message, setMessage] = useState('');
   const [sender, setSender] = useState<User | null>(null);
   const [receiver, setReceiver] = useState<User | null>(null);
-  // const [userinfo, setUserInfo] = useState<UserData>({
-  //   user: {
-  //     userId: -1,
-  //     userName: '',
-  //     icon: '',
-  //   },
-  //   email: '',
-  //   createdAt: '',
-  //   name42: '',
-  // });
   const [dmLogs, setDMLogs] = useState<DirectMessage[]>([]);
   const [blocked, setBlocked] = useState(false);
 
@@ -38,13 +28,13 @@ export default function DMPage({ params }: { params: string }) {
 
     getCurrentUser()
       .then((user) => {
+        console.log('user:', user);
         socket.emit('getCurrentUser', user);
       })
       .catch((error) => {
         console.error('Error getting user:', error);
       });
     socket.emit('getRecipient', params);
-    // socket.emit('getUserInfo', params);
   }, [socket]);
 
   useEffect(() => {
@@ -55,30 +45,14 @@ export default function DMPage({ params }: { params: string }) {
     });
 
     socket.on('recipient', (recipientUser: User) => {
-      // const receiver: UserInfo = {
-      //   userId: recipient.userId,
-      //   userName: recipient.userName,
-      //   icon: recipient.icon,
-      // };
       setReceiver(recipientUser);
-      // console.log('receiver', receiver);
     });
-
-    // socket.on('userInfo', (userData: UserData) => {
-    //   setUserInfo(userData);
-    // });
 
     return () => {
       socket.off('currentUser');
       socket.off('recipient');
-      // socket.off('userInfo');
     };
   }, [socket, params]);
-
-  // useEffect(() => {
-  //   if (!socket) return;
-  //   console.log('sender:', sender);
-  // }, [sender]);
 
   useEffect(() => {
     if (!socket) return;
@@ -99,7 +73,6 @@ export default function DMPage({ params }: { params: string }) {
 
   const onClickSubmit = useCallback(() => {
     if (!socket) return;
-    console.log(`${sender} submitting DM to ${receiver}: ${message}`);
     socket.emit('sendDM', { sender: sender, receiver: receiver, message: message });
     setMessage('');
   }, [sender, receiver, message, socket]);
@@ -107,12 +80,10 @@ export default function DMPage({ params }: { params: string }) {
   const handleBlockUser = useCallback(() => {
     if (!socket) return;
     if (blocked) {
-      console.log(`${sender} unblocking ${receiver}`);
       socket.emit('unblockUser', { sender: sender, receiver: receiver });
       setBlocked(false);
       socket.emit('getDMLogs', { sender: sender, receiver: receiver });
     } else {
-      console.log(`${sender} blocking ${receiver}`);
       socket.emit('blockUser', { sender: sender, receiver: receiver });
       setBlocked(true);
       setDMLogs([]);
@@ -166,11 +137,11 @@ export default function DMPage({ params }: { params: string }) {
         {dmLogs.map((message, index) => (
           <div
             key={index}
-            className={`message-bubble ${message.sender === sender ? 'self' : 'other'}`}
+            className={`message-bubble ${message.senderId === sender?.userId ? 'self' : 'other'}`}
           >
             <Avatar
               src={`${API_URL}/api/uploads/${
-                message.sender === sender ? sender.icon : receiver?.icon
+                message.senderId === sender?.userId ? sender.icon : receiver?.icon
               }`}
               alt="User Icon"
               className="icon"

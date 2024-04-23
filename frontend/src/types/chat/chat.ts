@@ -27,8 +27,8 @@ export type ChatMessage = {
 };
 
 export type DirectMessage = {
-  sender: User;
-  recipient: User;
+  senderId: number;
+  recipientId: number;
   text: string;
   timestamp: string;
 };
