@@ -1,9 +1,12 @@
+// inviteの通知がでない
+// ユーザー情報アップデート
+// ゲーム参加のリンクを追加
+
 /*eslint-disable*/
 'use client';
 import React, { useState, useEffect, useCallback } from 'react';
 import { Avatar } from '@mui/material';
 import Notification from './Notification';
-import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { useWebSocket } from '@/providers/webSocketProvider';
 import { useAuth } from '@/providers/useAuth';
@@ -22,12 +25,10 @@ export default function ChatPage() {
   const [newRoomName, setNewRoomName] = useState('');
   const [roomList, setRoomList] = useState<string[]>([]);
   const [selectedRoom, setSelectedRoom] = useState<string | null>(null);
-  const [sender, setSender] = useState<UserInfo>({ userId: 0, userName: '', icon: '' });
   const [roomchatLogs, setRoomChatLogs] = useState<{ [roomId: string]: ChatMessage[] }>({});
   const [isDeleteButtonVisible, setDeleteButtonVisible] = useState(false);
   const [participants, setParticipants] = useState<UserInfo[]>([]);
   const [onlineUsers, setOnlineUsers] = useState<UserInfo[]>([]);
-  const [invitee, setInvitee] = useState<UserInfo>({ userId: 0, userName: '', icon: '' });
   const [invitees, setInvitees] = useState<UserInfo[]>([]);
   const [notification, setNotification] = useState<string | null>(null);
   const [gameList, setGameList] = useState<string[]>([]);
@@ -40,14 +41,6 @@ export default function ChatPage() {
     getCurrentUser()
       .then((user) => {
         socket.emit('getLoginUser', user);
-        if (user) {
-          const senderData = {
-            userId: user.userId,
-            userName: user.userName,
-            icon: user.icon,
-          };
-          setSender(senderData);
-        }
       })
       .catch((error) => {
         console.error('Error getting user:', error);
@@ -56,67 +49,74 @@ export default function ChatPage() {
 
   useEffect(() => {
     if (!socket) return;
-    console.log('sender:', sender);
-    socket.emit('getRoomList', sender);
-    socket.emit('getGameList', sender);
-    socket.emit('getOnlineUsers', sender);
+
+    const intervalId = setInterval(() => {
+      getCurrentUser()
+        .then((user) => {
+          if (!user) {
+            // 取得できなかった場合はloginUsersから削除
+            socket.emit('logoutUser', LoginUser);
+            setLoginUser(null);
+          }
+          socket.emit('getOnlineUsers', user);
+        })
+        .catch((error) => {
+          console.error('Error getting user:', error);
+        });
+    }, 60000); // 60秒ごとにgetCurrentUserを呼び出す
+
+    return () => {
+      clearInterval(intervalId); // アンマウント時にクリア
+    };
+  }, [socket]);
+
+  useEffect(() => {
+    if (!socket) return;
+    socket.emit('getRoomList', LoginUser);
+    socket.emit('getOnlineUsers', LoginUser);
 
     return () => {
       socket.off('getRoomList');
-      socket.off('getGameList');
       socket.off('getOnlineUsers');
     };
-  }, [sender]);
+  }, [LoginUser]);
 
   useEffect(() => {
     if (!socket) return;
 
     socket.on('roomList', (rooms: Room[]) => {
-      console.log('Received roomList from server:', rooms);
       const roomNames = rooms.map((room) => room.roomName);
       setRoomList(roomNames);
     });
 
     socket.on('gameList', (games: string[]) => {
-      console.log('Received gameList from server:', games);
       setGameList(games);
     });
 
     socket.on('onlineUsers', (users: UserInfo[]) => {
-      console.log('Received online users from server:', users);
       setOnlineUsers(users);
     });
 
-    socket.on('loginUser', (user: User) => {
-      console.log('Received LoginUser from server:', user);
-      setLoginUser(user);
+    socket.on('loginUser', (LoginUser: User) => {
+      setLoginUser(LoginUser);
     });
 
     socket.on('roomParticipants', (roomParticipants: UserInfo[]) => {
-      console.log('Received roomParticipants from server:', roomParticipants);
       setParticipants(roomParticipants);
     });
 
     socket.on('roomInvitation', (invitationData) => {
-      console.log('Received roomInvitation from server:', invitationData);
       setNotification(
         `${invitationData.sender.userName} invited you to join ${invitationData.room}`,
       );
     });
 
-    // socket.on('roomInvitation', (sender: UserInfo, room: string) => {
-    //   console.log('Received roomInvitation from server:', sender, room);
-    //   setNotification(`${sender.userName} invited you to join ${room}`);
-    // });
-
-    socket.on('gameInvitation', (sender: UserInfo, game: string) => {
-      console.log('Received gameInvitation from server:', sender, game);
-      setNotification(`${sender.userName} invited you to play ${game}`);
+    socket.on('gameInvitation', (sender: User) => {
+      setNotification(`${sender.userName} invited you to play Game`);
     });
 
-    socket.on('newDM', (sender: UserInfo) => {
-      console.log('Received newDM from server:', sender);
-      setNotification(`${sender.userName} sent you a new message`);
+    socket.on('newDM', (LoginUser: User) => {
+      setNotification(`${LoginUser.userName} sent you a new message`);
     });
 
     socket.on('roomError', (error) => {
@@ -137,7 +137,6 @@ export default function ChatPage() {
   useEffect(() => {
     if (!socket) return;
     socket.on('chatLogs', (chatMessages: ChatMessage[]) => {
-      console.log('Received chatLogs from server:', chatMessages);
       setRoomChatLogs((prevRoomChatLogs) => ({ ...prevRoomChatLogs, [roomID]: chatMessages }));
     });
 
@@ -147,31 +146,21 @@ export default function ChatPage() {
   }, [roomID, roomchatLogs, socket]);
 
   useEffect(() => {
-    console.log('Room chat logs updated:', roomchatLogs);
-  }, [roomchatLogs]);
-
-  useEffect(() => {
-    console.log('Participants updated:', participants);
-  }, [participants]);
-
-  useEffect(() => {
     console.log('Notification:', notification);
   }, [notification]);
 
   const onClickSubmit = useCallback(() => {
     if (!socket) return;
-    console.log(`${sender.userName} submitting message, '${message}'`);
     socket.emit('talk', { selectedRoom, loginUser, message });
     setMessage('');
-  }, [selectedRoom, sender, message, socket]);
+  }, [selectedRoom, LoginUser, message, socket]);
 
   const onClickCreateRoom = useCallback(() => {
     if (!socket) return;
-    console.log(`${sender.userName} create new room: ${newRoomName}`);
-    socket.emit('createRoom', { sender, roomName: newRoomName });
+    socket.emit('createRoom', { LoginUser, roomName: newRoomName });
     setNewRoomName('');
     setSelectedRoom('');
-  }, [sender, newRoomName, socket]);
+  }, [LoginUser, newRoomName, socket]);
 
   const handleRoomChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
     if (!socket) return;
@@ -182,11 +171,9 @@ export default function ChatPage() {
       setRoomID('');
       setMessage('');
       setDeleteButtonVisible(false);
-      socket.emit('leaveRoom', { sender, room: selectedRoom });
+      socket.emit('leaveRoom', { LoginUser, room: selectedRoom });
       return;
     }
-    console.log('newRoomID', newRoomID);
-    console.log(`${sender.userName} joined room: ${roomList[Number(newRoomID)]}`);
     setRoomID(newRoomID);
     setSelectedRoom(roomList[Number(newRoomID)]);
     setMessage(''); // ルームが変更されたら新しいメッセージもリセット
@@ -197,8 +184,7 @@ export default function ChatPage() {
   const onClickLeaveRoom = useCallback(() => {
     if (!socket) return;
     if (selectedRoom) {
-      console.log(`${sender.userName} left Room: ${selectedRoom}`);
-      socket.emit('leaveRoom', { sender, room: selectedRoom });
+      socket.emit('leaveRoom', { LoginUser, room: selectedRoom });
       setSelectedRoom(null);
       setDeleteButtonVisible(false);
       setMessage('');
@@ -208,13 +194,12 @@ export default function ChatPage() {
       delete updatedLogs[selectedRoom];
       setRoomChatLogs(updatedLogs);
     }
-  }, [selectedRoom, roomchatLogs, sender, socket]);
+  }, [selectedRoom, roomchatLogs, LoginUser, socket]);
 
   const onClickDeleteRoom = useCallback(() => {
     if (!socket) return;
     if (selectedRoom) {
-      console.log(`${sender.userName} deleted Room: ${selectedRoom}`);
-      socket.emit('deleteRoom', { sender, room: selectedRoom });
+      socket.emit('deleteRoom', { LoginUser, room: selectedRoom });
       setSelectedRoom(null);
       setDeleteButtonVisible(false);
       setParticipants([]);
@@ -226,7 +211,7 @@ export default function ChatPage() {
       const newRoomList = roomList.filter((room) => room !== selectedRoom);
       setRoomList(newRoomList);
     }
-  }, [selectedRoom, roomList, sender, roomchatLogs, socket]);
+  }, [selectedRoom, roomList, LoginUser, roomchatLogs, socket]);
 
   const handleLinkClick = (recipient: UserInfo) => {
     if (!socket) return;
@@ -236,30 +221,23 @@ export default function ChatPage() {
     router.push(as);
   };
 
-  const handleInviteGame = (event: React.ChangeEvent<HTMLSelectElement>) => {
-    const invitedGame = event.target.value;
-    if (!socket || !invitedGame || invitees.length === 0) return;
-    console.log(`${sender.userName} invited users to play ${invitedGame}:`, invitees);
+  const onClickInviteGame = useCallback(() => {
+    if (!socket || invitees.length === 0) return;
     // 選択された全てのユーザーを招待する
     invitees.forEach((invitee) => {
-      socket.emit('inviteToGame', { sender, game: invitedGame, invitee });
+      socket.emit('inviteToGame', { LoginUser, invitee });
     });
     setNotification(
-      `you invited users to play ${invitedGame}: ${invitees
-        .map((invitee) => invitee.userName)
-        .join(', ')}`,
+      `you invited users to play Game: ${invitees.map((invitee) => invitee.userName).join(', ')}`,
     );
     setInvitees([]);
-    setSelectedGame(null);
-  };
+  }, [LoginUser, selectedGame, invitees, socket]);
 
   const onClickInviteRoom = useCallback(() => {
     if (!socket || !selectedRoom || invitees.length === 0) return;
-    console.log(`${sender.userName} invited users to ${selectedRoom}:`, invitees);
-
     // 選択された全てのユーザーを招待する
     invitees.forEach((invitee) => {
-      socket.emit('inviteToRoom', { sender, room: selectedRoom, invitee });
+      socket.emit('inviteToRoom', { LoginUser, room: selectedRoom, invitee });
     });
     setNotification(
       `you invited users to ${selectedRoom}: ${invitees
@@ -267,7 +245,7 @@ export default function ChatPage() {
         .join(', ')}`,
     );
     setInvitees([]);
-  }, [sender, selectedRoom, invitees, socket]);
+  }, [LoginUser, selectedRoom, invitees, socket]);
 
   const handleCheckboxChange = (user: UserInfo) => {
     // チェックされたユーザーを追加または削除する
@@ -285,7 +263,6 @@ export default function ChatPage() {
 
   return (
     <div className="chat-container">
-      {/* <h1>Chat Page</h1> */}
       {/* 戻るボタン */}
       <div className="back-button">
         <button
@@ -378,23 +355,13 @@ export default function ChatPage() {
               </option>
             ))}
           </select>
-          {/* Gameの選択UI */}
-          <select
-            onChange={(event) => {
-              handleInviteGame(event);
-            }}
-            value={selectedGame || ''}
+          {/* Invite Game ボタン */}
+          <button
+            className="btn-small"
+            onClick={onClickInviteGame}
           >
-            <option value="">Invite Game</option>
-            {gameList.map((game, index) => (
-              <option
-                key={index}
-                value={game}
-              >
-                {game}
-              </option>
-            ))}
-          </select>
+            Invite Game
+          </button>
           {/* Invite Room ボタン */}
           {isDeleteButtonVisible && (
             <button
@@ -470,7 +437,9 @@ export default function ChatPage() {
           {roomchatLogs[roomID]?.map((message, index) => (
             <div
               key={index}
-              className={`message-bubble ${message.user === sender.userName ? 'self' : 'other'}`}
+              className={`message-bubble ${
+                message.user === LoginUser?.userName ? 'self' : 'other'
+              }`}
             >
               <Avatar
                 src={`${API_URL}/api/uploads/${message.photo}`}
