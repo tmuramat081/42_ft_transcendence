@@ -21,8 +21,8 @@ export interface ChatMessage {
 }
 
 export interface DirectMessage {
-  sender: User;
-  recipient: User;
+  senderId: number;
+  recipientId: number;
   text: string;
   timestamp: string;
 }

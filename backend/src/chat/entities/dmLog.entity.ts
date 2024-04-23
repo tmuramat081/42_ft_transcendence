@@ -6,11 +6,11 @@ export class DmLog {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @ManyToOne(() => User, { eager: true })
-  sender: User;
+  @Column({ nullable: false })
+  senderId: number;
 
-  @ManyToOne(() => User, { eager: true })
-  recipient: User;
+  @Column({ nullable: false })
+  recipientId: number;
 
   @Column()
   message: string;

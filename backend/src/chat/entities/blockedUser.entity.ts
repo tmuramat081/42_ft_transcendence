@@ -8,14 +8,12 @@ export class BlockedUser {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column({ nullable: false })
-  blockedUserId: number; // ユーザーのIDを参照する外部キー
-
+  // ブロックされたユーザー
   @ManyToOne(() => User, { eager: true })
   @JoinColumn({ name: 'blockedUserId' })
   blockedUser: User; // ユーザーとの関連付け
 
   // ブロックされたユーザーが誰によってブロックされたかを示す関係を定義する
-  @ManyToOne(() => UserBlock, (userBlock) => userBlock.blockedUsers)
-  blockedBy: UserBlock;
+  @ManyToOne(() => UserBlock, {})
+  userBlock: UserBlock;
 }
