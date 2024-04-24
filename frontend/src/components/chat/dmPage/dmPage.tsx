@@ -1,3 +1,5 @@
+// 更新するとブロックボタンが戻る
+// ブロックしたユーザーのDMを表示しない
 /*eslint-disable*/
 'use client';
 import React, { useState, useEffect, useCallback } from 'react';
@@ -20,7 +22,9 @@ export default function DMPage({ params }: { params: string }) {
   const [sender, setSender] = useState<User | null>(null);
   const [receiver, setReceiver] = useState<User | null>(null);
   const [dmLogs, setDMLogs] = useState<DirectMessage[]>([]);
-  const [blocked, setBlocked] = useState(false);
+  // ブロック状態の初期値をローカルストレージから読み取る
+  const initialBlocked = localStorage.getItem('blocked') === 'true';
+  const [blocked, setBlocked] = useState(initialBlocked);
 
   useEffect(() => {
     if (!socket || !params) return;
@@ -55,27 +59,31 @@ export default function DMPage({ params }: { params: string }) {
   }, [socket, params]);
 
   useEffect(() => {
-    if (!socket) return;
-    socket.emit('getDMLogs', { sender: sender, receiver: receiver });
-  }, [sender, receiver, socket]);
+    if (!socket || !sender || !receiver || blocked) return;
+    if (!blocked) socket.emit('getDMLogs', { sender: sender, receiver: receiver });
+  }, [sender, receiver, socket, blocked]);
 
   useEffect(() => {
     if (!socket) return;
     socket.on('dmLogs', (directMessages: DirectMessage[]) => {
-      console.log('Received DMLogs from server:', directMessages);
       setDMLogs(directMessages);
     });
 
     return () => {
       socket.off('dmLogs');
     };
-  }, [socket, dmLogs]);
+  }, [socket]);
+
+  // ブロック状態が更新されるたびにローカルストレージに保存する
+  useEffect(() => {
+    localStorage.setItem('blocked', blocked.toString());
+  }, [blocked]);
 
   const onClickSubmit = useCallback(() => {
-    if (!socket) return;
+    if (!socket || blocked) return;
     socket.emit('sendDM', { sender: sender, receiver: receiver, message: message });
     setMessage('');
-  }, [sender, receiver, message, socket]);
+  }, [sender, receiver, message, socket, blocked]);
 
   const handleBlockUser = useCallback(() => {
     if (!socket) return;

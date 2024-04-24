@@ -106,27 +106,19 @@ export class DMGateway {
       // ブロックしたユーザーのリストを取得
       const blockedUsers = await this.userBlockRepository.find({
         where: { user: payload.sender },
-        relations: ['blockedUsers'],
       });
 
-      // ブロックしたユーザーのリストを作成
-      const blockedUsernames = blockedUsers
-        .map((userBlock) => userBlock.blockedUsers.map((bu) => bu.blockedUser))
-        .flat();
-
-      this.logger.log(`Blocked users: ${JSON.stringify(blockedUsernames)}`);
+      this.logger.log(`Blocked users: ${JSON.stringify(blockedUsers)}`);
 
       // DMログを取得
       const dmLogs = await this.dmLogRepository.find({
         where: [
           {
             senderId: payload.sender.userId,
-            recipientId: Not(In(blockedUsernames)),
-            // recipientId: payload.receiver.userId,
+            recipientId: Not(In(blockedUsers)),
           },
           {
-            // senderId: payload.receiver.userId,
-            senderId: Not(In(blockedUsernames)),
+            senderId: Not(In(blockedUsers)),
             recipientId: payload.sender.userId,
           },
         ],
@@ -177,26 +169,19 @@ export class DMGateway {
       // ブロックしたユーザーのリストを取得
       const blockedUsers = await this.userBlockRepository.find({
         where: { user: payload.sender },
-        relations: ['blockedUsers'],
       });
 
-      // ブロックしたユーザーのリストを作成
-      const blockedUsernames = blockedUsers
-        .map((userBlock) => userBlock.blockedUsers.map((bu) => bu.blockedUser))
-        .flat();
-      this.logger.log(`Blocked users: ${JSON.stringify(blockedUsernames)}`);
+      this.logger.log(`Blocked users: ${JSON.stringify(blockedUsers)}`);
 
       // DMログを取得
       const dmLogs = await this.dmLogRepository.find({
         where: [
           {
             senderId: payload.sender.userId,
-            recipientId: Not(In(blockedUsernames)),
-            // recipientId: payload.receiver.userId,
+            recipientId: Not(In(blockedUsers)),
           },
           {
-            // senderId: payload.receiver.userId,
-            senderId: Not(In(blockedUsernames)),
+            senderId: Not(In(blockedUsers)),
             recipientId: payload.sender.userId,
           },
         ],
@@ -213,7 +198,11 @@ export class DMGateway {
         };
       });
 
+      // senderとreceiverにDMログを送信
       this.server.to(socket.id).emit('dmLogs', directMessages);
+      // receiverにDMログを送信
+      this.server.to(payload.receiver.userName).emit('dmLogs', directMessages);
+      // this.server.to(socket.id).emit('dmLogs', directMessages);
     } catch (error) {
       this.logger.error('Error sending DM logs:', error);
       throw error;
@@ -231,38 +220,24 @@ export class DMGateway {
         return { success: false, message: 'Invalid User data' };
       }
 
-      // userBlockとblockedUserエンティティを作成し、関係を設定する
-      const userBlock = new UserBlock();
-      userBlock.user = payload.sender;
-      // await this.userBlockRepository.save(userBlock);
-      // console.log('UserBlock saved:', userBlock); // 追加
-
-      const blockedUser = new BlockedUser();
-      blockedUser.blockedUser = payload.receiver;
-      blockedUser.userBlock = userBlock;
-      // this.logger.log(`blockedby: ${JSON.stringify(blockedUser.blockedBy)}`);
-      // await this.blockedUserRepository.save(blockedUser);
-      // console.log('BlockedUser saved:', blockedUser); // 追加
-
-      userBlock.blockedUsers = [blockedUser];
-      await this.userBlockRepository.save(userBlock);
-      await this.blockedUserRepository.save(blockedUser);
-      console.log('UserBlock saved:', userBlock);
-      console.log('BlockedUser saved:', blockedUser);
-
-      this.logger.log(`${payload.sender.userName} blocked ${payload.receiver.userName}`);
-
-      // ブロックしたユーザーのリストを取得
-      const blockedUsers = await this.userBlockRepository.find({
+      // senderのUserBlockを取得または作成
+      let userBlock = await this.userBlockRepository.findOne({
         where: { user: payload.sender },
-        relations: ['blockedUsers'],
       });
 
-      // ブロックしたユーザーのリストを作成
-      const blockedUsernames = blockedUsers
-        .map((userBlock) => userBlock.blockedUsers.map((bu) => bu.blockedUser))
-        .flat();
-      this.logger.log(`Blocked users: ${JSON.stringify(blockedUsernames)}`);
+      if (!userBlock) {
+        userBlock = new UserBlock();
+        userBlock.user = payload.sender;
+        userBlock.blockedUsers = [payload.receiver.userId];
+      } else {
+        // ユーザーブロックがすでに存在する場合、blockedUsersにreceiverを追加
+        if (!userBlock.blockedUsers.includes(payload.receiver.userId)) {
+          userBlock.blockedUsers.push(payload.receiver.userId);
+        }
+      }
+      await this.userBlockRepository.save(userBlock);
+      this.logger.log(`UserBlock saved: ${JSON.stringify(userBlock)}`);
+      this.logger.log(`${payload.sender.userName} blocked ${payload.receiver.userName}`);
 
       // 成功のレスポンスを返す
       return { success: true, message: 'User blocked successfully' };
@@ -282,11 +257,27 @@ export class DMGateway {
         console.error('Invalid DM data:', payload);
         return { success: false, message: 'Invalid User data' };
       }
-      // ブロックされたユーザーのエンティティを削除する
-      await this.blockedUserRepository.delete({ blockedUser: payload.receiver });
 
-      // ユーザーブロックエンティティを削除する
-      await this.userBlockRepository.delete({ user: payload.sender });
+      // ブロックしたユーザーのリストを取得
+      const blockedUsers = await this.userBlockRepository.find({
+        where: { user: payload.sender },
+      });
+
+      // ブロックしたユーザーからreceiver.userIdを削除
+      const blockedUser = blockedUsers.find((userBlock) =>
+        userBlock.blockedUsers.includes(payload.receiver.userId),
+      );
+
+      if (!blockedUser) {
+        this.logger.error(
+          `${payload.sender.userName} has not blocked ${payload.receiver.userName}`,
+        );
+        return { success: false, message: 'User not blocked' };
+      }
+
+      const index = blockedUser.blockedUsers.indexOf(payload.receiver.userId);
+      blockedUser.blockedUsers.splice(index, 1);
+      await this.userBlockRepository.save(blockedUser);
 
       this.logger.log(`${payload.sender.userName} unblocked ${payload.receiver.userName}`);
 
