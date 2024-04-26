@@ -51,11 +51,11 @@ export default function ChatPage() {
     const intervalId = setInterval(() => {
       getCurrentUser()
         .then((user) => {
-          if (!user) {
-            // 取得できなかった場合はloginUsersから削除
-            socket.emit('logoutUser', LoginUser);
-            setLoginUser(null);
-          }
+          // if (!user) {
+          //   // 取得できなかった場合はloginUsersから削除
+          //   socket.emit('logoutUser', LoginUser);
+          //   setLoginUser(null);
+          // }
           socket.emit('getOnlineUsers', user);
         })
         .catch((error) => {
@@ -105,8 +105,17 @@ export default function ChatPage() {
       );
     });
 
-    socket.on('gameInvitation', (sender: User) => {
-      setNotification(`${sender.userName} invited you to play Game`);
+    // socket.on('gameInvitation', (sender: User) => {
+    //   setNotification(`${sender.sender.userName} invited you to play Game`);
+    // });
+
+    socket.on('gameInvitation', (data: { sender: User; invitee: UserInfo }) => {
+      console.log('gameInvitation:', data);
+      console.log('LoginUser:', LoginUser?.userId);
+      console.log('invitee:', data.data.invitee.userId);
+      if (data.data.invitee.userId === LoginUser?.userId) {
+        setNotification(`${data.data.sender.userName} invited you to play Game`);
+      }
     });
 
     socket.on('newDM', (LoginUser: User) => {
@@ -143,6 +152,10 @@ export default function ChatPage() {
   useEffect(() => {
     console.log('Notification:', notification);
   }, [notification]);
+
+  useEffect(() => {
+    console.log('LoginUser', LoginUser);
+  }, [LoginUser]);
 
   const onClickSubmit = useCallback(() => {
     if (!socket) return;

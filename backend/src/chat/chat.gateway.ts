@@ -500,13 +500,14 @@ export class ChatGateway {
       //   sender: data.LoginUser,
       // });
 
-      // this.server.emit('gameInvitation', {
+      this.server.emit('gameInvitation', {
+        data,
+        // sender: data.LoginUser,
+      });
+
+      // socket.to(data.invitee.userName).emit('gameInvitation', {
       //   sender: data.LoginUser,
       // });
-
-      socket.to(data.invitee.userName).emit('gameInvitation', {
-        sender: data.LoginUser,
-      });
 
       // this.server.to(String(data.invitee.userName)).emit('gameInvitation', {
       //   sender: data.LoginUser,
