@@ -1,5 +1,3 @@
-// 更新するとブロックボタンが戻る
-// ブロックしたユーザーのDMを表示しない
 /*eslint-disable*/
 'use client';
 import React, { useState, useEffect, useCallback } from 'react';

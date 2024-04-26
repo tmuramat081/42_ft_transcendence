@@ -202,7 +202,6 @@ export class DMGateway {
       this.server.to(socket.id).emit('dmLogs', directMessages);
       // receiverにDMログを送信
       this.server.to(payload.receiver.userName).emit('dmLogs', directMessages);
-      // this.server.to(socket.id).emit('dmLogs', directMessages);
     } catch (error) {
       this.logger.error('Error sending DM logs:', error);
       throw error;

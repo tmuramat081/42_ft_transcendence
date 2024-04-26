@@ -1,5 +1,4 @@
 // inviteの通知がでない
-// ユーザー情報アップデート
 // ゲーム参加のリンクを追加
 
 /*eslint-disable*/
@@ -31,7 +30,6 @@ export default function ChatPage() {
   const [onlineUsers, setOnlineUsers] = useState<UserInfo[]>([]);
   const [invitees, setInvitees] = useState<UserInfo[]>([]);
   const [notification, setNotification] = useState<string | null>(null);
-  const [gameList, setGameList] = useState<string[]>([]);
   const [selectedGame, setSelectedGame] = useState<string | null>(null);
   const [LoginUser, setLoginUser] = useState<User | null>(null);
 
@@ -89,10 +87,6 @@ export default function ChatPage() {
       setRoomList(roomNames);
     });
 
-    socket.on('gameList', (games: string[]) => {
-      setGameList(games);
-    });
-
     socket.on('onlineUsers', (users: UserInfo[]) => {
       setOnlineUsers(users);
     });
@@ -125,11 +119,12 @@ export default function ChatPage() {
 
     return () => {
       socket.off('roomList');
-      socket.off('gameList');
       socket.off('onlineUsers');
       socket.off('loginUser');
       socket.off('roomParticipants');
       socket.off('roomInvitation');
+      socket.off('gameInvitation');
+      socket.off('newDM');
       socket.off('roomError');
     };
   }, [socket, getCurrentUser, participants]);

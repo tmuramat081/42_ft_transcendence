@@ -48,10 +48,9 @@ export class ChatGateway {
   @SubscribeMessage('getRoomList')
   async handleGetRoomList(@MessageBody() LoginUser: User, @ConnectedSocket() socket: Socket) {
     try {
-      this.logger.log(`Get room list: ${LoginUser.userName}`);
       // データベースからルームリストを取得
       const roomList = await this.roomRepository.find();
-      this.logger.log(`Room list: ${JSON.stringify(roomList)}`);
+      // this.logger.log(`Room list: ${JSON.stringify(roomList)}`);
       // ルームリストをクライアントに送信
       socket.emit('roomList', roomList);
     } catch (error) {
@@ -69,7 +68,7 @@ export class ChatGateway {
         this.logger.error(`User not found: ${userId}`);
         return;
       }
-      this.logger.log(`Login user: ${JSON.stringify(loginUser)}`);
+      // this.logger.log(`Login user: ${JSON.stringify(loginUser)}`);
       socket.emit('loginUser', loginUser);
 
       // onlineUsersにユーザーを追加
@@ -112,8 +111,6 @@ export class ChatGateway {
       if (!LoginUser || !LoginUser.userId || !LoginUser.userName) {
         throw new Error('Invalid sender data.');
       }
-      this.logger.log(`Get online users: ${LoginUser.userName}`);
-
       // ダミーユーザーを登録
       // await this.createDummyUsers();
 
@@ -129,7 +126,7 @@ export class ChatGateway {
       // データベースからオンラインユーザーリストを取得
       const onlineUsers = await this.onlineUsersRepository.find();
 
-      this.logger.log(`Online users: ${JSON.stringify(onlineUsers)}`);
+      // this.logger.log(`Online users: ${JSON.stringify(onlineUsers)}`);
 
       // onlineUsersをUserInfoに変換
       const onlineUsersInfo: UserInfo[] = onlineUsers.map((user) => {
@@ -163,13 +160,11 @@ export class ChatGateway {
 
     // 取得した空のオンラインユーザーを削除
     await Promise.all(emptyOnlineUsers.map((user) => this.onlineUsersRepository.remove(user)));
-    console.log('Empty online users deleted:', emptyOnlineUsers);
   }
 
   async deleteDuplicateOnlineUsers() {
     // オンラインユーザーを全て取得
     const allOnlineUsers = await this.onlineUsersRepository.find();
-    this.logger.log(`All online users: ${JSON.stringify(allOnlineUsers)}`);
 
     // 名前とidが一致するユーザーを検索して削除
     for (let i = 0; i < allOnlineUsers.length; i++) {
@@ -235,7 +230,6 @@ export class ChatGateway {
     @ConnectedSocket() socket: Socket,
   ) {
     try {
-      this.logger.log(`loginUser: ${data.loginUser}`);
       if (!data.selectedRoom || !data.loginUser || !data.message) {
         this.logger.error('Invalid chat message data:', data);
         return;
@@ -367,7 +361,6 @@ export class ChatGateway {
       // 参加者リストを取得してクライアントに送信
       const updatedRoom = await this.roomRepository.findOne({ where: { roomName: join.room } });
       if (updatedRoom) {
-        this.logger.log(`Updated room: ${JSON.stringify(updatedRoom)}`);
         // updatedRoom.roomParticipantsをUserInfoに変換
         const roomParticipants: UserInfo[] = updatedRoom.roomParticipants.map((participant) => {
           return {
@@ -463,7 +456,6 @@ export class ChatGateway {
 
       // 新しい roomList を取得してコンソールに出力
       const updatedRoomList = await this.roomRepository.find();
-      this.logger.log('Updated roomList:', updatedRoomList);
 
       this.server.emit('roomList', updatedRoomList);
     } catch (error) {
@@ -504,9 +496,22 @@ export class ChatGateway {
       );
 
       // クライアントに招待情報を送信
-      this.server.to(String(data.invitee.userId)).emit('gameInvitation', {
+      // this.server.to(String(data.invitee.userId)).emit('gameInvitation', {
+      //   sender: data.LoginUser,
+      // });
+
+      // this.server.emit('gameInvitation', {
+      //   sender: data.LoginUser,
+      // });
+
+      socket.to(data.invitee.userName).emit('gameInvitation', {
         sender: data.LoginUser,
       });
+
+      // this.server.to(String(data.invitee.userName)).emit('gameInvitation', {
+      //   sender: data.LoginUser,
+      // });
+      this.logger.log(`Invitation sent to ${data.invitee.userName}`);
     } catch (error) {
       this.logger.error(`Error inviting to game: ${(error as Error).message}`);
       throw error;
