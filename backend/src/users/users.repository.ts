@@ -208,7 +208,7 @@ export class UserRepository {
   }
 
   async updatePoint(data: UpdatePointDto): Promise<User> {
-    const target: User = await this.findOne({ userId: data.userId });
+    const target: User = await this.userRepository.findOne({ where: { userId: data.userId }, relations: ['friends', 'blocked'] });
     if (!target) {
       //throw new Error('User not found');
       throw new NotFoundException('User not found');

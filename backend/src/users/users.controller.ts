@@ -116,6 +116,8 @@ export class UsersController {
           secure: process.env.NODE_ENV === 'production',
           sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
         })
+        this.usersService.addLoginUserId(user.userId);
+
         return JSON.stringify({"accessToken": accessToken});           
     }
   
@@ -143,6 +145,12 @@ export class UsersController {
         secure: process.env.NODE_ENV === 'production',
         sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
       })
+
+      //this.usersService.loginUserIds.push(user.userId);
+      this.usersService.addLoginUserId(user.userId);
+
+      console.log("loginUserIds: ", this.usersService.loginUserIds)
+
       return JSON.stringify({"userId": undefined, "status": "SUCCESS"});
     }
 
@@ -155,6 +163,8 @@ export class UsersController {
             secure: process.env.NODE_ENV === 'production',
             sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
         });
+        //this.usersService.loginUserIds = this.usersService.loginUserIds.filter(id => id !== req.user.userId);
+        this.usersService.removeLoginUserId(req.user.userId);
         return JSON.stringify({"status": "SUCCESS"});
     }
 
@@ -293,6 +303,7 @@ export class UsersController {
 
         // console.log(req.user.friends)
 
+        console.log('loginUserIds: ', this.usersService.loginUserIds)
 
         return JSON.stringify({"user": user});
     }

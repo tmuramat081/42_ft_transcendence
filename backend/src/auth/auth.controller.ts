@@ -169,6 +169,8 @@ export class AuthController {
       // cookie削除
       res.clearCookie('login42');
 
+      this.usersService.loginUserIds.push(user.userId);
+
       return {userId: undefined, status: 'SUCCESS'};
     } catch (error) {
       throw error;

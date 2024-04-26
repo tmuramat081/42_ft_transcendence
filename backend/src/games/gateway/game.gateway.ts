@@ -43,8 +43,9 @@ import { JoinRoomDto } from '../dto/joinRoom.dto';
 import { WatchFriendGameDto } from '../dto/watchFriendGame.dto';
 import { PlayGameDto } from '../dto/playGame.dto';
 import { UpdatePlayerPosDto } from '../dto/updatePlayerPos.dto';
-import { GetUserStatusByIdtDto } from '../dto/getUserStatusById.dto';
+import { GetUserStatusByIdDto } from '../dto/getUserStatusById.dto';
 import { WatchGameDto } from '../dto/watchGame.dto';
+import { UpdatePointDto } from '@/users/dto/user.dto';
 
 const Easy = 6;
 const Normal = 12;
@@ -538,7 +539,7 @@ export class GameGateway {
       initialHeight: GameGateway.initialHeight, 
       lowestPosition: GameGateway.lowestPos,
       rewards: 0,
-      gameState: GameState.PLAYING,
+      gameState: GameState.SETTING,
     };
 
     this.gameRooms.push(newRoom);
@@ -753,12 +754,27 @@ export class GameGateway {
       supporter.emit('finishGame', null, finishedGameInfo);
     });
 
+    // ポイントを更新 DB
+    const updatePointWinnerDto: UpdatePointDto = {
+      userId: winner.id,
+      point: winner.point + room.rewards,
+    };
+
+    const updatePointLoserDto: UpdatePointDto = {
+      userId: loser.id,
+      point: Math.max(loser.point - room.rewards, 0),
+    };
+
+    this.usersService.updatePoint(updatePointWinnerDto);
+    this.usersService.updatePoint(updatePointLoserDto);
+
     // ポイントを更新
     winner.socket.emit('finishGame', winner.score + room.rewards, finishedGameInfo);
 
     // ポイントを更新
     loser.socket.emit('finishGame', Math.max(loser.score - room.rewards, 0), finishedGameInfo);
 
+    // TODO: round, aliasNameも保存する？
     await this.recordsRepository.createGameRecord({
       winnerId: winner.id,
       loserId: loser.id,
@@ -791,6 +807,84 @@ export class GameGateway {
       this.gameRooms = this.gameRooms.filter((room) => room.player1.socket.id !== socket.id && room.player2.socket.id !== socket.id);
       // プレイ中のユーザーから削除
       this.removePlayingUsersFromRoom(room);
+    }
+  }
+
+  @SubscribeMessage('watchGame')
+  async watchGame(@ConnectedSocket() socket: Socket, @MessageBody() data: WatchGameDto) {
+    // 指定したroomNameのゲームを観戦
+    const room = this.gameRooms.find((room) => room.roomName === data.roomName);
+    if (!room) {
+      socket.emit('error');
+      return ;
+    }
+
+    // 観戦者を追加
+    room.supporters.push(socket);
+    this.logger.log(`watchGame: ${socket.id} joined to ${data.roomName}`);
+
+    // 観戦者にゲーム情報を送信
+    await socket.join(data.roomName);
+
+    // game settingを送信
+    // setting中の場合はnull
+    const gameSetting = room.gameState === GameState.SETTING ? null : room.gameSetting;
+
+    socket.emit('joinGameRoom', room.gameState, gameSetting);
+
+    // 観戦者idをげゲーム中のユーザーに通知
+    const id = this.getIdFromSocket(socket);
+    this.addPlayingUserId(id);
+  }
+
+  // 観戦できるゲームのリストを取得
+  @SubscribeMessage('watchList')
+  getGameRooms(@ConnectedSocket() socket: Socket) {
+    type WatchInfo = {
+      roomName: string;
+      player1: PlayerInfo;
+      player2: PlayerInfo;
+    };
+
+    // 観戦できるゲームのリストを取得
+    const watchInfoList: WatchInfo[] = this.gameRooms.map((room) => 
+      <WatchInfo>{
+        roomName: room.roomName,
+        player1: {
+          name: room.player1.name,
+          aliasName: room.player1.aliasName,
+          round: room.player1.round,
+        },
+        player2: {
+          name: room.player2.name,
+          aliasName: room.player2.aliasName,
+          round: room.player2.round,
+        },
+      },
+    )
+
+    socket.emit('watchListed', watchInfoList);
+  }
+
+  // userIdからstatusを取得
+  // TODO: ログイン時に配列に追加するようにする
+  @SubscribeMessage('getUserStatusById')
+  getUserStatusById(@MessageBody() data: GetUserStatusByIdDto, @ConnectedSocket() socket: Socket) {
+    const userId = data.userId;
+
+    console.log('getUserStatusById', userId)
+
+    //console.log(this.usersService.loginUserIds)
+
+    // loginしているかどうかを判定する方法
+    if (this.isPlayingUserId(userId)) {
+      return UserStatus.PLAYING;
+    } else if (this.usersService.isLoginUserId(userId)) {
+      console.log('online')
+      return UserStatus.ONLINE;
+    } else {
+      //return UserStatus.ONLINE;
+      return UserStatus.OFFLINE;
     }
   }
 }

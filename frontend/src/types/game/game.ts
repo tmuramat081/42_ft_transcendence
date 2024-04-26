@@ -76,8 +76,8 @@ export type SocketAuth = {
 
 export type WatchInfo = {
     roomName: string;
-    name1: string;
-    name2: string;
+    player1: PlayerInfo;
+    player2: PlayerInfo;
 };
 
 export const GameState = {

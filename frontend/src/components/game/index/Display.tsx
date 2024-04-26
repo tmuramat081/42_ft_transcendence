@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { usePlayStateStore, PlayState } from '@/store/game/playState';
 import { Start } from '@/components/game/index/Start';
 import { Wait } from '@/components/game/index/Wait';
+import { Watch } from '@/components/game/index/Watch';
 import { useAuth } from '@/providers/useAuth';
 //import { useInvitedFriendStrore } from '@/store/game/invitedFriendState';
 
@@ -50,6 +51,12 @@ export const Display = () => {
                 {playState === PlayState.stateWaiting && (
                   <Wait openMatchError={openMatchError} />
                 )}
+              </Paper>
+            </Grid>
+
+            <Grid item xs={5} sx={{height: '60%', minWidth: '430px'}}>
+              <Paper elevation={3} sx={{height: '100%'}}>
+                <Watch />
               </Paper>
             </Grid>
           </Grid>
