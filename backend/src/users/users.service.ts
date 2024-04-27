@@ -548,6 +548,10 @@ export class UsersService {
     return await this.userRepository.findAll();
   }
 
+  async findAllByIds(ids: number[]): Promise<User[]> {
+    return await this.userRepository.findAllByIds(ids);
+  }
+
   // TODO: relation: friend, block
   async findOne(id: number): Promise<User | undefined> {
     return await this.userRepository.findOne({ where: { userId: id }, relations: ['friends', 'blocked'] });

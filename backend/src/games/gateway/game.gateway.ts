@@ -424,8 +424,6 @@ export class GameGateway {
     this.waitingQueue = this.waitingQueue.filter((player) => player.socket.id !== socket.id);
   }
 
-
-  //maoyagi ver
   //game開始
   @SubscribeMessage('playStart')
   async joinRoom(
@@ -615,6 +613,202 @@ export class GameGateway {
   cancelMatching(@ConnectedSocket() socket: Socket) {
     // console.log('playCancel');
     this.waitingQueue = this.waitingQueue.filter((player) => player.socket.id !== socket.id);
+  }
+
+  // 招待リストを受け取るのと同時に登録
+  @SubscribeMessage('getInvitedList')
+  async getInvitedList(@ConnectedSocket() socket: Socket, @MessageBody() data: GetInvitedListDto): Promise<Friend[]> {
+    // マルチデバイス対応
+    const socketIds = this.userSocketMap.get(data.userId);
+    if (socketIds === undefined) {
+      this.userSocketMap.set(data.userId, new Set([socket.id]));
+    } else {
+      socketIds.add(socket.id);
+    }
+  
+    // 招待リストを取得
+    // 自分が招待されているリスト
+    const hostIds = this.invitationList.findHosts(data.userId);
+    if (hostIds === undefined) {
+      return [];
+    } else {
+      // ユーザー情報を取得
+      const hosts = await this.usersService.findAllByIds(Array.from(hostIds));
+
+      return hosts.map((host) => {
+        return { name: host.userName, id: host.userId } as Friend;
+      })
+    }
+  }
+
+  @SubscribeMessage('inviteFriend')
+  async inviteFriend(@ConnectedSocket() socket: Socket, @MessageBody() data: InviteFriendDto): Promise<boolean> {
+    // ゲーム開始中の場合は何もしない
+    if (this.isPlayingUserId(data.hostId)) {
+      return false;
+    }
+
+    // 自分がホストの新規招待の作成
+    const newInvitation: Invitation = {
+      hostId: data.hostId,
+      guestId: data.guestId,
+      hostSocketId: socket.id,
+    };
+
+    // 招待リストに追加
+    const res = this.invitationList.insert(newInvitation);
+
+    // socket一覧から招待の通知
+    if (res) {
+      const host = await this.usersService.findOne(data.hostId);
+
+      // 招待を受けたユーザーのsocketIdを取得
+      // マルチデバイスに対応
+      const guestSocketIds = this.userSocketMap.get(data.guestId);
+      if (guestSocketIds !== undefined) {
+        guestSocketIds.forEach((socketId) => {
+          // 自分が招待したことを通知
+          this.server.to(socketId).emit('inviteFriend', { id: data.hostId, name: host.userName } as Friend);
+        });
+      }
+    }
+
+    return res;
+  }
+
+  // cancel 招待のキャンセル
+  @SubscribeMessage('cancelInvitation')
+  cancelInvitation(@ConnectedSocket() socket: Socket, @MessageBody() data: CancelInvitationDto) {
+    // 招待リストから削除
+    // hostは一つしか招待できないので、これでOK
+    const res = this.invitationList.delete(data.hostId);
+
+    if (res) {
+      const guestSocketIds = this.userSocketMap.get(data.guestId);
+      if (guestSocketIds !== undefined) {
+        guestSocketIds.forEach((socketId) => {
+          // 自分が招待をキャンセルしたことを通知
+          this.server.to(socketId).emit('cancelInvitation', data.hostId);
+        });
+      }
+    }
+  }
+
+  // deny 拒否
+  @SubscribeMessage('denyInvitation')
+  denyInvitation(@ConnectedSocket() socket: Socket, @MessageBody() data: DenyInvitationDto) {
+    // 招待リストから削除
+    const inivitation = this.invitationList.find(data.hostId)
+    if (inivitation !== undefined) {
+      this.invitationList.delete(data.hostId);
+    } else {
+      return;
+    }
+
+    // // 拒否したユーザーのsocketIdを取得
+    // const hostSocketIds = this.userSocketMap.get(data.hostId);
+    // if (hostSocketIds !== undefined) {
+    //   hostSocketIds.forEach((socketId) => {
+    //     // 自分が拒否したことを通知
+    //     this.server.to(socketId).emit('denyInvitation', data.guestId);
+    //   });
+    // }
+
+    this.server.to(inivitation.hostSocketId).emit('denyInvitation');
+  }
+
+  // begin friend
+  @SubscribeMessage('aceeptInvitation')
+  async beginFriendMatch(@ConnectedSocket() socket: Socket, @MessageBody() data: AcceptInvitationDto) {
+    // ゲーム開始中の場合は何もしない
+    if (this.isPlayingUserId(data.guestId)) {
+      return false;
+    }
+
+    // 招待リストから削除
+    const inivitation = this.invitationList.find(data.guestId)
+    if (inivitation !== undefined) {
+      this.invitationList.delete(data.guestId);
+    } else {
+      return false;
+    }
+
+    // // ユーザー情報を取得
+    // const host = await this.usersService.findOne(data.hostId);
+    // const guest = await this.usersService.findOne(data.guestId);
+
+    // // ホストとゲストの情報を取得
+    // const hostPlayer: Player = {
+    //   name: host.userName,
+    //   id: data.hostId,
+    //   point: host.point,
+    //   socket: socket,
+    //   height: GameGateway.initialHeight,
+    //   score: 0,
+    //   aliasName: data.hostAliasName,
+    //   round: data.hostRound,
+    // };
+
+    // const guestPlayer: Player = {
+    //   name: guest.userName,
+    //   id: data.guestId,
+    //   point: guest.point,
+    //   socket: socket,
+    //   height: GameGateway.initialHeight,
+    //   score: 0,
+    //   aliasName: data.guestAliasName,
+    //   round: data.guestRound,
+    // };
+
+    // ホストソケットの取得
+    // server.in: 接続しているソケットを取得
+    // fetchSockets: ソケットのリストを取得
+    // マルチデバイス対応
+    // handleConnectionでserverにsocketが登録されている
+    // ソケットの追加は自動的に行われる
+    const hostSockets = this.server.in(inivitation.hostSocketId).fetchSockets();
+    if (hostSockets.length === 0) {
+      return false;
+    }
+
+    // 受け入れたデバイス以外のデバイスへの招待をキャンセル
+    //guestSocketIds: ゲストのsocketId　マルチデバイス対応
+    const guestSocketIds = this.userSocketMap.get(data.guestId);
+    if (guestSocketIds !== undefined) {
+      guestSocketIds.forEach((socketId) => {
+        if (socketId !== socket.id) {
+          this.server.to(socketId).emit('cancelInvitation', data.hostId);
+        }
+      });
+    }
+
+    const user1 = await this.usersService.findOne(data.hostId);
+    const user2 = await this.usersService.findOne(data.guestId);
+
+    const hostPlayer: Player = {
+      name: user1.userName,
+      id: data.hostId,
+      point: user1.point,
+      socket: hostSockets[0],
+      height: GameGateway.initialHeight,
+      score: 0,
+      aliasName: user1.userName,
+      round: 1,
+    };
+
+    const guestPlayer: Player = {
+      name: user2.userName,
+      id: data.guestId,
+      point: user2.point,
+      socket: socket,
+      height: GameGateway.initialHeight,
+      score: 0,
+      aliasName: user2.userName,
+      round: 1,
+    };
+
+    void this.startGame(hostPlayer, guestPlayer, 'friend');
+    return true;
   }
 
   // バーの移動

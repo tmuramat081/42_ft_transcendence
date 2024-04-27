@@ -71,6 +71,10 @@ export class UserRepository {
     return this.userRepository.find();
   }
 
+  async findAllByIds(ids: number[]): Promise<User[]> {
+    return this.userRepository.findByIds(ids);
+  }
+
   // async findOne(id: number): Promise<User | undefined> {
   //     //return this.connection.getRepository(User).findOne({ where: { user_id: id } });
   //     return this.userRepository.findOne({ where: { userId: id }});
