@@ -17,6 +17,8 @@ import { useEffect } from "react";
 const defaultFinishedGameInfo: FinishedGameInfo = {
     winnerName: "",
     loserName: "",
+    winnerAliasName: "",
+    loserAliasName: "",
     winnerScore: 0,
     loserScore: 0,
     round: 1,
