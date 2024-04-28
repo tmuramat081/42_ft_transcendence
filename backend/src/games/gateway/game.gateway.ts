@@ -718,6 +718,7 @@ export class GameGateway {
   }
 
   // begin friend
+  // TODO: 受け入れる際に、エイリアス名を設定できるようにする
   @SubscribeMessage('aceeptInvitation')
   async beginFriendMatch(@ConnectedSocket() socket: Socket, @MessageBody() data: AcceptInvitationDto) {
     // ゲーム開始中の場合は何もしない
