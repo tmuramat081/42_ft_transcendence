@@ -422,12 +422,12 @@ export const Play = ({ updateFinishedGameInfo }: Props) => {
         }
     }, [countDown, updatePlayState]);
 
-    if (!loginUser) return <Loading fullSize={true} />;
+    if (!loginUser || !players[0] || players[1]) return <Loading fullSize={true} />;
 
     return (
         <>
         {/* {countDown !== 0 && (loginUser.userName === playerNames[0] || loginUser.userName === playerNames[1]) && ( */}
-        {countDown !== 0 && players[0] && players[1] && (loginUser.userName === players[0].name || loginUser.userName === players[1].name) && (
+        {countDown !== 0 && (loginUser.userName === players[0].name || loginUser.userName === players[1].name) && (
             <Grid sx={{
                 position: 'absolute',
                 top: '50%',
