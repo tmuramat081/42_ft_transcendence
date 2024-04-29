@@ -9,6 +9,11 @@ import { useAuth } from '@/providers/useAuth';
 import { User } from '@/types/user';
 import { useSocketStore } from '@/store/game/clientSocket';
 import { UserStatus } from '@/types/game/game';
+import { Friend } from '@/types/game/friend';
+import { Invitation } from '@/types/game/game';
+import { Loading } from '@/components/game/common/Loading';
+import { useInvitedFriendStrore } from '@/store/game/invitedFriendState';
+import { useRouter } from 'next/navigation';
 
 export default function functionPage({ params }: { params: { name: string } }) {
   console.log(params.name);
@@ -16,10 +21,41 @@ export default function functionPage({ params }: { params: { name: string } }) {
   const [ userStatus, setUserStatus ] = useState<UserStatus>(UserStatus.OFFLINE);
   const { loginUser, getCurrentUser } = useAuth();
   const { socket } = useSocketStore();
+  const updateInvitedFriendState = useInvitedFriendStrore((store) => store.updateInvitedFriendState);
+  const router = useRouter();
 
   useEffect(() => {
     getCurrentUser();
   }, []);
+
+
+  if (!loginUser) {
+    return <Loading />;
+  } 
+
+  // 実験的に実装
+  const inviteGame = (friend: Friend) => {
+    if ( userStatus !== UserStatus.ONLINE ) {
+      // error
+        return;
+    }
+
+    // TODO: aliasNameを設定できるようにする
+    const invitation: Invitation = {
+        guestId: friend.userId,
+        hostId: loginUser.userId,
+    }
+
+    socket.emit('inviteFriend', invitation, (res: boolean) => {
+      if (res) {
+        updateInvitedFriendState({ friendId: friend.userId });
+        router.push('/game/index');
+      } else {
+        // error
+        console.log('error');
+      }
+    });
+  }
 
   useEffect(() => {
     // サーバーサイドでの処理なのでhttp://localhost:3001は使えない
