@@ -767,7 +767,7 @@ export class GameGateway {
     // マルチデバイス対応
     // handleConnectionでserverにsocketが登録されている
     // ソケットの追加は自動的に行われる
-    const hostSockets = this.server.in(inivitation.hostSocketId).fetchSockets();
+    const hostSockets = await this.server.in(inivitation.hostSocketId).fetchSockets();
     if (hostSockets.length === 0) {
       return false;
     }
