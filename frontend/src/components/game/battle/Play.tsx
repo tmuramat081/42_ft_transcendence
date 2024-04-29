@@ -422,7 +422,7 @@ export const Play = ({ updateFinishedGameInfo }: Props) => {
         }
     }, [countDown, updatePlayState]);
 
-    if (!loginUser || !players[0] || players[1]) return <Loading fullSize={true} />;
+    if (!loginUser || !players[0] || !players[1]) return <Loading fullSize={true} />;
 
     return (
         <>
