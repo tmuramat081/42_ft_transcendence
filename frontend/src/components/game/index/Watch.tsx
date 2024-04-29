@@ -98,7 +98,7 @@ export const Watch = () => {
                         primaryTypographyProps={{
                             align: 'center',
                             style: {
-                                overflos: 'hidden',
+                                overflow: 'hidden',
                             },
                             variant: 'h6',
                         }}
@@ -116,7 +116,7 @@ export const Watch = () => {
                         primaryTypographyProps={{
                             align: 'center',
                             style: {
-                                overflos: 'hidden',
+                                overflow: 'hidden',
                             },
                             variant: 'h6',
                         }}
