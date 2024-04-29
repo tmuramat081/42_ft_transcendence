@@ -154,11 +154,10 @@ export const Setting = () => {
         socket.emit('compleateSetting', {difficulty, matchPoint, player1Score: player1DefaultScore, player2Score: player2DefaultScore});
     }
 
-    if (players.length !== 2) {
+    let round = 1;
+    if (!players[0] || !players[1]) {
         return null;
     }
-
-    let round = 1;
     if (players[0].round > 1 || players[1].round > 1) {
         if (players[0].round > players[1].round) {
             round = players[0].round;
