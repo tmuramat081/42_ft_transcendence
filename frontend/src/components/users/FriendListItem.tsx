@@ -1,5 +1,5 @@
 import { useState, memo, useEffect, Dispatch, SetStateAction, useMemo } from 'react';
-import { useRouter } from 'next/navigation;
+import { useRouter } from 'next/navigation';
 import { Socket } from 'socket.io-client';
 import { ListItem, ListItemText, ListItemAvatar } from '@mui/material';
 import { Friend } from '@/types/game/friend';
