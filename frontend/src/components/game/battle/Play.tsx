@@ -318,7 +318,7 @@ export const Play = ({ updateFinishedGameInfo }: Props) => {
 
         // バーの移動を定期的に行う
         //const intervalId = loginUser && (loginUser.userName === playerNames[0] || loginUser.userName === playerNames[1]) ? setInterval(barMove, waitMillSec) : undefined;
-        const intervalId = loginUser && loginUser.userName && (loginUser.userName === players[0].name || loginUser.userName === players[1].name) ? setInterval(barMove, waitMillSec) : undefined;
+        const intervalId = loginUser && players[0] && players[1] && (loginUser.userName === players[0].name || loginUser.userName === players[1].name) ? setInterval(barMove, waitMillSec) : undefined;
 
 
         return () => {
