@@ -41,7 +41,7 @@ export default function RoomList(_prop: Props) {
   });
 
   // ダミーユーザー
-  const userDummy = {
+  const userDummy: User = {
     userId: 1,
     userName: 'tmuramat',
     email: 'muramatsu@gmail.com',
@@ -52,6 +52,7 @@ export default function RoomList(_prop: Props) {
     twoFactorAuth: false,
     friends: [],
     blocked: [],
+    point: 10000,
   };
 
   // ゲームルーム一覧取得APIコール
