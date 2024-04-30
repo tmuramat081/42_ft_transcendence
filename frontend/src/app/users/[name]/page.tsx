@@ -50,7 +50,7 @@
 // profileを真似する
 'use client';
 
-import { React } from 'react';
+// import { React } from 'react';
 import { Grid, Typography, Alert, AlertTitle, List, ListItem, Button, ListItemText, Link } from '@mui/material';
 import { Layout } from '@/components/game/common/Layout';
 import { Loading } from '@/components/game/common/Loading';
@@ -85,7 +85,7 @@ export default function functionPage({ params }: { params: { name: string } }) {
   );
   const [ranking, setRanking] = useState<number | undefined>(undefined);
   const updateInvitedFriendState = useInvitedFriendStrore((store) => store.updateInvitedFriendState);
-  
+
   useEffect(() => {
     getCurrentUser();
   }, []);
