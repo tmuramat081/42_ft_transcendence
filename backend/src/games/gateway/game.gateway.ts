@@ -8,7 +8,6 @@ import {
 import { Server, Socket } from 'socket.io';
 import { SOCKET_EVENTS_GAME } from '../game.constant';
 
-// maoyagi
 import { Logger, UsePipes, ValidationPipe } from '@nestjs/common';
 // service
 import { RecordsRepository } from '../gameRecord.repository';
@@ -104,7 +103,6 @@ type ConnectedUser = {
 
 //@WebSocketGateway({ cors: { origin: '*' } })
 @WebSocketGateway({ cors: { origin: '*' }, namespace: '/game' })
-//?
 @UsePipes(new ValidationPipe())
 export class GameGateway {
   // ゲームの設定
@@ -385,7 +383,6 @@ export class GameGateway {
     //     this.rooms[roomIdToDelete]?.map((client) => client.userId),
     //   );
 
-    //maoyagi
     const id = this.getIdFromSocket(socket);
     // this.logger.log(`Client disconnected: ${id}`);
 
@@ -396,18 +393,18 @@ export class GameGateway {
       status: UserStatus.OFFLINE,
     })
 
-    // 招待リストから削除
-    const inivitation = this.invitationList.find(id)
-    if (inivitation !== undefined) {
-      // 招待を受けているホストに通知
-      const guestSocketIds = this.userSocketMap.get(inivitation.guestId);
-      if (guestSocketIds !== undefined) {
-        guestSocketIds.forEach((socketId) => {
-          this.server.to(socketId).emit('cancelInvitation', inivitation.hostId);
-        });
-      }
-    this.invitationList.delete(id);
-    }
+    // // 招待リストから削除
+    // const inivitation = this.invitationList.find(id)
+    // if (inivitation !== undefined) {
+    //   // 招待を受けているホストに通知
+    //   const guestSocketIds = this.userSocketMap.get(inivitation.guestId);
+    //   if (guestSocketIds !== undefined) {
+    //     guestSocketIds.forEach((socketId) => {
+    //       this.server.to(socketId).emit('cancelInvitation', inivitation.hostId);
+    //     });
+    //   }
+    // this.invitationList.delete(id);
+    // }
 
     // 切断したユーザーのソケットIDを削除
     const socketIds = this.userSocketMap.get(id);

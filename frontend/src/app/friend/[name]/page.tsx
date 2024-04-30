@@ -1,6 +1,8 @@
 // サンプル用クライアントレンダリングでしかできなさそう
 /* eslint-disable */
 
+//users/[name]/page.tsxに移動
+
 'use client';
 
 import Avatar from '@mui/material/Avatar';

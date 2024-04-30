@@ -63,6 +63,9 @@ import { useSocketStore } from '@/store/game/clientSocket';
 import { UserStatus } from '@/types/game/game';
 import { useRouter } from 'next/navigation';
 import { GameRecordWithUserName } from '@/types/game/game';
+import { Friend } from '@/types/game/friend';
+import { Invitation } from '@/types/game/game';
+import { useInvitedFriendStrore } from '@/store/game/invitedFriendState';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? '';
 
@@ -81,12 +84,40 @@ export default function functionPage({ params }: { params: { name: string } }) {
     undefined,
   );
   const [ranking, setRanking] = useState<number | undefined>(undefined);
-
+  const updateInvitedFriendState = useInvitedFriendStrore((store) => store.updateInvitedFriendState);
+  
   useEffect(() => {
     getCurrentUser();
   }, []);
 
   // inviteGame Demo
+  // 実験的に実装
+  const inviteGame = (friend: Friend) => {
+    if ( userStatus !== UserStatus.ONLINE ) {
+      // error
+        return;
+    }
+
+    if (!loginUser) {
+      return;
+    }
+
+    // TODO: aliasNameを設定できるようにする
+    const invitation: Invitation = {
+        guestId: friend.userId,
+        hostId: loginUser.userId,
+    }
+
+    socket.emit('inviteFriend', invitation, (res: boolean) => {
+      if (res) {
+        updateInvitedFriendState({ friendId: friend.userId });
+        router.push('/game/index');
+      } else {
+        // error
+        console.log('error');
+      }
+    });
+  }
 
   // updatetanking
   useEffect(() => {

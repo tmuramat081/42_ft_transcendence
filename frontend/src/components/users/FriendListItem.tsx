@@ -13,7 +13,6 @@ import { useGameSettingStore } from '@/store/game/gameSetting';
 import { PlayerInfo } from '@/types/game/game';
 import Avatar from '@mui/material/Avatar';
 
-
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? '';
 
 type Props = {
