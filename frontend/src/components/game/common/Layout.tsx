@@ -52,40 +52,40 @@ export const Layout: FC<Props> = ({ title = "PingPong", children }) => {
       socket.connect();
     }
 
-    // ゲームページに遷移した時にホスト一覧を取得
-    if (showGuestPath.includes(pathname)) {
-      socket.emit('getInvitedList', {userId: loginUser.userId}, (res: Friend[]) => {
-        if (!ignore) {
-          console.log(res);
-          setHosts(res);
-        }
-      });
-    }
+    // // ゲームページに遷移した時にホスト一覧を取得
+    // if (showGuestPath.includes(pathname)) {
+    //   socket.emit('getInvitedList', {userId: loginUser.userId}, (res: Friend[]) => {
+    //     if (!ignore) {
+    //       console.log(res);
+    //       setHosts(res);
+    //     }
+    //   });
+    // }
     return () => {
       ignore = true;
     }
     //router.pathname?
   }, [loginUser, pathname, socket, showGuestPath]);
 
-  useEffect(() => {
-    if (!showGuestPath.includes(pathname)) return ;
+  // useEffect(() => {
+  //   if (!showGuestPath.includes(pathname)) return ;
 
-    // 招待を受け取る
-    socket.on('inviteFriend', (data: Friend) => {
-      // 既に招待されている場合は削除してから追加
-      setHosts(...hosts.filter((host) => host.userId !== data.userId), data);
-    });
+  //   // 招待を受け取る
+  //   socket.on('inviteFriend', (data: Friend) => {
+  //     // 既に招待されている場合は削除してから追加
+  //     setHosts(...hosts.filter((host) => host.userId !== data.userId), data);
+  //   });
 
-    // 招待をキャンセル
-    socket.on('cancelInvitation', (data: Friend) => {
-      setHosts(hosts.filter((host) => host.userId !== data.userId));
-    });
+  //   // 招待をキャンセル
+  //   socket.on('cancelInvitation', (data: Friend) => {
+  //     setHosts(hosts.filter((host) => host.userId !== data.userId));
+  //   });
 
-    return () => {
-      socket.off('inviteFriend');
-      socket.off('cancelInvitation');
-    }
-  }, [])
+  //   return () => {
+  //     socket.off('inviteFriend');
+  //     socket.off('cancelInvitation');
+  //   }
+  // }, [])
 
   // あとでLoadingコンポーネントを作成
   if (pathname === '/' && !loginUser) {
