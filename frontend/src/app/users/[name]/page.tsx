@@ -404,7 +404,7 @@ export default function functionPage({ params }: { params: { name: string } }) {
                   <ListItem key={index}>
                     <Link href={`/users/${friend.userName}`}>
                     <Avatar alt={friend.userName} src={API_URL + '/api/uploads/' + friend.icon} />
-                    <ListItemText primary={friend.name} secondary={`${friend.userName}`} />
+                    <ListItemText primary={friend.userName} secondary={`${friend.userName}`} />
                     </Link>
                   </ListItem>
                 ))}
