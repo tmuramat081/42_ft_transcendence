@@ -28,11 +28,6 @@ export default function functionPage({ params }: { params: { name: string } }) {
     getCurrentUser();
   }, []);
 
-
-  if (!loginUser) {
-    return <Loading />;
-  } 
-
   // 実験的に実装
   const inviteGame = (friend: Friend) => {
     if ( userStatus !== UserStatus.ONLINE ) {
@@ -189,6 +184,9 @@ export default function functionPage({ params }: { params: { name: string } }) {
     });
   }
 
+  if (!loginUser) {
+    return <Loading />;
+  } 
 
   return (
     <div>

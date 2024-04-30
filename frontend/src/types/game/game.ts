@@ -21,6 +21,15 @@ export type GameSetting = {
     player2Score: number;
 };
 
+export type GameRecordWithUserName = {
+    id: number;
+    winnerScore: number;
+    loserScore: number;
+    createdAt: Date;
+    loserName: string;
+    winnerName: string;
+};
+
 export type FinishedGameInfo = {
     winnerName: string;
     loserName: string;

@@ -624,4 +624,8 @@ export class UsersService {
   async updatePoint(data: UpdatePointDto): Promise<User> {
     return this.userRepository.updatePoint(data);
   }
+
+  async getRanking(userName: string): Promise<number> {
+    return this.userRepository.getRanking(userName);
+  }
 }

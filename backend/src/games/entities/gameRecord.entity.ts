@@ -65,10 +65,10 @@ import {
     winnerId: number;
   
     @ManyToOne(() => User, user => user.gameRecordsAsLoser)
-    @JoinColumn({ name: "loserId" })
+    @JoinColumn({ name: "loser_id" })
     loser: User;
   
     @ManyToOne(() => User, user => user.gameRecordsAsWinner)
-    @JoinColumn({ name: "winnerId" })
+    @JoinColumn({ name: "winner_id" })
     winner: User;
   }

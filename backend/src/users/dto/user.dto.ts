@@ -16,6 +16,8 @@ import {
 } from 'class-validator';
 import { Match } from './match.decorator';
 
+//import { GameRecord } from '@/games/entities/gameRecord.entity';
+
 export class SignUpUserDto {
   // 不要
   //userId: number;
@@ -130,15 +132,12 @@ export class UpdateUserDto {
 
 export class ReturnUserDto {
   userId: number;
-  email: string;
   userName: string;
   icon: string;
-  twoFactorAuth: boolean;
-  name42: string;
   friends: User[];
   blocked: User[];
-  // 不要
-  twoFactorAuthNow: boolean;
+  //gameRecords: GameRecord[];
+  point: number;
 }
 
 export class UpdatePointDto {

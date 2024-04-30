@@ -24,13 +24,15 @@ export class RecordsRepository {
     return await this.gameRecordRepository.findOne(params);
   }
 
-  async gameRecords({
-    skip,
-    take,
-    cursor,
-    where,
-    orderBy,
+  async gameRecords(params: {
+    skip?,
+    take?,
+    cursor?,
+    where?,
+    orderBy?,
   }): Promise<GameRecordWithUserName[]> {
+    const { skip, take, cursor, where, orderBy } = params;
+
     // ここに追加のwhere条件やorderBy条件を設定することができます。
     const queryBuilder = this.gameRecordRepository.createQueryBuilder('gameRecord')
       .leftJoinAndSelect('gameRecord.loser', 'loser')
@@ -48,6 +50,8 @@ export class RecordsRepository {
 
     // ここでクエリを実行します。
     const records = await queryBuilder.getMany();
+
+    //console.log('records:', records);
 
     // interfaceを使って、返り値の形を定義します。
     return records.map(record => ({

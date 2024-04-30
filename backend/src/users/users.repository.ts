@@ -221,4 +221,20 @@ export class UserRepository {
     target.point = data.point;
     return await this.userRepository.save(target);
   }
+
+  async getRanking(userName: string): Promise<number> {
+    // ユーザーをポイントの降順、作成日の昇順で取得
+    const sortedUsers = await this.userRepository.find({
+      order: {
+        point: 'DESC',
+        createdAt: 'ASC',
+      },
+    });
+
+    // ユーザーIDに基づいてランキングを見つける
+    const userIndex = sortedUsers.findIndex((user) => user.userName === userName);
+    const ranking = userIndex + 1;
+
+    return ranking;
+  }
 }

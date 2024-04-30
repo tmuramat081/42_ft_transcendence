@@ -435,8 +435,8 @@ export class GameGateway {
     // ルームに参加したことを通知
     //this.server.to(data.roomId).emit('joinedRoom', data.userId);
 
-    console.log('playStart');
-    console.log(this.waitingQueue)
+    // console.log('playStart');
+    // console.log(this.waitingQueue)
     if (this.isPlayingUserId(data.userId)) {
       return false;
     }
@@ -463,7 +463,7 @@ export class GameGateway {
         round: data.round,
       });
 
-      console.log(this.waitingQueue)
+      //console.log(this.waitingQueue)
 
       return true;
     // 待機プレイヤーがいる場合
@@ -942,7 +942,7 @@ export class GameGateway {
       round: round,
     };
 
-    console.log(finishedGameInfo)
+    //console.log(finishedGameInfo)
 
     room.supporters.map((supporter) => {
       // null はscore
@@ -1067,7 +1067,7 @@ export class GameGateway {
   getUserStatusById(@MessageBody() data: GetUserStatusByIdDto, @ConnectedSocket() socket: Socket) {
     const userId = data.userId;
 
-    console.log('getUserStatusById', userId)
+    //console.log('getUserStatusById', userId)
 
     //console.log(this.usersService.loginUserIds)
 
@@ -1075,7 +1075,7 @@ export class GameGateway {
     if (this.isPlayingUserId(userId)) {
       return UserStatus.PLAYING;
     } else if (this.usersService.isLoginUserId(userId)) {
-      console.log('online')
+      //console.log('online')
       return UserStatus.ONLINE;
     } else {
       //return UserStatus.ONLINE;
