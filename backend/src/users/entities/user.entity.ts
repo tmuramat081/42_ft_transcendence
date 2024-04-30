@@ -29,7 +29,6 @@ import {
   JoinTable,
 } from 'typeorm';
 
-// 11 dto
 // dtoにも
 // 各フィールドのバリデーションを定義するために、class-validatorパッケージを使用する
 import {
@@ -43,11 +42,9 @@ import {
   MaxLength,
 } from 'class-validator';
 
-// 14 seeder
 // ダミーデータを作成するために、nest-seederパッケージを使用する
 import { Factory } from 'nestjs-seeder';
 
-// 16
 // 出力フィールドを制御するために、class-transformerパッケージを使用する
 import { Exclude } from 'class-transformer';
 

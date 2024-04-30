@@ -54,8 +54,9 @@ export const Layout: FC<Props> = ({ title = "PingPong", children }) => {
 
     // // ゲームページに遷移した時にホスト一覧を取得
     // if (showGuestPath.includes(pathname)) {
-    //   socket.emit('getHosts', (res: Friend[]) => {
+    //   socket.emit('getInvitedList', {userId: loginUser.userId}, (res: Friend[]) => {
     //     if (!ignore) {
+    //       console.log(res);
     //       setHosts(res);
     //     }
     //   });
@@ -67,7 +68,7 @@ export const Layout: FC<Props> = ({ title = "PingPong", children }) => {
   }, [loginUser, pathname, socket, showGuestPath]);
 
   // useEffect(() => {
-  //   if (!showGuestPath.includes(router.pathname)) return ;
+  //   if (!showGuestPath.includes(pathname)) return ;
 
   //   // 招待を受け取る
   //   socket.on('inviteFriend', (data: Friend) => {

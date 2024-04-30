@@ -11,6 +11,8 @@ import { Loading } from '../common/Loading';
 import { useRouter, usePathname, useSearchParams } from 'next/navigation';
 import { useGameSettingStore } from '@/store/game/gameSetting';
 import { User } from '@/types/user';
+import { useAriasNamesStore } from '@/store/game/ariasNames';
+import { usePlayersStore } from '@/store/game/player';
 
 // updatePointApiを呼び出すcontroller
 
@@ -140,6 +142,9 @@ export const Play = ({ updateFinishedGameInfo }: Props) => {
     const [changeCount, setChangeCount] = useState(true);
     const [isArrowDownPressed, setIsArrowDownPressed] = useState(false);
     const [isArrowUpPressed, setIsArrowUpPressed] = useState(false);
+
+    const { ariasNames } = useAriasNamesStore();
+    const { players } = usePlayersStore();
 
     //const { openMatchError, setOpenMatchError } = useState(false);
     
@@ -312,7 +317,9 @@ export const Play = ({ updateFinishedGameInfo }: Props) => {
         };
 
         // バーの移動を定期的に行う
-        const intervalId = loginUser && (loginUser.userName === playerNames[0] || loginUser.userName === playerNames[1]) ? setInterval(barMove, waitMillSec) : undefined;
+        //const intervalId = loginUser && (loginUser.userName === playerNames[0] || loginUser.userName === playerNames[1]) ? setInterval(barMove, waitMillSec) : undefined;
+        const intervalId = loginUser && players[0] && players[1] && (loginUser.userName === players[0].name || loginUser.userName === players[1].name) ? setInterval(barMove, waitMillSec) : undefined;
+
 
         return () => {
             window.cancelAnimationFrame(animationFrameId);
@@ -323,7 +330,7 @@ export const Play = ({ updateFinishedGameInfo }: Props) => {
             document.removeEventListener('keydown', onKeyDown);
             document.removeEventListener('keyup', onKeyUp);
         };
-    }, [drawField, countDown, gameInfo, gameParameter, socket, isArrowDownPressed, isArrowUpPressed, loginUser, playerNames, waitMillSec])
+    }, [drawField, countDown, gameInfo, gameParameter, socket, isArrowDownPressed, isArrowUpPressed, loginUser, players, waitMillSec]) //playerNames
 
     useEffect(() => {
         socket.on('updateScores', (newScores: [number, number]) => {
@@ -415,11 +422,12 @@ export const Play = ({ updateFinishedGameInfo }: Props) => {
         }
     }, [countDown, updatePlayState]);
 
-    if (!loginUser) return <Loading fullSize={true} />;
+    if (!loginUser || !players[0] || !players[1]) return <Loading fullSize={true} />;
 
     return (
         <>
-        {countDown !== 0 && (loginUser.userName === playerNames[0] || loginUser.userName === playerNames[1]) && (
+        {/* {countDown !== 0 && (loginUser.userName === playerNames[0] || loginUser.userName === playerNames[1]) && ( */}
+        {countDown !== 0 && (loginUser.userName === players[0].name || loginUser.userName === players[1].name) && (
             <Grid sx={{
                 position: 'absolute',
                 top: '50%',
@@ -435,7 +443,11 @@ export const Play = ({ updateFinishedGameInfo }: Props) => {
             </Grid>
         )}
         <div>
-            <GameHeader left={playerNames[0]} center='VS' right={playerNames[1]}/>
+            {/* <GameHeader left={playerNames[0]} center='VS' right={playerNames[1]}/>
+            <GameHeader left={ariasNames[0]} center='VS' right={ariasNames[1]}/> */}
+            <GameHeader left={players[0].name} center='VS' right={players[1].name}/>
+            <GameHeader left={players[0].aliasName} center='VS' right={players[1].aliasName}/>
+
             <GameHeader left={gameSetting.player1Score.toString()} center='Score' right={gameSetting.player2Score.toString()}/>
             <canvas
                 ref={canvasRef}

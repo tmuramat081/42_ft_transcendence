@@ -15,6 +15,9 @@ import DoneOutline from '@mui/icons-material/DoneOutline';
 import { useAuth } from '@/providers/useAuth';
 import ErrorIcon from '@mui/icons-material/Error';
 import { Socket } from 'socket.io-client';
+import { useAriasNamesStore } from '@/store/game/ariasNames';
+import { usePlayersStore } from '@/store/game/player';
+import { PlayerInfo } from '@/types/game/game';
 
 type Props = {
     openMatchError: boolean;
@@ -55,6 +58,7 @@ export const Wait = ({ openMatchError }: Props) => {
     const [ open, setOpen ] = useState<boolean>(true);
     const { socket } = useSocketStore();
     const { loginUser, getCurrentUser } = useAuth();
+    const updateAriasNames = useAriasNamesStore((store) => store.updateAriasNames);
 
     console.log(playState)
 
@@ -71,6 +75,7 @@ export const Wait = ({ openMatchError }: Props) => {
     }, [playState, updatePlayState, socket]);
 
     const updatePlayerNames = usePlayerNamesStore((store) => store.updatePlayerNames);
+    const updatePlayers = usePlayersStore((store) => store.updatePlayers);
 
     const router = useRouter();
 
@@ -79,8 +84,14 @@ export const Wait = ({ openMatchError }: Props) => {
         if (loginUser === null) return ;
 
         // ランダム対戦
-        socket.on('random:select', (playerNames: [string, string]) => {
-            updatePlayerNames(playerNames);
+        //socket.on('random:select', (playerNames: [string, string], ariasNames: [string, string]) => {
+        socket.on('random:select', (players: [PlayerInfo, PlayerInfo]) => {
+
+            // updatePlayerNames(playerNames);
+            // updateAriasNames(ariasNames);
+            //console.log(ariasNames)
+            // console.log("players", players)
+            updatePlayers(players);
             updatePlayState(PlayState.stateSelecting);
 
             // パスを変える
@@ -88,8 +99,13 @@ export const Wait = ({ openMatchError }: Props) => {
         });
 
         // スタンバイ
-        socket.on('random:standBy', (playerNames: [string, string]) => {
-            updatePlayerNames(playerNames);
+        //socket.on('random:standBy', (playerNames: [string, string], ariasNames: [string, string]) => {
+        socket.on('random:standBy', (players: [PlayerInfo, PlayerInfo]) => {
+            // updatePlayerNames(playerNames);
+            // updateAriasNames(ariasNames);
+            //onsole.log(ariasNames)
+            // console.log("players", players)
+            updatePlayers(players);
             updatePlayState(PlayState.stateStandingBy);
 
             // パスを変える
@@ -104,7 +120,7 @@ export const Wait = ({ openMatchError }: Props) => {
             //socket.emit('playCancel');
         }
 
-    }, [socket, loginUser, updatePlayerNames, updatePlayState, router]);
+    }, [socket, loginUser, updatePlayState, router]); //updatePlayerNames, updateAriasNames
 
     // cancel
     // ?

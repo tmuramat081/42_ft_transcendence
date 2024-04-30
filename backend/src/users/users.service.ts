@@ -37,6 +37,35 @@ export class UsersService {
     private jwtService: JwtService,
   ) {}
 
+  loginUserIds: number[] = [];
+
+  addLoginUserId(id: number) {
+    if (!this.isLoginUserId(id)) {
+      //this.logger.log(`addLoginUserId: ${id}`);
+
+      this.loginUserIds.push(id);
+    }
+  }
+
+  removeLoginUserId(id: number) {
+    if (this.isLoginUserId(id)) {
+      //this.logger.log(`removeLoginUserId: ${id}`);
+
+      this.loginUserIds = this.loginUserIds.filter(
+        (loginUserId) => loginUserId !== id,
+      );
+    }
+  }
+
+  isLoginUserId(userId: number): boolean {
+    console.log('loginUserIds: ', this.loginUserIds);
+    //return this.loginUserIds.includes(userId);
+    if (this.loginUserIds.find((id) => id === userId)) {
+      return true;
+    }
+    return false;
+  }
+
   //asyncは非同期処理
   //awaitを使うと、その行の処理が終わるまで次の行には進まない
   // async signUp(userData: SignUpUserDto): Promise<string> {
@@ -519,6 +548,10 @@ export class UsersService {
     return await this.userRepository.findAll();
   }
 
+  async findAllByIds(ids: number[]): Promise<User[]> {
+    return await this.userRepository.findAllByIds(ids);
+  }
+
   // TODO: relation: friend, block
   async findOne(id: number): Promise<User | undefined> {
     return await this.userRepository.findOne({ where: { userId: id }, relations: ['friends', 'blocked'] });
@@ -590,5 +623,9 @@ export class UsersService {
 
   async updatePoint(data: UpdatePointDto): Promise<User> {
     return this.userRepository.updatePoint(data);
+  }
+
+  async getRanking(userName: string): Promise<number> {
+    return this.userRepository.getRanking(userName);
   }
 }

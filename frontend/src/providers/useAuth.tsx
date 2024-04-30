@@ -6,7 +6,8 @@ import React, {
     ReactNode,
     SetStateAction,
     useContext,
-    useState
+    useState,
+    useEffect
 } from "react";
 
 import {User} from "../types/user"
@@ -240,6 +241,10 @@ export const LoginUserProvider = (props: {children: ReactNode}) => {
         }
         return null;
     }
+
+    // useEffect(() => {
+    //     getCurrentUser();
+    // })
 
     return (
         <LoginUserContext.Provider value={{ 

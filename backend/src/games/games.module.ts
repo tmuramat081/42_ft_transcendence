@@ -20,7 +20,7 @@ import { JwtService } from '@nestjs/jwt';
 import { JwtModule } from '@nestjs/jwt';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([GameRoom, GameEntry, GameRecord, User])],
+  imports: [TypeOrmModule.forFeature([GameRoom, GameEntry, GameRecord, User]), UsersModule, AuthModule],
   controllers: [GamesController],
   providers: [
     {
@@ -44,13 +44,14 @@ import { JwtModule } from '@nestjs/jwt';
     GamesService,
     GameGateway,
     RecordsRepository,
-    UserRepository,
-    UsersService,
-    AuthService,
-    UsersModule,
-    JwtModule,
-    JwtService,
+    // UserRepository,
+    // UsersService,
+    // AuthService,
+    // UsersModule,
+    // JwtModule,
+    // JwtService,
   ],
-  exports: [GameModule, GamesService, RecordsRepository, UsersService, AuthService, UserRepository, JwtModule, JwtService],
+  //, UsersService, AuthService, UserRepository, JwtModule, JwtService
+  //exports: [GameModule, GamesService, RecordsRepository],
 })
 export class GameModule {}

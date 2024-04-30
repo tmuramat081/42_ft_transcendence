@@ -8,6 +8,8 @@ import { Layout } from "@/components/game/common/Layout";
 import { Result } from "@/components/game/battle/Result";
 import { Play} from "@/components/game/battle/Play";
 import { NavigationEvents } from "@/components/game/battle/Setting";
+import { Wait } from "@/components/game/index/Wait";
+import { Grid, Paper } from "@mui/material";
 
 // test
 import { useEffect } from "react";
@@ -15,8 +17,11 @@ import { useEffect } from "react";
 const defaultFinishedGameInfo: FinishedGameInfo = {
     winnerName: "",
     loserName: "",
+    winnerAliasName: "",
+    loserAliasName: "",
     winnerScore: 0,
     loserScore: 0,
+    round: 1,
 };
 
 export default function Battle() {
@@ -30,6 +35,8 @@ export default function Battle() {
         //updatePlayState(PlayState.stateFinished);
     }, []);
 
+    const [ openMatchError, setOpenMatchError ] = useState(false);
+
     return (
         <Layout title='Play'>
             {(playState === PlayState.stateSelecting || 
@@ -38,8 +45,23 @@ export default function Battle() {
                 <Play updateFinishedGameInfo={setFinishedGameInfo}/>
             )}
             {(playState === PlayState.stateFinished || playState === PlayState.stateCanceled || playState === PlayState.stateNothing) && (
-                <Result finishedGameInfo={finishedGameInfo} />
+                <Result finishedGameInfo={finishedGameInfo} setOpenMatchError={setOpenMatchError} />
             )}
+
+            <Grid
+                container
+                justifyContent="center"
+                alignItems="center"
+                direction="row"
+                spacing={3}
+                sx={{ mt: 1, height: 800}}
+            >
+            <Paper elevation={3} sx={{height: '100%'}}>
+            {playState === PlayState.stateWaiting && (
+                <Wait openMatchError={openMatchError} />
+            )}
+            </Paper>
+            </Grid>
 
             <Suspense fallback={null}>
                 <NavigationEvents />

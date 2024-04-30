@@ -1,7 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 
-// 14, mfny参考
 // jwtから2faが必要なのか、そしてされているのかを判断する
 
 @Injectable()

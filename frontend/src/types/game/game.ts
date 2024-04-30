@@ -21,11 +21,23 @@ export type GameSetting = {
     player2Score: number;
 };
 
+export type GameRecordWithUserName = {
+    id: number;
+    winnerScore: number;
+    loserScore: number;
+    createdAt: Date;
+    loserName: string;
+    winnerName: string;
+};
+
 export type FinishedGameInfo = {
     winnerName: string;
     loserName: string;
+    winnerAliasName: string;
+    loserAliasName: string;
     winnerScore: number;
     loserScore: number;
+    round: number;
 };
 
 export type Invitation = {
@@ -73,8 +85,8 @@ export type SocketAuth = {
 
 export type WatchInfo = {
     roomName: string;
-    name1: string;
-    name2: string;
+    player1: PlayerInfo;
+    player2: PlayerInfo;
 };
 
 export const GameState = {
@@ -83,3 +95,9 @@ export const GameState = {
 } as const;
 
 export type GameState = (typeof GameState)[keyof typeof GameState];
+
+export type PlayerInfo = {
+    name: string;
+    aliasName: string;
+    round: number;
+};

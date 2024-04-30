@@ -1,6 +1,6 @@
 import { IsNotEmpty, IsNumber } from 'class-validator';
 
-export class GetUserStatusByIdtDto {
+export class GetUserStatusByIdDto {
   @IsNumber()
   @IsNotEmpty()
   userId: number;

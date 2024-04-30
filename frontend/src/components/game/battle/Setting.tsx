@@ -16,6 +16,7 @@ import { useSocketStore } from '@/store/game/clientSocket';
 import { useGameSettingStore } from '@/store/game/gameSetting';
 import { PlayState, usePlayStateStore } from '@/store/game/playState';
 import { DiffucultyLevel, GameSetting } from '@/types/game/game';
+import { usePlayersStore } from '@/store/game/player';
 
 export const NavigationEvents = (() =>{
     const pathname = usePathname();
@@ -49,7 +50,7 @@ export const Setting = () => {
     const {socket} = useSocketStore();
     const updatePlayState = usePlayStateStore((store) => store.updatePlayState);
     const updateGameSetting = useGameSettingStore((store) => store.updateGameSetting);
-    const { playState} = usePlayStateStore();
+    const {playState} = usePlayStateStore();
     const [difficulty, setDifficulty] = useState<DiffucultyLevel>(DiffucultyLevel.EASY);
     const [matchPoint, setMatchPoint] = useState<number>(5);
     const router = useRouter();
@@ -58,6 +59,7 @@ export const Setting = () => {
     const [countDown, setCountDown] = useState<number>(durationPfSettingInSec);
     const player1DefaultScore = 0;
     const player2DefaultScore = 0;
+    const { players } = usePlayersStore();
 
     const handleDifficultyChange = (event: React.ChangeEvent<HTMLInputElement>) => {
         const val: DiffucultyLevel = event.target.value as DiffucultyLevel;
@@ -152,6 +154,18 @@ export const Setting = () => {
         socket.emit('compleateSetting', {difficulty, matchPoint, player1Score: player1DefaultScore, player2Score: player2DefaultScore});
     }
 
+    let round = 1;
+    if (!players[0] || !players[1]) {
+        return null;
+    }
+    if (players[0].round > 1 || players[1].round > 1) {
+        if (players[0].round > players[1].round) {
+            round = players[0].round;
+        } else {
+            round = players[1].round;
+        }
+    }
+
     return (
         <Grid item>
             <Grid
@@ -190,6 +204,9 @@ export const Setting = () => {
                           justifyContent='center'
                           alignItems='center'
                           >
+                            <Grid item>
+                                <Typography variant='h5'>{round} Round!!</Typography>
+                            </Grid>
                             <Grid item>
                                 <Typography variant='h5'>待ち時間</Typography>
                             </Grid>

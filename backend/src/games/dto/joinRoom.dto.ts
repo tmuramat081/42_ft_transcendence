@@ -8,5 +8,13 @@ export class JoinRoomDto {
     // @IsNumber()
     // @IsNotEmpty()
     // roomId: number;
+
+    @IsString()
+    @IsNotEmpty()
+    aliasName: string;
+
+    @IsNumber()
+    @IsNotEmpty()
+    round: number;
 }
     

@@ -71,6 +71,10 @@ export class UserRepository {
     return this.userRepository.find();
   }
 
+  async findAllByIds(ids: number[]): Promise<User[]> {
+    return this.userRepository.findByIds(ids);
+  }
+
   // async findOne(id: number): Promise<User | undefined> {
   //     //return this.connection.getRepository(User).findOne({ where: { user_id: id } });
   //     return this.userRepository.findOne({ where: { userId: id }});
@@ -208,7 +212,7 @@ export class UserRepository {
   }
 
   async updatePoint(data: UpdatePointDto): Promise<User> {
-    const target: User = await this.findOne({ userId: data.userId });
+    const target: User = await this.userRepository.findOne({ where: { userId: data.userId }, relations: ['friends', 'blocked'] });
     if (!target) {
       //throw new Error('User not found');
       throw new NotFoundException('User not found');
@@ -216,5 +220,21 @@ export class UserRepository {
 
     target.point = data.point;
     return await this.userRepository.save(target);
+  }
+
+  async getRanking(userName: string): Promise<number> {
+    // ユーザーをポイントの降順、作成日の昇順で取得
+    const sortedUsers = await this.userRepository.find({
+      order: {
+        point: 'DESC',
+        createdAt: 'ASC',
+      },
+    });
+
+    // ユーザーIDに基づいてランキングを見つける
+    const userIndex = sortedUsers.findIndex((user) => user.userName === userName);
+    const ranking = userIndex + 1;
+
+    return ranking;
   }
 }

@@ -11,9 +11,6 @@ import { UserRepository } from '../users/users.repository';
 import { TwoFactorAuthGuard } from './guards/2fa-auth.guards';
 import { TwoFactorAuthStrategy } from './strategy/2fa.strategy';
 
-// mfnyu 15, 16
-// 11はスクラッチで実装してみる
-
 @Module({
   //forwardRefは循環参照を解決するために使われる
   imports: [forwardRef(() => UsersModule), HttpModule],
@@ -26,5 +23,6 @@ import { TwoFactorAuthStrategy } from './strategy/2fa.strategy';
     TwoFactorAuthGuard,
     TwoFactorAuthStrategy,
   ],
+  exports: [AuthService],
 })
 export class AuthModule {}

@@ -8,7 +8,6 @@ import {
 import { Server, Socket } from 'socket.io';
 import { SOCKET_EVENTS_GAME } from '../game.constant';
 
-// maoyagi
 import { Logger, UsePipes, ValidationPipe } from '@nestjs/common';
 // service
 import { RecordsRepository } from '../gameRecord.repository';
@@ -30,7 +29,8 @@ import {
   GameState,
   UserStatus,
   SocketAuth,
-  FriendGameInfo
+  FriendGameInfo, 
+  PlayerInfo,
 } from '../types/game'
 
 import { GetInvitedListDto } from '../dto/getInvitedList.dto';
@@ -42,8 +42,9 @@ import { JoinRoomDto } from '../dto/joinRoom.dto';
 import { WatchFriendGameDto } from '../dto/watchFriendGame.dto';
 import { PlayGameDto } from '../dto/playGame.dto';
 import { UpdatePlayerPosDto } from '../dto/updatePlayerPos.dto';
-import { GetUserStatusByIdtDto } from '../dto/getUserStatusById.dto';
+import { GetUserStatusByIdDto } from '../dto/getUserStatusById.dto';
 import { WatchGameDto } from '../dto/watchGame.dto';
+import { UpdatePointDto } from '@/users/dto/user.dto';
 
 const Easy = 6;
 const Normal = 12;
@@ -102,7 +103,6 @@ type ConnectedUser = {
 
 //@WebSocketGateway({ cors: { origin: '*' } })
 @WebSocketGateway({ cors: { origin: '*' }, namespace: '/game' })
-//?
 @UsePipes(new ValidationPipe())
 export class GameGateway {
   // ゲームの設定
@@ -193,7 +193,7 @@ export class GameGateway {
 
   addPlayingUserId(userId: number) {
     if (!this.isPlayingUserId(userId)) {
-      this.logger.log(`addPlayingUserId: ${userId}`);
+      // this.logger.log(`addPlayingUserId: ${userId}`);
       this.playingUserIds.push(userId);
 
       // ユーザーのステータスを更新
@@ -206,7 +206,7 @@ export class GameGateway {
 
   removePlayingUserId(userId: number) {
     if (this.isPlayingUserId(userId)) {
-      this.logger.log(`removePlayingUserId: ${userId}`);
+      // this.logger.log(`removePlayingUserId: ${userId}`);
       // ユーザーIDを含まないリストを作成
       this.playingUserIds = this.playingUserIds.filter((id) => id !== userId);
 
@@ -237,17 +237,41 @@ export class GameGateway {
   // ポイントによってゲームの設定をするプレイヤーを決定
   updatePlayerStatus(player1: Player, player2, gameType: string) {
     const playerNames: [string, string] = [player1.name, player2.name];
+    const ariasNames: [string, string] = [player1.aliasName, player2.aliasName];
 
+    const p1Info: PlayerInfo = {
+      name: player1.name,
+      aliasName: player1.aliasName,
+      round: player1.round,
+    };
+
+    const p2Info: PlayerInfo = {
+      name: player2.name,
+      aliasName: player2.aliasName,
+      round: player2.round,
+    };
+
+    const players: [PlayerInfo, PlayerInfo] = [p1Info, p2Info];
+
+    //console.log(ariasNames)
     // 状態
     const select = gameType + ':select'
     const standBy = gameType + ':standBy'
 
     if (player1.point <= player2.point) {
-      player1.socket.emit(select, playerNames);
-      player2.socket.emit(standBy, playerNames);
+      // player1.socket.emit(select, playerNames);
+      // player2.socket.emit(standBy, playerNames);
+      // player1.socket.emit(select, playerNames, ariasNames);
+      // player2.socket.emit(standBy, playerNames, ariasNames);
+      player1.socket.emit(select, players);
+      player2.socket.emit(standBy, players);
     } else {
-      player2.socket.emit(select, playerNames);
-      player1.socket.emit(standBy, playerNames);
+      // player2.socket.emit(select, playerNames);
+      // player1.socket.emit(standBy, playerNames);
+      // player2.socket.emit(select, playerNames, ariasNames);
+      // player1.socket.emit(standBy, playerNames, ariasNames);
+      player2.socket.emit(select, players);
+      player1.socket.emit(standBy, players);
     }
   }
 
@@ -316,8 +340,8 @@ export class GameGateway {
 
     // maoyagi
     const id = this.getIdFromSocket(socket);
-  
-    //this.logger.log(`Client connected: ${id}!!!!!!!!!!!!!!!!!!!!`);
+
+    // this.logger.log(`Client connected: ${id}!!!!!!!!!!!!!!!!!!!!`);
     // console.log(`Client connected: ${id}!!!!!!!!!!!!!!!!!!!!!!!!`);
 
     // friendがプロフィール見ていれば、表示される
@@ -359,9 +383,9 @@ export class GameGateway {
     //     this.rooms[roomIdToDelete]?.map((client) => client.userId),
     //   );
 
-    //maoyagi
     const id = this.getIdFromSocket(socket);
-    //this.logger.log(`Client disconnected: ${id}`);
+    // this.logger.log(`Client disconnected: ${id}`);
+
 
     this.removePlayingUserId(id);
 
@@ -370,18 +394,18 @@ export class GameGateway {
       status: UserStatus.OFFLINE,
     })
 
-    // 招待リストから削除
-    const inivitation = this.invitationList.find(id)
-    if (inivitation !== undefined) {
-      // 招待を受けているホストに通知
-      const guestSocketIds = this.userSocketMap.get(inivitation.guestId);
-      if (guestSocketIds !== undefined) {
-        guestSocketIds.forEach((socketId) => {
-          this.server.to(socketId).emit('cancelInvitation', inivitation.hostId);
-        });
-      }
-    this.invitationList.delete(id);
-    }
+    // // 招待リストから削除
+    // const inivitation = this.invitationList.find(id)
+    // if (inivitation !== undefined) {
+    //   // 招待を受けているホストに通知
+    //   const guestSocketIds = this.userSocketMap.get(inivitation.guestId);
+    //   if (guestSocketIds !== undefined) {
+    //     guestSocketIds.forEach((socketId) => {
+    //       this.server.to(socketId).emit('cancelInvitation', inivitation.hostId);
+    //     });
+    //   }
+    // this.invitationList.delete(id);
+    // }
 
     // 切断したユーザーのソケットIDを削除
     const socketIds = this.userSocketMap.get(id);
@@ -398,8 +422,6 @@ export class GameGateway {
     this.waitingQueue = this.waitingQueue.filter((player) => player.socket.id !== socket.id);
   }
 
-
-  //maoyagi ver
   //game開始
   @SubscribeMessage('playStart')
   async joinRoom(
@@ -435,9 +457,12 @@ export class GameGateway {
         socket: socket,
         height: GameGateway.initialHeight,
         score: 0,
+        aliasName: data.aliasName,
+        round: data.round,
       });
 
-      // console.log(this.waitingQueue)
+      //console.log(this.waitingQueue)
+
 
       return true;
     // 待機プレイヤーがいる場合
@@ -458,6 +483,8 @@ export class GameGateway {
         socket: socket,
         height: GameGateway.initialHeight,
         score: 0,
+        aliasName: data.aliasName,
+        round: data.round,
       };
       void this.startGame(player1, player2, 'random')
     }
@@ -508,7 +535,7 @@ export class GameGateway {
       initialHeight: GameGateway.initialHeight, 
       lowestPosition: GameGateway.lowestPos,
       rewards: 0,
-      gameState: GameState.PLAYING,
+      gameState: GameState.SETTING,
     };
 
     this.gameRooms.push(newRoom);
@@ -538,6 +565,19 @@ export class GameGateway {
 
         // どちらかのプレイヤーが連戦の場合は、連戦倍にする
         room.rewards = data.matchPoint * 10;
+
+        const p1: Player = room.player1;
+        const p2: Player = room.player2;
+
+        this.logger.log('round', p1.round, p2.round)
+
+        if (p1.round > 1 || p2.round > 1) {
+          if (p1.round > p2.round) {
+            room.rewards *= p1.round;
+          } else {
+            room.rewards *= p2.round;
+          }
+        }
   
         // TDDO:
         // ball speedも変更
@@ -555,9 +595,7 @@ export class GameGateway {
             break;
         }
   
-        ///中央
         room.initialHeight = GameGateway.boardHeight / 2 - room.barLength / 2;
-        // 最下部
         room.lowestPosition = GameGateway.boardHeight - GameGateway.heighestPos - room.barLength;
         room.player1.height = room.initialHeight;
         room.player2.height = room.initialHeight;
@@ -571,14 +609,213 @@ export class GameGateway {
   // マッチングのキャンセル
   @SubscribeMessage('playCancel')
   cancelMatching(@ConnectedSocket() socket: Socket) {
-    //console.log('playCancel');
+    // console.log('playCancel');
+
     this.waitingQueue = this.waitingQueue.filter((player) => player.socket.id !== socket.id);
+  }
+
+  // 招待リストを受け取るのと同時に登録
+  @SubscribeMessage('getInvitedList')
+  async getInvitedList(@ConnectedSocket() socket: Socket, @MessageBody() data: GetInvitedListDto): Promise<Friend[]> {
+    // マルチデバイス対応
+    const socketIds = this.userSocketMap.get(data.userId);
+    if (socketIds === undefined) {
+      this.userSocketMap.set(data.userId, new Set([socket.id]));
+    } else {
+      socketIds.add(socket.id);
+    }
+  
+    // 招待リストを取得
+    // 自分が招待されているリスト
+    const hostIds = this.invitationList.findHosts(data.userId);
+    if (hostIds === undefined) {
+      return [];
+    } else {
+      // ユーザー情報を取得
+      const hosts = await this.usersService.findAllByIds(Array.from(hostIds));
+
+      return hosts.map((host) => {
+        return { name: host.userName, id: host.userId } as Friend;
+      })
+    }
+  }
+
+  @SubscribeMessage('inviteFriend')
+  async inviteFriend(@ConnectedSocket() socket: Socket, @MessageBody() data: InviteFriendDto): Promise<boolean> {
+    // ゲーム開始中の場合は何もしない
+    if (this.isPlayingUserId(data.hostId)) {
+      return false;
+    }
+
+    // 自分がホストの新規招待の作成
+    const newInvitation: Invitation = {
+      hostId: data.hostId,
+      guestId: data.guestId,
+      hostSocketId: socket.id,
+    };
+
+    // 招待リストに追加
+    const res = this.invitationList.insert(newInvitation);
+
+    // socket一覧から招待の通知
+    if (res) {
+      const host = await this.usersService.findOne(data.hostId);
+
+      // 招待を受けたユーザーのsocketIdを取得
+      // マルチデバイスに対応
+      const guestSocketIds = this.userSocketMap.get(data.guestId);
+      if (guestSocketIds !== undefined) {
+        guestSocketIds.forEach((socketId) => {
+          // 自分が招待したことを通知
+          this.server.to(socketId).emit('inviteFriend', { id: data.hostId, name: host.userName } as Friend);
+        });
+      }
+    }
+
+    return res;
+  }
+
+  // cancel 招待のキャンセル
+  @SubscribeMessage('cancelInvitation')
+  cancelInvitation(@ConnectedSocket() socket: Socket, @MessageBody() data: CancelInvitationDto) {
+    // 招待リストから削除
+    // hostは一つしか招待できないので、これでOK
+    const res = this.invitationList.delete(data.hostId);
+
+    if (res) {
+      const guestSocketIds = this.userSocketMap.get(data.guestId);
+      if (guestSocketIds !== undefined) {
+        guestSocketIds.forEach((socketId) => {
+          // 自分が招待をキャンセルしたことを通知
+          this.server.to(socketId).emit('cancelInvitation', data.hostId);
+        });
+      }
+    }
+  }
+
+  // deny 拒否
+  @SubscribeMessage('denyInvitation')
+  denyInvitation(@ConnectedSocket() socket: Socket, @MessageBody() data: DenyInvitationDto) {
+    // 招待リストから削除
+    const inivitation = this.invitationList.find(data.hostId)
+    if (inivitation !== undefined) {
+      this.invitationList.delete(data.hostId);
+    } else {
+      return;
+    }
+
+    // // 拒否したユーザーのsocketIdを取得
+    // const hostSocketIds = this.userSocketMap.get(data.hostId);
+    // if (hostSocketIds !== undefined) {
+    //   hostSocketIds.forEach((socketId) => {
+    //     // 自分が拒否したことを通知
+    //     this.server.to(socketId).emit('denyInvitation', data.guestId);
+    //   });
+    // }
+
+    this.server.to(inivitation.hostSocketId).emit('denyInvitation');
+  }
+
+  // begin friend
+  // TODO: 受け入れる際に、エイリアス名を設定できるようにする
+  @SubscribeMessage('aceeptInvitation')
+  async beginFriendMatch(@ConnectedSocket() socket: Socket, @MessageBody() data: AcceptInvitationDto) {
+    // ゲーム開始中の場合は何もしない
+    if (this.isPlayingUserId(data.guestId)) {
+      return false;
+    }
+
+    // 招待リストから削除
+    const inivitation = this.invitationList.find(data.guestId)
+    if (inivitation !== undefined) {
+      this.invitationList.delete(data.guestId);
+    } else {
+      return false;
+    }
+
+    // // ユーザー情報を取得
+    // const host = await this.usersService.findOne(data.hostId);
+    // const guest = await this.usersService.findOne(data.guestId);
+
+    // // ホストとゲストの情報を取得
+    // const hostPlayer: Player = {
+    //   name: host.userName,
+    //   id: data.hostId,
+    //   point: host.point,
+    //   socket: socket,
+    //   height: GameGateway.initialHeight,
+    //   score: 0,
+    //   aliasName: data.hostAliasName,
+    //   round: data.hostRound,
+    // };
+
+    // const guestPlayer: Player = {
+    //   name: guest.userName,
+    //   id: data.guestId,
+    //   point: guest.point,
+    //   socket: socket,
+    //   height: GameGateway.initialHeight,
+    //   score: 0,
+    //   aliasName: data.guestAliasName,
+    //   round: data.guestRound,
+    // };
+
+    // ホストソケットの取得
+    // server.in: 接続しているソケットを取得
+    // fetchSockets: ソケットのリストを取得
+    // マルチデバイス対応
+    // handleConnectionでserverにsocketが登録されている
+    // ソケットの追加は自動的に行われる
+    const hostSockets = await this.server.in(inivitation.hostSocketId).fetchSockets();
+    if (hostSockets.length === 0) {
+      return false;
+    }
+
+    // 受け入れたデバイス以外のデバイスへの招待をキャンセル
+    //guestSocketIds: ゲストのsocketId　マルチデバイス対応
+    const guestSocketIds = this.userSocketMap.get(data.guestId);
+    if (guestSocketIds !== undefined) {
+      guestSocketIds.forEach((socketId) => {
+        if (socketId !== socket.id) {
+          this.server.to(socketId).emit('cancelInvitation', data.hostId);
+        }
+      });
+    }
+
+    const user1 = await this.usersService.findOne(data.hostId);
+    const user2 = await this.usersService.findOne(data.guestId);
+
+    const hostPlayer: Player = {
+      name: user1.userName,
+      id: data.hostId,
+      point: user1.point,
+      socket: hostSockets[0],
+      height: GameGateway.initialHeight,
+      score: 0,
+      aliasName: user1.userName,
+      round: 1,
+    };
+
+    const guestPlayer: Player = {
+      name: user2.userName,
+      id: data.guestId,
+      point: user2.point,
+      socket: socket,
+      height: GameGateway.initialHeight,
+      score: 0,
+      aliasName: user2.userName,
+      round: 1,
+    };
+
+    void this.startGame(hostPlayer, guestPlayer, 'friend');
+    return true;
   }
 
   // バーの移動
   @SubscribeMessage('barMove')
   async updatePlayerPos(@ConnectedSocket() socket: Socket, @MessageBody() data: UpdatePlayerPosDto) {
-    //console.log('barMove');
+    // console.log('barMove');
+
     let isGameOver = false;
 
     const room = this.gameRooms.find((room) => 
@@ -685,17 +922,46 @@ export class GameGateway {
 
   // ゲーム終了
   async finishGame(room: RoomInfo, winner: Player, loser: Player) {
+    const p1round = room.player1.round;
+    const p2round = room.player2.round;
+    let round = 1;
+    if (p1round > p2round) {
+      round = p1round;
+    } else {
+      round = p2round;
+    }
+
+    // ariasNameも返す
     const finishedGameInfo: FinishedGameInfo = {
       winnerName: winner.name,
       loserName: loser.name,
+      winnerAliasName: winner.aliasName,
+      loserAliasName: loser.aliasName,
       winnerScore: winner.score,
       loserScore: loser.score,
+      round: round,
     };
+
+    //console.log(finishedGameInfo)
 
     room.supporters.map((supporter) => {
       // null はscore
       supporter.emit('finishGame', null, finishedGameInfo);
     });
+
+    // ポイントを更新 DB
+    const updatePointWinnerDto: UpdatePointDto = {
+      userId: winner.id,
+      point: winner.point + room.rewards,
+    };
+
+    const updatePointLoserDto: UpdatePointDto = {
+      userId: loser.id,
+      point: Math.max(loser.point - room.rewards, 0),
+    };
+
+    this.usersService.updatePoint(updatePointWinnerDto);
+    this.usersService.updatePoint(updatePointLoserDto);
 
     // ポイントを更新
     winner.socket.emit('finishGame', winner.score + room.rewards, finishedGameInfo);
@@ -703,11 +969,13 @@ export class GameGateway {
     // ポイントを更新
     loser.socket.emit('finishGame', Math.max(loser.score - room.rewards, 0), finishedGameInfo);
 
+    // TODO: round, aliasNameも保存する？
     await this.recordsRepository.createGameRecord({
       winnerId: winner.id,
       loserId: loser.id,
       winnerScore: winner.score,
       loserScore: loser.score,
+      //round: round,
     });
 
     // プレイ中のユーザーから削除 roomメンバー全て
@@ -734,6 +1002,84 @@ export class GameGateway {
       this.gameRooms = this.gameRooms.filter((room) => room.player1.socket.id !== socket.id && room.player2.socket.id !== socket.id);
       // プレイ中のユーザーから削除
       this.removePlayingUsersFromRoom(room);
+    }
+  }
+
+  @SubscribeMessage('watchGame')
+  async watchGame(@ConnectedSocket() socket: Socket, @MessageBody() data: WatchGameDto) {
+    // 指定したroomNameのゲームを観戦
+    const room = this.gameRooms.find((room) => room.roomName === data.roomName);
+    if (!room) {
+      socket.emit('error');
+      return ;
+    }
+
+    // 観戦者を追加
+    room.supporters.push(socket);
+    this.logger.log(`watchGame: ${socket.id} joined to ${data.roomName}`);
+
+    // 観戦者にゲーム情報を送信
+    await socket.join(data.roomName);
+
+    // game settingを送信
+    // setting中の場合はnull
+    const gameSetting = room.gameState === GameState.SETTING ? null : room.gameSetting;
+
+    socket.emit('joinGameRoom', room.gameState, gameSetting);
+
+    // 観戦者idをげゲーム中のユーザーに通知
+    const id = this.getIdFromSocket(socket);
+    this.addPlayingUserId(id);
+  }
+
+  // 観戦できるゲームのリストを取得
+  @SubscribeMessage('watchList')
+  getGameRooms(@ConnectedSocket() socket: Socket) {
+    type WatchInfo = {
+      roomName: string;
+      player1: PlayerInfo;
+      player2: PlayerInfo;
+    };
+
+    // 観戦できるゲームのリストを取得
+    const watchInfoList: WatchInfo[] = this.gameRooms.map((room) => 
+      <WatchInfo>{
+        roomName: room.roomName,
+        player1: {
+          name: room.player1.name,
+          aliasName: room.player1.aliasName,
+          round: room.player1.round,
+        },
+        player2: {
+          name: room.player2.name,
+          aliasName: room.player2.aliasName,
+          round: room.player2.round,
+        },
+      },
+    )
+
+    socket.emit('watchListed', watchInfoList);
+  }
+
+  // userIdからstatusを取得
+  // TODO: ログイン時に配列に追加するようにする
+  @SubscribeMessage('getUserStatusById')
+  getUserStatusById(@MessageBody() data: GetUserStatusByIdDto, @ConnectedSocket() socket: Socket) {
+    const userId = data.userId;
+
+    //console.log('getUserStatusById', userId)
+
+    //console.log(this.usersService.loginUserIds)
+
+    // loginしているかどうかを判定する方法
+    if (this.isPlayingUserId(userId)) {
+      return UserStatus.PLAYING;
+    } else if (this.usersService.isLoginUserId(userId)) {
+      //console.log('online')
+      return UserStatus.ONLINE;
+    } else {
+      //return UserStatus.ONLINE;
+      return UserStatus.OFFLINE;
     }
   }
 }

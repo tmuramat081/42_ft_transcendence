@@ -30,7 +30,6 @@ import { usePlayerNamesStore } from '@/store/game/playerNames';
 import { useAuth } from '@/providers/useAuth';
 import { Invitation } from '@/types/game/game';
 
-// ?
 import { CloseButton } from '@mantine/core';
 import CloseIcon from '@mui/icons-material/Close';
 

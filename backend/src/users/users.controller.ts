@@ -116,6 +116,8 @@ export class UsersController {
           secure: process.env.NODE_ENV === 'production',
           sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
         })
+        this.usersService.addLoginUserId(user.userId);
+
         return JSON.stringify({"accessToken": accessToken});           
     }
   
@@ -143,6 +145,12 @@ export class UsersController {
         secure: process.env.NODE_ENV === 'production',
         sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
       })
+
+      //this.usersService.loginUserIds.push(user.userId);
+      this.usersService.addLoginUserId(user.userId);
+
+      console.log("loginUserIds: ", this.usersService.loginUserIds)
+
       return JSON.stringify({"userId": undefined, "status": "SUCCESS"});
     }
 
@@ -155,6 +163,8 @@ export class UsersController {
             secure: process.env.NODE_ENV === 'production',
             sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
         });
+        //this.usersService.loginUserIds = this.usersService.loginUserIds.filter(id => id !== req.user.userId);
+        this.usersService.removeLoginUserId(req.user.userId);
         return JSON.stringify({"status": "SUCCESS"});
     }
 
@@ -250,9 +260,9 @@ export class UsersController {
         //const { password, ...user } = req.user;
         //const user: User = req.user;
 
-        console.log("CurrentUser")
+        //console.log("CurrentUser")
 
-        const user: ReturnUserDto = {
+        const user = {
             userId: req.user.userId,
             userName: req.user.userName,
             email: req.user.email,
@@ -261,8 +271,8 @@ export class UsersController {
             name42: req.user.name42,
             friends: req.user.friends,
             blocked: req.user.blocked,
-            // 不要なので削除
-            twoFactorAuthNow: false
+            gameRecords: req.user.gameRecords,
+            point: req.user.point,
         }
 
         //user.friends = []
@@ -293,6 +303,7 @@ export class UsersController {
 
         // console.log(req.user.friends)
 
+        //console.log('loginUserIds: ', this.usersService.loginUserIds)
 
         return JSON.stringify({"user": user});
     }
@@ -303,27 +314,21 @@ export class UsersController {
     //@UseGuards(JwtAuthGuard)
     @Get("/:name")
     async FindOneByName(@Param('name') name: string): Promise<string> {
-        console.log("FindOneByName")
+        //console.log("FindOneByName")
         const resultUser =  await this.usersService.findOneByName(name);
-
 
         const user: ReturnUserDto = {
             userId: resultUser.userId,
             userName: resultUser.userName,
-            email: resultUser.email,
             icon: resultUser.icon,
-            twoFactorAuth: resultUser.twoFactorAuth,
-            name42: resultUser.name42,
             friends: resultUser.friends,
             blocked: resultUser.blocked,
-            // 不要なので削除
-            twoFactorAuthNow: false
+            point: resultUser.point,
         }
 
-        console.log("user: ", user)
+        //console.log("user: ", user)
 
         return JSON.stringify({"user": user});
-
     }
 
     // 使っていない
@@ -331,7 +336,7 @@ export class UsersController {
     //@UseGuards(JwtAuthGuard, TwoFactorAuthGuard)
     @Get('/all')
     FindAllUsers() {
-        console.log("FindAllUsers")
+        //console.log("FindAllUsers")
         // passwordを除外する
         return classToPlain(this.usersService.findAll());
     }
@@ -394,5 +399,11 @@ export class UsersController {
         } catch (error) {
             throw error;
         }
+    }
+
+    @UseGuards(JwtAuthGuard)
+    @Get('/ranking/:userName')
+    async getRanking(@Req() req, @Param('userName') userName: string): Promise<string> {
+        return JSON.stringify({"ranking": await this.usersService.getRanking(userName)});
     }
 }
