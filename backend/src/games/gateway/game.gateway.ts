@@ -340,7 +340,7 @@ export class GameGateway {
 
     // maoyagi
     const id = this.getIdFromSocket(socket);
-  
+
     // this.logger.log(`Client connected: ${id}!!!!!!!!!!!!!!!!!!!!`);
     // console.log(`Client connected: ${id}!!!!!!!!!!!!!!!!!!!!!!!!`);
 
@@ -385,6 +385,7 @@ export class GameGateway {
 
     const id = this.getIdFromSocket(socket);
     // this.logger.log(`Client disconnected: ${id}`);
+
 
     this.removePlayingUserId(id);
 
@@ -462,6 +463,7 @@ export class GameGateway {
 
       //console.log(this.waitingQueue)
 
+
       return true;
     // 待機プレイヤーがいる場合
     } else {
@@ -488,7 +490,6 @@ export class GameGateway {
     }
 
     // console.log(this.waitingQueue)
-
 
     return true;
   }
@@ -609,6 +610,7 @@ export class GameGateway {
   @SubscribeMessage('playCancel')
   cancelMatching(@ConnectedSocket() socket: Socket) {
     // console.log('playCancel');
+
     this.waitingQueue = this.waitingQueue.filter((player) => player.socket.id !== socket.id);
   }
 
@@ -813,6 +815,7 @@ export class GameGateway {
   @SubscribeMessage('barMove')
   async updatePlayerPos(@ConnectedSocket() socket: Socket, @MessageBody() data: UpdatePlayerPosDto) {
     // console.log('barMove');
+
     let isGameOver = false;
 
     const room = this.gameRooms.find((room) => 
