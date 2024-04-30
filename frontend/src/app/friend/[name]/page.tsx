@@ -31,28 +31,28 @@ export default function functionPage({ params }: { params: { name: string } }) {
   }, []);
 
   // 実験的に実装
-  const inviteGame = (friend: Friend) => {
-    if ( userStatus !== UserStatus.ONLINE ) {
-      // error
-        return;
-    }
+  // const inviteGame = (friend: Friend) => {
+  //   if ( userStatus !== UserStatus.ONLINE ) {
+  //     // error
+  //       return;
+  //   }
 
-    // TODO: aliasNameを設定できるようにする
-    const invitation: Invitation = {
-        guestId: friend.userId,
-        hostId: loginUser.userId,
-    }
+  //   // TODO: aliasNameを設定できるようにする
+  //   const invitation: Invitation = {
+  //       guestId: friend.userId,
+  //       hostId: loginUser.userId,
+  //   }
 
-    socket.emit('inviteFriend', invitation, (res: boolean) => {
-      if (res) {
-        updateInvitedFriendState({ friendId: friend.userId });
-        router.push('/game/index');
-      } else {
-        // error
-        console.log('error');
-      }
-    });
-  }
+  //   socket.emit('inviteFriend', invitation, (res: boolean) => {
+  //     if (res) {
+  //       updateInvitedFriendState({ friendId: friend.userId });
+  //       router.push('/game/index');
+  //     } else {
+  //       // error
+  //       console.log('error');
+  //     }
+  //   });
+  // }
 
   useEffect(() => {
     // サーバーサイドでの処理なのでhttp://localhost:3001は使えない
