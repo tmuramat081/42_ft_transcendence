@@ -19,6 +19,7 @@ import { OnlineUsers } from './chat/entities/onlineUsers.entity';
 import { DmLog } from './chat/entities/dmLog.entity';
 import { UserBlock } from './chat/entities/userBlock.entity';
 import { BlockedUser } from './chat/entities/blockedUser.entity';
+import { GameRecord } from './games/entities/gameRecord.entity';
 
 // .envを読み込む
 dotenv.config();
@@ -52,6 +53,7 @@ dotenv.config();
           GameEntry,
           MatchResult,
           Match,
+          GameRecord,
         ]),
         ConfigModule,
       ],
@@ -75,6 +77,7 @@ dotenv.config();
           GameEntry,
           MatchResult,
           Match,
+          GameRecord,
         ], // 直接エンティティを指定
         synchronize: true,
         ssl: false,

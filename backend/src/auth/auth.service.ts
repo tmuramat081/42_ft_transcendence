@@ -12,8 +12,6 @@ import { JwtService } from '@nestjs/jwt';
 import * as QRCode from 'qrcode';
 import * as speakeasy from 'speakeasy';
 
-// mfnyu 15, 16
-
 @Injectable()
 export class AuthService {
   constructor(private usersService: UsersService) {}

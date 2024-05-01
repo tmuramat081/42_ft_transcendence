@@ -94,7 +94,7 @@ const GlobalHeader = () => {
                   sx={{
                     '& .MuiBadge-dot': {
                       backgroundColor: '#ffeb3b',
-                    }
+                    },
                   }}
                 >
                   <Avatar
@@ -107,8 +107,6 @@ const GlobalHeader = () => {
                 </Badge>
               </Link>
             )}
-            {/* 通知メニュー TODO */}
-            
             {/* ログアウトボタン */}
             <Link
               color="secondary"

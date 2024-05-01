@@ -1,21 +1,58 @@
 // サンプル用クライアントレンダリングでしかできなさそう
 /* eslint-disable */
 
+//users/[name]/page.tsxに移動
+
 'use client';
 
 import Avatar from '@mui/material/Avatar';
 import { useEffect, useState } from 'react';
 import { useAuth } from '@/providers/useAuth';
 import { User } from '@/types/user';
+import { useSocketStore } from '@/store/game/clientSocket';
+import { UserStatus } from '@/types/game/game';
+import { Friend } from '@/types/game/friend';
+import { Invitation } from '@/types/game/game';
+import { Loading } from '@/components/game/common/Loading';
+import { useInvitedFriendStrore } from '@/store/game/invitedFriendState';
+import { useRouter } from 'next/navigation';
 
 export default function functionPage({ params }: { params: { name: string } }) {
   console.log(params.name);
   const [ user, setUser ] = useState<User | null>(null);
+  const [ userStatus, setUserStatus ] = useState<UserStatus>(UserStatus.OFFLINE);
   const { loginUser, getCurrentUser } = useAuth();
+  const { socket } = useSocketStore();
+  const updateInvitedFriendState = useInvitedFriendStrore((store) => store.updateInvitedFriendState);
+  const router = useRouter();
 
   useEffect(() => {
     getCurrentUser();
   }, []);
+
+  // 実験的に実装
+  // const inviteGame = (friend: Friend) => {
+  //   if ( userStatus !== UserStatus.ONLINE ) {
+  //     // error
+  //       return;
+  //   }
+
+  //   // TODO: aliasNameを設定できるようにする
+  //   const invitation: Invitation = {
+  //       guestId: friend.userId,
+  //       hostId: loginUser.userId,
+  //   }
+
+  //   socket.emit('inviteFriend', invitation, (res: boolean) => {
+  //     if (res) {
+  //       updateInvitedFriendState({ friendId: friend.userId });
+  //       router.push('/game/index');
+  //     } else {
+  //       // error
+  //       console.log('error');
+  //     }
+  //   });
+  // }
 
   useEffect(() => {
     // サーバーサイドでの処理なのでhttp://localhost:3001は使えない
@@ -27,16 +64,34 @@ export default function functionPage({ params }: { params: { name: string } }) {
     })
     .then((res) => res.json())
     .then((data) => {
-
         console.log("data: ", data);
         setUser(data.user);
+        socket.emit('getUserStatusById', { userId: data.user.userId }, (status: UserStatus) => {
+            setUserStatus(status);
+        });
         return data;
     })
     .catch((error) => {
 
         console.log(error);
     });
-  }, []);
+
+    socket.on('updateStatus', (data: { userId: number, status: UserStatus }) => {
+        if (data.userId === user?.userId) {
+            // setUser((prev) => {
+            //     if (prev === null) {
+            //         return null;
+            //     }
+            //     return { ...prev, status: data.status };
+            // });
+            setUserStatus(data.status);
+        }
+    })
+
+    return () => {
+        socket.off('updateStatus');
+    }
+  }, [socket, params.name]);
 
   const handleAddFriend = () => {
     if (user === null) {
@@ -131,6 +186,9 @@ export default function functionPage({ params }: { params: { name: string } }) {
     });
   }
 
+  if (!loginUser) {
+    return <Loading />;
+  } 
 
   return (
     <div>
@@ -139,6 +197,7 @@ export default function functionPage({ params }: { params: { name: string } }) {
       { user !== null && (
         <div>
           <h1>{ user.userName }</h1>
+          <h1> { userStatus } </h1>
           <p>{ user.email }</p>
           <p>{ user.userId }</p>
           <p>{ user.icon }</p>

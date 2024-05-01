@@ -22,8 +22,6 @@ import { Validate2FACodeDto } from './dto/2fa';
 //import { jwtDecode } from "jwt-decode";
 import { UsersService } from '../users/users.service';
 
-// mfnyu 15, 16
-
 @Controller('auth')
 export class AuthController {
   constructor(
@@ -168,6 +166,8 @@ export class AuthController {
 
       // cookie削除
       res.clearCookie('login42');
+
+      this.usersService.loginUserIds.push(user.userId);
 
       return {userId: undefined, status: 'SUCCESS'};
     } catch (error) {
