@@ -17,6 +17,9 @@ export default function UserProfileList({ userList }: Props) {
         backgroundColor: '#f5f5f5',
         m: 1,
         p: 2,
+        borderTop: '5px solid #00babc',
+        boxShadow: 4,
+        borderRadius: 2,
       }}
     >
       <Typography

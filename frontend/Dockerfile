@@ -14,7 +14,7 @@ FROM node:20 AS production
 
 ENV NODE_ENV=production
 WORKDIR /frontend
-COPY --from=dev /frontend .
+COPY --from=development /frontend .
 RUN npm install --only=production
 RUN npm run build
 EXPOSE 3000

@@ -6,8 +6,6 @@ import { AuthService } from '../auth.service';
 import { UserDto42 } from 'src/users/dto/user42.dto';
 import { User } from '../../users/entities/user.entity';
 
-// 11スクラッチ 15  mfnyu
-// 両方バージョンで実装してみる
 @Injectable()
 export class IntraStrategy extends PassportStrategy(Strategy, '42') {
   constructor(private readonly authService: AuthService) {

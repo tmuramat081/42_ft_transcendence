@@ -4,6 +4,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, Connection } from 'typeorm';
 import { User } from './entities/user.entity';
 import * as bycrypt from 'bcrypt';
+import { UpdatePointDto } from './dto/user.dto';
 
 /*
 Repository
@@ -68,6 +69,10 @@ export class UserRepository {
     // return this.userRepository.find();
     //return this.connection.getRepository(User).find();
     return this.userRepository.find();
+  }
+
+  async findAllByIds(ids: number[]): Promise<User[]> {
+    return this.userRepository.findByIds(ids);
   }
 
   // async findOne(id: number): Promise<User | undefined> {
@@ -204,5 +209,32 @@ export class UserRepository {
   async getBlockedUsers(user: User): Promise<User[]> {
     // データ整形が必要？パスワードなどが含まれているかも
     return user.blocked;
+  }
+
+  async updatePoint(data: UpdatePointDto): Promise<User> {
+    const target: User = await this.userRepository.findOne({ where: { userId: data.userId }, relations: ['friends', 'blocked'] });
+    if (!target) {
+      //throw new Error('User not found');
+      throw new NotFoundException('User not found');
+    }
+
+    target.point = data.point;
+    return await this.userRepository.save(target);
+  }
+
+  async getRanking(userName: string): Promise<number> {
+    // ユーザーをポイントの降順、作成日の昇順で取得
+    const sortedUsers = await this.userRepository.find({
+      order: {
+        point: 'DESC',
+        createdAt: 'ASC',
+      },
+    });
+
+    // ユーザーIDに基づいてランキングを見つける
+    const userIndex = sortedUsers.findIndex((user) => user.userName === userName);
+    const ranking = userIndex + 1;
+
+    return ranking;
   }
 }

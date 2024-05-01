@@ -29,7 +29,6 @@ import {
   JoinTable,
 } from 'typeorm';
 
-// 11 dto
 // dtoにも
 // 各フィールドのバリデーションを定義するために、class-validatorパッケージを使用する
 import {
@@ -43,13 +42,13 @@ import {
   MaxLength,
 } from 'class-validator';
 
-// 14 seeder
 // ダミーデータを作成するために、nest-seederパッケージを使用する
 import { Factory } from 'nestjs-seeder';
 
-// 16
 // 出力フィールドを制御するために、class-transformerパッケージを使用する
 import { Exclude } from 'class-transformer';
+
+import { GameRecord } from '@/games/entities/gameRecord.entity';
 
 // entityはデータベースのテーブルを表す
 // Uniqueはユニーク制約
@@ -175,4 +174,32 @@ export class User {
   constructor(partial: Partial<User>) {
     Object.assign(this, partial);
   }
+
+  @ManyToMany(() => GameRecord)
+  @JoinTable({
+    // テーブル名
+    name: "user_game_record",
+    // 自分のカラム名
+    joinColumn: {
+      name: "user",
+      referencedColumnName: "userId"
+    },
+    // 相手のカラム名
+    inverseJoinColumn: {
+      name: "gameRecord",
+      referencedColumnName: "gameRecordId"
+    }
+  })
+    gameRecords: GameRecord[];
+
+  @OneToMany(() => GameRecord, (gameRecord) => gameRecord.loser)
+    gameRecordsAsLoser: GameRecord[];
+
+  @OneToMany(() => GameRecord, (gameRecord) => gameRecord.winner)
+    gameRecordsAsWinner: GameRecord[];
+
+    // ゲームのポイント
+  @Column({ name: 'point', type: 'integer', default: 10000})
+  @IsNotEmpty()
+  point: number;
 }

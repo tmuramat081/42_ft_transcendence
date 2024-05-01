@@ -5,11 +5,16 @@ import { ListGameRoomsResponseDto } from './dto/response/listGameRoomResponse.dt
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { CreateGameRoomRequestDto } from './dto/request/createGameRoomRequest.dto';
 import { CreateGameEntryRequestDto } from './dto/request/createGameEntryRequest.dto';
+import { GameRecordWithUserName } from './interfaces/records.interface';
+import { RecordsRepository } from './gameRecord.repository';
 
 @ApiTags('GameRoom')
 @Controller('game-room')
 export class GamesController {
-  constructor(private readonly gamesService: GamesService) {}
+  constructor(
+    private readonly gamesService: GamesService,
+    //private readonly recordsService: RecordsRepository,
+  ) {}
 
   // ゲームルーム一覧取得API
   @Get('')
@@ -49,5 +54,31 @@ export class GamesController {
       gameRoomId,
       ...createGameEntryRequestDto,
     });
+  }
+
+  // gameRecord
+  //Promise<GameRecordWithUserName[]>
+  @Get('/records/:id')
+  async getRecordsById(
+    @Param('id', ParseIntPipe) id: number,
+  ): Promise<string>{
+    //console.log('id:', id)
+    const records = await this.gamesService.gameRecords({
+      where: {
+        OR: [
+          {
+            winnerId: id,
+          },
+          {
+            loserId: id,
+          },
+        ],
+      },
+      orderBy: {
+        createdAt: 'desc',
+      },
+    });
+    //console.log('records:', records)
+    return JSON.stringify({'records': records})
   }
 }

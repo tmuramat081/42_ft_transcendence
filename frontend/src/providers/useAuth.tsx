@@ -6,10 +6,14 @@ import React, {
     ReactNode,
     SetStateAction,
     useContext,
-    useState
+    useState,
+    useEffect
 } from "react";
 
 import {User} from "../types/user"
+
+import { useSocketStore } from "@/store/game/clientSocket";
+import { SocketAuth } from "@/types/game/game";
 
 //import { usePrivateRoute } from '@/hooks/routes/usePrivateRouter'
 //import { usePublicRoute } from "@/hooks/routes/usePublicRoute";
@@ -43,6 +47,8 @@ export const LoginUserProvider = (props: {children: ReactNode}) => {
     // 読み込み状態
     // 最初にアクセスした段階では読み込み中にする
     const [loading, setLoading] = useState<boolean>(true)
+
+    const { socket } = useSocketStore();
 
     // 不要かも
     const signup = async (userName: string, email: string, password: string, passwordConfirm: string) => {
@@ -219,6 +225,13 @@ export const LoginUserProvider = (props: {children: ReactNode}) => {
                 const data = await response.json();
                 console.log('Success:', data);
                 setLoginUser(data.user);
+
+                // socketにuserIdをセット   
+                const socketAuth = { userId: data.user.userId } as SocketAuth;
+                console.log('socketAuth:', socketAuth);
+                socket.auth = socketAuth;
+                socket.connect();
+                
                 return data.user;
             }
         } catch (error) {
@@ -228,6 +241,10 @@ export const LoginUserProvider = (props: {children: ReactNode}) => {
         }
         return null;
     }
+
+    // useEffect(() => {
+    //     getCurrentUser();
+    // })
 
     return (
         <LoginUserContext.Provider value={{ 

@@ -9,4 +9,5 @@ export type User = {
   name42: string;
   friends: User[];
   blocked: User[];
+  point: number;
 };

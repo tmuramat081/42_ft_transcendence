@@ -32,7 +32,7 @@ export default async function Page() {
       display="flex"
       justifyContent="center"
       alignItems="center"
-      sx={{ minHeight: '80vh', width: '80vw', margin: 'auto', padding: '20px'}}
+      sx={{ minHeight: '80vh', width: '80vw', margin: 'auto', padding: '20px' }}
     >
       <UserProfileList userList={users} />
     </Box>

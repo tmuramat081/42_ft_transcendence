@@ -39,6 +39,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
   async validate(payload: JwtPayload): Promise<User> {
     // ペイロードからユーザーIDとユーザー名を取得 自動で検証される
     const { userName } = payload;
+
     // ユーザーの検索
     const user = await this.userRepository.findOneByName(userName);
     if (user) {

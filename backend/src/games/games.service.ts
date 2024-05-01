@@ -19,6 +19,11 @@ import {
   TABLE_NAME,
 } from '@/common/constant/errorMessage.constant';
 
+import { RecordsRepository } from './gameRecord.repository';
+import { GameRecord } from './entities/gameRecord.entity';
+import { GameRecordWithUserName } from './interfaces/records.interface';
+import { CreateGameRecordDto } from './dto/gameRecord.dto';
+
 export interface IGameEntry {
   gameRoomId: number;
   userId: number;
@@ -33,6 +38,7 @@ export class GamesService {
     @InjectRepository(GameEntry)
     private readonly gameEntryRepository: GameEntryRepository,
     private dataSource: DataSource,
+    private readonly recordsRepository: RecordsRepository,
   ) {}
   /**
    * ゲームルーム一覧取得
@@ -135,5 +141,43 @@ export class GamesService {
       // ゲーム参加者を登録
       await this.gameEntryRepository.createGameEntry(entry, manager);
     });
+  }
+
+  // maoyagi ver
+  async gameRecordById(id: number): Promise<GameRecord | null> {
+    return await this.recordsRepository.gameRecordById(id);
+  }
+
+  async gameRecord(params: any): Promise<GameRecord | null> {
+    return await this.recordsRepository.gameRecord(params);
+  }
+
+  async gameRecords(params:{
+    skip?,
+    take?,
+    cursor?,
+    where?,
+    orderBy?,
+  }): Promise<GameRecordWithUserName[]> {
+    const { skip, take, cursor, where, orderBy } = params;
+    return await this.recordsRepository.gameRecords({
+      skip,
+      take,
+      cursor,
+      where,
+      orderBy,
+    });
+  }
+
+  async createGameRecord(data: CreateGameRecordDto): Promise<GameRecord> {
+    return await this.recordsRepository.createGameRecord(data);
+  }
+
+  async updateGameRecord(id: number, data: Partial<GameRecord>): Promise<GameRecord> {
+    return await this.recordsRepository.updateGameRecord(id, data);
+  }
+
+  async deleteGameRecord(id: number): Promise<void> {
+    return await this.recordsRepository.deleteGameRecord(id);
   }
 }

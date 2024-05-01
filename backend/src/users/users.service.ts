@@ -8,7 +8,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, Connection } from 'typeorm';
 import { User } from './entities/user.entity';
 import { UserRepository } from './users.repository';
-import { SignUpUserDto, SignInUserDto, UpdateUserDto } from './dto/user.dto';
+import { SignUpUserDto, SignInUserDto, UpdateUserDto, UpdatePointDto } from './dto/user.dto';
 import { JwtService } from '@nestjs/jwt';
 import { JwtPayload } from './interfaces/jwt_payload';
 import * as bcrypt from 'bcrypt';
@@ -36,6 +36,35 @@ export class UsersService {
     private userRepository: UserRepository,
     private jwtService: JwtService,
   ) {}
+
+  loginUserIds: number[] = [];
+
+  addLoginUserId(id: number) {
+    if (!this.isLoginUserId(id)) {
+      //this.logger.log(`addLoginUserId: ${id}`);
+
+      this.loginUserIds.push(id);
+    }
+  }
+
+  removeLoginUserId(id: number) {
+    if (this.isLoginUserId(id)) {
+      //this.logger.log(`removeLoginUserId: ${id}`);
+
+      this.loginUserIds = this.loginUserIds.filter(
+        (loginUserId) => loginUserId !== id,
+      );
+    }
+  }
+
+  isLoginUserId(userId: number): boolean {
+    console.log('loginUserIds: ', this.loginUserIds);
+    //return this.loginUserIds.includes(userId);
+    if (this.loginUserIds.find((id) => id === userId)) {
+      return true;
+    }
+    return false;
+  }
 
   //asyncは非同期処理
   //awaitを使うと、その行の処理が終わるまで次の行には進まない
@@ -519,6 +548,10 @@ export class UsersService {
     return await this.userRepository.findAll();
   }
 
+  async findAllByIds(ids: number[]): Promise<User[]> {
+    return await this.userRepository.findAllByIds(ids);
+  }
+
   // TODO: relation: friend, block
   async findOne(id: number): Promise<User | undefined> {
     return await this.userRepository.findOne({ where: { userId: id }, relations: ['friends', 'blocked'] });
@@ -586,5 +619,13 @@ export class UsersService {
 
   async getBlockeds(user: User): Promise<User[]> {
     return this.userRepository.getBlockedUsers(user);
+  }
+
+  async updatePoint(data: UpdatePointDto): Promise<User> {
+    return this.userRepository.updatePoint(data);
+  }
+
+  async getRanking(userName: string): Promise<number> {
+    return this.userRepository.getRanking(userName);
   }
 }
