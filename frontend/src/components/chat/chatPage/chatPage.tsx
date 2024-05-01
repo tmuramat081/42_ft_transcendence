@@ -216,42 +216,6 @@ export default function ChatPage() {
     router.push(as);
   };
 
-  // const onClickInviteGame = useCallback(() => {
-  //   if (!socket || invitees.length === 0) return;
-  //   // 選択された全てのユーザーを招待する
-  //   invitees.forEach((invitee) => {
-  //     socket.emit('sendDM', { sender: LoginUser, receiver: invitee, message: 'Game Invitation' });
-  //     // socket.emit('inviteToGame', { LoginUser, invitee });
-  //   });
-  //   setNotification(
-  //     `you invited users to play Game: ${invitees.map((invitee) => invitee.userName).join(', ')}`,
-  //   );
-  //   setInvitees([]);
-  // }, [LoginUser, selectedGame, invitees, socket]);
-
-  // const onClickInviteRoom = useCallback(() => {
-  //   if (!socket || !selectedRoom || invitees.length === 0) return;
-  //   // 選択された全てのユーザーを招待する
-  //   invitees.forEach((invitee) => {
-  //     socket.emit('inviteToRoom', { LoginUser, room: selectedRoom, invitee });
-  //   });
-  //   setNotification(
-  //     `you invited users to ${selectedRoom}: ${invitees
-  //       .map((invitee) => invitee.userName)
-  //       .join(', ')}`,
-  //   );
-  //   setInvitees([]);
-  // }, [LoginUser, selectedRoom, invitees, socket]);
-
-  // const handleCheckboxChange = (user: UserInfo) => {
-  //   // チェックされたユーザーを追加または削除する
-  //   if (invitees.some((invitee) => invitee.userId === user.userId)) {
-  //     setInvitees(invitees.filter((invitee) => invitee.userId !== user.userId));
-  //   } else {
-  //     setInvitees([...invitees, user]);
-  //   }
-  // };
-
   // 通知を閉じる関数
   const closeNotification = () => {
     setNotification(null);
@@ -285,12 +249,6 @@ export default function ChatPage() {
               key={index}
               className="onlineuser"
             >
-              {/* <input
-                  type="checkbox"
-                  id={`user_${index}`}
-                  checked={invitees.some((invitee) => invitee.userId === onlineUser.userId)}
-                  onChange={() => handleCheckboxChange(onlineUser)}
-                /> */}
               {/* アイコンとクリックハンドラーをラップする */}
               <button
                 className="onlineuser-wrapper"
@@ -348,22 +306,6 @@ export default function ChatPage() {
               </option>
             ))}
           </select>
-          {/* Invite Game ボタン */}
-          {/* <button
-            className="btn-small"
-            onClick={onClickInviteGame}
-          >
-            Invite Game
-          </button> */}
-          {/* Invite Room ボタン */}
-          {/* {isDeleteButtonVisible && (
-            <button
-              className="btn-small"
-              onClick={onClickInviteRoom}
-            >
-              Invite Room
-            </button>
-          )} */}
           {/* Leave Room ボタン */}
           {isDeleteButtonVisible && (
             <button
