@@ -30,7 +30,7 @@ export default function DMPage({ params }: { params: string }) {
 
     getCurrentUser()
       .then((user) => {
-        console.log('user:', user);
+        // console.log('user:', user);
         socket.emit('getCurrentUser', user);
       })
       .catch((error) => {
@@ -57,6 +57,11 @@ export default function DMPage({ params }: { params: string }) {
   }, [socket, params]);
 
   useEffect(() => {
+    console.log('sender:', sender);
+    console.log('receiver:', receiver);
+  }, [sender, receiver]);
+
+  useEffect(() => {
     if (!socket || !sender || !receiver || blocked) return;
     if (!blocked) socket.emit('getDMLogs', { sender: sender, receiver: receiver });
   }, [sender, receiver, socket, blocked]);
@@ -64,7 +69,22 @@ export default function DMPage({ params }: { params: string }) {
   useEffect(() => {
     if (!socket) return;
     socket.on('dmLogs', (directMessages: DirectMessage[]) => {
-      setDMLogs(directMessages);
+      // directMessagesのtextが'Game Invitation'の場合、各メッセージにゲームへのリンクを追加する
+      const modifiedMessages = directMessages.map((message) => {
+        if (message.text === 'Game Invitation') {
+          return {
+            ...message,
+            text: (
+              <>
+                Game Invitation
+                <button onClick={handleGoToGame}>Go to Game</button>
+              </>
+            ),
+          };
+        }
+        return message;
+      });
+      setDMLogs(modifiedMessages);
     });
 
     return () => {
@@ -96,6 +116,17 @@ export default function DMPage({ params }: { params: string }) {
     }
   }, [sender, receiver, socket, blocked]);
 
+  const onClickInviteGame = useCallback(() => {
+    if (!socket) return;
+    // ゲーム招待メッセージを送信
+    socket.emit('sendDM', { sender: sender, receiver: receiver, message: 'Game Invitation' });
+    console.log(`${sender?.userName} sent Game Invitation to ${receiver?.userName}`);
+  }, [socket, sender, receiver]);
+
+  const handleGoToGame = () => {
+    router.push('/game');
+  };
+
   return (
     <div className="dm-container">
       {/* Backボタン */}
@@ -126,6 +157,13 @@ export default function DMPage({ params }: { params: string }) {
             onClick={handleBlockUser}
           >
             {blocked ? 'Unblock' : 'Block'}
+          </button>
+          {/* Invite Game ボタン */}
+          <button
+            className="invite-button"
+            onClick={onClickInviteGame}
+          >
+            Invite Game
           </button>
         </div>
         {/* ユーザーの追加情報 */}

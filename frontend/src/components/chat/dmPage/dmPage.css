@@ -36,6 +36,13 @@ body {
     width: 80px;
   }
 
+  .invite-button {
+    margin-top: 10px;
+    font-size: 10px;
+    padding: 5px 5px; /*ボタンの内側の余白を調整 */
+    width: 80px;
+  }
+
   .dm-input {
     margin-top: 20px;
     align-self: flex-end;
