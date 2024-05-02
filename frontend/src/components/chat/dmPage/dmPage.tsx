@@ -20,9 +20,7 @@ export default function DMPage({ params }: { params: string }) {
   const [sender, setSender] = useState<User | null>(null);
   const [receiver, setReceiver] = useState<User | null>(null);
   const [dmLogs, setDMLogs] = useState<DirectMessage[]>([]);
-  // ブロック状態の初期値をローカルストレージから読み取る
-  const initialBlocked = localStorage.getItem('blocked') === 'true';
-  const [blocked, setBlocked] = useState(initialBlocked);
+  const [blocked, setBlocked] = useState(false);
 
   useEffect(() => {
     if (!socket || !params) return;
@@ -58,11 +56,23 @@ export default function DMPage({ params }: { params: string }) {
       console.log('Left DM Room');
     });
 
+    socket.on('blockedUsers', (blockedUsers: number[]) => {
+      console.log('blockedUsers:', blockedUsers);
+      if (blockedUsers.includes(receiver?.userId || -1)) {
+        setBlocked(true);
+        setDMLogs([]);
+      } else {
+        setBlocked(false);
+        // socket.emit('getDMLogs', { sender: sender, receiver: receiver });
+      }
+    });
+
     return () => {
       socket.off('currentUser');
       socket.off('recipient');
       socket.off('joinDMRoomConfirmation');
       socket.off('leaveDMRoomConfirmation');
+      socket.off('blockedUsers');
     };
   }, [socket]);
 
@@ -71,7 +81,7 @@ export default function DMPage({ params }: { params: string }) {
     console.log('receiver:', receiver);
     if (!socket || !sender || !receiver) return;
     socket.emit('joinDMRoom', { sender: sender, receiver: receiver });
-    socket.emit('getDMLogs', { sender: sender, receiver: receiver });
+    socket.emit('getBlockedUsers', sender);
 
     return () => {
       socket.emit('leaveDMRoom', { sender: sender, receiver: receiver });
@@ -108,11 +118,6 @@ export default function DMPage({ params }: { params: string }) {
       socket.off('dmLogs');
     };
   }, [socket]);
-
-  // ブロック状態が更新されるたびにローカルストレージに保存する
-  useEffect(() => {
-    localStorage.setItem('blocked', blocked.toString());
-  }, [blocked]);
 
   const onClickSubmit = useCallback(() => {
     if (!socket || blocked) return;
