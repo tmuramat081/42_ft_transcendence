@@ -146,17 +146,15 @@ export class DMGateway {
       // ブロックしたユーザーのリストを取得
       const blockedUsers = await this.userBlockRepository.find({
         where: { user: sender },
+        relations: ['blockedUsers'],
       });
-      this.logger.log(
-        `getBlockedUsers: ${sender.userName} blocked users ${JSON.stringify(
-          blockedUsers.map((userBlock) => userBlock.blockedUsers),
-        )}`,
-      );
+      this.logger.log(`blockedUsers: ${JSON.stringify(blockedUsers)}`);
 
       // ブロックしたユーザーのIDリストを取得
-      const blockedUserIds = blockedUsers.map((userBlock) => userBlock.blockedUsers);
+      const blockedUserIds = blockedUsers.flatMap((userBlock) =>
+        userBlock.blockedUsers.map((blockedUser) => blockedUser.blockedUser.userId),
+      );
       this.logger.log(`blockedUserIds: ${JSON.stringify(blockedUserIds)}`);
-
       // ブロックしたユーザーのユーザー名リストを取得
       const blockedUserNames = await this.userRepository.find({
         where: { userId: In(blockedUserIds) },
@@ -278,11 +276,13 @@ export class DMGateway {
       // receiverがブロックしてるユーザーのリストを取得
       const blockedUsers = await this.userBlockRepository.find({
         where: { user: payload.receiver },
+        relations: ['blockedUsers'],
       });
 
       // ブロックしたユーザーのIDリストを取得
-      // const blockedUserIds = blockedUsers.map((userBlock) => userBlock.blockedUsers);
-      const blockedUserIds = blockedUsers.map((userBlock) => userBlock.blockedUsers).flat();
+      const blockedUserIds = blockedUsers.flatMap((userBlock) =>
+        userBlock.blockedUsers.map((blockedUser) => blockedUser.id),
+      );
 
       // ブロックしたユーザーのユーザー名リストを取得
       const blockedUserNames = await this.userRepository.find({
@@ -325,21 +325,68 @@ export class DMGateway {
       // senderのUserBlockを取得または作成
       let userBlock = await this.userBlockRepository.findOne({
         where: { user: payload.sender },
+        relations: ['blockedUsers'],
       });
+
+      this.logger.log('UserBlock found:', userBlock);
 
       if (!userBlock) {
         userBlock = new UserBlock();
         userBlock.user = payload.sender;
-        userBlock.blockedUsers = [payload.receiver.userId];
-      } else {
-        // ユーザーブロックがすでに存在する場合、blockedUsersにreceiverを追加
-        if (!userBlock.blockedUsers.includes(payload.receiver.userId)) {
-          userBlock.blockedUsers.push(payload.receiver.userId);
-        }
       }
-      await this.userBlockRepository.save(userBlock);
+
+      this.logger.log('UserBlock found:', userBlock);
+
+      // receiverのBlockedUserを取得または作成
+      let blockedUser = await this.blockedUserRepository.findOne({
+        where: { blockedUser: payload.receiver },
+      });
+
+      this.logger.log('BlockedUser found:', blockedUser);
+
+      if (!blockedUser) {
+        blockedUser = new BlockedUser(); // ブロックされたユーザーの新しいインスタンスを作成
+        blockedUser.blockedUser = payload.receiver; // blockedUser の blockedUser プロパティに receiver を割り当てる
+        await this.blockedUserRepository.save(blockedUser); // blockedUser をデータベースに保存
+      }
+
+      this.logger.log('BlockedUser found:', blockedUser);
+
+      // ユーザーブロックがすでに存在する場合、blockedUsersにreceiverを追加
+      if (userBlock.blockedUsers) {
+        const existingBlockedUser = userBlock.blockedUsers.find((bu) => bu.id === blockedUser.id);
+        if (!existingBlockedUser) {
+          userBlock.blockedUsers.push(blockedUser);
+        }
+      } else {
+        userBlock.blockedUsers = [blockedUser];
+      }
+
+      //blockedUserのuserBlocksにuserBlockを追加
+      if (blockedUser.userBlocks) {
+        const existingUserBlock = blockedUser.userBlocks.find((ub) => ub.id === userBlock.id);
+        if (!existingUserBlock) {
+          blockedUser.userBlocks.push(userBlock);
+        }
+      } else {
+        blockedUser.userBlocks = [userBlock];
+      }
+
+      // 変更がある場合のみ保存する
+      if (this.userBlockRepository.hasId(userBlock)) {
+        await this.userBlockRepository.save(userBlock);
+      }
+
+      if (this.blockedUserRepository.hasId(blockedUser)) {
+        await this.blockedUserRepository.save(blockedUser);
+      }
+
       this.logger.log(`${payload.sender.userName} blocked ${payload.receiver.userName}`);
-      this.logger.log(`UserBlock saved: ${JSON.stringify(userBlock)}`);
+      this.logger.log('UserBlock saved:', { id: userBlock.id, user: userBlock.user });
+      this.logger.log('BlockedUser saved:', {
+        id: blockedUser.id,
+        blockedUser: blockedUser.blockedUser,
+      });
 
       // 成功のレスポンスを返す
       return { success: true, message: 'User blocked successfully' };
@@ -363,11 +410,14 @@ export class DMGateway {
       // ブロックしたユーザーのリストを取得
       const blockedUsers = await this.userBlockRepository.find({
         where: { user: payload.sender },
+        relations: ['blockedUsers'],
       });
 
       // ブロックしたユーザーからreceiver.userIdを削除
       const blockedUser = blockedUsers.find((userBlock) =>
-        userBlock.blockedUsers.includes(payload.receiver.userId),
+        userBlock.blockedUsers.some(
+          (blockedUser) => blockedUser.blockedUser.userId === payload.receiver.userId,
+        ),
       );
 
       if (!blockedUser) {
@@ -377,8 +427,10 @@ export class DMGateway {
         return { success: false, message: 'User not blocked' };
       }
 
-      const index = blockedUser.blockedUsers.indexOf(payload.receiver.userId);
-      blockedUser.blockedUsers.splice(index, 1);
+      // ブロックを解除するためにブロックリストから削除
+      blockedUser.blockedUsers = blockedUser.blockedUsers.filter(
+        (blockedUser) => blockedUser.blockedUser.userId !== payload.receiver.userId,
+      );
       await this.userBlockRepository.save(blockedUser);
 
       this.logger.log(`${payload.sender.userName} unblocked ${payload.receiver.userName}`);

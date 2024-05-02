@@ -1,6 +1,6 @@
-import { Entity, PrimaryGeneratedColumn, Column, OneToMany, ManyToOne, JoinColumn } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, OneToMany, ManyToOne, JoinColumn } from 'typeorm';
 import { User } from '../../users/entities/user.entity';
-// import { BlockedUser } from './blockedUser.entity';
+import { BlockedUser } from './blockedUser.entity';
 
 // ユーザーがブロックしたユーザーのリストを保持するためのエンティティ
 @Entity()
@@ -11,9 +11,10 @@ export class UserBlock {
   // ブロックを行ったユーザー
   @ManyToOne(() => User, { eager: true })
   @JoinColumn({ name: 'userId' })
-  user: User; // ユーザーとの関連付け
+  user: User;
 
-  // ブロックされたユーザーのIDリスト
-  @Column('simple-array')
-  blockedUsers: number[];
+  // ブロックしたユーザー達
+  @OneToMany(() => BlockedUser, (blockedUser: BlockedUser) => blockedUser.userBlock)
+  // @JoinColumn({ name: 'blockedUserId' })
+  blockedUsers: BlockedUser[];
 }
