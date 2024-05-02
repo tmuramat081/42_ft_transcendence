@@ -6,7 +6,7 @@ import { Avatar } from '@mui/material';
 import { useRouter } from 'next/navigation';
 import { useWebSocket } from '@/providers/webSocketProvider';
 import { useAuth } from '@/providers/useAuth';
-import { UserInfo, UserData, DirectMessage } from '@/types/chat/chat';
+import { DirectMessage } from '@/types/chat/chat';
 import { User } from '@/types/user';
 import './dmPage.css';
 
@@ -37,7 +37,7 @@ export default function DMPage({ params }: { params: string }) {
         console.error('Error getting user:', error);
       });
     socket.emit('getRecipient', params);
-  }, [socket]);
+  }, [socket, params]);
 
   useEffect(() => {
     if (!socket) return;
@@ -50,15 +50,32 @@ export default function DMPage({ params }: { params: string }) {
       setReceiver(recipientUser);
     });
 
+    socket.on('joinDMRoomConfirmation', () => {
+      console.log('Joined DM Room');
+    });
+
+    socket.on('leaveDMRoomConfirmation', () => {
+      console.log('Left DM Room');
+    });
+
     return () => {
       socket.off('currentUser');
       socket.off('recipient');
+      socket.off('joinDMRoomConfirmation');
+      socket.off('leaveDMRoomConfirmation');
     };
-  }, [socket, params]);
+  }, [socket]);
 
   useEffect(() => {
     console.log('sender:', sender);
     console.log('receiver:', receiver);
+    if (!socket || !sender || !receiver) return;
+    socket.emit('joinDMRoom', { sender: sender, receiver: receiver });
+    socket.emit('getDMLogs', { sender: sender, receiver: receiver });
+
+    return () => {
+      socket.emit('leaveDMRoom', { sender: sender, receiver: receiver });
+    };
   }, [sender, receiver]);
 
   useEffect(() => {

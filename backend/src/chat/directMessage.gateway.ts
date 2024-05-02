@@ -89,6 +89,56 @@ export class DMGateway {
     }
   }
 
+  @SubscribeMessage('joinDMRoom')
+  async handleJoinDMRoom(
+    @MessageBody() payload: { sender: User; receiver: User },
+    @ConnectedSocket() socket: Socket,
+  ) {
+    try {
+      // 送信者と受信者のユーザーIDを取得
+      const senderId = payload.sender.userId;
+      const receiverId = payload.receiver.userId;
+
+      // ログを出力
+      this.logger.log(
+        `${payload.sender.userName} joined DM room with ${payload.receiver.userName}`,
+      );
+
+      // 送信者と受信者の両方が同じルームに参加する
+      socket.join(`DMRoom_${senderId}_${receiverId}`);
+      socket.join(`DMRoom_${receiverId}_${senderId}`);
+
+      // クライアントにルーム参加の確認を送信
+      this.server.to(socket.id).emit('joinDMRoomConfirmation');
+    } catch (error) {
+      this.logger.error(error);
+    }
+  }
+
+  @SubscribeMessage('leaveDMRoom')
+  async handleLeaveDMRoom(
+    @MessageBody() payload: { sender: User; receiver: User },
+    @ConnectedSocket() socket: Socket,
+  ) {
+    try {
+      // 送信者と受信者のユーザーIDを取得
+      const senderId = payload.sender.userId;
+      const receiverId = payload.receiver.userId;
+
+      // ログを出力
+      this.logger.log(`${payload.sender.userName} left DM room with ${payload.receiver.userName}`);
+
+      // 送信者と受信者の両方が同じルームから退出する
+      socket.leave(`DMRoom_${senderId}_${receiverId}`);
+      socket.leave(`DMRoom_${receiverId}_${senderId}`);
+
+      // クライアントにルーム退出の確認を送信
+      this.server.to(socket.id).emit('leaveDMRoomConfirmation');
+    } catch (error) {
+      this.logger.error(error);
+    }
+  }
+
   @SubscribeMessage('getDMLogs')
   async handleGetDMLogs(
     @MessageBody() payload: { sender: User; receiver: User },
@@ -115,10 +165,10 @@ export class DMGateway {
         where: [
           {
             senderId: payload.sender.userId,
-            recipientId: Not(In(blockedUsers)),
+            recipientId: payload.receiver.userId,
           },
           {
-            senderId: Not(In(blockedUsers)),
+            senderId: payload.receiver.userId,
             recipientId: payload.sender.userId,
           },
         ],
@@ -135,7 +185,13 @@ export class DMGateway {
         };
       });
 
-      this.server.to(socket.id).emit('dmLogs', directMessages);
+      // senderとreceiverのroomにDMログを送信
+      this.server
+        .to(`DMRoom_${payload.sender.userId}_${payload.receiver.userId}`)
+        .emit('dmLogs', directMessages);
+      this.server
+        .to(`DMRoom_${payload.receiver.userId}_${payload.sender.userId}`)
+        .emit('dmLogs', directMessages);
     } catch (error) {
       this.logger.error('Error getting DM logs:', error);
       throw error;
@@ -198,10 +254,18 @@ export class DMGateway {
         };
       });
 
-      // senderとreceiverにDMログを送信
-      this.server.to(socket.id).emit('dmLogs', directMessages);
-      // receiverにDMログを送信
-      this.server.to(payload.receiver.userName).emit('dmLogs', directMessages);
+      // senderとreceiverのroomにDMログを送信
+      this.server
+        .to(`DMRoom_${payload.sender.userId}_${payload.receiver.userId}`)
+        .emit('dmLogs', directMessages);
+      this.server
+        .to(`DMRoom_${payload.receiver.userId}_${payload.sender.userId}`)
+        .emit('dmLogs', directMessages);
+
+      // // senderとreceiverにDMログを送信
+      // this.server.to(socket.id).emit('dmLogs', directMessages);
+      // // receiverにDMログを送信
+      // this.server.to(payload.receiver.userName).emit('dmLogs', directMessages);
     } catch (error) {
       this.logger.error('Error sending DM logs:', error);
       throw error;
