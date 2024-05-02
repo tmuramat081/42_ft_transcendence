@@ -635,7 +635,7 @@ export class GameGateway {
       const hosts = await this.usersService.findAllByIds(Array.from(hostIds));
 
       return hosts.map((host) => {
-        return { name: host.userName, id: host.userId } as Friend;
+        return { userName: host.userName, userId: host.userId } as Friend;
       })
     }
   }
@@ -647,6 +647,8 @@ export class GameGateway {
       return false;
     }
 
+    console.log(data)
+
     // 自分がホストの新規招待の作成
     const newInvitation: Invitation = {
       hostId: data.hostId,
@@ -657,6 +659,12 @@ export class GameGateway {
     // 招待リストに追加
     const res = this.invitationList.insert(newInvitation);
 
+    //this.invitationList.delete(data.hostId);
+
+    // console.log(this.invitationList.items)
+
+    // console.log(res)
+
     // socket一覧から招待の通知
     if (res) {
       const host = await this.usersService.findOne(data.hostId);
@@ -664,10 +672,12 @@ export class GameGateway {
       // 招待を受けたユーザーのsocketIdを取得
       // マルチデバイスに対応
       const guestSocketIds = this.userSocketMap.get(data.guestId);
+      console.log(guestSocketIds)
       if (guestSocketIds !== undefined) {
         guestSocketIds.forEach((socketId) => {
+          console.log(socketId)
           // 自分が招待したことを通知
-          this.server.to(socketId).emit('inviteFriend', { id: data.hostId, name: host.userName } as Friend);
+          this.server.to(socketId).emit('inviteFriend', { userId: data.hostId, userName: host.userName } as Friend);
         });
       }
     }
@@ -718,17 +728,21 @@ export class GameGateway {
 
   // begin friend
   // TODO: 受け入れる際に、エイリアス名を設定できるようにする
-  @SubscribeMessage('aceeptInvitation')
+  @SubscribeMessage('acceptInvitation')
   async beginFriendMatch(@ConnectedSocket() socket: Socket, @MessageBody() data: AcceptInvitationDto) {
     // ゲーム開始中の場合は何もしない
     if (this.isPlayingUserId(data.guestId)) {
       return false;
     }
 
+    console.log(this.invitationList.items)
+    console.log(data)
+
     // 招待リストから削除
-    const inivitation = this.invitationList.find(data.guestId)
+    const inivitation = this.invitationList.find(data.hostId)
+    console.log(inivitation)
     if (inivitation !== undefined) {
-      this.invitationList.delete(data.guestId);
+      this.invitationList.delete(data.hostId);
     } else {
       return false;
     }
@@ -1064,20 +1078,22 @@ export class GameGateway {
   // userIdからstatusを取得
   // TODO: ログイン時に配列に追加するようにする
   @SubscribeMessage('getUserStatusById')
-  getUserStatusById(@MessageBody() data: GetUserStatusByIdDto, @ConnectedSocket() socket: Socket) {
+  getUserStatusById(@ConnectedSocket() socket: Socket, @MessageBody() data: GetUserStatusByIdDto): UserStatus {
     const userId = data.userId;
 
-    //console.log('getUserStatusById', userId)
+    console.log('getUserStatusById', userId)
 
-    //console.log(this.usersService.loginUserIds)
+    console.log(this.usersService.loginUserIds)
 
     // loginしているかどうかを判定する方法
     if (this.isPlayingUserId(userId)) {
+      console.log('playing')
       return UserStatus.PLAYING;
     } else if (this.usersService.isLoginUserId(userId)) {
-      //console.log('online')
+      console.log('online')
       return UserStatus.ONLINE;
     } else {
+      console.log('offline')
       //return UserStatus.ONLINE;
       return UserStatus.OFFLINE;
     }

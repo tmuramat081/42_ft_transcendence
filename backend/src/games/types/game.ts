@@ -125,8 +125,10 @@ export type FinishedGameInfo = {
 };
 
 export type Friend = {
-    id: number;
-    name: string;
+    // id: number;
+    // name: string;
+    userId: number;
+    userName: string;
 };
 
 export type Invitation = {

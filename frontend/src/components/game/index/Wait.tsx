@@ -27,7 +27,7 @@ type Props = {
 //     cancelPlay: () => void;
 // };
 
-export const NavigationEvents = (() =>{
+export const NavigationEventsWait = (() =>{
     const pathname = usePathname();
     const searchParams = useSearchParams();
     const updatePlayState = usePlayStateStore((store) => store.updatePlayState);

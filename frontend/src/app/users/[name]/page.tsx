@@ -84,19 +84,34 @@ export default function functionPage({ params }: { params: { name: string } }) {
     undefined,
   );
   const [ranking, setRanking] = useState<number | undefined>(undefined);
+  const { invitedFriendState } = useInvitedFriendStrore();
   const updateInvitedFriendState = useInvitedFriendStrore((store) => store.updateInvitedFriendState);
 
   useEffect(() => {
     getCurrentUser();
   }, []);
 
+  useEffect(() => {
+    if (!user) return ;
+    console.log('getUserStatusById', user)
+    socket.emit('getUserStatusById', { userId: user.userId }, (status: UserStatus) => {
+      console.log('status: ', status);
+        setUserStatus(status);
+    });
+  }, [user, loginUser, socket]);
+
   // inviteGame Demo
   // 実験的に実装
   const inviteGame = (friend: Friend) => {
-    if ( userStatus !== UserStatus.ONLINE ) {
-      // error
-        return;
-    }
+    // if ( userStatus !== UserStatus.ONLINE ) {
+    //   // error
+    //   // console.log(userStatus)
+    //   // console.log(UserStatus.ONLINE)
+    //   // console.log(userStatus !== UserStatus.ONLINE);
+    //     return;
+    // }
+
+    // console.log("inviteGame");
 
     if (!loginUser) {
       return;
@@ -111,6 +126,8 @@ export default function functionPage({ params }: { params: { name: string } }) {
     socket.emit('inviteFriend', invitation, (res: boolean) => {
       if (res) {
         updateInvitedFriendState({ friendId: friend.userId });
+        // console.log(friend.userId)
+        // console.log(invitedFriendState)
         router.push('/game/index');
       } else {
         // error
@@ -135,7 +152,7 @@ export default function functionPage({ params }: { params: { name: string } }) {
     .catch((error) => {
       console.log(error);
     });
-  }, [user, socket, params.name])
+  }, [user, socket, params.name, router])
 
   // updateRecords
   useEffect(() => {
@@ -156,7 +173,7 @@ export default function functionPage({ params }: { params: { name: string } }) {
     .catch((error) => {
       console.log(error);
     });
-  }, [user, socket, params.name])
+  }, [user, socket, params.name, router])
 
   useEffect(() => {
     // サーバーサイドでの処理なのでhttp://localhost:3001は使えない
@@ -170,8 +187,10 @@ export default function functionPage({ params }: { params: { name: string } }) {
     .then((data) => {
         console.log("data: ", data);
         setUser(data.user);
+        console.log('getUserStatusById', data.user)
         socket.emit('getUserStatusById', { userId: data.user.userId }, (status: UserStatus) => {
-            setUserStatus(status);
+          console.log('status: ', status);
+          setUserStatus(status);
         });
         return data;
     })
@@ -195,7 +214,7 @@ export default function functionPage({ params }: { params: { name: string } }) {
     return () => {
         socket.off('updateStatus');
     }
-  }, [socket, params.name]);
+  }, [socket, params.name, router]);
 
   const handleAddFriend = () => {
     if (user === null) {
@@ -306,6 +325,7 @@ export default function functionPage({ params }: { params: { name: string } }) {
       <Grid container direction='column' alignItems='center' spacing={2} sx={{ p: 2 }}>
         <Grid item>
           <Avatar alt={user?.userName} src={API_URL + '/api/uploads/' + user?.icon} />
+          <Typography gutterBottom variant='h1' component='div' align='center' sx={{ wordBreak: 'break-word' }}>{userStatus}</Typography>
         </Grid>
         <Grid item>
           <Typography gutterBottom variant='h1' component='div' align='center' sx={{ wordBreak: 'break-word' }}>{user?.userName}</Typography>
@@ -333,6 +353,7 @@ export default function functionPage({ params }: { params: { name: string } }) {
                     <Button variant='contained' sx={{width: '100%'}} color='secondary' onClick={handleRemoveFriend}>友達を外す</Button>
                 )
               }  
+              <Button variant='contained' sx={{width: '100%'}} color='primary' onClick={() => inviteGame({userId: user.userId, userName: user.userName})}>ゲームに誘う</Button>
             </Grid>
           </Grid>
           <Grid item>
