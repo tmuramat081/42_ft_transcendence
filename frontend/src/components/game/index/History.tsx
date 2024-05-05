@@ -27,9 +27,6 @@ export const History = ({user, records}: Props) => {
 
     return (
         <>
-        <Typography variant='h2' align='center' gutterBottom>
-            GameHistory
-        </Typography>
         <List sx={{ width: '95%', margin: 'auto', height: '310px', overflow: 'auto' }}>
             {records.slice((page - 1) * take, page * take).map((record, index) => (
                 <ListItem key={index} sx={{ border: '1px solid' }} >

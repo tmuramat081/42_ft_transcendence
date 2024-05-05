@@ -460,7 +460,7 @@ export default function functionPage({ params }: { params: { name: string } }) {
           <Grid item>
             <Grid container direction='column' alignItems='center'>
               <Typography gutterBottom variant='h5' component='div'>
-                Matches
+                GameHistory
               </Typography>
               {/* <List>
                 {records && records.map((match, index) => (
