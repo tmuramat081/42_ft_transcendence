@@ -54,6 +54,7 @@
 import { Grid, Typography, Alert, AlertTitle, List, ListItem, Button, ListItemText, Link } from '@mui/material';
 import { Layout } from '@/components/game/common/Layout';
 import { Loading } from '@/components/game/common/Loading';
+import { History } from '@/components/game/index/History';
 import type { NextPage } from 'next';
 import Avatar from '@mui/material/Avatar';
 import { useEffect, useState } from 'react';
@@ -66,6 +67,8 @@ import { GameRecordWithUserName } from '@/types/game/game';
 import { Friend } from '@/types/game/friend';
 import { Invitation } from '@/types/game/game';
 import { useInvitedFriendStrore } from '@/store/game/invitedFriendState';
+import { BadgedAvatar, AvatarFontSize } from '@/components/game/common/BadgedAvatar';
+import { FriendListItem } from '@/components/users/FriendListItem';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? '';
 
@@ -310,7 +313,7 @@ export default function functionPage({ params }: { params: { name: string } }) {
   }
 
   // TODO: リダイレクトさせる
-  if (!loginUser) {
+  if (!loginUser || !user) {
     return <Loading />;
   } 
 
@@ -324,8 +327,9 @@ export default function functionPage({ params }: { params: { name: string } }) {
     <Layout title='Profile'>
       <Grid container direction='column' alignItems='center' spacing={2} sx={{ p: 2 }}>
         <Grid item>
-          <Avatar alt={user?.userName} src={API_URL + '/api/uploads/' + user?.icon} />
-          <Typography gutterBottom variant='h1' component='div' align='center' sx={{ wordBreak: 'break-word' }}>{userStatus}</Typography>
+          {/* <Avatar alt={user?.userName} src={API_URL + '/api/uploads/' + user?.icon} />
+          <Typography gutterBottom variant='h1' component='div' align='center' sx={{ wordBreak: 'break-word' }}>{userStatus}</Typography> */}
+          <BadgedAvatar status={userStatus} width={150} height={150} src={API_URL + '/api/uploads/' + user?.icon} displayName={user?.userName} avatarFontSize={AvatarFontSize.LARGE} />
         </Grid>
         <Grid item>
           <Typography gutterBottom variant='h1' component='div' align='center' sx={{ wordBreak: 'break-word' }}>{user?.userName}</Typography>
@@ -353,7 +357,6 @@ export default function functionPage({ params }: { params: { name: string } }) {
                     <Button variant='contained' sx={{width: '100%'}} color='secondary' onClick={handleRemoveFriend}>友達を外す</Button>
                 )
               }  
-              <Button variant='contained' sx={{width: '100%'}} color='primary' onClick={() => inviteGame({userId: user.userId, userName: user.userName})}>ゲームに誘う</Button>
             </Grid>
           </Grid>
           <Grid item>
@@ -377,6 +380,26 @@ export default function functionPage({ params }: { params: { name: string } }) {
               { loginUser !== null && user !== null && loginUser.userId !== user.userId && loginUser.blocked.filter((friend) => friend.userId === user.userId).length > 0 &&
                 (
                     <Button variant='contained' sx={{width: '100%'}} color='secondary' onClick={handleUnblockUser}>アンブロック</Button>
+                )
+              }  
+            </Grid>
+          </Grid>
+
+          <Grid item>
+            <Grid container direction='column' alignItems='center'>
+              {/* <Grid item>
+                <Typography gutterBottom variant='h5' component='div'>
+                  Point
+                </Typography>
+              </Grid>
+              <Grid item>
+                <Typography gutterBottom variant='h4' component='div'>
+                  {user?.point}
+                </Typography>
+              </Grid> */}
+              { loginUser !== null && user !== null && loginUser.userId !== user.userId && loginUser.blocked.filter((friend) => friend.userId === user.userId).length <= 0 &&
+                (
+                    <Button variant='contained' sx={{width: '100%'}} color='primary' onClick={() => inviteGame({userId: user.userId, userName: user.userName})}>ゲームに誘う</Button>
                 )
               }  
             </Grid>
@@ -422,12 +445,13 @@ export default function functionPage({ params }: { params: { name: string } }) {
               </Typography>
               <List>
                 {user && user.friends && user.friends.map((friend, index) => (
-                  <ListItem key={index}>
-                    <Link href={`/users/${friend.userName}`}>
-                    <Avatar alt={friend.userName} src={API_URL + '/api/uploads/' + friend.icon} />
-                    <ListItemText primary={friend.userName} secondary={`${friend.userName}`} />
-                    </Link>
-                  </ListItem>
+                  // <ListItem key={index}>
+                  //   <Link href={`/users/${friend.userName}`}>
+                  //   <Avatar alt={friend.userName} src={API_URL + '/api/uploads/' + friend.icon} />
+                  //   <ListItemText primary={friend.userName} secondary={`${friend.userName}`} />
+                  //   </Link>
+                  // </ListItem>
+                  <FriendListItem key={index} friend={{userId: friend.userId, userName: friend.userName}} />
                 ))}
               </List>
             </Grid>
@@ -438,13 +462,15 @@ export default function functionPage({ params }: { params: { name: string } }) {
               <Typography gutterBottom variant='h5' component='div'>
                 Matches
               </Typography>
-              <List>
+              {/* <List>
                 {records && records.map((match, index) => (
                   <ListItem key={index}>
                     <ListItemText primary={`Match ${index + 1}: ${match.winnerName} VS ${match.loserName}`} />
                   </ListItem>
                 ))}
-              </List>
+              </List> */}
+              <History user={user} records={records} />
+
             </Grid>
           </Grid>
         </Grid>
