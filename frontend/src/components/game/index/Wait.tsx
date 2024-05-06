@@ -35,7 +35,7 @@ export const NavigationEventsWait = (() =>{
 
     useEffect(() => {
       const url = `${pathname}?${searchParams}`
-      console.log(url)
+    //   console.log(url)
       // You can now use the current URL
       // ...
       updatePlayState(PlayState.stateNothing);
@@ -60,7 +60,7 @@ export const Wait = ({ openMatchError }: Props) => {
     const { loginUser, getCurrentUser } = useAuth();
     const updateAriasNames = useAriasNamesStore((store) => store.updateAriasNames);
 
-    console.log(playState)
+    // console.log(playState)
 
     useEffect(() => {
         getCurrentUser();

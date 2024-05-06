@@ -51,7 +51,7 @@ export const GameGuest = ({ hosts, setHosts }: Props) => {
   const { loginUser } = useAuth();
   const updatePlayers = usePlayersStore((state) => state.updatePlayers);
 
-  console.log(hosts)
+  // console.log(hosts)
 
   const handleClick = useCallback(() => {
     setOpenDialog(true);
@@ -68,7 +68,7 @@ export const GameGuest = ({ hosts, setHosts }: Props) => {
         guestId: loginUser.userId,
         hostId: friend.userId,
       };
-      console.log(match)
+      // console.log(match)
       socket.emit('acceptInvitation', match, (res: boolean) => {
         if (!res) {
           // error表示

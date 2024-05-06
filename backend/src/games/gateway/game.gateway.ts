@@ -11,6 +11,7 @@ import { SOCKET_EVENTS_GAME } from '../game.constant';
 import { Logger, UsePipes, ValidationPipe } from '@nestjs/common';
 // service
 import { RecordsRepository } from '../gameRecord.repository';
+import { GamesService } from '../games.service';
 // 見直し
 import { UsersService } from '@/users/users.service';
 import { AuthService } from '@/auth/auth.service';
@@ -168,7 +169,7 @@ export class GameGateway {
   private logger: Logger = new Logger('GameGateway');
 
   constructor (
-    // TODO: serviceにする
+    private readonly gamesService: GamesService,
     private readonly recordsRepository: RecordsRepository,
     private readonly usersService: UsersService,
     private readonly authService: AuthService,
@@ -450,7 +451,6 @@ export class GameGateway {
         return false;
       }
       this.waitingQueue.push({
-        // TODO: usernameは任意で設定できるようにする
         name: user.userName,
         id: data.userId,
         point: user.point,
@@ -579,7 +579,7 @@ export class GameGateway {
           }
         }
   
-        // TDDO:
+        // TODO:
         // ball speedも変更
         switch (data.difficulty) {
           case DiffucultyLevel.NORMAL:
@@ -647,7 +647,7 @@ export class GameGateway {
       return false;
     }
 
-    console.log(data)
+    // console.log(data)
 
     // 自分がホストの新規招待の作成
     const newInvitation: Invitation = {
@@ -672,10 +672,10 @@ export class GameGateway {
       // 招待を受けたユーザーのsocketIdを取得
       // マルチデバイスに対応
       const guestSocketIds = this.userSocketMap.get(data.guestId);
-      console.log(guestSocketIds)
+      // console.log(guestSocketIds)
       if (guestSocketIds !== undefined) {
         guestSocketIds.forEach((socketId) => {
-          console.log(socketId)
+          // console.log(socketId)
           // 自分が招待したことを通知
           this.server.to(socketId).emit('inviteFriend', { userId: data.hostId, userName: host.userName } as Friend);
         });
@@ -735,12 +735,12 @@ export class GameGateway {
       return false;
     }
 
-    console.log(this.invitationList.items)
-    console.log(data)
+    // console.log(this.invitationList.items)
+    // console.log(data)
 
     // 招待リストから削除
     const inivitation = this.invitationList.find(data.hostId)
-    console.log(inivitation)
+    // console.log(inivitation)
     if (inivitation !== undefined) {
       this.invitationList.delete(data.hostId);
     } else {
@@ -984,7 +984,15 @@ export class GameGateway {
     loser.socket.emit('finishGame', Math.max(loser.score - room.rewards, 0), finishedGameInfo);
 
     // TODO: round, aliasNameも保存する？
-    await this.recordsRepository.createGameRecord({
+    // await this.recordsRepository.createGameRecord({
+    //   winnerId: winner.id,
+    //   loserId: loser.id,
+    //   winnerScore: winner.score,
+    //   loserScore: loser.score,
+    //   //round: round,
+    // });
+
+    await this.gamesService.createGameRecord({    
       winnerId: winner.id,
       loserId: loser.id,
       winnerScore: winner.score,
@@ -1076,24 +1084,24 @@ export class GameGateway {
   }
 
   // userIdからstatusを取得
-  // TODO: ログイン時に配列に追加するようにする
+  // ログイン時に配列に追加するようにする
   @SubscribeMessage('getUserStatusById')
   getUserStatusById(@ConnectedSocket() socket: Socket, @MessageBody() data: GetUserStatusByIdDto): UserStatus {
     const userId = data.userId;
 
-    console.log('getUserStatusById', userId)
+    // console.log('getUserStatusById', userId)
 
-    console.log(this.usersService.loginUserIds)
+    // console.log(this.usersService.loginUserIds)
 
     // loginしているかどうかを判定する方法
     if (this.isPlayingUserId(userId)) {
-      console.log('playing')
+      // console.log('playing')
       return UserStatus.PLAYING;
     } else if (this.usersService.isLoginUserId(userId)) {
-      console.log('online')
+      // console.log('online')
       return UserStatus.ONLINE;
-    } else {
-      console.log('offline')
+    // } else {
+    //   console.log('offline')
       //return UserStatus.ONLINE;
       return UserStatus.OFFLINE;
     }

@@ -22,7 +22,7 @@ export const NavigationEventsHost = (() =>{
 
     useEffect(() => {
       const url = `${pathname}?${searchParams}`
-      console.log(url)
+    //   console.log(url)
       // You can now use the current URL
       // ...
       if (inivitedFriendState.friendId !== null && loginUser) {
@@ -49,7 +49,7 @@ export const Host = () => {
     const { socket } = useSocketStore();
     const { invitedFriendState } = useInvitedFriendStrore();
     const updateInvitedFriendState = useInvitedFriendStrore((store) => store.updateInvitedFriendState);
-    console.log(invitedFriendState)
+    // console.log(invitedFriendState)
 
     useEffect(() => {
         getCurrentUser();
@@ -88,7 +88,7 @@ export const Host = () => {
     }, [loginUser, socket, router, updateInvitedFriendState, updatePlayState, updatePlayers]);
 
     const cancelInvitation = useCallback(() => {
-        console.log(invitedFriendState)
+        // console.log(invitedFriendState)
         if (invitedFriendState.friendId !== null && loginUser) {
             const invitation: Invitation = {
                 guestId: invitedFriendState.friendId,
@@ -99,12 +99,6 @@ export const Host = () => {
             updateInvitedFriendState({friendId: null});
         }
     }, [loginUser, invitedFriendState, socket, updateInvitedFriendState]);
-
-    // wait.tsxを参考
-    // cancel
-    // useEffect(() => {
-
-    // })
 
     return (
         <Modal open={true} aria-labbelleby="modal-modal-title">

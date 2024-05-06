@@ -28,7 +28,7 @@ export const NavigationEvents = (() =>{
 
     useEffect(() => {
       const url = `${pathname}?${searchParams}`
-      console.log(url)
+    //   console.log(url)
       // You can now use the current URL
       // ...
         const cancelOngoingBattle = () => {
@@ -45,7 +45,6 @@ export const NavigationEvents = (() =>{
 });
 
 //ゲーム開始前の設定画面
-// TODO: usernameもしくはゲスト名を入力してもらう
 export const Setting = () => {
     const {socket} = useSocketStore();
     const updatePlayState = usePlayStateStore((store) => store.updatePlayState);
@@ -63,7 +62,7 @@ export const Setting = () => {
 
     const handleDifficultyChange = (event: React.ChangeEvent<HTMLInputElement>) => {
         const val: DiffucultyLevel = event.target.value as DiffucultyLevel;
-        console.log(val);
+        // console.log(val);
         setDifficulty(val);
     }
 

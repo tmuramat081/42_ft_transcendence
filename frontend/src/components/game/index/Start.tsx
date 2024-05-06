@@ -5,6 +5,7 @@ import { usePlayStateStore, PlayState } from '@/store/game/playState';
 import { useSocketStore } from '@/store/game/clientSocket';
 import { useAuth } from '@/providers/useAuth';
 import { Dispatch, SetStateAction, useEffect, useState, useCallback } from 'react';
+import { Loading } from '../common/Loading';
 
 type Props = {
     setOpenMatchError: Dispatch<SetStateAction<boolean>>;
@@ -35,9 +36,7 @@ export const Start = ({ setOpenMatchError }: Props) => {
         // ユーザーの状態を更新
         updatePlayState(PlayState.stateWaiting);
         // マッチング開始
-        // TODO:
-        // 1回線かどうかとユーザー名を送るようにする
-        console.log('ariasName:', aliasName);
+        // console.log('ariasName:', aliasName);
         //socket.emit("playStart", { userId: loginUser.userId }, ( res: Boolean ) => {
         socket.emit("playStart", { userId: loginUser.userId, aliasName: aliasName, round: 1 }, ( res: Boolean ) => {
             if (!res) {
@@ -51,11 +50,12 @@ export const Start = ({ setOpenMatchError }: Props) => {
     // loadingを表示する
     if (!loginUser) {
         return (
-            <Box>
-                <Typography variant="h5" align="center">
-                    ログインしてください
-                </Typography>
-            </Box>
+            // <Box>
+            //     <Typography variant="h5" align="center">
+            //         ログインしてください
+            //     </Typography>
+            // </Box>
+            <Loading />
         );
     }
 

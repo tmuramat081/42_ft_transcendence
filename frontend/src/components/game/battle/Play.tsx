@@ -26,7 +26,7 @@ export const NavigationEvents = (() =>{
 
     useEffect(() => {
       const url = `${pathname}?${searchParams}`
-      console.log(url)
+    //   console.log(url)
       // You can now use the current URL
       // ...
         const cancelOngoingBattle = () => {
@@ -149,31 +149,31 @@ export const Play = ({ updateFinishedGameInfo }: Props) => {
     //const { openMatchError, setOpenMatchError } = useState(false);
     
     // Userのポイントを更新する
-    const updateUserPoint = (user: User, updatedPoint: number) => {
-        fetch('http://localhost:3001/users/update/point', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            credentials: 'include',
-            body: JSON.stringify({
-                userId: user.userId,
-                point: updatedPoint,
-            }),
-        }).then((res) => {
-            if (res.ok) {
-                return res.json();
-            } else {
-                throw new Error('Error');
-            }
-        }
-        ).then((data) => {
-            console.log(data);
-        }
-        ).catch((error) => {
-            console.error('Error:', error);
-        });
-    }
+    // const updateUserPoint = (user: User, updatedPoint: number) => {
+    //     fetch('http://localhost:3001/users/update/point', {
+    //         method: 'POST',
+    //         headers: {
+    //             'Content-Type': 'application/json',
+    //         },
+    //         credentials: 'include',
+    //         body: JSON.stringify({
+    //             userId: user.userId,
+    //             point: updatedPoint,
+    //         }),
+    //     }).then((res) => {
+    //         if (res.ok) {
+    //             return res.json();
+    //         } else {
+    //             throw new Error('Error');
+    //         }
+    //     }
+    //     ).then((data) => {
+    //         // console.log(data);
+    //     }
+    //     ).catch((error) => {
+    //         console.error('Error:', error);
+    //     });
+    // }
 
     const {loginUser} = useAuth();
     const router = useRouter();
@@ -248,7 +248,7 @@ export const Play = ({ updateFinishedGameInfo }: Props) => {
         let animationFrameId: number;
 
         const onKeyDown = (e: KeyboardEvent) => {
-            console.log(e.code);
+            // console.log(e.code);
             const key = e.code;
             if (!isArrowDownPressed && !isArrowUpPressed && (key === 'ArrowDown' || key === 'ArrowUp')) {
                 if (key === 'ArrowDown') {
@@ -260,7 +260,7 @@ export const Play = ({ updateFinishedGameInfo }: Props) => {
         };
 
         const onKeyUp = (e: KeyboardEvent) => {
-            console.log(e.code);
+            // console.log(e.code);
             const key = e.code;
             // if (key === 'ArrowDown') {
             //     setIsArrowDownPressed(false);
@@ -334,7 +334,7 @@ export const Play = ({ updateFinishedGameInfo }: Props) => {
 
     useEffect(() => {
         socket.on('updateScores', (newScores: [number, number]) => {
-            console.log(newScores);
+            // console.log(newScores);
             updateGameSetting({
                 ...gameSetting,
                 player1Score: newScores[0],
@@ -363,12 +363,12 @@ export const Play = ({ updateFinishedGameInfo }: Props) => {
         });
 
         socket.on('error', () => {
-            console.log('error');
+            // console.log('error');
             updatePlayState(PlayState.stateNothing);
         })
 
         socket.on('exception', () => {
-            console.log('exception');
+            // console.log('exception');
             socket.emit('cancelOngoingBattle');
 
             updatePlayState(PlayState.stateNothing);

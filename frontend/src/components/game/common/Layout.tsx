@@ -54,10 +54,10 @@ export const Layout: FC<Props> = ({ title = "PingPong", children }) => {
 
     // ゲームページに遷移した時にホスト一覧を取得
     if (showGuestPath.includes(pathname)) {
-      console.log("getInvitedList")
+      // console.log("getInvitedList")
       socket.emit('getInvitedList', {userId: loginUser.userId}, (res: Friend[]) => {
         if (!ignore) {
-          console.log(res);
+          // console.log(res);
           setHosts(res);
         }
       });
@@ -73,8 +73,8 @@ export const Layout: FC<Props> = ({ title = "PingPong", children }) => {
 
     // 招待を受け取る
     socket.on('inviteFriend', (data: Friend) => {
-      console.log('inviteFriend')
-      console.log(data);
+      // console.log('inviteFriend')
+      // console.log(data);
       // 既に招待されている場合は削除してから追加
       setHosts([...hosts.filter((host) => host.userId !== data.userId), data]);
     });

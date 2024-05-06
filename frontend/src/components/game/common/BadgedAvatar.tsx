@@ -28,7 +28,6 @@ const stringToColor = (string: string, isLoadingError: boolean) => {
     return isLoadingError ? value : '';
 };
 
-//　?テストする
 const StringAvatarStyle = (
     name: string, 
     width: number | undefined,
@@ -38,6 +37,7 @@ const StringAvatarStyle = (
 ) => {
     return {
         sx: {
+            // 背景色を生成
             bgcolor: stringToColor(name, isLoadingError),
             width,
             height,
