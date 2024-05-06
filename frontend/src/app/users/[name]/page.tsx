@@ -96,7 +96,7 @@ export default function functionPage({ params }: { params: { name: string } }) {
 
   useEffect(() => {
     if (!user) return ;
-    console.log('getUserStatusById', user)
+    // console.log('getUserStatusById', user)
     socket.emit('getUserStatusById', { userId: user.userId }, (status: UserStatus) => {
       console.log('status: ', status);
         setUserStatus(status);
@@ -148,7 +148,7 @@ export default function functionPage({ params }: { params: { name: string } }) {
     })
     .then((res) => res.json())
     .then((data) => {
-      console.log('data: ', data);
+      // console.log('data: ', data);
       setRanking(data.ranking);
       return data;
     })
@@ -169,11 +169,12 @@ export default function functionPage({ params }: { params: { name: string } }) {
     })
     .then((res) => res.json())
     .then((data) => {
-      console.log('data: ', data);
+      // console.log('data: ', data);
       setRecords(data.records);
       return data;
     })
     .catch((error) => {
+      setRecordsError(error as Error);
       console.log(error);
     });
   }, [user, socket, params.name, router])
@@ -188,17 +189,17 @@ export default function functionPage({ params }: { params: { name: string } }) {
     })
     .then((res) => res.json())
     .then((data) => {
-        console.log("data: ", data);
+        // console.log("data: ", data);
         setUser(data.user);
-        console.log('getUserStatusById', data.user)
+        // console.log('getUserStatusById', data.user)
         socket.emit('getUserStatusById', { userId: data.user.userId }, (status: UserStatus) => {
-          console.log('status: ', status);
+          // console.log('status: ', status);
           setUserStatus(status);
         });
         return data;
     })
     .catch((error) => {
-
+        setUserError(error as Error);
         console.log(error);
     });
 
@@ -312,9 +313,25 @@ export default function functionPage({ params }: { params: { name: string } }) {
     });
   }
 
+  if (userError !== undefined || recordsError !== undefined) {
+    if (!router.isReady) {
+      return <Loading fullSize />;
+    } else {
+      return (
+        <Layout title="Profile">
+          <Alert severity="error">
+            <AlertTitle>Error</AlertTitle>
+            {userError !== undefined && <p>User Fetching Error</p>}
+            {recordsError !== undefined && <p>Game Records Fetching Error</p>}
+          </Alert>
+        </Layout>
+      );
+    }
+  }
+
   // TODO: リダイレクトさせる
   if (!loginUser || !user) {
-    return <Loading />;
+    return <Loading fullSize />;
   } 
 
   // status 済み
