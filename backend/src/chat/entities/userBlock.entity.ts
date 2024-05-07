@@ -13,8 +13,8 @@ export class UserBlock {
   @JoinColumn({ name: 'userId' })
   user: User;
 
-  // ブロックしたユーザー達
-  @OneToMany(() => BlockedUser, (blockedUser: BlockedUser) => blockedUser.userBlocks)
+  // ブロックしたユーザーを複数保存
+  @OneToMany(() => BlockedUser, (blockedUser: BlockedUser) => blockedUser.blockedUser)
   @JoinColumn({ name: 'blockedUserId' })
   blockedUsers: BlockedUser[];
 }

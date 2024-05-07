@@ -15,6 +15,5 @@ export class BlockedUser {
 
   // blockedUserをブロックしたユーザーの一覧
   @OneToMany(() => UserBlock, (userBlock: UserBlock) => userBlock.blockedUsers)
-  @JoinColumn({ name: 'userBlockId' })
   userBlocks: UserBlock[];
 }
