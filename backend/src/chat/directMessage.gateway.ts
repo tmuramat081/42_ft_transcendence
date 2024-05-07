@@ -345,14 +345,14 @@ export class DMGateway {
       this.logger.log('BlockedUser found:', blockedUser);
 
       if (!blockedUser) {
-        blockedUser = new BlockedUser(); // ブロックされたユーザーの新しいインスタンスを作成
-        blockedUser.blockedUser = payload.receiver; // blockedUser の blockedUser プロパティに receiver を割り当てる
-        await this.blockedUserRepository.save(blockedUser); // blockedUser をデータベースに保存
+        blockedUser = new BlockedUser();
+        blockedUser.blockedUser = payload.receiver;
+        // await this.blockedUserRepository.save(blockedUser);
       }
 
       this.logger.log('BlockedUser found:', blockedUser);
 
-      // ユーザーブロックがすでに存在する場合、blockedUsersにreceiverを追加
+      // blockedUsersにreceiverを追加
       if (userBlock.blockedUsers) {
         const existingBlockedUser = userBlock.blockedUsers.find((bu) => bu.id === blockedUser.id);
         if (!existingBlockedUser) {
@@ -362,34 +362,33 @@ export class DMGateway {
         userBlock.blockedUsers = [blockedUser];
       }
 
-      //blockedUserのuserBlocksにuserBlockを追加
+      // blockedUserのuserBlockにsenderを追加
       if (blockedUser.userBlocks) {
         const existingUserBlock = blockedUser.userBlocks.find((ub) => ub.id === userBlock.id);
         if (!existingUserBlock) {
           blockedUser.userBlocks.push(userBlock);
+        } else {
+          blockedUser.userBlocks = [userBlock];
         }
-      } else {
-        blockedUser.userBlocks = [userBlock];
-      }
 
-      // 変更がある場合のみ保存する
-      if (this.userBlockRepository.hasId(userBlock)) {
         await this.userBlockRepository.save(userBlock);
-      }
-
-      if (this.blockedUserRepository.hasId(blockedUser)) {
         await this.blockedUserRepository.save(blockedUser);
+
+        this.logger.log(`${payload.sender.userName} blocked ${payload.receiver.userName}`);
+        this.logger.log('UserBlock saved:', {
+          id: userBlock.id,
+          user: userBlock.user,
+          blockedUsers: userBlock.blockedUsers,
+        });
+        this.logger.log('BlockedUser saved:', {
+          id: blockedUser.id,
+          blockedUser: blockedUser.blockedUser,
+          userBlock: blockedUser.userBlocks,
+        });
+
+        // 成功のレスポンスを返す
+        return { success: true, message: 'User blocked successfully' };
       }
-
-      this.logger.log(`${payload.sender.userName} blocked ${payload.receiver.userName}`);
-      this.logger.log('UserBlock saved:', { id: userBlock.id, user: userBlock.user });
-      this.logger.log('BlockedUser saved:', {
-        id: blockedUser.id,
-        blockedUser: blockedUser.blockedUser,
-      });
-
-      // 成功のレスポンスを返す
-      return { success: true, message: 'User blocked successfully' };
     } catch (error) {
       this.logger.error('Error blocking user:', error);
       throw error;

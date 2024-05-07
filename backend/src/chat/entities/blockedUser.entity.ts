@@ -13,7 +13,8 @@ export class BlockedUser {
   @JoinColumn({ name: 'blockedUserId' })
   blockedUser: User;
 
-  // どのユーザー達によってブロックされているか
-  @OneToMany(() => UserBlock, (userBlock) => userBlock.blockedUsers)
+  // blockedUserをブロックしたユーザーの一覧
+  @OneToMany(() => UserBlock, (userBlock: UserBlock) => userBlock.blockedUsers)
+  @JoinColumn({ name: 'userBlockId' })
   userBlocks: UserBlock[];
 }

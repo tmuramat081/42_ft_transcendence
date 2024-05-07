@@ -14,7 +14,7 @@ export class UserBlock {
   user: User;
 
   // ブロックしたユーザー達
-  @OneToMany(() => BlockedUser, (blockedUser: BlockedUser) => blockedUser.userBlock)
-  // @JoinColumn({ name: 'blockedUserId' })
+  @OneToMany(() => BlockedUser, (blockedUser: BlockedUser) => blockedUser.userBlocks)
+  @JoinColumn({ name: 'blockedUserId' })
   blockedUsers: BlockedUser[];
 }
