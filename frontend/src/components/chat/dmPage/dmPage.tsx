@@ -11,6 +11,7 @@ import { User } from '@/types/user';
 import './dmPage.css';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? '';
+const BLOCKED_USER_KEY = 'blockedUser';
 
 export default function DMPage({ params }: { params: string }) {
   const router = useRouter(); //Backボタンを使うためのrouter
@@ -56,6 +57,9 @@ export default function DMPage({ params }: { params: string }) {
       console.log('Left DM Room');
     });
 
+    const blockedUsers = JSON.parse(localStorage.getItem(BLOCKED_USER_KEY) || '[]');
+    setBlocked(blockedUsers.includes(receiver?.userId || -1));
+
     socket.on('blockedUsers', (blockedUsers: number[]) => {
       console.log('blockedUsers:', blockedUsers);
       if (blockedUsers.includes(receiver?.userId || -1)) {
@@ -63,7 +67,6 @@ export default function DMPage({ params }: { params: string }) {
         setDMLogs([]);
       } else {
         setBlocked(false);
-        // socket.emit('getDMLogs', { sender: sender, receiver: receiver });
       }
     });
 
@@ -74,7 +77,7 @@ export default function DMPage({ params }: { params: string }) {
       socket.off('leaveDMRoomConfirmation');
       socket.off('blockedUsers');
     };
-  }, [socket]);
+  }, [socket, receiver]);
 
   useEffect(() => {
     console.log('sender:', sender);
@@ -86,7 +89,7 @@ export default function DMPage({ params }: { params: string }) {
     return () => {
       socket.emit('leaveDMRoom', { sender: sender, receiver: receiver });
     };
-  }, [sender, receiver]);
+  }, [sender, sender, receiver]);
 
   useEffect(() => {
     if (!socket || !sender || !receiver || blocked) return;
@@ -125,13 +128,34 @@ export default function DMPage({ params }: { params: string }) {
     setMessage('');
   }, [sender, receiver, message, socket, blocked]);
 
+  // const handleBlockUser = useCallback(() => {
+  //   if (!socket) return;
+  //   if (blocked) {
+  //     socket.emit('unblockUser', { sender: sender, receiver: receiver });
+  //     setBlocked(false);
+  //     socket.emit('getDMLogs', { sender: sender, receiver: receiver });
+  //   } else {
+  //     socket.emit('blockUser', { sender: sender, receiver: receiver });
+  //     setBlocked(true);
+  //     setDMLogs([]);
+  //   }
+  // }, [sender, receiver, socket, blocked]);
+
   const handleBlockUser = useCallback(() => {
     if (!socket) return;
+    const blockedUsers = JSON.parse(localStorage.getItem(BLOCKED_USER_KEY) || '[]');
     if (blocked) {
+      const index = blockedUsers.indexOf(receiver?.userId || -1);
+      if (index !== -1) {
+        blockedUsers.splice(index, 1);
+        localStorage.setItem(BLOCKED_USER_KEY, JSON.stringify(blockedUsers));
+      }
       socket.emit('unblockUser', { sender: sender, receiver: receiver });
       setBlocked(false);
       socket.emit('getDMLogs', { sender: sender, receiver: receiver });
     } else {
+      blockedUsers.push(receiver?.userId || -1);
+      localStorage.setItem(BLOCKED_USER_KEY, JSON.stringify(blockedUsers));
       socket.emit('blockUser', { sender: sender, receiver: receiver });
       setBlocked(true);
       setDMLogs([]);

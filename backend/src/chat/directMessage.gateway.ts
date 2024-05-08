@@ -328,67 +328,135 @@ export class DMGateway {
         relations: ['blockedUsers'],
       });
 
-      this.logger.log('UserBlock found:', userBlock);
-
       if (!userBlock) {
         userBlock = new UserBlock();
         userBlock.user = payload.sender;
+        userBlock.blockedUsers = [];
       }
 
-      this.logger.log('UserBlock found:', userBlock);
+      this.logger.log('UserBlock found:', userBlock.user);
 
       // receiverのBlockedUserを取得または作成
       let blockedUser = await this.blockedUserRepository.findOne({
         where: { blockedUser: payload.receiver },
+        relations: ['userBlocks'],
       });
-
-      this.logger.log('BlockedUser found:', blockedUser);
 
       if (!blockedUser) {
         blockedUser = new BlockedUser();
         blockedUser.blockedUser = payload.receiver;
-        // await this.blockedUserRepository.save(blockedUser);
+        blockedUser.userBlocks = [];
       }
 
-      this.logger.log('BlockedUser found:', blockedUser);
+      this.logger.log('BlockedUser found:', blockedUser.blockedUser);
+
+      const existingBlockedUser = userBlock.blockedUsers.find((bu) => bu.id === blockedUser.id);
+      if (!existingBlockedUser) {
+        userBlock.blockedUsers.push(blockedUser);
+      }
+
+      const existingUserBlock = blockedUser.userBlocks.find((ub) => ub.id === userBlock.id);
+      if (!existingUserBlock) {
+        blockedUser.userBlocks.push(userBlock);
+      }
+
+      // userBlock の更新
+      userBlock.blockedUsers = userBlock.blockedUsers.map((blockedUser) => ({
+        ...blockedUser,
+        user: userBlock,
+      }));
+      await this.userBlockRepository.save(userBlock);
+
+      // blockedUser の更新
+      blockedUser.userBlocks = blockedUser.userBlocks.map((userBlock) => ({
+        ...userBlock,
+        blockedUser: blockedUser,
+      }));
+      await this.blockedUserRepository.save(blockedUser);
 
       // blockedUsersにreceiverを追加
-      if (userBlock.blockedUsers) {
-        const existingBlockedUser = userBlock.blockedUsers.find((bu) => bu.id === blockedUser.id);
-        if (!existingBlockedUser) {
-          userBlock.blockedUsers.push(blockedUser);
-        }
-      } else {
-        userBlock.blockedUsers = [blockedUser];
-      }
+      // if (userBlock.blockedUsers) {
+      //   const existingBlockedUser = userBlock.blockedUsers.find((bu) => bu.id === blockedUser.id);
+      //   if (!existingBlockedUser) {
+      //     userBlock.blockedUsers.push(blockedUser);
+      //   }
+      // } else {
+      //   userBlock.blockedUsers = [blockedUser];
+      // }
 
       // blockedUserのuserBlockにsenderを追加
-      if (blockedUser.userBlocks) {
-        const existingUserBlock = blockedUser.userBlocks.find((ub) => ub.id === userBlock.id);
-        if (!existingUserBlock) {
-          blockedUser.userBlocks.push(userBlock);
-        } else {
-          blockedUser.userBlocks = [userBlock];
-        }
+      // if (blockedUser.userBlocks) {
+      //   const existingUserBlock = blockedUser.userBlocks.find((ub) => ub.id === userBlock.id);
+      //   if (!existingUserBlock) {
+      //     blockedUser.userBlocks.push(userBlock);
+      //   }
+      // } else {
+      //   blockedUser.userBlocks = [userBlock];
+      // }
 
-        await this.userBlockRepository.save(userBlock);
-        await this.blockedUserRepository.save(blockedUser);
+      // // userBlock の更新
+      // await this.userBlockRepository
+      //   .createQueryBuilder()
+      //   .relation(UserBlock, 'blockedUsers')
+      //   .of(userBlock)
+      //   .addAndRemove(userBlock.blockedUsers, []);
 
-        this.logger.log(`${payload.sender.userName} blocked ${payload.receiver.userName}`);
-        this.logger.log('UserBlock saved:', {
-          id: userBlock.id,
-          user: userBlock.user,
-          blockedUsers: userBlock.blockedUsers,
-        });
-        this.logger.log('BlockedUser saved:', {
-          id: blockedUser.id,
-          blockedUser: blockedUser.blockedUser,
-          userBlock: blockedUser.userBlocks,
-        });
+      // // blockedUser の更新
+      // await this.blockedUserRepository
+      //   .createQueryBuilder()
+      //   .relation(BlockedUser, 'userBlocks')
+      //   .of(blockedUser)
+      //   .addAndRemove(blockedUser.userBlocks, []);
 
-        // 成功のレスポンスを返す
-        return { success: true, message: 'User blocked successfully' };
-      }
+      // // userBlock の更新
+      // await this.userBlockRepository
+      //   .createQueryBuilder()
+      //   .update(UserBlock)
+      //   .set({ blockedUsers: userBlock.blockedUsers })
+      //   .where('id = :id', { id: userBlock.id })
+      //   .execute();
+
+      // // blockedUser の更新
+      // await this.blockedUserRepository
+      //   .createQueryBuilder()
+      //   .update(BlockedUser)
+      //   .set({ userBlocks: blockedUser.userBlocks })
+      //   .where('id = :id', { id: blockedUser.id })
+      //   .execute();
+
+      // // userBlock の更新
+      // await this.userBlockRepository
+      //   .createQueryBuilder()
+      //   .update(UserBlock)
+      //   .set({ blockedUsers: () => `ARRAY_APPEND(blockedUsers, ${blockedUser.id})` })
+      //   .where('id = :id', { id: userBlock.id })
+      //   .execute();
+
+      // // blockedUser の更新
+      // await this.blockedUserRepository
+      //   .createQueryBuilder()
+      //   .update(BlockedUser)
+      //   .set({ userBlocks: () => `ARRAY_APPEND(userBlocks, ${userBlock.id})` })
+      //   .where('id = :id', { id: blockedUser.id })
+      //   .execute();
+
+      // await this.userBlockRepository.save(userBlock);
+      // await this.blockedUserRepository.save(blockedUser);
+
+      this.logger.log(`${payload.sender.userName} blocked ${payload.receiver.userName}`);
+      this.logger.log('UserBlock saved:', {
+        id: userBlock.id,
+        user: userBlock.user,
+        blockedUsers: userBlock.blockedUsers,
+      });
+      this.logger.log('BlockedUser saved:', {
+        id: blockedUser.id,
+        blockedUser: blockedUser.blockedUser,
+        userBlock: blockedUser.userBlocks,
+      });
+
+      // 成功のレスポンスを返す
+      return { success: true, message: 'User blocked successfully' };
     } catch (error) {
       this.logger.error('Error blocking user:', error);
       throw error;

@@ -14,6 +14,6 @@ export class BlockedUser {
   blockedUser: User;
 
   // blockedUserをブロックしたユーザーの一覧
-  @OneToMany(() => UserBlock, (userBlock: UserBlock) => userBlock.blockedUsers)
+  @OneToMany(() => UserBlock, (userBlock: UserBlock) => userBlock.user)
   userBlocks: UserBlock[];
 }
