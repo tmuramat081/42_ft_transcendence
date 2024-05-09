@@ -143,28 +143,36 @@ export class DMGateway {
   @SubscribeMessage('getBlockedUsers')
   async handleGetBlockedUsers(@MessageBody() sender: User, @ConnectedSocket() socket: Socket) {
     try {
-      // ブロックしたユーザーのリストを取得
-      const blockedUsers = await this.userBlockRepository.find({
-        where: { user: sender },
-        relations: ['blockedUsers'],
+      if (!sender) {
+        console.error('Invalid user data:', sender);
+        return { success: false, message: 'Invalid User data' };
+      }
+
+      // senderのuserIdを使用して、関連データをロードする
+      const loadedSender = await this.userRepository.findOne({
+        where: { userId: sender.userId },
+        relations: ['blocked'],
       });
-      this.logger.log(`blockedUsers: ${JSON.stringify(blockedUsers)}`);
+
+      if (!loadedSender) {
+        console.error('Sender not found');
+        return { success: false, message: 'Sender not found' };
+      }
+
+      // ブロックしたユーザーのリストを取得
+      const blockedUsers = loadedSender.blocked;
+      if (!blockedUsers) {
+        console.error('No blocked users found');
+        return { success: false, message: 'No blocked users found' };
+      }
+      this.logger.log(
+        `getBlockedUsers: ${loadedSender.userName} blocked users ${JSON.stringify(blockedUsers)}`,
+      );
 
       // ブロックしたユーザーのIDリストを取得
-      const blockedUserIds = blockedUsers.flatMap((userBlock) =>
-        userBlock.blockedUsers.map((blockedUser) => blockedUser.blockedUser.userId),
-      );
-      this.logger.log(`blockedUserIds: ${JSON.stringify(blockedUserIds)}`);
-      // ブロックしたユーザーのユーザー名リストを取得
-      const blockedUserNames = await this.userRepository.find({
-        where: { userId: In(blockedUserIds) },
-      });
+      const blockedUserIds = blockedUsers.map((blockedUser) => blockedUser.userId);
 
-      this.logger.log(
-        `getBlockedUsers: ${sender.userName} blocked users ${JSON.stringify(blockedUserNames)}`,
-      );
-
-      // クライアントにブロックしたユーザーのリストを送信
+      // ブロックしたユーザーのIDリストをクライアントに送信
       this.server.to(socket.id).emit('blockedUsers', blockedUserIds);
     } catch (error) {
       this.logger.error('Error getting blocked users:', error);
@@ -322,12 +330,23 @@ export class DMGateway {
         return { success: false, message: 'Invalid User data' };
       }
 
-      if (!payload.sender.blocked) {
-        payload.sender.blocked = [];
+      // if (!payload.sender.blocked) {
+      //   payload.sender.blocked = [];
+      // }
+
+      // senderのuserIdを使用して、関連データをロードする
+      const loadedSender = await this.userRepository.findOne({
+        where: { userId: payload.sender.userId },
+        relations: ['blocked'],
+      });
+
+      if (!loadedSender) {
+        console.error('Sender not found');
+        return { success: false, message: 'Sender not found' };
       }
 
       // senderがreceiverをブロックしているか確認
-      const isBlocked = payload.sender.blocked.some(
+      const isBlocked = loadedSender.blocked.some(
         (blockedUser) => blockedUser.userId === payload.receiver.userId,
       );
       if (isBlocked) {
@@ -358,12 +377,23 @@ export class DMGateway {
         return { success: false, message: 'Invalid User data' };
       }
 
-      if (!payload.sender.blocked) {
-        payload.sender.blocked = [];
+      // if (!payload.sender.blocked) {
+      //   payload.sender.blocked = [];
+      // }
+
+      // senderのuserIdを使用して、関連データをロードする
+      const loadedSender = await this.userRepository.findOne({
+        where: { userId: payload.sender.userId },
+        relations: ['blocked'],
+      });
+
+      if (!loadedSender) {
+        console.error('Sender not found');
+        return { success: false, message: 'Sender not found' };
       }
 
       // senderがreceiverをブロックしているか確認
-      const isBlocked = payload.sender.blocked.some(
+      const isBlocked = loadedSender.blocked.some(
         (blockedUser) => blockedUser.userId === payload.receiver.userId,
       );
       if (!isBlocked) {
@@ -373,10 +403,10 @@ export class DMGateway {
         return { success: false, message: 'User not blocked' };
       } else {
         this.logger.log(`${payload.sender.userName} is unblocking ${payload.receiver.userName}`);
-        payload.sender.blocked = payload.sender.blocked.filter(
+        loadedSender.blocked = loadedSender.blocked.filter(
           (blockedUser) => blockedUser.userId !== payload.receiver.userId,
         );
-        await this.userRepository.save(payload.sender);
+        await this.userRepository.save(loadedSender);
         return { success: true, message: 'User unblocked successfully' };
       }
     } catch (error) {

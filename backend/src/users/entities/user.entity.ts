@@ -57,7 +57,7 @@ import { GameRecord } from '@/games/entities/gameRecord.entity';
 export class User {
   // @PrimaryGeneratedColumn()は主キーを自動生成する
   @PrimaryGeneratedColumn({ name: 'user_id', type: 'integer', unsigned: true })
-    userId: number;
+  userId: number;
 
   @Column({ name: 'user_name', type: 'varchar', length: 20, unique: true })
   //@Factory(faker => faker.internet.userName())
@@ -67,12 +67,12 @@ export class User {
   @MaxLength(20)
   @IsAlphanumeric()
   @Matches(/^[a-zA-Z0-]+$/, { message: 'ユーザー名は英数字のみ使用できます' })
-    userName: string;
+  userName: string;
 
   @Column({ name: 'email', type: 'varchar', length: 100, unique: true })
   @Factory((faker) => faker.helpers.unique(faker.internet.email))
   @IsEmail()
-    email: string;
+  email: string;
 
   @Column({ name: 'password', type: 'varchar' })
   @Factory((faker) => faker.internet.password())
@@ -87,89 +87,89 @@ export class User {
     message: 'パスワードは大文字、小文字、数字、記号を含めてください',
   })
   @Exclude()
-    password: string;
+  password: string;
 
   @Column({ name: 'icon', type: 'text', default: '' })
   @Factory((faker) => faker.image.people())
-    icon: string;
+  icon: string;
 
   @CreateDateColumn({ name: 'created_at', type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
-    createdAt: Date;
+  createdAt: Date;
 
   @DeleteDateColumn({ name: 'deleted_at', type: 'timestamp', nullable: true })
   @Factory((faker) => faker.helpers.arrayElement([null, faker.date.future()]))
-    deletedAt: Date;
+  deletedAt: Date;
 
   @Column({ type: 'varchar', length: 20, default: '' })
-    name42: string;
+  name42: string;
 
   @Column({ name: 'two_factor_auth', type: 'boolean', default: false, nullable: false })
   @Factory((faker) => faker.datatype.boolean())
   @Exclude()
-    twoFactorAuth: boolean;
+  twoFactorAuth: boolean;
 
   @Column({ name: 'two_factor_auth_secret', type: 'text', nullable: true })
   @Exclude()
-    twoFactorAuthSecret: string;
+  twoFactorAuthSecret: string;
 
   // 簡単な配列でも使える
   // @Column('simple-array')
-	//   friends: string[]
+  //   friends: string[]
 
   // @Column('simple-array')
-	//   blockedUsers: string[]
+  //   blockedUsers: string[]
 
   // friend
   /** リレーション定義 */
   @ManyToMany(() => User)
   @JoinTable({
     // テーブル名
-    name: "user_friends_user",
+    name: 'user_friends_user',
     // 自分のカラム名
     joinColumn: {
-      name: "receiver",
-      referencedColumnName: "userId"
+      name: 'receiver',
+      referencedColumnName: 'userId',
     },
     // 相手のカラム名
     inverseJoinColumn: {
-      name: "sender",
-      referencedColumnName: "userId"
-    }
+      name: 'sender',
+      referencedColumnName: 'userId',
+    },
   })
   friends: User[];
 
   @ManyToMany(() => User)
   @JoinTable({
-    name: "user_block_user",
+    name: 'user_block_user',
     joinColumn: {
-      name: "blocker",
-      referencedColumnName: "userId"
+      name: 'blocker',
+      referencedColumnName: 'userId',
     },
     inverseJoinColumn: {
-      name: "blocked",
-      referencedColumnName: "userId"
-    }
+      name: 'blocked',
+      referencedColumnName: 'userId',
+    },
   })
   blocked: User[];
 
   /** リレーション定義 */
   // ゲームルームテーブルと1対多の関係
   @OneToMany(() => GameRoom, (gameRoom) => gameRoom.user)
-    gameRooms: GameRoom[];
+  gameRooms: GameRoom[];
 
   // ゲーム参加者テーブルと1対多の関係
   @OneToMany(() => GameEntry, (gameEntry) => gameEntry.user)
-    gameEntries!: GameEntry[];
+  gameEntries!: GameEntry[];
 
   // 試合テーブルと1対多の関係
   @OneToMany(() => Match, (match) => match.player1)
-    matchesAsPlayer1!: Match[];
+  matchesAsPlayer1!: Match[];
   @OneToMany(() => Match, (match) => match.player2)
   matchesAsPlayer2!: Match[];
 
   // 試合結果テーブルと1対多の関係
   @OneToMany(() => MatchResult, (matchResult) => matchResult.user)
-    matchResults!: MatchResult[];
+  matchResults!: MatchResult[];
 
   constructor(partial: Partial<User>) {
     Object.assign(this, partial);
@@ -178,28 +178,28 @@ export class User {
   @ManyToMany(() => GameRecord)
   @JoinTable({
     // テーブル名
-    name: "user_game_record",
+    name: 'user_game_record',
     // 自分のカラム名
     joinColumn: {
-      name: "user",
-      referencedColumnName: "userId"
+      name: 'user',
+      referencedColumnName: 'userId',
     },
     // 相手のカラム名
     inverseJoinColumn: {
-      name: "gameRecord",
-      referencedColumnName: "gameRecordId"
-    }
+      name: 'gameRecord',
+      referencedColumnName: 'gameRecordId',
+    },
   })
-    gameRecords: GameRecord[];
+  gameRecords: GameRecord[];
 
   @OneToMany(() => GameRecord, (gameRecord) => gameRecord.loser)
-    gameRecordsAsLoser: GameRecord[];
+  gameRecordsAsLoser: GameRecord[];
 
   @OneToMany(() => GameRecord, (gameRecord) => gameRecord.winner)
-    gameRecordsAsWinner: GameRecord[];
+  gameRecordsAsWinner: GameRecord[];
 
-    // ゲームのポイント
-  @Column({ name: 'point', type: 'integer', default: 10000})
+  // ゲームのポイント
+  @Column({ name: 'point', type: 'integer', default: 10000 })
   @IsNotEmpty()
   point: number;
 }
