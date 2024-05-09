@@ -25,11 +25,9 @@ export default function DMPage({ params }: { params: string }) {
 
   useEffect(() => {
     if (!socket || !params) return;
-    // console.log('params:', params);
 
     getCurrentUser()
       .then((user) => {
-        // console.log('user:', user);
         socket.emit('getCurrentUser', user);
       })
       .catch((error) => {
@@ -50,11 +48,11 @@ export default function DMPage({ params }: { params: string }) {
     });
 
     socket.on('joinDMRoomConfirmation', () => {
-      console.log('Joined DM Room');
+      // console.log('Joined DM Room');
     });
 
     socket.on('leaveDMRoomConfirmation', () => {
-      console.log('Left DM Room');
+      // console.log('Left DM Room');
     });
 
     const blockedUsers = JSON.parse(localStorage.getItem(BLOCKED_USER_KEY) || '[]');
@@ -80,8 +78,8 @@ export default function DMPage({ params }: { params: string }) {
   }, [socket, receiver]);
 
   useEffect(() => {
-    console.log('sender:', sender);
-    console.log('receiver:', receiver);
+    // console.log('sender:', sender);
+    // console.log('receiver:', receiver);
     if (!socket || !sender || !receiver) return;
     socket.emit('joinDMRoom', { sender: sender, receiver: receiver });
     socket.emit('getBlockedUsers', sender);
@@ -89,7 +87,7 @@ export default function DMPage({ params }: { params: string }) {
     return () => {
       socket.emit('leaveDMRoom', { sender: sender, receiver: receiver });
     };
-  }, [sender, sender, receiver]);
+  }, [sender, receiver]);
 
   useEffect(() => {
     if (!socket || !sender || !receiver || blocked) return;
@@ -127,19 +125,6 @@ export default function DMPage({ params }: { params: string }) {
     socket.emit('sendDM', { sender: sender, receiver: receiver, message: message });
     setMessage('');
   }, [sender, receiver, message, socket, blocked]);
-
-  // const handleBlockUser = useCallback(() => {
-  //   if (!socket) return;
-  //   if (blocked) {
-  //     socket.emit('unblockUser', { sender: sender, receiver: receiver });
-  //     setBlocked(false);
-  //     socket.emit('getDMLogs', { sender: sender, receiver: receiver });
-  //   } else {
-  //     socket.emit('blockUser', { sender: sender, receiver: receiver });
-  //     setBlocked(true);
-  //     setDMLogs([]);
-  //   }
-  // }, [sender, receiver, socket, blocked]);
 
   const handleBlockUser = useCallback(() => {
     if (!socket) return;

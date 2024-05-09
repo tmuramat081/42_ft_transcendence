@@ -53,7 +53,6 @@ export class DMGateway {
   @SubscribeMessage('getCurrentUser')
   async handle(@MessageBody() user: User, @ConnectedSocket() socket: Socket) {
     try {
-      this.logger.log(`getCurrentUser`);
       // データベースからuser.userIdと同じユーザーを取得
       const currentUser = await this.userRepository.findOne({
         where: {
@@ -75,7 +74,6 @@ export class DMGateway {
   @SubscribeMessage('getRecipient')
   async handleGetRecipient(@MessageBody() recipient: string, @ConnectedSocket() socket: Socket) {
     try {
-      this.logger.log(`getRecipient: ${recipient}`);
       const recipientUser = await this.userRepository.findOne({
         where: { userName: recipient },
       });
@@ -330,10 +328,6 @@ export class DMGateway {
         return { success: false, message: 'Invalid User data' };
       }
 
-      // if (!payload.sender.blocked) {
-      //   payload.sender.blocked = [];
-      // }
-
       // senderのuserIdを使用して、関連データをロードする
       const loadedSender = await this.userRepository.findOne({
         where: { userId: payload.sender.userId },
@@ -376,10 +370,6 @@ export class DMGateway {
         console.error('Invalid user data:', payload);
         return { success: false, message: 'Invalid User data' };
       }
-
-      // if (!payload.sender.blocked) {
-      //   payload.sender.blocked = [];
-      // }
 
       // senderのuserIdを使用して、関連データをロードする
       const loadedSender = await this.userRepository.findOne({
