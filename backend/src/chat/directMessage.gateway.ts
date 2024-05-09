@@ -339,6 +339,10 @@ export class DMGateway {
         return { success: false, message: 'Sender not found' };
       }
 
+      if (!loadedSender.blocked) {
+        loadedSender.blocked = [];
+      }
+
       // senderがreceiverをブロックしているか確認
       const isBlocked = loadedSender.blocked.some(
         (blockedUser) => blockedUser.userId === payload.receiver.userId,
@@ -350,8 +354,9 @@ export class DMGateway {
         return { success: false, message: 'User already blocked' };
       } else {
         this.logger.log(`${payload.sender.userName} is blocking ${payload.receiver.userName}`);
-        payload.sender.blocked.push(payload.receiver);
-        await this.userRepository.save(payload.sender);
+
+        loadedSender.blocked.push(payload.receiver);
+        await this.userRepository.save(loadedSender);
         return { success: true, message: 'User blocked successfully' };
       }
     } catch (error) {
@@ -380,6 +385,10 @@ export class DMGateway {
       if (!loadedSender) {
         console.error('Sender not found');
         return { success: false, message: 'Sender not found' };
+      }
+
+      if (!loadedSender.blocked) {
+        loadedSender.blocked = [];
       }
 
       // senderがreceiverをブロックしているか確認

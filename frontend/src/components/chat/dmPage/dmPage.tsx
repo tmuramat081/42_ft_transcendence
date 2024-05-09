@@ -59,7 +59,7 @@ export default function DMPage({ params }: { params: string }) {
     setBlocked(blockedUsers.includes(receiver?.userId || -1));
 
     socket.on('blockedUsers', (blockedUsers: number[]) => {
-      console.log('blockedUsers:', blockedUsers);
+      // console.log('blockedUsers:', blockedUsers);
       if (blockedUsers.includes(receiver?.userId || -1)) {
         setBlocked(true);
         setDMLogs([]);

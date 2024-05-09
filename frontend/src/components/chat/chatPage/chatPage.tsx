@@ -136,13 +136,13 @@ export default function ChatPage() {
     };
   }, [roomID, roomchatLogs, socket]);
 
-  useEffect(() => {
-    console.log('Notification:', notification);
-  }, [notification]);
+  // useEffect(() => {
+  //   console.log('Notification:', notification);
+  // }, [notification]);
 
-  useEffect(() => {
-    console.log('LoginUser', LoginUser);
-  }, [LoginUser]);
+  // useEffect(() => {
+  //   console.log('LoginUser', LoginUser);
+  // }, [LoginUser]);
 
   const onClickSubmit = useCallback(() => {
     if (!socket) return;
