@@ -322,138 +322,88 @@ export class DMGateway {
         return { success: false, message: 'Invalid User data' };
       }
 
-      // senderのUserBlockを取得または作成
-      let userBlock = await this.userBlockRepository.findOne({
-        where: { user: payload.sender },
-        relations: ['blockedUsers'],
-      });
-
-      if (!userBlock) {
-        userBlock = new UserBlock();
-        userBlock.user = payload.sender;
-        userBlock.blockedUsers = [];
+      if (!payload.sender.blocked) {
+        payload.sender.blocked = [];
       }
 
-      this.logger.log('UserBlock found:', userBlock.user);
-
-      // receiverのBlockedUserを取得または作成
-      let blockedUser = await this.blockedUserRepository.findOne({
-        where: { blockedUser: payload.receiver },
-        relations: ['userBlocks'],
-      });
-
-      if (!blockedUser) {
-        blockedUser = new BlockedUser();
-        blockedUser.blockedUser = payload.receiver;
-        blockedUser.userBlocks = [];
+      // senderがreceiverをブロックしているか確認
+      const isBlocked = payload.sender.blocked.some(
+        (blockedUser) => blockedUser.userId === payload.receiver.userId,
+      );
+      if (isBlocked) {
+        this.logger.error(
+          `${payload.sender.userName} has already blocked ${payload.receiver.userName}`,
+        );
+        return { success: false, message: 'User already blocked' };
+      } else {
+        this.logger.log(`${payload.sender.userName} is blocking ${payload.receiver.userName}`);
+        payload.sender.blocked.push(payload.receiver);
+        await this.userRepository.save(payload.sender);
       }
 
-      this.logger.log('BlockedUser found:', blockedUser.blockedUser);
+      // // senderのUserBlockを取得または作成
+      // let userBlock = await this.userRepository.findOne({
+      //   where: { blocker: payload.sender },
+      //   relations: ['blockedUsers'],
+      // });
 
-      const existingBlockedUser = userBlock.blockedUsers.find((bu) => bu.id === blockedUser.id);
-      if (!existingBlockedUser) {
-        userBlock.blockedUsers.push(blockedUser);
-      }
-
-      const existingUserBlock = blockedUser.userBlocks.find((ub) => ub.id === userBlock.id);
-      if (!existingUserBlock) {
-        blockedUser.userBlocks.push(userBlock);
-      }
-
-      // userBlock の更新
-      userBlock.blockedUsers = userBlock.blockedUsers.map((blockedUser) => ({
-        ...blockedUser,
-        user: userBlock,
-      }));
-      await this.userBlockRepository.save(userBlock);
-
-      // blockedUser の更新
-      blockedUser.userBlocks = blockedUser.userBlocks.map((userBlock) => ({
-        ...userBlock,
-        blockedUser: blockedUser,
-      }));
-      await this.blockedUserRepository.save(blockedUser);
-
-      // blockedUsersにreceiverを追加
-      // if (userBlock.blockedUsers) {
-      //   const existingBlockedUser = userBlock.blockedUsers.find((bu) => bu.id === blockedUser.id);
-      //   if (!existingBlockedUser) {
-      //     userBlock.blockedUsers.push(blockedUser);
-      //   }
-      // } else {
-      //   userBlock.blockedUsers = [blockedUser];
+      // if (!userBlock) {
+      //   userBlock = new UserBlock();
+      //   userBlock.user = payload.sender;
+      //   userBlock.blockedUsers = [];
       // }
 
-      // blockedUserのuserBlockにsenderを追加
-      // if (blockedUser.userBlocks) {
-      //   const existingUserBlock = blockedUser.userBlocks.find((ub) => ub.id === userBlock.id);
-      //   if (!existingUserBlock) {
-      //     blockedUser.userBlocks.push(userBlock);
-      //   }
-      // } else {
-      //   blockedUser.userBlocks = [userBlock];
+      // this.logger.log('UserBlock found:', userBlock.user);
+
+      // // receiverのBlockedUserを取得または作成
+      // let blockedUser = await this.blockedUserRepository.findOne({
+      //   where: { blockedUser: payload.receiver },
+      //   relations: ['userBlocks'],
+      // });
+
+      // if (!blockedUser) {
+      //   blockedUser = new BlockedUser();
+      //   blockedUser.blockedUser = payload.receiver;
+      //   blockedUser.userBlocks = [];
+      // }
+
+      // this.logger.log('BlockedUser found:', blockedUser.blockedUser);
+
+      // const existingBlockedUser = userBlock.blockedUsers.find((bu) => bu.id === blockedUser.id);
+      // if (!existingBlockedUser) {
+      //   userBlock.blockedUsers.push(blockedUser);
+      // }
+
+      // const existingUserBlock = blockedUser.userBlocks.find((ub) => ub.id === userBlock.id);
+      // if (!existingUserBlock) {
+      //   blockedUser.userBlocks.push(userBlock);
       // }
 
       // // userBlock の更新
-      // await this.userBlockRepository
-      //   .createQueryBuilder()
-      //   .relation(UserBlock, 'blockedUsers')
-      //   .of(userBlock)
-      //   .addAndRemove(userBlock.blockedUsers, []);
-
-      // // blockedUser の更新
-      // await this.blockedUserRepository
-      //   .createQueryBuilder()
-      //   .relation(BlockedUser, 'userBlocks')
-      //   .of(blockedUser)
-      //   .addAndRemove(blockedUser.userBlocks, []);
-
-      // // userBlock の更新
-      // await this.userBlockRepository
-      //   .createQueryBuilder()
-      //   .update(UserBlock)
-      //   .set({ blockedUsers: userBlock.blockedUsers })
-      //   .where('id = :id', { id: userBlock.id })
-      //   .execute();
-
-      // // blockedUser の更新
-      // await this.blockedUserRepository
-      //   .createQueryBuilder()
-      //   .update(BlockedUser)
-      //   .set({ userBlocks: blockedUser.userBlocks })
-      //   .where('id = :id', { id: blockedUser.id })
-      //   .execute();
-
-      // // userBlock の更新
-      // await this.userBlockRepository
-      //   .createQueryBuilder()
-      //   .update(UserBlock)
-      //   .set({ blockedUsers: () => `ARRAY_APPEND(blockedUsers, ${blockedUser.id})` })
-      //   .where('id = :id', { id: userBlock.id })
-      //   .execute();
-
-      // // blockedUser の更新
-      // await this.blockedUserRepository
-      //   .createQueryBuilder()
-      //   .update(BlockedUser)
-      //   .set({ userBlocks: () => `ARRAY_APPEND(userBlocks, ${userBlock.id})` })
-      //   .where('id = :id', { id: blockedUser.id })
-      //   .execute();
-
+      // userBlock.blockedUsers = userBlock.blockedUsers.map((blockedUser) => ({
+      //   ...blockedUser,
+      //   user: userBlock,
+      // }));
       // await this.userBlockRepository.save(userBlock);
+
+      // // blockedUser の更新
+      // blockedUser.userBlocks = blockedUser.userBlocks.map((userBlock) => ({
+      //   ...userBlock,
+      //   blockedUser: blockedUser,
+      // }));
       // await this.blockedUserRepository.save(blockedUser);
 
-      this.logger.log(`${payload.sender.userName} blocked ${payload.receiver.userName}`);
-      this.logger.log('UserBlock saved:', {
-        id: userBlock.id,
-        user: userBlock.user,
-        blockedUsers: userBlock.blockedUsers,
-      });
-      this.logger.log('BlockedUser saved:', {
-        id: blockedUser.id,
-        blockedUser: blockedUser.blockedUser,
-        userBlock: blockedUser.userBlocks,
-      });
+      // this.logger.log(`${payload.sender.userName} blocked ${payload.receiver.userName}`);
+      // this.logger.log('UserBlock saved:', {
+      //   id: userBlock.id,
+      //   user: userBlock.user,
+      //   blockedUsers: userBlock.blockedUsers,
+      // });
+      // this.logger.log('BlockedUser saved:', {
+      //   id: blockedUser.id,
+      //   blockedUser: blockedUser.blockedUser,
+      //   userBlock: blockedUser.userBlocks,
+      // });
 
       // 成功のレスポンスを返す
       return { success: true, message: 'User blocked successfully' };
