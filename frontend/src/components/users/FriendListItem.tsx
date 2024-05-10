@@ -18,7 +18,7 @@ const API_URL = process.env.NEXT_PUBLIC_API_URL ?? '';
 
 type Props = {
     friend: Friend;
-    socket: Socket;   
+    //socket: Socket;   
 };
 
 type FreindGameInfo = {
