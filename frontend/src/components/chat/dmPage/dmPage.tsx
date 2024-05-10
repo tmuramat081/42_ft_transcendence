@@ -150,7 +150,7 @@ export default function DMPage({ params }: { params: string }) {
   }, [sender, receiver, socket, blocked]);
 
   const onClickInviteGame = useCallback(() => {
-    if (!socket) return;
+    if (!socket || blocked) return;
     // ゲーム招待メッセージを送信
     socket.emit('sendDM', { sender: sender, receiver: receiver, message: 'Game Invitation' });
     console.log(`${sender?.userName} sent Game Invitation to ${receiver?.userName}`);
