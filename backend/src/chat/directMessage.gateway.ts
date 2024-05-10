@@ -217,13 +217,52 @@ export class DMGateway {
         };
       });
 
-      // senderとreceiverのroomにDMログを送信
+      // receiverのuserIdを使用して、関連データをロードする
+      const loadedReceiver = await this.userRepository.findOne({
+        where: { userId: payload.receiver.userId },
+        relations: ['blocked'],
+      });
+
+      this.logger.log(
+        `Blocked users for ${payload.receiver.userName}: ${loadedReceiver.blocked
+          .map((user) => user.userName)
+          .join(', ')}`,
+      );
+
+      if (!loadedReceiver) {
+        console.error('Receiver not found');
+        return { success: false, message: 'Receiver not found' };
+      }
+
+      if (!loadedReceiver.blocked) {
+        loadedReceiver.blocked = [];
+      }
+
+      // receiverがsenderをブロックしているか確認
+      const isBlocked = loadedReceiver.blocked.some((blockedUser) => {
+        this.logger.log(`Blocked user ID: ${blockedUser.userId}`);
+        return blockedUser.userId === payload.sender.userId;
+      });
+
+      this.logger.log(
+        `${payload.receiver.userName} blocked ${payload.sender.userName}: ${isBlocked}`,
+      );
+
+      // senderにDMログを送信
       this.server
         .to(`DMRoom_${payload.sender.userId}_${payload.receiver.userId}`)
         .emit('dmLogs', directMessages);
-      this.server
-        .to(`DMRoom_${payload.receiver.userId}_${payload.sender.userId}`)
-        .emit('dmLogs', directMessages);
+
+      // senderがblockedUserIdsに含まれていない場合のみreceiverにも送信
+      if (!isBlocked) {
+        this.server
+          .to(`DMRoom_${payload.receiver.userId}_${payload.sender.userId}`)
+          .emit('dmLogs', directMessages);
+      } else {
+        this.logger.log(
+          `${payload.receiver.userName} has blocked ${payload.sender.userName}, so no messages sent`,
+        );
+      }
     } catch (error) {
       this.logger.error('Error getting DM logs:', error);
       throw error;
@@ -279,26 +318,24 @@ export class DMGateway {
         };
       });
 
-      // receiverがブロックしてるユーザーのリストを取得
-      const blockedUsers = await this.userBlockRepository.find({
-        where: { user: payload.receiver },
-        relations: ['blockedUsers'],
+      // receiverのuserIdを使用して、関連データをロードする
+      const loadedReceiver = await this.userRepository.findOne({
+        where: { userId: payload.receiver.userId },
+        relations: ['blocked'],
       });
 
-      // ブロックしたユーザーのIDリストを取得
-      const blockedUserIds = blockedUsers.flatMap((userBlock) =>
-        userBlock.blockedUsers.map((blockedUser) => blockedUser.id),
-      );
+      if (!loadedReceiver) {
+        console.error('Receiver not found');
+        return { success: false, message: 'Receiver not found' };
+      }
 
-      // ブロックしたユーザーのユーザー名リストを取得
-      const blockedUserNames = await this.userRepository.find({
-        where: { userId: In(blockedUserIds) },
-      });
+      if (!loadedReceiver.blocked) {
+        loadedReceiver.blocked = [];
+      }
 
-      this.logger.log(
-        `getBlockedUsers: ${payload.receiver.userName} blocked users ${JSON.stringify(
-          blockedUserNames,
-        )}`,
+      // receiverがsenderをブロックしているか確認
+      const isBlocked = loadedReceiver.blocked.some(
+        (blockedUser) => blockedUser.userId === payload.sender.userId,
       );
 
       // senderにDMログを送信
@@ -306,7 +343,7 @@ export class DMGateway {
         .to(`DMRoom_${payload.sender.userId}_${payload.receiver.userId}`)
         .emit('dmLogs', directMessages);
       // senderがblockedUserIdsに含まれていない場合のみreceiverにも送信
-      if (!blockedUserIds.includes(payload.sender.userId)) {
+      if (!isBlocked) {
         this.server
           .to(`DMRoom_${payload.receiver.userId}_${payload.sender.userId}`)
           .emit('dmLogs', directMessages);

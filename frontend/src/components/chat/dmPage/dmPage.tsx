@@ -95,7 +95,7 @@ export default function DMPage({ params }: { params: string }) {
   }, [sender, receiver, socket, blocked]);
 
   useEffect(() => {
-    if (!socket) return;
+    if (!socket || blocked) return;
     socket.on('dmLogs', (directMessages: DirectMessage[]) => {
       // directMessagesのtextが'Game Invitation'の場合、各メッセージにゲームへのリンクを追加する
       const modifiedMessages = directMessages.map((message) => {
@@ -112,13 +112,15 @@ export default function DMPage({ params }: { params: string }) {
         }
         return message;
       });
-      setDMLogs(modifiedMessages);
+      if (!blocked) {
+        setDMLogs(modifiedMessages);
+      }
     });
 
     return () => {
       socket.off('dmLogs');
     };
-  }, [socket]);
+  }, [socket, blocked]);
 
   const onClickSubmit = useCallback(() => {
     if (!socket || blocked) return;

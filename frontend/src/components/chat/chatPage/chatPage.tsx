@@ -25,6 +25,7 @@ export default function ChatPage() {
   const [isDeleteButtonVisible, setDeleteButtonVisible] = useState(false);
   const [participants, setParticipants] = useState<UserInfo[]>([]);
   const [onlineUsers, setOnlineUsers] = useState<UserInfo[]>([]);
+  // const [onlineUsers, setOnlineUsers] = useState<User[]>([]);
   const [notification, setNotification] = useState<string | null>(null);
   const [LoginUser, setLoginUser] = useState<User | null>(null);
 
@@ -44,19 +45,40 @@ export default function ChatPage() {
     if (!socket) return;
 
     const intervalId = setInterval(() => {
-      getCurrentUser()
-        .then((user) => {
-          if (!user) {
-            // 取得できなかった場合はloginUsersから削除
-            socket.emit('logoutUser', LoginUser);
-            setLoginUser(null);
-          }
-          socket.emit('getOnlineUsers', user);
+      const updateUserStatus = () => {
+        fetch(`${API_URL}/users/me`, {
+          method: 'GET',
+          credentials: 'include',
         })
-        .catch((error) => {
-          console.error('Error getting user:', error);
-        });
-    }, 60000); // 60秒ごとにgetCurrentUserを呼び出す
+          .then((response) => response.json())
+          .then((user) => {
+            // ユーザーの情報が取得された後の処理
+            // サーバーから取得したユーザー情報を使って onlineUsers を更新する
+            setOnlineUsers((prevOnlineUsers) => {
+              // ログアウトしたユーザーを onlineUsers から削除する
+              const updatedOnlineUsers = prevOnlineUsers.filter(
+                (onlineUser) => onlineUser.userId !== user.userId,
+              );
+              return updatedOnlineUsers;
+            });
+          })
+          .catch((error) => {
+            console.error('Error getting user data:', error);
+          });
+      };
+      // getCurrentUser()
+      //   .then((user) => {
+      //     if (!user) {
+      //       // 取得できなかった場合はloginUsersから削除
+      //       socket.emit('logoutUser', LoginUser);
+      //       setLoginUser(null);
+      //     }
+      //     socket.emit('getOnlineUsers', user);
+      //   })
+      //   .catch((error) => {
+      //     console.error('Error getting user:', error);
+      //   });
+    }, 60000); // 60秒ごとに呼び出す
 
     return () => {
       clearInterval(intervalId); // アンマウント時にクリア
@@ -134,10 +156,6 @@ export default function ChatPage() {
   // useEffect(() => {
   //   console.log('Notification:', notification);
   // }, [notification]);
-
-  // useEffect(() => {
-  //   console.log('LoginUser', LoginUser);
-  // }, [LoginUser]);
 
   const onClickSubmit = useCallback(() => {
     if (!socket) return;

@@ -10,6 +10,7 @@ import { OnlineUsers } from './entities/onlineUsers.entity';
 import { UserBlock } from './entities/userBlock.entity';
 import { BlockedUser } from './entities/blockedUser.entity';
 import { GameRoom } from '../games/entities/gameRoom.entity';
+// import { UsersService } from '../users/users.service';
 
 @Module({
   imports: [

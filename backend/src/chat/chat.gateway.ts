@@ -6,6 +6,7 @@ import {
   MessageBody,
   ConnectedSocket,
 } from '@nestjs/websockets';
+// import { UsersService } from '../users/users.service';
 import { Logger } from '@nestjs/common';
 import { Server, Socket } from 'socket.io';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -43,6 +44,8 @@ export class ChatGateway {
 
     @InjectRepository(GameRoom)
     private gameRoomRepository: Repository<GameRoom>,
+
+    // private readonly usersService: UsersService,
   ) {}
 
   @SubscribeMessage('getRoomList')
@@ -130,10 +133,17 @@ export class ChatGateway {
       // await this.onlineUsersRepository.delete({});
 
       // 空のオンラインユーザーを削除
-      await this.deleteEmptyOnlineUsers();
+      // await this.deleteEmptyOnlineUsers();
 
       // 重複したオンラインユーザーを削除
-      await this.deleteDuplicateOnlineUsers();
+      // await this.deleteDuplicateOnlineUsers();
+
+      // usersService.loginUserIdsからloninUserのリストを取得
+      // const onlineUserIds: number[] = await this.usersService.loginUserIds;
+      // this.logger.log(`Online user ids: ${onlineUserIds}`);
+
+      // onlineUserIdsからユーザー情報を取得
+      // const onlineUsers: User[] = await this.userRepository.findByIds(onlineUserIds);
 
       // データベースからオンラインユーザーリストを取得
       const onlineUsers = await this.onlineUsersRepository.find();
