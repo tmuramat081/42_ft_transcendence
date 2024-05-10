@@ -113,7 +113,7 @@ export default function DMPage({ params }: { params: string }) {
         return message;
       });
       if (!blocked) {
-        setDMLogs(modifiedMessages);
+        setDMLogs(modifiedMessages as DirectMessage[]);
       }
     });
 
