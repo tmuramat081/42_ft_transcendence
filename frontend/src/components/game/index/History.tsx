@@ -8,7 +8,7 @@ import { User } from '@/types/user';
 type Props = {
     //userId: number;
     user: User | null;
-    records: GameRecordWithUserName[];
+    records: GameRecordWithUserName[] | undefined;
 };
 
 export const History = ({user, records}: Props) => {
