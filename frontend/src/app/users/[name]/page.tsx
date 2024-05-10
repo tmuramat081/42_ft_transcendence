@@ -265,19 +265,27 @@ export default function Profile({ params }: { params: { name: string } }) {
   }
 
   if (userError !== undefined || recordsError !== undefined) {
-    if (!router.isReady) {
-      return <Loading fullSize />;
-    } else {
+    // if (!router.isReady) {
+    //   return <Loading fullSize />;
+    // } else {
+    //   return (
+    //     <Layout title="Profile">
+    //       <Alert severity="error">
+    //         <AlertTitle>Error</AlertTitle>
+    //         {userError !== undefined && <p>User Fetching Error</p>}
+    //         {recordsError !== undefined && <p>Game Records Fetching Error</p>}
+    //       </Alert>
+    //     </Layout>
+    //   );
+    // }
       return (
-        <Layout title="Profile">
-          <Alert severity="error">
-            <AlertTitle>Error</AlertTitle>
-            {userError !== undefined && <p>User Fetching Error</p>}
-            {recordsError !== undefined && <p>Game Records Fetching Error</p>}
-          </Alert>
-        </Layout>
-      );
-    }
+      <Layout title="Profile">
+        <Alert severity="error">
+          <AlertTitle>Error</AlertTitle>
+          {userError !== undefined && <p>User Fetching Error</p>}
+          {recordsError !== undefined && <p>Game Records Fetching Error</p>}
+        </Alert>
+      </Layout>
   }
 
   // TODO: リダイレクトさせる
