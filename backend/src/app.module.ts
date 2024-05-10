@@ -17,8 +17,6 @@ import { Room } from './chat/entities/room.entity';
 import { ChatLog } from './chat/entities/chatLog.entity';
 import { OnlineUsers } from './chat/entities/onlineUsers.entity';
 import { DmLog } from './chat/entities/dmLog.entity';
-import { UserBlock } from './chat/entities/userBlock.entity';
-import { BlockedUser } from './chat/entities/blockedUser.entity';
 import { GameRecord } from './games/entities/gameRecord.entity';
 
 // .envを読み込む
@@ -46,8 +44,6 @@ dotenv.config();
           ChatLog,
           OnlineUsers,
           DmLog,
-          UserBlock,
-          BlockedUser,
           User,
           GameRoom,
           GameEntry,
@@ -71,8 +67,6 @@ dotenv.config();
           ChatLog,
           OnlineUsers,
           DmLog,
-          UserBlock,
-          BlockedUser,
           GameRoom,
           GameEntry,
           MatchResult,

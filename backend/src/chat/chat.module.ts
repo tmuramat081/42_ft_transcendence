@@ -7,24 +7,11 @@ import { ChatLog } from './entities/chatLog.entity';
 import { User } from '../users/entities/user.entity';
 import { DmLog } from './entities/dmLog.entity';
 import { OnlineUsers } from './entities/onlineUsers.entity';
-import { UserBlock } from './entities/userBlock.entity';
-import { BlockedUser } from './entities/blockedUser.entity';
 import { GameRoom } from '../games/entities/gameRoom.entity';
 // import { UsersService } from '../users/users.service';
 
 @Module({
-  imports: [
-    TypeOrmModule.forFeature([
-      Room,
-      ChatLog,
-      User,
-      DmLog,
-      OnlineUsers,
-      UserBlock,
-      BlockedUser,
-      GameRoom,
-    ]),
-  ],
+  imports: [TypeOrmModule.forFeature([Room, ChatLog, User, DmLog, OnlineUsers, GameRoom])],
   providers: [ChatGateway, DMGateway],
 })
 export class ChatModule {}

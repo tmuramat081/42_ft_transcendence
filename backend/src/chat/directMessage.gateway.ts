@@ -15,10 +15,7 @@ import { Room } from './entities/room.entity';
 import { User } from '../users/entities/user.entity';
 import { DmLog } from './entities/dmLog.entity';
 import { OnlineUsers } from './entities/onlineUsers.entity';
-import { UserBlock } from './entities/userBlock.entity';
-import { BlockedUser } from './entities/blockedUser.entity';
 import { DirectMessage, formatDate } from './tools';
-import { get } from 'http';
 
 @WebSocketGateway({ cors: { origin: '*' } })
 export class DMGateway {
@@ -42,12 +39,6 @@ export class DMGateway {
 
     @InjectRepository(OnlineUsers)
     private onlineUsersRepository: Repository<OnlineUsers>,
-
-    @InjectRepository(UserBlock)
-    private userBlockRepository: Repository<UserBlock>,
-
-    @InjectRepository(BlockedUser)
-    private blockedUserRepository: Repository<BlockedUser>,
   ) {}
 
   @SubscribeMessage('getCurrentUser')
