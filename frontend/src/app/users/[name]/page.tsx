@@ -279,13 +279,14 @@ export default function Profile({ params }: { params: { name: string } }) {
     //   );
     // }
       return (
-      <Layout title="Profile">
-        <Alert severity="error">
-          <AlertTitle>Error</AlertTitle>
-          {userError !== undefined && <p>User Fetching Error</p>}
-          {recordsError !== undefined && <p>Game Records Fetching Error</p>}
-        </Alert>
-      </Layout>
+        <Layout title="Profile">
+          <Alert severity="error">
+            <AlertTitle>Error</AlertTitle>
+            {userError !== undefined && <p>User Fetching Error</p>}
+            {recordsError !== undefined && <p>Game Records Fetching Error</p>}
+          </Alert>
+        </Layout>
+      )
   }
 
   // TODO: リダイレクトさせる
