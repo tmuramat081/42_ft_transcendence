@@ -1,6 +1,3 @@
-// inviteの通知がでない
-// ゲーム参加のリンクを追加
-
 /*eslint-disable*/
 'use client';
 import React, { useState, useEffect, useCallback } from 'react';
@@ -28,9 +25,7 @@ export default function ChatPage() {
   const [isDeleteButtonVisible, setDeleteButtonVisible] = useState(false);
   const [participants, setParticipants] = useState<UserInfo[]>([]);
   const [onlineUsers, setOnlineUsers] = useState<UserInfo[]>([]);
-  const [invitees, setInvitees] = useState<UserInfo[]>([]);
   const [notification, setNotification] = useState<string | null>(null);
-  const [selectedGame, setSelectedGame] = useState<string | null>(null);
   const [LoginUser, setLoginUser] = useState<User | null>(null);
 
   useEffect(() => {
@@ -51,11 +46,11 @@ export default function ChatPage() {
     const intervalId = setInterval(() => {
       getCurrentUser()
         .then((user) => {
-          // if (!user) {
-          //   // 取得できなかった場合はloginUsersから削除
-          //   socket.emit('logoutUser', LoginUser);
-          //   setLoginUser(null);
-          // }
+          if (!user) {
+            // 取得できなかった場合はloginUsersから削除
+            socket.emit('logoutUser', LoginUser);
+            setLoginUser(null);
+          }
           socket.emit('getOnlineUsers', user);
         })
         .catch((error) => {
@@ -123,7 +118,7 @@ export default function ChatPage() {
       socket.off('newDM');
       socket.off('roomError');
     };
-  }, [socket, getCurrentUser, participants]);
+  }, [socket, participants, LoginUser]);
 
   useEffect(() => {
     if (!socket) return;

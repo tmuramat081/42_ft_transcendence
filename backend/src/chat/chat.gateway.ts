@@ -99,6 +99,18 @@ export class ChatGateway {
       }
       this.logger.log(`Logout user: ${JSON.stringify(logoutUser)}`);
       await this.onlineUsersRepository.remove(logoutUser);
+      // onlineUsersを取得してクライアントに送信
+      const onlineUsers = await this.onlineUsersRepository.find();
+      // onlineUsersをUserInfoに変換
+      const onlineUsersInfo: UserInfo[] = onlineUsers.map((user) => {
+        return {
+          userId: user.userId,
+          userName: user.name,
+          icon: user.icon,
+        };
+      });
+      // 全クライアントに送信
+      this.server.emit('onlineUsers', onlineUsersInfo);
     } catch (error) {
       this.logger.error(`Error logging out user: ${(error as Error).message}`);
       throw error;
