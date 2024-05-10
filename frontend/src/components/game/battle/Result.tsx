@@ -71,7 +71,7 @@ export const Result = ({ finishedGameInfo, setOpenMatchError }: Props) => {
           transform: 'translate(-50%, -50%)',
           bgcolor: 'background.paper',
           width: '25%',
-          height: '25%',
+          height: '50%',
         }}
       >
       {playState === PlayState.stateNothing && (

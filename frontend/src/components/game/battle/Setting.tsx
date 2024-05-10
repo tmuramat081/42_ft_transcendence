@@ -179,7 +179,7 @@ export const Setting = () => {
                 transform: 'translate(-50%, -50%)',
                 bgcolor: 'background.paper',
                 width: '25%',
-                height: '25%',
+                height: '50%',
               }}
               >
                 {playState === PlayState.stateStandingBy && (
@@ -204,7 +204,7 @@ export const Setting = () => {
                           alignItems='center'
                           >
                             <Grid item>
-                                <Typography variant='h5'>{round} Round!!</Typography>
+                                <Typography variant='h5'>Round {round}!!</Typography>
                             </Grid>
                             <Grid item>
                                 <Typography variant='h5'>待ち時間</Typography>

@@ -18,16 +18,17 @@ export const NavigationEventsHost = (() =>{
     const updatePlayers = usePlayersStore((store) => store.updatePlayers);
     const router = useRouter();
     const { loginUser, getCurrentUser } = useAuth();
-    const { inivitedFriendState, updateInvitedFriendState } = useInvitedFriendStrore();
+    const { invitedFriendState } = useInvitedFriendStrore();
+    const updateInvitedFriendState = useInvitedFriendStrore((store) => store.updateInvitedFriendState);
 
     useEffect(() => {
       const url = `${pathname}?${searchParams}`
     //   console.log(url)
       // You can now use the current URL
       // ...
-      if (inivitedFriendState.friendId !== null && loginUser) {
+      if (invitedFriendState.friendId !== null && loginUser) {
         const invitation: Invitation = {
-            guestId: inivitedFriendState.friendId,
+            guestId: invitedFriendState.friendId,
             hostId: loginUser.userId,
         };
 

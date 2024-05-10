@@ -71,7 +71,7 @@ export const Start = ({ setOpenMatchError }: Props) => {
             justifyContent="center"
             alignItems="center"
             direction="column"
-            sx={{ height: "100vh" }}  
+            sx={{ height: "50vh" }}  
           >
             <Grid item xs={12}>
               <TextField
