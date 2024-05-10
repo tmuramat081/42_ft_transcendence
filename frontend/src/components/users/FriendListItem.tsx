@@ -28,7 +28,7 @@ type FreindGameInfo = {
     gameSetting: GameSetting;
 };
 
-export const FriendListItem = memo(function FriendListItem({ friend, socket }: Props) {
+export const FriendListItem = memo(function FriendListItem({ friend }: Props) {
     const [ open, setOpen ] = useState<boolean>(true);
     const [ friendStatus, setFriendStatus ] = useState<UserStatus>(UserStatus.OFFLINE);
     const { loginUser, getCurrentUser } = useAuth();
