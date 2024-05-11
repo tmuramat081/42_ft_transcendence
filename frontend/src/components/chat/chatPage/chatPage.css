@@ -1,3 +1,7 @@
+body {
+  background-color: white;
+}
+
 .chat-container {
   max-width: 600px;
   margin: 0 auto;
@@ -8,7 +12,7 @@
 
 .onlineusers {
   margin-top: 10px;
-  margin-bottom: 20px;
+  margin-bottom: 10px;
 }
 
 .onlineusers-icons {
@@ -40,13 +44,13 @@
 }
 
 .btn-small {
-  font-size: 10px;
+  font-size: 12px;
   padding: 5px 10px;
   margin: 0 5px;
 }
 
 .participants {
-  margin-top: 0px;
+  margin-top: 10px;
   margin-bottom: 0px;
 }
 

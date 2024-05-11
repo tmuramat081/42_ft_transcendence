@@ -3,6 +3,7 @@ import { createContext, useContext, useEffect, useState } from 'react';
 import { Socket, io } from 'socket.io-client';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
+// console.log('API_URL:', API_URL);
 
 type SocketContextType = {
   socket: Socket | null;
@@ -22,6 +23,7 @@ type Props = {
 export const WebSocketProvider = ({ children }: Props) => {
   const [socket, setSocket] = useState<Socket | null>(null);
   useEffect(() => {
+    // const socket = io('http://localhost:3001');
     const socket = io(API_URL ?? '');
     setSocket(socket);
 

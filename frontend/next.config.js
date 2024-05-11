@@ -5,6 +5,6 @@ module.exports = nextConfig;
 
 module.exports = {
   images: {
-    domains: ['cdn.intra.42.fr', 'pics.prcm.jp', 'www.plazastyle.com'],
+    domains: ['cdn.intra.42.fr', 'localhost', 'pics.prcm.jp', 'www.plazastyle.com'],
   },
 };

@@ -1,4 +1,31 @@
-/* eslint-disable */
+import { User } from '../users/entities/user.entity';
+
+export interface UserInfo {
+  userId: number;
+  userName: string;
+  icon: string;
+}
+
+export interface UserData {
+  user: UserInfo;
+  email: string;
+  createdAt: string;
+  name42: string;
+}
+
+export interface ChatMessage {
+  user: string;
+  photo: string;
+  text: string;
+  timestamp: string;
+}
+
+export interface DirectMessage {
+  senderId: number;
+  recipientId: number;
+  text: string;
+  timestamp: string;
+}
 
 export function formatDate(date: Date): string {
   const options: Intl.DateTimeFormatOptions = {

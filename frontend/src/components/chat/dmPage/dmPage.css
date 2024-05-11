@@ -1,9 +1,46 @@
+body {
+  background-color: white;
+}
+
 .dm-container {
     max-width: 600px;
     margin: 0 auto;
     display: flex;
     flex-direction: column;
     height: 100vh;
+  }
+
+  .recipient-info {
+    display: flex;
+    align-items: center;
+    padding: 10px;
+    border-bottom: 1px solid #ddd;
+  }
+
+  .user {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .user-info {
+    font-size: 14px;
+    align-items: center;
+    margin-left: 30px;
+  }
+
+  .block-button {
+    margin-top: 20px;
+    font-size: 10px;
+    padding: 5px 5px; /*ボタンの内側の余白を調整 */
+    width: 80px;
+  }
+
+  .invite-button {
+    margin-top: 10px;
+    font-size: 10px;
+    padding: 5px 5px; /*ボタンの内側の余白を調整 */
+    width: 80px;
   }
 
   .dm-input {

@@ -1,4 +1,5 @@
-import { Entity, PrimaryGeneratedColumn, Column } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, ManyToOne } from 'typeorm';
+import { User } from '../../users/entities/user.entity';
 
 @Entity()
 export class DmLog {
@@ -6,10 +7,10 @@ export class DmLog {
   id: number;
 
   @Column({ nullable: false })
-  senderName: string;
+  senderId: number;
 
   @Column({ nullable: false })
-  recipientName: string;
+  recipientId: number;
 
   @Column()
   message: string;

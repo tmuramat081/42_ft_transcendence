@@ -1,7 +1,16 @@
+import { User } from '@/types/user';
+
 export type UserInfo = {
-  ID: number;
-  name: string;
+  userId: number;
+  userName: string;
   icon: string;
+};
+
+export type UserData = {
+  user: UserInfo;
+  email: string;
+  createdAt: string;
+  name42: string;
 };
 
 export type Room = {
@@ -18,8 +27,8 @@ export type ChatMessage = {
 };
 
 export type DirectMessage = {
-  sender: string;
-  recipient: string;
+  senderId: number;
+  recipientId: number;
   text: string;
   timestamp: string;
 };
