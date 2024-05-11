@@ -28,7 +28,7 @@ export const NavigationEvents = (() =>{
 
     useEffect(() => {
       const url = `${pathname}?${searchParams}`
-      console.log(url)
+    //   console.log(url)
       // You can now use the current URL
       // ...
         const cancelOngoingBattle = () => {
@@ -45,7 +45,6 @@ export const NavigationEvents = (() =>{
 });
 
 //ゲーム開始前の設定画面
-// TODO: usernameもしくはゲスト名を入力してもらう
 export const Setting = () => {
     const {socket} = useSocketStore();
     const updatePlayState = usePlayStateStore((store) => store.updatePlayState);
@@ -63,7 +62,7 @@ export const Setting = () => {
 
     const handleDifficultyChange = (event: React.ChangeEvent<HTMLInputElement>) => {
         const val: DiffucultyLevel = event.target.value as DiffucultyLevel;
-        console.log(val);
+        // console.log(val);
         setDifficulty(val);
     }
 
@@ -180,7 +179,7 @@ export const Setting = () => {
                 transform: 'translate(-50%, -50%)',
                 bgcolor: 'background.paper',
                 width: '25%',
-                height: '25%',
+                height: '50%',
               }}
               >
                 {playState === PlayState.stateStandingBy && (
@@ -205,7 +204,7 @@ export const Setting = () => {
                           alignItems='center'
                           >
                             <Grid item>
-                                <Typography variant='h5'>{round} Round!!</Typography>
+                                <Typography variant='h5'>Round {round}!!</Typography>
                             </Grid>
                             <Grid item>
                                 <Typography variant='h5'>待ち時間</Typography>

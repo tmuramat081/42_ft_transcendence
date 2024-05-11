@@ -8,7 +8,8 @@ export const DiffucultyLevel = {
 export type DiffucultyLevel = (typeof DiffucultyLevel)[keyof typeof DiffucultyLevel];
 
 export const UserStatus = {
-    ONLINE: 'OMLINE',
+    ONLINE: 'ONLINE',
+    PLAYING: 'PLAYING',
     OFFLINE: 'OFFLINE',
 } as const;
 

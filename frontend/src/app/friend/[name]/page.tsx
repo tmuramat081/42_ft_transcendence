@@ -2,6 +2,7 @@
 /* eslint-disable */
 
 //users/[name]/page.tsxに移動
+// 使用しない
 
 'use client';
 

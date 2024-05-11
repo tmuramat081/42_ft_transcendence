@@ -26,7 +26,7 @@ export const NavigationEvents = (() =>{
 
     useEffect(() => {
       const url = `${pathname}?${searchParams}`
-      console.log(url)
+    //   console.log(url)
       // You can now use the current URL
       // ...
         const cancelOngoingBattle = () => {
@@ -114,7 +114,8 @@ export const Play = ({ updateFinishedGameInfo }: Props) => {
     // 縦長の画面の場合は、画面の高さからヘッダーとフッターの高さを引いた値を0.6で割った値を取得
     const getCanvasWidth = () => {
         const { innerWidth, innerHeight } = window;
-        const heightOfHeader = 80;
+        // ヘッダーとフッターの高さ
+        const heightOfHeader = 100;
         const heightOfFooter = 25;
         const widthFromHeight = convertFloatToInt((innerHeight - (heightOfHeader * 2 + heightOfFooter)) / 0.6);
 
@@ -149,31 +150,31 @@ export const Play = ({ updateFinishedGameInfo }: Props) => {
     //const { openMatchError, setOpenMatchError } = useState(false);
     
     // Userのポイントを更新する
-    const updateUserPoint = (user: User, updatedPoint: number) => {
-        fetch('http://localhost:3001/users/update/point', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            credentials: 'include',
-            body: JSON.stringify({
-                userId: user.userId,
-                point: updatedPoint,
-            }),
-        }).then((res) => {
-            if (res.ok) {
-                return res.json();
-            } else {
-                throw new Error('Error');
-            }
-        }
-        ).then((data) => {
-            console.log(data);
-        }
-        ).catch((error) => {
-            console.error('Error:', error);
-        });
-    }
+    // const updateUserPoint = (user: User, updatedPoint: number) => {
+    //     fetch('http://localhost:3001/users/update/point', {
+    //         method: 'POST',
+    //         headers: {
+    //             'Content-Type': 'application/json',
+    //         },
+    //         credentials: 'include',
+    //         body: JSON.stringify({
+    //             userId: user.userId,
+    //             point: updatedPoint,
+    //         }),
+    //     }).then((res) => {
+    //         if (res.ok) {
+    //             return res.json();
+    //         } else {
+    //             throw new Error('Error');
+    //         }
+    //     }
+    //     ).then((data) => {
+    //         // console.log(data);
+    //     }
+    //     ).catch((error) => {
+    //         console.error('Error:', error);
+    //     });
+    // }
 
     const {loginUser} = useAuth();
     const router = useRouter();
@@ -248,7 +249,7 @@ export const Play = ({ updateFinishedGameInfo }: Props) => {
         let animationFrameId: number;
 
         const onKeyDown = (e: KeyboardEvent) => {
-            console.log(e.code);
+            // console.log(e.code);
             const key = e.code;
             if (!isArrowDownPressed && !isArrowUpPressed && (key === 'ArrowDown' || key === 'ArrowUp')) {
                 if (key === 'ArrowDown') {
@@ -260,7 +261,7 @@ export const Play = ({ updateFinishedGameInfo }: Props) => {
         };
 
         const onKeyUp = (e: KeyboardEvent) => {
-            console.log(e.code);
+            // console.log(e.code);
             const key = e.code;
             // if (key === 'ArrowDown') {
             //     setIsArrowDownPressed(false);
@@ -334,7 +335,7 @@ export const Play = ({ updateFinishedGameInfo }: Props) => {
 
     useEffect(() => {
         socket.on('updateScores', (newScores: [number, number]) => {
-            console.log(newScores);
+            // console.log(newScores);
             updateGameSetting({
                 ...gameSetting,
                 player1Score: newScores[0],
@@ -363,12 +364,12 @@ export const Play = ({ updateFinishedGameInfo }: Props) => {
         });
 
         socket.on('error', () => {
-            console.log('error');
+            // console.log('error');
             updatePlayState(PlayState.stateNothing);
         })
 
         socket.on('exception', () => {
-            console.log('exception');
+            // console.log('exception');
             socket.emit('cancelOngoingBattle');
 
             updatePlayState(PlayState.stateNothing);
@@ -445,9 +446,8 @@ export const Play = ({ updateFinishedGameInfo }: Props) => {
         <div>
             {/* <GameHeader left={playerNames[0]} center='VS' right={playerNames[1]}/>
             <GameHeader left={ariasNames[0]} center='VS' right={ariasNames[1]}/> */}
-            <GameHeader left={players[0].name} center='VS' right={players[1].name}/>
+            {/* <GameHeader left={players[0].name} center='VS' right={players[1].name}/> */}
             <GameHeader left={players[0].aliasName} center='VS' right={players[1].aliasName}/>
-
             <GameHeader left={gameSetting.player1Score.toString()} center='Score' right={gameSetting.player2Score.toString()}/>
             <canvas
                 ref={canvasRef}
