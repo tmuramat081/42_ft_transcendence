@@ -149,7 +149,7 @@ export class UsersController {
       //this.usersService.loginUserIds.push(user.userId);
       this.usersService.addLoginUserId(user.userId);
 
-      console.log("loginUserIds: ", this.usersService.loginUserIds)
+    //   console.log("loginUserIds: ", this.usersService.loginUserIds)
 
       return JSON.stringify({"userId": undefined, "status": "SUCCESS"});
     }
@@ -220,7 +220,7 @@ export class UsersController {
     @UseGuards(JwtAuthGuard)
     @Get('/icons/:iconName')
     async getIcon(@Param('iconName') icon: string, @Res() res: Response) {
-        console.log("getIcon")
+        // console.log("getIcon")
         // ファイルの読み込み
 
         // content-typeを設定する

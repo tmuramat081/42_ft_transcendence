@@ -2,9 +2,10 @@
 "use client";
 import { useState, Suspense } from 'react';
 import { Start } from '@/components/game/index/Start';
-import { Wait, NavigationEvents } from '@/components/game/index/Wait';
+import { Wait, NavigationEventsWait } from '@/components/game/index/Wait';
 import { Display } from '@/components/game/index/Display';
 import { Layout } from '@/components/game/common/Layout';
+import { NavigationEventsHost } from '@/components/game/index/Host';
 
 export default function Page() {
     //const { openMatchError, setOpenMatchError } = useState(false);
@@ -14,7 +15,8 @@ export default function Page() {
             <Wait openMatchError={openMatchError} /> */}
             <Display />
             <Suspense fallback={null}>
-                <NavigationEvents />
+                <NavigationEventsWait />
+                <NavigationEventsHost />
             </Suspense>
         </Layout>
     )

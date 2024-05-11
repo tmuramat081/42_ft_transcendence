@@ -1,6 +1,7 @@
 import { useState, memo, useEffect, Dispatch, SetStateAction, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import { Socket } from 'socket.io-client';
+import Link from 'next/link';
 import { ListItem, ListItemText, ListItemAvatar } from '@mui/material';
 import { Friend } from '@/types/game/friend';
 import { GameSetting, GameState, UserStatus } from '@/types/game/game';
@@ -12,12 +13,13 @@ import { PlayState, usePlayStateStore } from '@/store/game/playState';
 import { useGameSettingStore } from '@/store/game/gameSetting';
 import { PlayerInfo } from '@/types/game/game';
 import Avatar from '@mui/material/Avatar';
+import { BadgedAvatar, AvatarFontSize } from '../game/common/BadgedAvatar';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? '';
 
 type Props = {
     friend: Friend;
-    socket: Socket;   
+    //socket: Socket;   
 };
 
 type FreindGameInfo = {
@@ -27,7 +29,7 @@ type FreindGameInfo = {
     gameSetting: GameSetting;
 };
 
-export const FriendListItem = memo(function FriendListItem({ friend, socket }: Props) {
+export const FriendListItem = memo(function FriendListItem({ friend }: Props) {
     const [ open, setOpen ] = useState<boolean>(true);
     const [ friendStatus, setFriendStatus ] = useState<UserStatus>(UserStatus.OFFLINE);
     const { loginUser, getCurrentUser } = useAuth();
@@ -70,7 +72,7 @@ export const FriendListItem = memo(function FriendListItem({ friend, socket }: P
     }
 
     const handleOpen = () => {
-        setOpen(true);
+        //setOpen(true);
     }
 
     const handleClose = () => {
@@ -79,16 +81,24 @@ export const FriendListItem = memo(function FriendListItem({ friend, socket }: P
 
     return (
         <>
-            <ListItem divider button onClick={handleOpen}>
+            <Link href={`/users/${friend.userName}`} passHref>
+            <ListItem divider button>
                 <ListItemAvatar>
-                <Avatar
+                {/* <Avatar
                     alt={friend.userName}
                     src={`${API_URL}/api/uploads/${loginUser.icon}`}
                     sx={{ width: 56, height: 56, cursor: 'pointer' }}
+                /> */}
+                <BadgedAvatar
+                    status={friendStatus}
+                    src={`${API_URL}/api/uploads/${loginUser.icon}`}
+                    displayName={friend.userName}
+                    avatarFontSize={AvatarFontSize.SMALL}
                 />
                 </ListItemAvatar>
-                <ListItemText primary={friend.userName} secondary={friendStatus} />
+                <ListItemText primary={friend.userName} />
             </ListItem>
+            </Link>
         </>
     )
 });
