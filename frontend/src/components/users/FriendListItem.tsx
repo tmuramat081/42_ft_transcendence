@@ -91,7 +91,7 @@ export const FriendListItem = memo(function FriendListItem({ friend }: Props) {
                 /> */}
                 <BadgedAvatar
                     status={friendStatus}
-                    src={`${API_URL}/api/uploads/${loginUser.icon}`}
+                    src={`${API_URL}/api/uploads/${friend.icon}`}
                     displayName={friend.userName}
                     avatarFontSize={AvatarFontSize.SMALL}
                 />

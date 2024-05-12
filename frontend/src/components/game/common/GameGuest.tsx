@@ -52,6 +52,7 @@ export const GameGuest = ({ hosts, setHosts }: Props) => {
   const updatePlayers = usePlayersStore((state) => state.updatePlayers);
 
   // console.log(hosts)
+  // console.log(hosts.length)
 
   const handleClick = useCallback(() => {
     setOpenDialog(true);
@@ -82,9 +83,20 @@ export const GameGuest = ({ hosts, setHosts }: Props) => {
   const handleDenyClick = useCallback((friend: Friend) => {
     // 招待リストから削除
     setHosts(hosts.filter((host) => host.userId !== friend.userId));
+    if (loginUser) {
+      const match: Invitation = {
+        guestId: loginUser.userId,
+        hostId: friend.userId,
+      };
+      socket.emit('denyInvitation', match);
+    }
   }, [loginUser, socket, hosts, setHosts]);
 
   // socketの処理
+  // ここをチャットに移植する
+  // 招待チャットで=inviteGameの処理に入る
+  // hostは待機になる
+  // ゲームに参加を押したら、acceptInvitationに入って、ここに入る
   useEffect(() => {
     if (!loginUser) return ;
 

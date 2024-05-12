@@ -1,13 +1,13 @@
 /* eslint-disable */
 import { Grid, Paper } from '@mui/material';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, Suspense  } from 'react';
 import { usePlayStateStore, PlayState } from '@/store/game/playState';
 import { Start } from '@/components/game/index/Start';
 import { Wait } from '@/components/game/index/Wait';
 import { Watch } from '@/components/game/index/Watch';
 import { useAuth } from '@/providers/useAuth';
 import { useInvitedFriendStrore } from '@/store/game/invitedFriendState';
-import { Host } from './Host';
+import { Host, NavigationEventsHost } from './Host';
 
 export const Display = () => {
     const { loginUser, getCurrentUser } = useAuth();
@@ -23,9 +23,9 @@ export const Display = () => {
     useEffect(() => {
         updatePlayState(PlayState.stateNothing);
     }, [updatePlayState]);
-
+    //console.log(invitedFriendState)
     const showHost = invitedFriendState.friendId !== null || playState === PlayState.stateSelecting || playState === PlayState.stateStandingBy;
-
+    //console.log('showHost:', showHost)
     if (loginUser === null) {
         return (
             <Grid container justifyContent="center" alignItems="center" style={{ height: "100vh" }}>
@@ -38,6 +38,9 @@ export const Display = () => {
 
     return (
         <>
+          {/* <Suspense fallback={null}>
+            <NavigationEventsHost />
+          </Suspense> */}
           {showHost && <Host />}
           <Grid
             container

@@ -18,6 +18,9 @@ export default function Page() {
                 <NavigationEventsWait />
                 <NavigationEventsHost />
             </Suspense>
+            {/* <Suspense fallback={null}>
+                <NavigationEventsHost />
+            </Suspense> */}
         </Layout>
     )
 }

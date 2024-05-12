@@ -428,7 +428,7 @@ export default function Profile({ params }: { params: { name: string } }) {
                   //   <ListItemText primary={friend.userName} secondary={`${friend.userName}`} />
                   //   </Link>
                   // </ListItem>
-                  <FriendListItem key={index} friend={{userId: friend.userId, userName: friend.userName}} />
+                  <FriendListItem key={index} friend={{userId: friend.userId, userName: friend.userName, icon: friend.icon}} />
                 ))}
               </List>
             </Grid>
