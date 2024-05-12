@@ -129,6 +129,7 @@ export type Friend = {
     // name: string;
     userId: number;
     userName: string;
+    icon: string;
 };
 
 export type Invitation = {

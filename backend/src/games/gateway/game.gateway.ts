@@ -635,7 +635,7 @@ export class GameGateway {
       const hosts = await this.usersService.findAllByIds(Array.from(hostIds));
 
       return hosts.map((host) => {
-        return { userName: host.userName, userId: host.userId } as Friend;
+        return { userName: host.userName, userId: host.userId, icon: host.icon } as Friend;
       })
     }
   }
@@ -708,6 +708,7 @@ export class GameGateway {
   denyInvitation(@ConnectedSocket() socket: Socket, @MessageBody() data: DenyInvitationDto) {
     // 招待リストから削除
     const inivitation = this.invitationList.find(data.hostId)
+    console.log(inivitation)
     if (inivitation !== undefined) {
       this.invitationList.delete(data.hostId);
     } else {
@@ -722,6 +723,8 @@ export class GameGateway {
     //     this.server.to(socketId).emit('denyInvitation', data.guestId);
     //   });
     // }
+
+    console.log(inivitation.hostSocketId)
 
     this.server.to(inivitation.hostSocketId).emit('denyInvitation');
   }
