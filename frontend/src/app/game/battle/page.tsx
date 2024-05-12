@@ -47,7 +47,7 @@ export default function Battle() {
             {(playState === PlayState.stateFinished || playState === PlayState.stateCanceled || playState === PlayState.stateNothing) && (
                 <Result finishedGameInfo={finishedGameInfo} setOpenMatchError={setOpenMatchError} />
             )}
-
+            {playState === PlayState.stateWaiting && (
             <Grid
                 container
                 justifyContent="center"
@@ -57,11 +57,12 @@ export default function Battle() {
                 sx={{ mt: 1, height: 800}}
             >
             <Paper elevation={3} sx={{height: '100%'}}>
-            {playState === PlayState.stateWaiting && (
+
                 <Wait openMatchError={openMatchError} />
-            )}
             </Paper>
             </Grid>
+            )}
+
 
             <Suspense fallback={null}>
                 <NavigationEvents />

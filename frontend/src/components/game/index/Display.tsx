@@ -6,13 +6,14 @@ import { Start } from '@/components/game/index/Start';
 import { Wait } from '@/components/game/index/Wait';
 import { Watch } from '@/components/game/index/Watch';
 import { useAuth } from '@/providers/useAuth';
-//import { useInvitedFriendStrore } from '@/store/game/invitedFriendState';
+import { useInvitedFriendStrore } from '@/store/game/invitedFriendState';
+import { Host } from './Host';
 
 export const Display = () => {
     const { loginUser, getCurrentUser } = useAuth();
     const { playState } = usePlayStateStore();
     const updatePlayState = usePlayStateStore((store) => store.updatePlayState);
-    //const { invitedFriendState } = useInvitedFriendStrore();
+    const { invitedFriendState } = useInvitedFriendStrore();
     const [ openMatchError, setOpenMatchError ] = useState(false);
 
     useEffect(() => {
@@ -22,6 +23,8 @@ export const Display = () => {
     useEffect(() => {
         updatePlayState(PlayState.stateNothing);
     }, [updatePlayState]);
+
+    const showHost = invitedFriendState.friendId !== null || playState === PlayState.stateSelecting || playState === PlayState.stateStandingBy;
 
     if (loginUser === null) {
         return (
@@ -35,6 +38,7 @@ export const Display = () => {
 
     return (
         <>
+          {showHost && <Host />}
           <Grid
             container
             justifyContent="center"

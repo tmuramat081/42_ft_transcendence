@@ -48,7 +48,7 @@ export const Watch = () => {
             if (!loginUser) {
                 return ;
             }
-            console.log(gameState)
+            // console.log(gameState)
             // settingの場合は待ち画面に遷移
             if (gameState === GameState.SETTING) {
                 updatePlayState(PlayState.stateStandingBy);
@@ -85,7 +85,7 @@ export const Watch = () => {
             <List sx={{width: '95%', margin: 'auto', overflow: 'auto', height: '310px'}}>
                 {/* sliceで範囲を指定 */}
                 {rooms?.slice((page - 1) * take, page * take).map((room) => (
-                    console.log(room),
+                    // console.log(room),
                     <ListItem key={room.roomName} sx={{ border: '1px solid' }} secondaryAction={ 
                         <Tooltip title='Watch !'>
                             <IconButton onClick={() => watchGame(room)}>

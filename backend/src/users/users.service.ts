@@ -58,7 +58,7 @@ export class UsersService {
   }
 
   isLoginUserId(userId: number): boolean {
-    console.log('loginUserIds: ', this.loginUserIds);
+    // console.log('loginUserIds: ', this.loginUserIds);
     //return this.loginUserIds.includes(userId);
     if (this.loginUserIds.find((id) => id === userId)) {
       return true;
@@ -285,7 +285,7 @@ export class UsersService {
   }
 
   async generateJwt(user: User): Promise<string> {
-    console.log('generateJwt');
+    // console.log('generateJwt');
     const payload: JwtPayload = {
       userId: user.userId,
       userName: user.userName,
@@ -479,11 +479,11 @@ export class UsersService {
     // ファイルが存在する場合
     if (fs.existsSync(filePath)) {
       const file = fs.createReadStream(filePath);
-      console.log('file: ', file);
+      // console.log('file: ', file);
       return new StreamableFile(file);
     } else {
       const file = fs.createReadStream(path.join(process.cwd(), process.env.AVATAR_IMAGE_DIR, 'default.png'));
-      console.log('file: ', file);
+      // console.log('file: ', file);
       return new StreamableFile(file);
     }
   }

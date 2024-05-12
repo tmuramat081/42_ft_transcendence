@@ -32,6 +32,8 @@ import { Invitation } from '@/types/game/game';
 
 import { CloseButton } from '@mantine/core';
 import CloseIcon from '@mui/icons-material/Close';
+import { PlayerInfo } from '@/types/game/game';
+import { usePlayersStore } from '@/store/game/player';
 
 type Props = {
   hosts: Friend[];
@@ -47,6 +49,9 @@ export const GameGuest = ({ hosts, setHosts }: Props) => {
   const updatePlayerNames = usePlayerNamesStore((state) => state.updatePlayerNames);
   const router = useRouter();
   const { loginUser } = useAuth();
+  const updatePlayers = usePlayersStore((state) => state.updatePlayers);
+
+  // console.log(hosts)
 
   const handleClick = useCallback(() => {
     setOpenDialog(true);
@@ -63,6 +68,7 @@ export const GameGuest = ({ hosts, setHosts }: Props) => {
         guestId: loginUser.userId,
         hostId: friend.userId,
       };
+      // console.log(match)
       socket.emit('acceptInvitation', match, (res: boolean) => {
         if (!res) {
           // error表示
@@ -82,17 +88,19 @@ export const GameGuest = ({ hosts, setHosts }: Props) => {
   useEffect(() => {
     if (!loginUser) return ;
 
-    socket.on('friend:select', (playerNames: [string, string]) => {
-      updatePlayerNames(playerNames);
+    socket.on('friend:select', (players: [PlayerInfo, PlayerInfo]) => {
+      //updatePlayerNames(playerNames);
+      updatePlayers(players);
       updatePlayState(PlayState.stateSelecting);
       router.push('/game/battle');
     });
 
-    socket.on('friend:standBy', (playerNames: [string, string]) => {
-      updatePlayerNames(playerNames);
+    socket.on('friend:standBy', (players: [PlayerInfo, PlayerInfo]) => {
+      //updatePlayerNames(playerNames);
+      updatePlayers(players);
       updatePlayState(PlayState.stateStandingBy);
       // 開始中のゲームがある場合は、キャンセル
-      socket.emit('playCamncel', playerNames);
+      socket.emit('playCancel');
       router.push('/game/battle');
     });
 
