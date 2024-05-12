@@ -214,11 +214,11 @@ export class DMGateway {
         relations: ['blocked'],
       });
 
-      this.logger.log(
-        `Blocked users for ${payload.receiver.userName}: ${loadedReceiver.blocked
-          .map((user) => user.userName)
-          .join(', ')}`,
-      );
+      // this.logger.log(
+      //   `Blocked users for ${payload.receiver.userName}: ${loadedReceiver.blocked
+      //     .map((user) => user.userName)
+      //     .join(', ')}`,
+      // );
 
       if (!loadedReceiver) {
         console.error('Receiver not found');
@@ -235,9 +235,9 @@ export class DMGateway {
         return blockedUser.userId === payload.sender.userId;
       });
 
-      this.logger.log(
-        `${payload.receiver.userName} blocked ${payload.sender.userName}: ${isBlocked}`,
-      );
+      // this.logger.log(
+      //   `${payload.receiver.userName} blocked ${payload.sender.userName}: ${isBlocked}`,
+      // );
 
       // senderにDMログを送信
       this.server
