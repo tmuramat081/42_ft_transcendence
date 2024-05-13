@@ -1103,7 +1103,7 @@ export class GameGateway {
     } else if (this.usersService.isLoginUserId(userId)) {
       // console.log('online')
       return UserStatus.ONLINE;
-    // } else {
+    } else {
     //   console.log('offline')
       //return UserStatus.ONLINE;
       return UserStatus.OFFLINE;

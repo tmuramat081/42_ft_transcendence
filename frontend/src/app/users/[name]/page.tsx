@@ -376,6 +376,7 @@ export default function Profile({ params }: { params: { name: string } }) {
                   {user?.point}
                 </Typography>
               </Grid> */}
+
               { loginUser !== null && user !== null && loginUser.userId !== user.userId && loginUser.blocked.filter((friend) => friend.userId === user.userId).length <= 0 &&
                 (
                     <Button variant='contained' sx={{width: '100%'}} color='primary' onClick={() => inviteGame({userId: user.userId, userName: user.userName})}>ゲームに誘う</Button>
