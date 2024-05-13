@@ -22,7 +22,7 @@ export default function ChatPage() {
   const [roomList, setRoomList] = useState<string[]>([]);
   const [selectedRoom, setSelectedRoom] = useState<string | null>(null);
   const [roomchatLogs, setRoomChatLogs] = useState<{ [roomId: string]: ChatMessage[] }>({});
-  const [isDeleteButtonVisible, setDeleteButtonVisible] = useState(false);
+  // const [isDeleteButtonVisible, setDeleteButtonVisible] = useState(false);
   const [participants, setParticipants] = useState<UserInfo[]>([]);
   const [onlineUsers, setOnlineUsers] = useState<UserInfo[]>([]);
   // const [onlineUsers, setOnlineUsers] = useState<User[]>([]);
@@ -52,7 +52,6 @@ export default function ChatPage() {
         })
           .then((response) => response.json())
           .then((user) => {
-            // ユーザーの情報が取得された後の処理
             // サーバーから取得したユーザー情報を使って onlineUsers を更新する
             setOnlineUsers((prevOnlineUsers) => {
               // ログアウトしたユーザーを onlineUsers から削除する
@@ -100,20 +99,6 @@ export default function ChatPage() {
       setLoginUser(LoginUser);
     });
 
-    socket.on('roomParticipants', (roomParticipants: UserInfo[]) => {
-      setParticipants(roomParticipants);
-    });
-
-    socket.on('roomInvitation', (invitationData) => {
-      setNotification(
-        `${invitationData.sender.userName} invited you to join ${invitationData.room}`,
-      );
-    });
-
-    socket.on('newDM', (LoginUser: User) => {
-      setNotification(`${LoginUser.userName} sent you a new message`);
-    });
-
     socket.on('roomError', (error) => {
       console.error(error);
     });
@@ -122,34 +107,26 @@ export default function ChatPage() {
       socket.off('roomList');
       socket.off('onlineUsers');
       socket.off('loginUser');
-      socket.off('roomParticipants');
-      socket.off('roomInvitation');
-      socket.off('gameInvitation');
-      socket.off('newDM');
       socket.off('roomError');
     };
   }, [socket, participants, LoginUser]);
 
-  useEffect(() => {
-    if (!socket) return;
-    socket.on('chatLogs', (chatMessages: ChatMessage[]) => {
-      setRoomChatLogs((prevRoomChatLogs) => ({ ...prevRoomChatLogs, [roomID]: chatMessages }));
-    });
-
-    return () => {
-      socket.off('chatLogs');
-    };
-  }, [roomID, roomchatLogs, socket]);
-
   // useEffect(() => {
-  //   console.log('Notification:', notification);
-  // }, [notification]);
+  //   if (!socket) return;
+  //   socket.on('chatLogs', (chatMessages: ChatMessage[]) => {
+  //     setRoomChatLogs((prevRoomChatLogs) => ({ ...prevRoomChatLogs, [roomID]: chatMessages }));
+  //   });
 
-  const onClickSubmit = useCallback(() => {
-    if (!socket) return;
-    socket.emit('talk', { selectedRoom, loginUser, message });
-    setMessage('');
-  }, [selectedRoom, LoginUser, message, socket]);
+  //   return () => {
+  //     socket.off('chatLogs');
+  //   };
+  // }, [roomID, roomchatLogs, socket]);
+
+  // const onClickSubmit = useCallback(() => {
+  //   if (!socket) return;
+  //   socket.emit('talk', { selectedRoom, loginUser, message });
+  //   setMessage('');
+  // }, [selectedRoom, LoginUser, message, socket]);
 
   const onClickCreateRoom = useCallback(() => {
     if (!socket) return;
@@ -158,56 +135,56 @@ export default function ChatPage() {
     setSelectedRoom('');
   }, [LoginUser, newRoomName, socket]);
 
-  const handleRoomChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
-    if (!socket) return;
-    const newRoomID = event.target.value;
-    //newRoomIDがnullだった場合の処理
-    if (newRoomID === '') {
-      console.log('newRoomID is null');
-      setRoomID('');
-      setMessage('');
-      setDeleteButtonVisible(false);
-      socket.emit('leaveRoom', { LoginUser, room: selectedRoom });
-      return;
-    }
-    setRoomID(newRoomID);
-    setSelectedRoom(roomList[Number(newRoomID)]);
-    setMessage(''); // ルームが変更されたら新しいメッセージもリセット
-    setDeleteButtonVisible(true);
-    socket.emit('joinRoom', { loginUser, room: roomList[Number(newRoomID)] });
-  };
+  // const handleRoomChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
+  //   if (!socket) return;
+  //   const newRoomID = event.target.value;
+  //   //newRoomIDがnullだった場合の処理
+  //   if (newRoomID === '') {
+  //     console.log('newRoomID is null');
+  //     setRoomID('');
+  //     setMessage('');
+  //     setDeleteButtonVisible(false);
+  //     socket.emit('leaveRoom', { LoginUser, room: selectedRoom });
+  //     return;
+  //   }
+  //   setRoomID(newRoomID);
+  //   setSelectedRoom(roomList[Number(newRoomID)]);
+  //   setMessage(''); // ルームが変更されたら新しいメッセージもリセット
+  //   setDeleteButtonVisible(true);
+  //   socket.emit('joinRoom', { loginUser, room: roomList[Number(newRoomID)] });
+  // };
 
-  const onClickLeaveRoom = useCallback(() => {
-    if (!socket) return;
-    if (selectedRoom) {
-      socket.emit('leaveRoom', { LoginUser, room: selectedRoom });
-      setSelectedRoom(null);
-      setDeleteButtonVisible(false);
-      setMessage('');
-      setRoomID('');
-      // チャットログをクリアする
-      const updatedLogs = { ...roomchatLogs };
-      delete updatedLogs[selectedRoom];
-      setRoomChatLogs(updatedLogs);
-    }
-  }, [selectedRoom, roomchatLogs, LoginUser, socket]);
+  // const onClickLeaveRoom = useCallback(() => {
+  //   if (!socket) return;
+  //   if (selectedRoom) {
+  //     socket.emit('leaveRoom', { LoginUser, room: selectedRoom });
+  //     setSelectedRoom(null);
+  //     setDeleteButtonVisible(false);
+  //     setMessage('');
+  //     setRoomID('');
+  //     // チャットログをクリアする
+  //     const updatedLogs = { ...roomchatLogs };
+  //     delete updatedLogs[selectedRoom];
+  //     setRoomChatLogs(updatedLogs);
+  //   }
+  // }, [selectedRoom, roomchatLogs, LoginUser, socket]);
 
-  const onClickDeleteRoom = useCallback(() => {
-    if (!socket) return;
-    if (selectedRoom) {
-      socket.emit('deleteRoom', { LoginUser, room: selectedRoom });
-      setSelectedRoom(null);
-      setDeleteButtonVisible(false);
-      setParticipants([]);
-      // チャットログをクリアする
-      const updatedLogs = { ...roomchatLogs };
-      delete updatedLogs[selectedRoom];
-      setRoomChatLogs(updatedLogs);
-      // ルームリストから削除する
-      const newRoomList = roomList.filter((room) => room !== selectedRoom);
-      setRoomList(newRoomList);
-    }
-  }, [selectedRoom, roomList, LoginUser, roomchatLogs, socket]);
+  // const onClickDeleteRoom = useCallback(() => {
+  //   if (!socket) return;
+  //   if (selectedRoom) {
+  //     socket.emit('deleteRoom', { LoginUser, room: selectedRoom });
+  //     setSelectedRoom(null);
+  //     setDeleteButtonVisible(false);
+  //     setParticipants([]);
+  //     // チャットログをクリアする
+  //     const updatedLogs = { ...roomchatLogs };
+  //     delete updatedLogs[selectedRoom];
+  //     setRoomChatLogs(updatedLogs);
+  //     // ルームリストから削除する
+  //     const newRoomList = roomList.filter((room) => room !== selectedRoom);
+  //     setRoomList(newRoomList);
+  //   }
+  // }, [selectedRoom, roomList, LoginUser, roomchatLogs, socket]);
 
   const handleLinkClick = (recipient: UserInfo) => {
     if (!socket) return;
@@ -217,8 +194,10 @@ export default function ChatPage() {
     router.push(as);
   };
 
-  const handleRoomClick = (roomId) => {
-    router.push(`/chat/${roomId}`); // チャットページへの遷移
+  const handleRoomClick = (roomId: string) => {
+    // if (!socket) return;
+    // socket.emit('joinRoom', { LoginUser, room: roomId });
+    router.push(`/room/${roomId}`); // roomPageへの遷移
   };
 
   // 通知を閉じる関数
@@ -247,7 +226,7 @@ export default function ChatPage() {
       )}
       {/* ログイン中の参加者リスト */}
       <div className="onlineusers">
-        <h4>Logined friends</h4>
+        <h2>Logined friends</h2>
         <div className="onlineusers-icons">
           {onlineUsers.map((onlineUser, index) => (
             <div
@@ -275,7 +254,7 @@ export default function ChatPage() {
                   {onlineUser.icon}
                 </Avatar>
               </button>
-              {/* ユーザー名とDMボタン */}
+              {/* ユーザー名*/}
               <div className="onlineuser-info">
                 <div className="onlineuser-name">{onlineUser.userName}</div>
               </div>
@@ -292,25 +271,25 @@ export default function ChatPage() {
           onChange={(e) => setNewRoomName(e.target.value)}
         />
         <button onClick={onClickCreateRoom}>Create Room</button>
+        {/* ルーム一覧 */}
         <div>
           <h2>Room List</h2>
           <ul style={{ listStyleType: 'none', padding: 0 }}>
             {roomList.map((roomId) => (
               <li
                 key={`room_${roomId}`}
-                style={{ cursor: 'pointer', paddingLeft: '0.5em' }}
+                style={{ cursor: 'pointer', paddingLeft: '0.5em', marginBottom: '0.5em' }}
                 onClick={() => handleRoomClick(roomId)}
               >
-                <a>{`#${roomId}`}</a>
+                <div>{`#${roomId}`}</div>
               </li>
             ))}
           </ul>
         </div>
       </div>
-      <div className="chat-room-selector-wrapper">
-        {/* チャットグループの選択UI */}
-        <div className="chat-room-selector">
-          {/* <select
+      {/* チャットグループの選択UI */}
+      {/* <div className="chat-room-selector"> */}
+      {/* <select
             onChange={(event) => {
               handleRoomChange(event);
             }}
@@ -326,30 +305,29 @@ export default function ChatPage() {
               </option>
             ))}
           </select> */}
-          {/* Leave Room ボタン */}
-          {isDeleteButtonVisible && (
-            <button
-              className="btn-small"
-              onClick={onClickLeaveRoom}
-            >
-              Leave Room
-            </button>
-          )}
-          {/* Delete Room ボタン */}
-          {isDeleteButtonVisible && (
-            <button
-              className="btn-small"
-              onClick={onClickDeleteRoom}
-            >
-              Delete Room
-            </button>
-          )}
-        </div>
-      </div>
+      {/* Leave Room ボタン */}
+      {/* {isDeleteButtonVisible && (
+          <button
+            className="btn-small"
+            onClick={onClickLeaveRoom}
+          >
+            Leave Room
+          </button>
+        )} */}
+      {/* Delete Room ボタン */}
+      {/* {isDeleteButtonVisible && (
+          <button
+            className="btn-small"
+            onClick={onClickDeleteRoom}
+          >
+            Delete Room
+          </button>
+        )} */}
+      {/* </div> */}
+
       {/* ROOM参加者リスト */}
-      {isDeleteButtonVisible && (
+      {/* {isDeleteButtonVisible && (
         <div className="participants">
-          {/* <h4>Room friends</h4> */}
           <div className="participant-icons">
             {participants.map((participant, index) => (
               <div
@@ -369,9 +347,9 @@ export default function ChatPage() {
             ))}
           </div>
         </div>
-      )}
+      )} */}
       {/* チャット入力欄 */}
-      {isDeleteButtonVisible && (
+      {/* {isDeleteButtonVisible && (
         <div className="chat-input">
           <input
             id="message"
@@ -382,9 +360,9 @@ export default function ChatPage() {
           />
           <button onClick={onClickSubmit}>Send</button>
         </div>
-      )}
+      )} */}
       {/* チャットログ */}
-      {isDeleteButtonVisible && (
+      {/* {isDeleteButtonVisible && (
         <div
           className="chat-messages"
           style={{ overflowY: 'auto', maxHeight: '300px' }}
@@ -411,7 +389,7 @@ export default function ChatPage() {
             </div>
           ))}
         </div>
-      )}
+      )} */}
     </div>
   );
 }

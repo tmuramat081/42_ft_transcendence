@@ -9,7 +9,7 @@ export default function Page() {
 
   return (
     <article>
-      <h2>DMページ</h2>
+      <h2>DM Page</h2>
       <section>
         <DMPage params={recipient} />
       </section>

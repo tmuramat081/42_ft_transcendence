@@ -1,0 +1,91 @@
+body {
+  background-color: white;
+}
+
+.room-container {
+  max-width: 600px;
+  margin: 0 auto;
+  margin-left: 1em;
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+}
+
+.room-wrapper {
+  display: flex;
+  flex-direction: row;
+  align-items: center; 
+}
+
+.room-title {
+  font-size: 20px;
+  margin: 10px;
+}
+
+.btn-small {
+  margin-left: 20px;
+  font-size: 12px;
+  padding: 5px 10px;
+  margin: 0 5px;
+}
+
+.participants {
+  margin-top: 10px;
+  margin-bottom: 0px;
+}
+
+.participant-icons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px;
+}
+  
+.participant {
+  text-align: center;
+  align-items: center;
+}
+
+.participant-name {
+  font-size: 12px;
+}
+
+.chat-input {
+  align-self: flex-end;
+}
+
+.chat-messages {
+  display: flex;
+  flex-direction: column;
+}
+
+.message-bubble {
+  display: flex;
+  align-items: flex-start;
+  padding: 10px;
+  margin-bottom: 5px;
+  border-radius: 8px;
+  max-width: 70%;
+}
+
+.message-bubble.self {
+  align-self: flex-end;
+  background-color: #e2f8ff; /* 自分のメッセージの背景色 */
+}
+
+.message-bubble.other {
+  align-self: flex-start;
+  background-color: #f0f0f0; /* 相手のメッセージの背景色 */
+}
+
+.icon {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  margin-right: 10px;
+}
+
+.timestamp {
+  font-size: 10px;
+  color: #888;
+}
+  
