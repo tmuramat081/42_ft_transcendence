@@ -204,7 +204,7 @@ export const Setting = () => {
                           alignItems='center'
                           >
                             <Grid item>
-                                <Typography variant='h5'>Round {round}!!</Typography>
+                                <Typography variant='h4'>Round {round}!!</Typography>
                             </Grid>
                             <Grid item>
                                 <Typography variant='h5'>待ち時間</Typography>
@@ -215,7 +215,7 @@ export const Setting = () => {
                         </Grid>
                         <FormControl>
                             <FormLabel id="difficulty-radio-buttons-group-label">
-                                Difficulty
+                                難易度
                             </FormLabel>
                             <RadioGroup
                                 row
@@ -242,7 +242,7 @@ export const Setting = () => {
                                 />
                             </RadioGroup>
                             <FormLabel id="matchpoint-radio-buttons-group-label">
-                                Match Point
+                                マッチポイント
                             </FormLabel>
                             <RadioGroup
                                 row
@@ -264,7 +264,7 @@ export const Setting = () => {
                             alignItems="center"
                             >
                             <Button variant="contained" onClick={handleSubmit}>
-                                Start battle!
+                                ゲーム開始
                             </Button>
                         </Grid>
                     </Grid>

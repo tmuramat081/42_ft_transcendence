@@ -455,7 +455,7 @@ export const Play = ({ updateFinishedGameInfo }: Props) => {
                 height={gameParameter.canvasHeight}
             />
             <Typography variant="h6" align="center">
-                {`Difficulty: ${gameSetting.difficulty}/ MatchPoint: ${gameSetting.matchPoint}`}
+                {`難易度: ${gameSetting.difficulty}/ マッチポイント: ${gameSetting.matchPoint}`}
             </Typography>
         </div>
         </>

@@ -167,7 +167,7 @@ export const Result = ({ finishedGameInfo, setOpenMatchError }: Props) => {
       )}
       <Grid item>
         <Link href="/game/index">
-          <Button variant="contained">Back to Home</Button>
+          <Button variant="contained">ホームへ戻る</Button>
         </Link>
       </Grid>
 
@@ -191,7 +191,7 @@ export const Result = ({ finishedGameInfo, setOpenMatchError }: Props) => {
             }}
           >
             <Box fontWeight="fontWeightBold">
-              Next Game
+              次のゲームへ
             </Box>
           </Button>
       </Grid>

@@ -145,7 +145,7 @@ export const Host = () => {
                         <Typography variant='h6' id='modal-modal-title' align='center' gutterBottom>
                             {invitationDenied && 'Invitation was denied'}
                             {playState !== PlayState.stateNothing && 'waiting...'}
-                            {playState === PlayState.stateNothing && !invitationDenied && 'waiting for opponent...'}
+                            {playState === PlayState.stateNothing && !invitationDenied && '待機中・・・'}
                         </Typography>
                     </Grid>
                 </>

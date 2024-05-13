@@ -20,6 +20,8 @@ import { Invitation } from '@/types/game/game';
 import { useInvitedFriendStrore } from '@/store/game/invitedFriendState';
 import { BadgedAvatar, AvatarFontSize } from '@/components/game/common/BadgedAvatar';
 import { FriendListItem } from '@/components/users/FriendListItem';
+// import FriendList from '@/components/dashboard/friendList';
+import { FriendList } from '@/components/users/FriendList';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? '';
 
@@ -420,7 +422,7 @@ export default function Profile({ params }: { params: { name: string } }) {
               <Typography gutterBottom variant='h5' component='div'>
                 Friends
               </Typography>
-              <List>
+              {/* <List>
                 {user && user.friends && user.friends.map((friend, index) => (
                   // <ListItem key={index}>
                   //   <Link href={`/users/${friend.userName}`}>
@@ -430,7 +432,8 @@ export default function Profile({ params }: { params: { name: string } }) {
                   // </ListItem>
                   <FriendListItem key={index} friend={{userId: friend.userId, userName: friend.userName, icon: friend.icon}} />
                 ))}
-              </List>
+              </List> */}
+              <FriendList friends={user.friends} user={user} />
             </Grid>
           </Grid>
         {/* Match results */}
