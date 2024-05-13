@@ -16,16 +16,9 @@ export default function ChatPage() {
   const router = useRouter();
   const { socket } = useWebSocket();
   const { getCurrentUser, loginUser } = useAuth();
-  const [message, setMessage] = useState('');
-  const [roomID, setRoomID] = useState('');
   const [newRoomName, setNewRoomName] = useState('');
   const [roomList, setRoomList] = useState<string[]>([]);
-  const [selectedRoom, setSelectedRoom] = useState<string | null>(null);
-  const [roomchatLogs, setRoomChatLogs] = useState<{ [roomId: string]: ChatMessage[] }>({});
-  // const [isDeleteButtonVisible, setDeleteButtonVisible] = useState(false);
-  const [participants, setParticipants] = useState<UserInfo[]>([]);
   const [onlineUsers, setOnlineUsers] = useState<UserInfo[]>([]);
-  // const [onlineUsers, setOnlineUsers] = useState<User[]>([]);
   const [notification, setNotification] = useState<string | null>(null);
   const [LoginUser, setLoginUser] = useState<User | null>(null);
 
@@ -109,24 +102,7 @@ export default function ChatPage() {
       socket.off('loginUser');
       socket.off('roomError');
     };
-  }, [socket, participants, LoginUser]);
-
-  // useEffect(() => {
-  //   if (!socket) return;
-  //   socket.on('chatLogs', (chatMessages: ChatMessage[]) => {
-  //     setRoomChatLogs((prevRoomChatLogs) => ({ ...prevRoomChatLogs, [roomID]: chatMessages }));
-  //   });
-
-  //   return () => {
-  //     socket.off('chatLogs');
-  //   };
-  // }, [roomID, roomchatLogs, socket]);
-
-  // const onClickSubmit = useCallback(() => {
-  //   if (!socket) return;
-  //   socket.emit('talk', { selectedRoom, loginUser, message });
-  //   setMessage('');
-  // }, [selectedRoom, LoginUser, message, socket]);
+  }, [socket, LoginUser]);
 
   const onClickCreateRoom = useCallback(() => {
     if (!socket) return;
@@ -134,57 +110,6 @@ export default function ChatPage() {
     setNewRoomName('');
     setSelectedRoom('');
   }, [LoginUser, newRoomName, socket]);
-
-  // const handleRoomChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
-  //   if (!socket) return;
-  //   const newRoomID = event.target.value;
-  //   //newRoomIDがnullだった場合の処理
-  //   if (newRoomID === '') {
-  //     console.log('newRoomID is null');
-  //     setRoomID('');
-  //     setMessage('');
-  //     setDeleteButtonVisible(false);
-  //     socket.emit('leaveRoom', { LoginUser, room: selectedRoom });
-  //     return;
-  //   }
-  //   setRoomID(newRoomID);
-  //   setSelectedRoom(roomList[Number(newRoomID)]);
-  //   setMessage(''); // ルームが変更されたら新しいメッセージもリセット
-  //   setDeleteButtonVisible(true);
-  //   socket.emit('joinRoom', { loginUser, room: roomList[Number(newRoomID)] });
-  // };
-
-  // const onClickLeaveRoom = useCallback(() => {
-  //   if (!socket) return;
-  //   if (selectedRoom) {
-  //     socket.emit('leaveRoom', { LoginUser, room: selectedRoom });
-  //     setSelectedRoom(null);
-  //     setDeleteButtonVisible(false);
-  //     setMessage('');
-  //     setRoomID('');
-  //     // チャットログをクリアする
-  //     const updatedLogs = { ...roomchatLogs };
-  //     delete updatedLogs[selectedRoom];
-  //     setRoomChatLogs(updatedLogs);
-  //   }
-  // }, [selectedRoom, roomchatLogs, LoginUser, socket]);
-
-  // const onClickDeleteRoom = useCallback(() => {
-  //   if (!socket) return;
-  //   if (selectedRoom) {
-  //     socket.emit('deleteRoom', { LoginUser, room: selectedRoom });
-  //     setSelectedRoom(null);
-  //     setDeleteButtonVisible(false);
-  //     setParticipants([]);
-  //     // チャットログをクリアする
-  //     const updatedLogs = { ...roomchatLogs };
-  //     delete updatedLogs[selectedRoom];
-  //     setRoomChatLogs(updatedLogs);
-  //     // ルームリストから削除する
-  //     const newRoomList = roomList.filter((room) => room !== selectedRoom);
-  //     setRoomList(newRoomList);
-  //   }
-  // }, [selectedRoom, roomList, LoginUser, roomchatLogs, socket]);
 
   const handleLinkClick = (recipient: UserInfo) => {
     if (!socket) return;
@@ -195,8 +120,6 @@ export default function ChatPage() {
   };
 
   const handleRoomClick = (roomId: string) => {
-    // if (!socket) return;
-    // socket.emit('joinRoom', { LoginUser, room: roomId });
     router.push(`/room/${roomId}`); // roomPageへの遷移
   };
 
@@ -287,109 +210,6 @@ export default function ChatPage() {
           </ul>
         </div>
       </div>
-      {/* チャットグループの選択UI */}
-      {/* <div className="chat-room-selector"> */}
-      {/* <select
-            onChange={(event) => {
-              handleRoomChange(event);
-            }}
-            value={roomID}
-          >
-            <option value="">Select Room</option>
-            {Object.entries(roomList).map(([roomId, roomName]) => (
-              <option
-                key={`room_${roomId}`}
-                value={roomId}
-              >
-                {roomName}
-              </option>
-            ))}
-          </select> */}
-      {/* Leave Room ボタン */}
-      {/* {isDeleteButtonVisible && (
-          <button
-            className="btn-small"
-            onClick={onClickLeaveRoom}
-          >
-            Leave Room
-          </button>
-        )} */}
-      {/* Delete Room ボタン */}
-      {/* {isDeleteButtonVisible && (
-          <button
-            className="btn-small"
-            onClick={onClickDeleteRoom}
-          >
-            Delete Room
-          </button>
-        )} */}
-      {/* </div> */}
-
-      {/* ROOM参加者リスト */}
-      {/* {isDeleteButtonVisible && (
-        <div className="participants">
-          <div className="participant-icons">
-            {participants.map((participant, index) => (
-              <div
-                key={index}
-                className="participant"
-              >
-                <Avatar
-                  src={`${API_URL}/api/uploads/${participant.icon}`}
-                  alt={participant.userName}
-                  className="participant-icon"
-                  sx={{ width: 50, height: 50 }}
-                >
-                  {participant.icon}
-                </Avatar>
-                <div className="participant-name">{participant.userName}</div>
-              </div>
-            ))}
-          </div>
-        </div>
-      )} */}
-      {/* チャット入力欄 */}
-      {/* {isDeleteButtonVisible && (
-        <div className="chat-input">
-          <input
-            id="message"
-            type="text"
-            placeholder="Enter message"
-            value={message}
-            onChange={(event) => setMessage(event.target.value)}
-          />
-          <button onClick={onClickSubmit}>Send</button>
-        </div>
-      )} */}
-      {/* チャットログ */}
-      {/* {isDeleteButtonVisible && (
-        <div
-          className="chat-messages"
-          style={{ overflowY: 'auto', maxHeight: '300px' }}
-        >
-          {roomchatLogs[roomID]?.map((message, index) => (
-            <div
-              key={index}
-              className={`message-bubble ${
-                message.user === LoginUser?.userName ? 'self' : 'other'
-              }`}
-            >
-              <Avatar
-                src={`${API_URL}/api/uploads/${message.photo}`}
-                alt="User Icon"
-                className="icon"
-                sx={{ width: 35, height: 35 }}
-              >
-                {message.photo}
-              </Avatar>
-              <div>
-                <div>{message.text}</div>
-                <div className="timestamp">{message.timestamp}</div>
-              </div>
-            </div>
-          ))}
-        </div>
-      )} */}
     </div>
   );
 }
