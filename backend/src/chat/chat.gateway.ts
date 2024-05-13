@@ -6,7 +6,7 @@ import {
   MessageBody,
   ConnectedSocket,
 } from '@nestjs/websockets';
-// import { UsersService } from '../users/users.service';
+import { UsersService } from '../users/users.service';
 import { Logger } from '@nestjs/common';
 import { Server, Socket } from 'socket.io';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -45,12 +45,13 @@ export class ChatGateway {
     @InjectRepository(GameRoom)
     private gameRoomRepository: Repository<GameRoom>,
 
-    // private readonly usersService: UsersService,
+    private readonly usersService: UsersService,
   ) {}
 
   @SubscribeMessage(`getLoginUser`)
   async handleGetCurrentUser(@MessageBody() user: User, @ConnectedSocket() socket: Socket) {
     try {
+      this.logger.log(`login user:`, this.usersService.loginUserIds);
       const userId = user.userId;
       const loginUser = await this.userRepository.findOne({ where: { userId: Number(userId) } });
       if (!loginUser) {

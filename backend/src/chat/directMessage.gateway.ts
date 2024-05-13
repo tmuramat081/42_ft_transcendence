@@ -51,7 +51,7 @@ export class DMGateway {
         },
       });
       if (currentUser) {
-        this.logger.log(`currentUser found: ${JSON.stringify(currentUser)}`);
+        // this.logger.log(`currentUser found: ${JSON.stringify(currentUser)}`);
         this.server.to(socket.id).emit('currentUser', currentUser);
       } else {
         this.logger.error('No current user found');

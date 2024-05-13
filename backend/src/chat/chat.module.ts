@@ -9,10 +9,13 @@ import { User } from '../users/entities/user.entity';
 import { DmLog } from './entities/dmLog.entity';
 import { OnlineUsers } from './entities/onlineUsers.entity';
 import { GameRoom } from '../games/entities/gameRoom.entity';
-// import { UsersService } from '../users/users.service';
+import { UsersModule } from '@/users/users.module';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Room, ChatLog, User, DmLog, OnlineUsers, GameRoom])],
+  imports: [
+    TypeOrmModule.forFeature([Room, ChatLog, User, DmLog, OnlineUsers, GameRoom]),
+    UsersModule,
+  ],
   providers: [ChatGateway, DMGateway, RoomGateway],
 })
 export class ChatModule {}
