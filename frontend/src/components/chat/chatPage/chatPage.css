@@ -5,6 +5,7 @@ body {
 .chat-container {
   max-width: 600px;
   margin: 0 auto;
+  margin-left: 1em;
   display: flex;
   flex-direction: column;
   height: 100vh;

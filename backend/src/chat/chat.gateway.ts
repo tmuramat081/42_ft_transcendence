@@ -126,9 +126,6 @@ export class ChatGateway {
       if (!LoginUser || !LoginUser.userId || !LoginUser.userName) {
         throw new Error('Invalid sender data.');
       }
-      // ダミーユーザーを登録
-      // await this.createDummyUsers();
-
       // オンラインユーザーを全て削除
       // await this.onlineUsersRepository.delete({});
 
@@ -201,51 +198,6 @@ export class ChatGateway {
     }
   }
 
-  // ダミーユーザーを登録
-  // async createDummyUsers() {
-  //   const dummyUsers: UserInfo[] = [
-  //     {
-  //       userId: 11,
-  //       userName: 'Bob',
-  //       icon: 'https://www.plazastyle.com/images/charapla-spongebob/img_character01.png',
-  //     },
-  //     {
-  //       userId: 12,
-  //       userName: 'Patrick',
-  //       icon: 'https://www.plazastyle.com/images/charapla-spongebob/img_character02.png',
-  //     },
-  //     {
-  //       userId: 13,
-  //       userName: 'plankton',
-  //       icon: 'https://www.plazastyle.com/images/charapla-spongebob/img_character05.png',
-  //     },
-  //     {
-  //       userId: 14,
-  //       userName: 'sandy',
-  //       icon: 'https://www.plazastyle.com/images/charapla-spongebob/img_character06.png',
-  //     },
-  //     {
-  //       userId: 15,
-  //       userName: 'Mr.krabs',
-  //       icon: 'https://www.plazastyle.com/images/charapla-spongebob/img_character04.png',
-  //     },
-  //     {
-  //       userId: 16,
-  //       userName: 'gary',
-  //       icon: 'https://www.plazastyle.com/images/charapla-spongebob/img_character07.png',
-  //     },
-  //   ];
-  //   await Promise.all(
-  //     dummyUsers.map(async (user) => {
-  //       const onlineUser = new OnlineUsers();
-  //       onlineUser.userId = user.userId;
-  //       onlineUser.name = user.userName;
-  //       onlineUser.icon = user.icon;
-  //       await this.onlineUsersRepository.save(onlineUser);
-  //     }),
-  //   );
-  // }
-
   @SubscribeMessage('talk')
   async handleMessage(
     @MessageBody() data: { selectedRoom: string; loginUser: User; message: string },
@@ -313,6 +265,9 @@ export class ChatGateway {
         const room = new Room();
         room.roomName = create.roomName;
         room.roomParticipants = [];
+        room.roomType = 'public';
+        room.roomOwner = create.LoginUser.userId;
+        room.createdAt = new Date();
         await this.roomRepository.save(room);
         socket.join(create.roomName);
         const rooms = await this.roomRepository.find();

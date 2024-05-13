@@ -66,18 +66,6 @@ export default function ChatPage() {
             console.error('Error getting user data:', error);
           });
       };
-      // getCurrentUser()
-      //   .then((user) => {
-      //     if (!user) {
-      //       // 取得できなかった場合はloginUsersから削除
-      //       socket.emit('logoutUser', LoginUser);
-      //       setLoginUser(null);
-      //     }
-      //     socket.emit('getOnlineUsers', user);
-      //   })
-      //   .catch((error) => {
-      //     console.error('Error getting user:', error);
-      //   });
     }, 60000); // 60秒ごとに呼び出す
 
     return () => {
@@ -229,6 +217,10 @@ export default function ChatPage() {
     router.push(as);
   };
 
+  const handleRoomClick = (roomId) => {
+    router.push(`/chat/${roomId}`); // チャットページへの遷移
+  };
+
   // 通知を閉じる関数
   const closeNotification = () => {
     setNotification(null);
@@ -270,6 +262,7 @@ export default function ChatPage() {
                   border: 'none', // 枠線を削除
                   background: 'none', // 背景を削除
                   padding: 0, // パディングを削除
+                  cursor: 'pointer',
                 }}
               >
                 {/* アイコン */}
@@ -299,11 +292,25 @@ export default function ChatPage() {
           onChange={(e) => setNewRoomName(e.target.value)}
         />
         <button onClick={onClickCreateRoom}>Create Room</button>
+        <div>
+          <h2>Room List</h2>
+          <ul style={{ listStyleType: 'none', padding: 0 }}>
+            {roomList.map((roomId) => (
+              <li
+                key={`room_${roomId}`}
+                style={{ cursor: 'pointer', paddingLeft: '0.5em' }}
+                onClick={() => handleRoomClick(roomId)}
+              >
+                <a>{`#${roomId}`}</a>
+              </li>
+            ))}
+          </ul>
+        </div>
       </div>
       <div className="chat-room-selector-wrapper">
         {/* チャットグループの選択UI */}
         <div className="chat-room-selector">
-          <select
+          {/* <select
             onChange={(event) => {
               handleRoomChange(event);
             }}
@@ -318,7 +325,7 @@ export default function ChatPage() {
                 {roomName}
               </option>
             ))}
-          </select>
+          </select> */}
           {/* Leave Room ボタン */}
           {isDeleteButtonVisible && (
             <button
