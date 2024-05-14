@@ -22,7 +22,6 @@ export default function ChatPage() {
   const [onlineUsers, setOnlineUsers] = useState<UserInfo[]>([]);
   const [notification, setNotification] = useState<string | null>(null);
   const [LoginUser, setLoginUser] = useState<User | null>(null);
-  // const [showRoomSettings, setShowRoomSettings] = useState(false);
 
   useEffect(() => {
     if (!socket) return;
@@ -76,7 +75,6 @@ export default function ChatPage() {
     if (!socket) return;
     socket.emit('createRoom', { LoginUser, roomName: newRoomName });
     setNewRoomName('');
-    // setShowRoomSettings(true);
   }, [LoginUser, newRoomName, socket]);
 
   const handleLinkClick = (recipient: UserInfo) => {
@@ -90,12 +88,6 @@ export default function ChatPage() {
   const handleRoomClick = (roomId: string) => {
     router.push(`/room/${roomId}`); // roomPageへの遷移
   };
-
-  // const handleRoomSettingsSubmit = (roomSettings: Room) => {
-  //   if (!socket) return;
-  //   socket.emit('updateRoom', { LoginUser, roomSettings });
-  //   setShowRoomSettings(false);
-  // };
 
   // 通知を閉じる関数
   const closeNotification = () => {
@@ -168,14 +160,6 @@ export default function ChatPage() {
           onChange={(e) => setNewRoomName(e.target.value)}
         />
         <button onClick={onClickCreateRoom}>Create Room</button>
-        {/* ルーム設定ウインドウの表示 */}
-        {/* {showRoomSettings && (
-          <RoomSettingsModal
-            onClose={() => setShowRoomSettings(false)}
-            onSubmit={handleRoomSettingsSubmit}
-          />
-        )} */}
-
         {/* ルーム一覧 */}
         <div>
           <h3>Room List</h3>

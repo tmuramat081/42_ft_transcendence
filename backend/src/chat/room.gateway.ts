@@ -97,17 +97,17 @@ export class RoomGateway {
         );
         if (!existingUser) {
           // userRepositoryからユーザー情報を取得して追加
-          const user = await this.userRepository.findOne({
+          const userData = await this.userRepository.findOne({
             where: { userId: join.user.userId },
           });
-          if (!user) {
+          if (!userData) {
             this.logger.error(`User ${join.user.userName} not found in the database.`);
             return;
           }
           room.roomParticipants.push({
-            id: user.userId,
-            name: user.userName,
-            icon: user.icon,
+            id: userData.userId,
+            name: userData.userName,
+            icon: userData.icon,
           });
         }
         await this.roomRepository.save(room);
@@ -116,6 +116,16 @@ export class RoomGateway {
       }
       // ソケットにルームに参加させる
       socket.join(join.room);
+      // Ownerかどうか確認
+      if (room.roomOwner === join.user.userId) {
+        this.logger.log(`Owner: ${join.user.userName}`);
+        this.server.to(join.room).emit('owner', join.user);
+      }
+      // Adminかどうか確認
+      if (room.roomAdmin === join.user.userId) {
+        this.logger.log(`Admin: ${join.user.userName}`);
+        this.server.to(join.room).emit('admin', join.user);
+      }
       // 参加者リストを取得してクライアントに送信
       const updatedRoom = await this.roomRepository.findOne({ where: { roomName: join.room } });
       if (updatedRoom) {

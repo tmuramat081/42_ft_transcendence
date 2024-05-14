@@ -1,7 +1,6 @@
 /*eslint-disable*/
 'use client';
 import React, { useState, useEffect, useCallback } from 'react';
-import { useRouter } from 'next/router';
 import Avatar from '@mui/material/Avatar';
 import { useWebSocket } from '@/providers/webSocketProvider';
 import { useAuth } from '@/providers/useAuth';
@@ -13,7 +12,6 @@ import RoomSettingsModal from './RoomSettingsModal';
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? '';
 
 export default function RoomPage({ params }: { params: string }) {
-  const router = useRouter();
   const { socket } = useWebSocket();
   const [message, setMessage] = useState('');
   const [roomID, setRoomID] = useState('');
@@ -21,9 +19,10 @@ export default function RoomPage({ params }: { params: string }) {
   const [selectedRoom, setSelectedRoom] = useState<string | null>(null);
   const [roomchatLogs, setRoomChatLogs] = useState<{ [roomId: string]: ChatMessage[] }>({});
   const [currentUser, setCurrentUser] = useState<User | null>(null);
-  const [roomList, setRoomList] = useState<string[]>([]);
   const { getCurrentUser, loginUser } = useAuth();
   const [showRoomSettings, setShowRoomSettings] = useState(false);
+  const [isOwner, setIsOwner] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
 
   useEffect(() => {
     if (!socket || !params) return;
@@ -53,9 +52,21 @@ export default function RoomPage({ params }: { params: string }) {
       setParticipants(roomParticipants);
     });
 
+    socket.on('owner', (owner: boolean) => {
+      setIsOwner(owner);
+      //   console.log('owner', owner);
+    });
+
+    socket.on('admin', (admin: boolean) => {
+      setIsAdmin(admin);
+      //   console.log('admin', admin);
+    });
+
     return () => {
       socket.off('user');
       socket.off('roomParticipants');
+      socket.off('owner');
+      socket.off('admin');
     };
   }, [socket, participants]);
 
@@ -79,32 +90,36 @@ export default function RoomPage({ params }: { params: string }) {
   const onClickLeaveRoom = useCallback(() => {
     if (!socket) return;
     if (selectedRoom) {
-      socket.emit('leaveRoom', { currentUser, room: selectedRoom });
+      socket.emit('leaveRoom', { user: currentUser, room: selectedRoom });
       setSelectedRoom(null);
       setMessage('');
-      setRoomID('');
       // チャットログをクリアする
       const updatedLogs = { ...roomchatLogs };
       delete updatedLogs[selectedRoom];
       setRoomChatLogs(updatedLogs);
+      // chatページに戻る
+      window.location.href = '/chat';
     }
   }, [selectedRoom, roomchatLogs, currentUser, socket]);
 
   const onClickDeleteRoom = useCallback(() => {
     if (!socket) return;
     if (selectedRoom) {
-      socket.emit('deleteRoom', { currentUser, room: selectedRoom });
+      socket.emit('deleteRoom', { user: currentUser, room: selectedRoom });
       setSelectedRoom(null);
       setParticipants([]);
       // チャットログをクリアする
       const updatedLogs = { ...roomchatLogs };
       delete updatedLogs[selectedRoom];
       setRoomChatLogs(updatedLogs);
-      // ルームリストから削除する
-      const newRoomList = roomList.filter((room) => room !== selectedRoom);
-      setRoomList(newRoomList);
+      // chatページに戻る
+      window.location.href = '/chat';
     }
-  }, [selectedRoom, roomList, currentUser, roomchatLogs, socket]);
+  }, [selectedRoom, currentUser, roomchatLogs, socket]);
+
+  const onClickSettingRoom = useCallback(() => {
+    setShowRoomSettings(true);
+  }, []);
 
   const handleRoomSettingsSubmit = (roomSettings: Room) => {
     if (!socket) return;
@@ -125,12 +140,23 @@ export default function RoomPage({ params }: { params: string }) {
           Leave Room
         </button>
         {/* Delete Room ボタン */}
-        <button
-          className="btn-small"
-          onClick={onClickDeleteRoom}
-        >
-          Delete Room
-        </button>
+        {isOwner && (
+          <button
+            className="btn-small"
+            onClick={onClickDeleteRoom}
+          >
+            Delete Room
+          </button>
+        )}
+        {/* Room Settingsボタン */}
+        {(isOwner || isAdmin) && (
+          <button
+            className="btn-small"
+            onClick={onClickSettingRoom}
+          >
+            Room Settings
+          </button>
+        )}
       </div>
       {/* ルーム設定ウインドウの表示 */}
       {showRoomSettings && (
