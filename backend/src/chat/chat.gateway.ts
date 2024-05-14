@@ -90,35 +90,6 @@ export class ChatGateway {
     }
   }
 
-  @SubscribeMessage(`logoutUser`)
-  async handleLogoutUser(@MessageBody() user: User, @ConnectedSocket() socket: Socket) {
-    try {
-      const userId = user.userId;
-      const logoutUser = await this.onlineUsersRepository.findOne({ where: { userId: userId } });
-      if (!logoutUser) {
-        this.logger.error(`User not found: ${userId}`);
-        return;
-      }
-      this.logger.log(`Logout user: ${JSON.stringify(logoutUser)}`);
-      await this.onlineUsersRepository.remove(logoutUser);
-      // onlineUsersを取得してクライアントに送信
-      const onlineUsers = await this.onlineUsersRepository.find();
-      // onlineUsersをUserInfoに変換
-      const onlineUsersInfo: UserInfo[] = onlineUsers.map((user) => {
-        return {
-          userId: user.userId,
-          userName: user.name,
-          icon: user.icon,
-        };
-      });
-      // 全クライアントに送信
-      this.server.emit('onlineUsers', onlineUsersInfo);
-    } catch (error) {
-      this.logger.error(`Error logging out user: ${(error as Error).message}`);
-      throw error;
-    }
-  }
-
   @SubscribeMessage('getOnlineUsers')
   async handleGetOnlineUsers(@MessageBody() LoginUser: User, @ConnectedSocket() socket: Socket) {
     try {
@@ -141,7 +112,7 @@ export class ChatGateway {
           icon: user.icon,
         };
       });
-      // this.logger.log(`Online users info: ${JSON.stringify(onlineUsersInfo)}`);
+      this.logger.log(`Online users info: ${JSON.stringify(onlineUsersInfo)}`);
 
       // sender以外のonlineUsersInfoをクライアントに送信
       socket.emit(

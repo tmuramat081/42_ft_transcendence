@@ -28,56 +28,26 @@ export default function ChatPage() {
     getCurrentUser()
       .then((user) => {
         socket.emit('getLoginUser', user);
+        socket.emit('getRoomList', user);
+        socket.emit('getOnlineUsers', user);
       })
       .catch((error) => {
         console.error('Error getting user:', error);
       });
-  }, [socket]);
-
-  useEffect(() => {
-    if (!socket) return;
-
-    const intervalId = setInterval(() => {
-      const updateUserStatus = () => {
-        fetch(`${API_URL}/users/me`, {
-          method: 'GET',
-          credentials: 'include',
-        })
-          .then((response) => response.json())
-          .then((user) => {
-            // サーバーから取得したユーザー情報を使って onlineUsers を更新する
-            setOnlineUsers((prevOnlineUsers) => {
-              // ログアウトしたユーザーを onlineUsers から削除する
-              const updatedOnlineUsers = prevOnlineUsers.filter(
-                (onlineUser) => onlineUser.userId !== user.userId,
-              );
-              return updatedOnlineUsers;
-            });
-          })
-          .catch((error) => {
-            console.error('Error getting user data:', error);
-          });
-      };
-    }, 60000); // 60秒ごとに呼び出す
 
     return () => {
-      clearInterval(intervalId); // アンマウント時にクリア
-    };
-  }, [socket]);
-
-  useEffect(() => {
-    if (!socket) return;
-    socket.emit('getRoomList', LoginUser);
-    socket.emit('getOnlineUsers', LoginUser);
-
-    return () => {
+      socket.off('getLoginUser');
       socket.off('getRoomList');
       socket.off('getOnlineUsers');
     };
-  }, [LoginUser]);
+  }, [socket]);
 
   useEffect(() => {
     if (!socket) return;
+
+    socket.on('loginUser', (LoginUser: User) => {
+      setLoginUser(LoginUser);
+    });
 
     socket.on('roomList', (rooms: Room[]) => {
       const roomNames = rooms.map((room) => room.roomName);
@@ -88,18 +58,14 @@ export default function ChatPage() {
       setOnlineUsers(users);
     });
 
-    socket.on('loginUser', (LoginUser: User) => {
-      setLoginUser(LoginUser);
-    });
-
     socket.on('roomError', (error) => {
       console.error(error);
     });
 
     return () => {
+      socket.off('loginUser');
       socket.off('roomList');
       socket.off('onlineUsers');
-      socket.off('loginUser');
       socket.off('roomError');
     };
   }, [socket, LoginUser]);
