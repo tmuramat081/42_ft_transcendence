@@ -108,7 +108,6 @@ export default function ChatPage() {
     if (!socket) return;
     socket.emit('createRoom', { LoginUser, roomName: newRoomName });
     setNewRoomName('');
-    setSelectedRoom('');
   }, [LoginUser, newRoomName, socket]);
 
   const handleLinkClick = (recipient: UserInfo) => {

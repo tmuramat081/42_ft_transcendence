@@ -51,27 +51,25 @@ export class ChatGateway {
   @SubscribeMessage(`getLoginUser`)
   async handleGetCurrentUser(@MessageBody() user: User, @ConnectedSocket() socket: Socket) {
     try {
-      this.logger.log(`login user:`, this.usersService.loginUserIds);
       const userId = user.userId;
       const loginUser = await this.userRepository.findOne({ where: { userId: Number(userId) } });
       if (!loginUser) {
         this.logger.error(`User not found: ${userId}`);
         return;
       }
-      // this.logger.log(`Login user: ${JSON.stringify(loginUser)}`);
       socket.emit('loginUser', loginUser);
 
       // onlineUsersにユーザーを追加
-      const existingUser = await this.onlineUsersRepository.findOne({
-        where: { userId: loginUser.userId, name: loginUser.userName },
-      });
-      if (!existingUser) {
-        const onlineUser = new OnlineUsers();
-        onlineUser.userId = loginUser.userId;
-        onlineUser.name = loginUser.userName;
-        onlineUser.icon = loginUser.icon;
-        await this.onlineUsersRepository.save(onlineUser);
-      }
+      // const existingUser = await this.onlineUsersRepository.findOne({
+      //   where: { userId: loginUser.userId, name: loginUser.userName },
+      // });
+      // if (!existingUser) {
+      //   const onlineUser = new OnlineUsers();
+      //   onlineUser.userId = loginUser.userId;
+      //   onlineUser.name = loginUser.userName;
+      //   onlineUser.icon = loginUser.icon;
+      //   await this.onlineUsersRepository.save(onlineUser);
+      // }
     } catch (error) {
       this.logger.error(`Error getting user: ${(error as Error).message}`);
       throw error;
@@ -127,35 +125,23 @@ export class ChatGateway {
       if (!LoginUser || !LoginUser.userId || !LoginUser.userName) {
         throw new Error('Invalid sender data.');
       }
-      // オンラインユーザーを全て削除
-      // await this.onlineUsersRepository.delete({});
-
-      // 空のオンラインユーザーを削除
-      // await this.deleteEmptyOnlineUsers();
-
-      // 重複したオンラインユーザーを削除
-      // await this.deleteDuplicateOnlineUsers();
-
       // usersService.loginUserIdsからloninUserのリストを取得
-      // const onlineUserIds: number[] = await this.usersService.loginUserIds;
+      const onlineUserIds: number[] = await this.usersService.loginUserIds;
       // this.logger.log(`Online user ids: ${onlineUserIds}`);
 
       // onlineUserIdsからユーザー情報を取得
-      // const onlineUsers: User[] = await this.userRepository.findByIds(onlineUserIds);
-
-      // データベースからオンラインユーザーリストを取得
-      const onlineUsers = await this.onlineUsersRepository.find();
-
+      const onlineUsers: User[] = await this.userRepository.findByIds(onlineUserIds);
       // this.logger.log(`Online users: ${JSON.stringify(onlineUsers)}`);
 
-      // onlineUsersをUserInfoに変換
+      // onlineUsers[]をUserInfo[]に変換
       const onlineUsersInfo: UserInfo[] = onlineUsers.map((user) => {
         return {
           userId: user.userId,
-          userName: user.name,
+          userName: user.userName,
           icon: user.icon,
         };
       });
+      // this.logger.log(`Online users info: ${JSON.stringify(onlineUsersInfo)}`);
 
       // sender以外のonlineUsersInfoをクライアントに送信
       socket.emit(
@@ -167,37 +153,6 @@ export class ChatGateway {
       throw error;
     }
   }
-
-  // async deleteEmptyOnlineUsers() {
-  //   // 空のオンラインユーザーを取得
-  //   const emptyOnlineUsers = await this.onlineUsersRepository.find({
-  //     where: {
-  //       userId: -1,
-  //       name: '',
-  //       icon: '',
-  //     },
-  //   });
-
-  //   // 取得した空のオンラインユーザーを削除
-  //   await Promise.all(emptyOnlineUsers.map((user) => this.onlineUsersRepository.remove(user)));
-  // }
-
-  // async deleteDuplicateOnlineUsers() {
-  //   // オンラインユーザーを全て取得
-  //   const allOnlineUsers = await this.onlineUsersRepository.find();
-
-  //   // 名前とidが一致するユーザーを検索して削除
-  //   for (let i = 0; i < allOnlineUsers.length; i++) {
-  //     const currentUser = allOnlineUsers[i];
-  //     for (let j = i + 1; j < allOnlineUsers.length; j++) {
-  //       const nextUser = allOnlineUsers[j];
-  //       if (currentUser.name === nextUser.name && currentUser.userId === nextUser.userId) {
-  //         await this.onlineUsersRepository.remove(nextUser);
-  //         console.log('Duplicate online user deleted:', nextUser);
-  //       }
-  //     }
-  //   }
-  // }
 
   @SubscribeMessage('createRoom')
   async handleCreateRoom(
