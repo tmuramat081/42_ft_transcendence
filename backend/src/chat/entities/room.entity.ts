@@ -24,7 +24,7 @@ export class Room {
   roomOwner: number;
 
   // ルームの管理者
-  @Column('json', { nullable: true })
+  @Column('json', { nullable: false })
   roomAdmin: number;
 
   // キック・禁止ユーザー

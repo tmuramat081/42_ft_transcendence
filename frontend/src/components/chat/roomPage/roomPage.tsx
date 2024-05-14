@@ -8,11 +8,12 @@ import { useAuth } from '@/providers/useAuth';
 import { UserInfo, ChatMessage, Room } from '@/types/chat/chat';
 import { User } from '@/types/user';
 import './roomPage.css';
+import RoomSettingsModal from './RoomSettingsModal';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? '';
 
 export default function RoomPage({ params }: { params: string }) {
-  //   const router = useRouter();
+  const router = useRouter();
   const { socket } = useWebSocket();
   const [message, setMessage] = useState('');
   const [roomID, setRoomID] = useState('');
@@ -22,6 +23,7 @@ export default function RoomPage({ params }: { params: string }) {
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [roomList, setRoomList] = useState<string[]>([]);
   const { getCurrentUser, loginUser } = useAuth();
+  const [showRoomSettings, setShowRoomSettings] = useState(false);
 
   useEffect(() => {
     if (!socket || !params) return;
@@ -104,6 +106,12 @@ export default function RoomPage({ params }: { params: string }) {
     }
   }, [selectedRoom, roomList, currentUser, roomchatLogs, socket]);
 
+  const handleRoomSettingsSubmit = (roomSettings: Room) => {
+    if (!socket) return;
+    socket.emit('updateRoom', { currentUser, roomSettings });
+    setShowRoomSettings(false);
+  };
+
   return (
     <div className="room-container">
       {/* wrapper */}
@@ -124,6 +132,13 @@ export default function RoomPage({ params }: { params: string }) {
           Delete Room
         </button>
       </div>
+      {/* ルーム設定ウインドウの表示 */}
+      {showRoomSettings && (
+        <RoomSettingsModal
+          onClose={() => setShowRoomSettings(false)}
+          onSubmit={handleRoomSettingsSubmit}
+        />
+      )}
       {/* ROOM参加者リスト */}
       <div className="participants">
         <div className="participant-icons">

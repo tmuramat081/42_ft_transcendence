@@ -135,6 +135,7 @@ export class ChatGateway {
         room.roomParticipants = [];
         room.roomType = 'public';
         room.roomOwner = create.LoginUser.userId;
+        room.roomAdmin = create.LoginUser.userId;
         room.createdAt = new Date();
         await this.roomRepository.save(room);
         socket.join(create.roomName);
