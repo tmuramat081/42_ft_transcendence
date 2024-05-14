@@ -58,18 +58,6 @@ export class ChatGateway {
         return;
       }
       socket.emit('loginUser', loginUser);
-
-      // onlineUsersにユーザーを追加
-      // const existingUser = await this.onlineUsersRepository.findOne({
-      //   where: { userId: loginUser.userId, name: loginUser.userName },
-      // });
-      // if (!existingUser) {
-      //   const onlineUser = new OnlineUsers();
-      //   onlineUser.userId = loginUser.userId;
-      //   onlineUser.name = loginUser.userName;
-      //   onlineUser.icon = loginUser.icon;
-      //   await this.onlineUsersRepository.save(onlineUser);
-      // }
     } catch (error) {
       this.logger.error(`Error getting user: ${(error as Error).message}`);
       throw error;
@@ -98,11 +86,9 @@ export class ChatGateway {
       }
       // usersService.loginUserIdsからloninUserのリストを取得
       const onlineUserIds: number[] = await this.usersService.loginUserIds;
-      // this.logger.log(`Online user ids: ${onlineUserIds}`);
 
       // onlineUserIdsからユーザー情報を取得
       const onlineUsers: User[] = await this.userRepository.findByIds(onlineUserIds);
-      // this.logger.log(`Online users: ${JSON.stringify(onlineUsers)}`);
 
       // onlineUsers[]をUserInfo[]に変換
       const onlineUsersInfo: UserInfo[] = onlineUsers.map((user) => {
