@@ -131,6 +131,7 @@ export default function RoomPage({ params }: { params: string }) {
   const handleRoomSettingsSubmit = (roomSettings: Room) => {
     if (!socket) return;
     socket.emit('updateRoom', { currentUser, roomSettings });
+    console.log('roomSettings', roomSettings);
     setShowRoomSettings(false);
   };
 

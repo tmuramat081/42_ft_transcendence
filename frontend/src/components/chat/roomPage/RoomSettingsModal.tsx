@@ -22,7 +22,7 @@ const RoomSettingsModal: React.FC<RoomSettingsModalProps> = ({
   const [roomPassword, setRoomPassword] = useState('');
   const [roomAdmin, setRoomAdmin] = useState<number | null>(null);
   const [roomBlocked, setRoomBlocked] = useState<number | null>(null);
-  const [roomMuted, setRoomMuted] = useState<{ id: number; duration: string }[]>([]);
+  const [roomMuted, setRoomMuted] = useState<number | null>(null);
   const [muteDuration, setMuteDuration] = useState('1d');
 
   // 自分を除いたroomParticipantsを取得
@@ -30,7 +30,7 @@ const RoomSettingsModal: React.FC<RoomSettingsModalProps> = ({
     (participant) => participant.userId !== currentUser.userId,
   );
   const handleSubmit = () => {
-    onSubmit({ roomType, roomPassword, roomAdmin, roomBlocked, roomMuted });
+    onSubmit({ roomType, roomPassword, roomAdmin, roomBlocked, roomMuted, muteDuration });
   };
 
   const handleAdminChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
@@ -42,7 +42,7 @@ const RoomSettingsModal: React.FC<RoomSettingsModalProps> = ({
   };
 
   const handleMutedChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    setRoomMuted([{ id: Number(e.target.value), duration: '' }]);
+    setRoomMuted(Number(e.target.value));
   };
 
   const handleMutedDurationChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
@@ -129,7 +129,7 @@ const RoomSettingsModal: React.FC<RoomSettingsModalProps> = ({
         <label className="label">
           Mute User:
           <select
-            value={roomMuted.length > 0 ? roomMuted[0].id.toString() : ''}
+            value={roomMuted ?? ''}
             onChange={handleMutedChange}
           >
             <option
@@ -149,24 +149,25 @@ const RoomSettingsModal: React.FC<RoomSettingsModalProps> = ({
             ))}
           </select>
         </label>
-
-        {roomMuted.map((mutedUser) => (
-          <label
-            key={mutedUser.id}
-            className="label"
-          >
-            Mute Duration for {allUsers.find((user) => user.userId === mutedUser.id)?.userName}:
-            <select
-              value={muteDuration}
-              onChange={handleMutedDurationChange}
+        {roomMuted &&
+          otherParticipants.map((mutedUser) => (
+            <label
+              key={mutedUser.userId}
+              className="label"
             >
-              <option value="">Select Duration</option>
-              <option value="1d">1 Day</option>
-              <option value="1w">1 Week</option>
-              <option value="1m">1 Month</option>
-            </select>
-          </label>
-        ))}
+              Mute Duration for{' '}
+              {allUsers.find((user) => user.userId === mutedUser.userId)?.userName}:
+              <select
+                value={muteDuration}
+                onChange={handleMutedDurationChange}
+              >
+                <option value="">Select Duration</option>
+                <option value="1d">1 Day</option>
+                <option value="1w">1 Week</option>
+                <option value="1m">1 Month</option>
+              </select>
+            </label>
+          ))}
         <button onClick={handleSubmit}>Submit</button>
       </div>
     </div>
