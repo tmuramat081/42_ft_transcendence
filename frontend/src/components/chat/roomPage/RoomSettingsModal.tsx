@@ -23,6 +23,7 @@ const RoomSettingsModal: React.FC<RoomSettingsModalProps> = ({
   const [roomAdmin, setRoomAdmin] = useState<number | null>(null);
   const [roomBlocked, setRoomBlocked] = useState<number | null>(null);
   const [roomMuted, setRoomMuted] = useState<{ id: number; duration: string }[]>([]);
+  const [muteDuration, setMuteDuration] = useState('1d');
 
   // 自分を除いたroomParticipantsを取得
   const otherParticipants = roomParticipants.filter(
@@ -44,10 +45,8 @@ const RoomSettingsModal: React.FC<RoomSettingsModalProps> = ({
     setRoomMuted([{ id: Number(e.target.value), duration: '' }]);
   };
 
-  const handleMutedDurationChange = (id: number, duration: string) => {
-    setRoomMuted((prevMuted) =>
-      prevMuted.map((user) => (user.id === id ? { ...user, duration } : user)),
-    );
+  const handleMutedDurationChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    setMuteDuration(e.target.value);
   };
 
   return (
@@ -154,11 +153,14 @@ const RoomSettingsModal: React.FC<RoomSettingsModalProps> = ({
             className="label"
           >
             Mute Duration for {allUsers.find((user) => user.userId === mutedUser.id)?.userName}:
-            <input
-              type="text"
-              value={mutedUser.duration}
-              onChange={(e) => handleMutedDurationChange(mutedUser.id, e.target.value)}
-            />
+            <select
+              value={muteDuration}
+              onChange={handleMutedDurationChange}
+            >
+              <option value="1d">1 Day</option>
+              <option value="1w">1 Week</option>
+              <option value="1m">1 Month</option>
+            </select>
           </label>
         ))}
         <button onClick={handleSubmit}>Submit</button>
