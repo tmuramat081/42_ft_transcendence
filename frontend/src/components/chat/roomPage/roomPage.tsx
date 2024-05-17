@@ -22,6 +22,8 @@ export default function RoomPage({ params }: { params: string }) {
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [allUsers, setAllUsers] = useState<User[]>([]);
   const [showRoomSettings, setShowRoomSettings] = useState(false);
+  const [owner, setOwner] = useState<User | null>(null);
+  const [admin, setAdmin] = useState<User | null>(null);
   const [isOwner, setIsOwner] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
 
@@ -54,14 +56,20 @@ export default function RoomPage({ params }: { params: string }) {
       setParticipants(roomParticipants);
     });
 
-    socket.on('owner', (owner: boolean) => {
-      setIsOwner(owner);
-      //   console.log('owner', owner);
+    socket.on('owner', (owner: User) => {
+      setOwner(owner);
+      if (currentUser?.userId === owner.userId) {
+        setIsOwner(true);
+      }
+      console.log('owner', owner);
     });
 
-    socket.on('admin', (admin: boolean) => {
-      setIsAdmin(admin);
-      //   console.log('admin', admin);
+    socket.on('admin', (admin: User) => {
+      setAdmin(admin);
+      if (currentUser?.userId === admin.userId) {
+        setIsAdmin(true);
+      }
+      console.log('admin', admin);
     });
 
     socket.on('allUsers', (users: User[]) => {
@@ -178,8 +186,8 @@ export default function RoomPage({ params }: { params: string }) {
           roomParticipants={participants}
           allUsers={allUsers}
           currentUser={currentUser as User}
-          isOwner={isOwner}
-          isAdmin={isAdmin}
+          owner={owner}
+          admin={admin}
         />
       )}
       {/* ROOM参加者リスト */}

@@ -1,3 +1,4 @@
+/*eslint-disable*/
 import React, { useState } from 'react';
 import { UserInfo } from '@/types/chat/chat';
 import { User } from '@/types/user';
@@ -9,8 +10,8 @@ interface RoomSettingsModalProps {
   roomParticipants: UserInfo[];
   allUsers: User[];
   currentUser: User;
-  isOwner: boolean;
-  isAdmin: boolean;
+  owner: User;
+  admin: User;
 }
 
 const RoomSettingsModal: React.FC<RoomSettingsModalProps> = ({
@@ -19,8 +20,8 @@ const RoomSettingsModal: React.FC<RoomSettingsModalProps> = ({
   roomParticipants = [],
   allUsers = [],
   currentUser,
-  isOwner,
-  isAdmin,
+  owner,
+  admin,
 }) => {
   const [roomName, setRoomName] = useState('');
   const [roomType, setRoomType] = useState('public');
@@ -34,6 +35,15 @@ const RoomSettingsModal: React.FC<RoomSettingsModalProps> = ({
   const otherParticipants = roomParticipants.filter(
     (participant) => participant.userId !== currentUser.userId,
   );
+
+  const isOwner = currentUser.userId === owner.userId;
+  const isAdmin = currentUser.userId === admin.userId;
+  const isBoth = isOwner && isAdmin;
+
+  console.log('isOwner', isOwner);
+  console.log('isAdmin', isAdmin);
+  console.log('isBoth', isBoth);
+
   const handleSubmit = () => {
     onSubmit({ roomName, roomType, roomPassword, roomAdmin, roomBlocked, roomMuted, muteDuration });
   };
@@ -58,6 +68,149 @@ const RoomSettingsModal: React.FC<RoomSettingsModalProps> = ({
     setMuteDuration(e.target.value);
   };
 
+  // return (
+  //   <div className="modal">
+  //     <div className="modal-content">
+  //       <span
+  //         className="close"
+  //         onClick={onClose}
+  //       >
+  //         &times;
+  //       </span>
+  //       <h3>Room Settings</h3>
+  //       {isOwner && (
+  //         <label className="label">
+  //           Room Name:
+  //           <input
+  //             type="text"
+  //             value={roomName}
+  //             onChange={handleNameChange}
+  //           />
+  //         </label>
+  //       )}
+  //       {isOwner && (
+  //         <label className="label">
+  //           Room Type:
+  //           <select
+  //             value={roomType}
+  //             onChange={(e) => setRoomType(e.target.value)}
+  //           >
+  //             <option value="public">Public</option>
+  //             <option value="private">Private</option>
+  //             <option value="password">Password Protected</option>
+  //           </select>
+  //         </label>
+  //       )}
+  //       {isOwner && roomType === 'password' && (
+  //         <label className="label">
+  //           Room Password:
+  //           <input
+  //             type="password"
+  //             value={roomPassword}
+  //             onChange={(e) => setRoomPassword(e.target.value)}
+  //           />
+  //         </label>
+  //       )}
+  //       {isOwner && (
+  //         <label className="label">
+  //           Room Admin:
+  //           <select
+  //             value={roomAdmin ?? ''}
+  //             onChange={handleAdminChange}
+  //           >
+  //             <option
+  //               value=""
+  //               disabled
+  //             >
+  //               Select Admin
+  //             </option>
+  //             <option value="">Unassign Admin</option>
+  //             {otherParticipants.map((participant) => (
+  //               <option
+  //                 key={participant.userId}
+  //                 value={participant.userId}
+  //               >
+  //                 {participant.userName}
+  //               </option>
+  //             ))}
+  //           </select>
+  //         </label>
+  //       )}
+  //       {isAdmin && (
+  //         <label className="label">
+  //           Block User:
+  //           <select
+  //             value={roomBlocked ?? ''}
+  //             onChange={handleBlockedChange}
+  //           >
+  //             <option
+  //               value=""
+  //               disabled
+  //             >
+  //               Select User
+  //             </option>
+  //             <option value="">Unblock User</option>
+  //             {allUsers.map((user) => (
+  //               <option
+  //                 key={user.userId}
+  //                 value={user.userId}
+  //               >
+  //                 {user.userName}
+  //               </option>
+  //             ))}
+  //           </select>
+  //         </label>
+  //       )}
+  //       {isAdmin && (
+  //         <label className="label">
+  //           Mute User:
+  //           <select
+  //             value={roomMuted ?? ''}
+  //             onChange={handleMutedChange}
+  //           >
+  //             <option
+  //               value=""
+  //               disabled
+  //             >
+  //               Select User
+  //             </option>
+  //             <option value="">Unmute User</option>
+  //             {allUsers.map((user) => (
+  //               <option
+  //                 key={user.userId}
+  //                 value={user.userId}
+  //               >
+  //                 {user.userName}
+  //               </option>
+  //             ))}
+  //           </select>
+  //         </label>
+  //       )}
+  //       {isAdmin &&
+  //         roomMuted &&
+  //         otherParticipants.map((mutedUser) => (
+  //           <label
+  //             key={mutedUser.userId}
+  //             className="label"
+  //           >
+  //             Mute Duration for{' '}
+  //             {allUsers.find((user) => user.userId === mutedUser.userId)?.userName}:
+  //             <select
+  //               value={muteDuration}
+  //               onChange={handleMutedDurationChange}
+  //             >
+  //               <option value="">Select Duration</option>
+  //               <option value="1d">1 Day</option>
+  //               <option value="1w">1 Week</option>
+  //               <option value="1m">1 Month</option>
+  //             </select>
+  //           </label>
+  //         ))}
+  //       <button onClick={handleSubmit}>Submit</button>
+  //     </div>
+  //   </div>
+  // );
+
   return (
     <div className="modal">
       <div className="modal-content">
@@ -68,123 +221,133 @@ const RoomSettingsModal: React.FC<RoomSettingsModalProps> = ({
           &times;
         </span>
         <h3>Room Settings</h3>
-        <label className="label">
-          Room Name:
-          <input
-            type="text"
-            value={roomName}
-            onChange={handleNameChange}
-          />
-        </label>
-        <label className="label">
-          Room Type:
-          <select
-            value={roomType}
-            onChange={(e) => setRoomType(e.target.value)}
-          >
-            <option value="public">Public</option>
-            <option value="private">Private</option>
-            <option value="password">Password Protected</option>
-          </select>
-        </label>
-        {roomType === 'password' && (
-          <label className="label">
-            Room Password:
-            <input
-              type="password"
-              value={roomPassword}
-              onChange={(e) => setRoomPassword(e.target.value)}
-            />
-          </label>
-        )}
-        <label className="label">
-          Room Admin:
-          <select
-            value={roomAdmin ?? ''}
-            onChange={handleAdminChange}
-          >
-            <option
-              value=""
-              disabled
-            >
-              Select Admin
-            </option>
-            <option value="">Unassign Admin</option>
-            {otherParticipants.map((participant) => (
-              <option
-                key={participant.userId}
-                value={participant.userId}
-              >
-                {participant.userName}
-              </option>
-            ))}
-          </select>
-        </label>
-        <label className="label">
-          Block User:
-          <select
-            value={roomBlocked ?? ''}
-            onChange={handleBlockedChange}
-          >
-            <option
-              value=""
-              disabled
-            >
-              Select User
-            </option>
-            <option value="">Unblock User</option>
-            {allUsers.map((user) => (
-              <option
-                key={user.userId}
-                value={user.userId}
-              >
-                {user.userName}
-              </option>
-            ))}
-          </select>
-        </label>
-        <label className="label">
-          Mute User:
-          <select
-            value={roomMuted ?? ''}
-            onChange={handleMutedChange}
-          >
-            <option
-              value=""
-              disabled
-            >
-              Select User
-            </option>
-            <option value="">Unmute User</option>
-            {allUsers.map((user) => (
-              <option
-                key={user.userId}
-                value={user.userId}
-              >
-                {user.userName}
-              </option>
-            ))}
-          </select>
-        </label>
-        {roomMuted &&
-          otherParticipants.map((mutedUser) => (
-            <label
-              key={mutedUser.userId}
-              className="label"
-            >
-              Mute Duration for{' '}
-              {allUsers.find((user) => user.userId === mutedUser.userId)?.userName}:
+
+        {isOwner && (
+          <>
+            <label className="label">
+              Room Name:
+              <input
+                type="text"
+                value={roomName}
+                onChange={handleNameChange}
+              />
+            </label>
+            <label className="label">
+              Room Type:
               <select
-                value={muteDuration}
-                onChange={handleMutedDurationChange}
+                value={roomType}
+                onChange={(e) => setRoomType(e.target.value)}
               >
-                <option value="">Select Duration</option>
-                <option value="1d">1 Day</option>
-                <option value="1w">1 Week</option>
-                <option value="1m">1 Month</option>
+                <option value="public">Public</option>
+                <option value="private">Private</option>
+                <option value="password">Password Protected</option>
               </select>
             </label>
-          ))}
+            {roomType === 'password' && (
+              <label className="label">
+                Room Password:
+                <input
+                  type="password"
+                  value={roomPassword}
+                  onChange={(e) => setRoomPassword(e.target.value)}
+                />
+              </label>
+            )}
+            <label className="label">
+              Room Admin:
+              <select
+                value={roomAdmin ?? ''}
+                onChange={handleAdminChange}
+              >
+                <option
+                  value=""
+                  disabled
+                >
+                  Select Admin
+                </option>
+                <option value="">Unassign Admin</option>
+                {otherParticipants.map((participant) => (
+                  <option
+                    key={participant.userId}
+                    value={participant.userId}
+                  >
+                    {participant.userName}
+                  </option>
+                ))}
+              </select>
+            </label>
+          </>
+        )}
+
+        {((!isOwner && isAdmin) || isBoth) && (
+          <>
+            <label className="label">
+              Block User:
+              <select
+                value={roomBlocked ?? ''}
+                onChange={handleBlockedChange}
+              >
+                <option
+                  value=""
+                  disabled
+                >
+                  Select User
+                </option>
+                <option value="">Unblock User</option>
+                {allUsers.map((user) => (
+                  <option
+                    key={user.userId}
+                    value={user.userId}
+                  >
+                    {user.userName}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <label className="label">
+              Mute User:
+              <select
+                value={roomMuted ?? ''}
+                onChange={handleMutedChange}
+              >
+                <option
+                  value=""
+                  disabled
+                >
+                  Select User
+                </option>
+                <option value="">Unmute User</option>
+                {allUsers.map((user) => (
+                  <option
+                    key={user.userId}
+                    value={user.userId}
+                  >
+                    {user.userName}
+                  </option>
+                ))}
+              </select>
+            </label>
+            {roomMuted &&
+              otherParticipants.map((mutedUser) => (
+                <label
+                  key={mutedUser.userId}
+                  className="label"
+                >
+                  Mute Duration for{' '}
+                  {allUsers.find((user) => user.userId === mutedUser.userId)?.userName}:
+                  <select
+                    value={muteDuration}
+                    onChange={handleMutedDurationChange}
+                  >
+                    <option value="">Select Duration</option>
+                    <option value="1d">1 Day</option>
+                    <option value="1w">1 Week</option>
+                    <option value="1m">1 Month</option>
+                  </select>
+                </label>
+              ))}
+          </>
+        )}
         <button onClick={handleSubmit}>Submit</button>
       </div>
     </div>
