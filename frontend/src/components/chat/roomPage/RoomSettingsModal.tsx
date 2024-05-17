@@ -9,6 +9,8 @@ interface RoomSettingsModalProps {
   roomParticipants: UserInfo[];
   allUsers: User[];
   currentUser: User;
+  isOwner: boolean;
+  isAdmin: boolean;
 }
 
 const RoomSettingsModal: React.FC<RoomSettingsModalProps> = ({
@@ -17,20 +19,27 @@ const RoomSettingsModal: React.FC<RoomSettingsModalProps> = ({
   roomParticipants = [],
   allUsers = [],
   currentUser,
+  isOwner,
+  isAdmin,
 }) => {
+  const [roomName, setRoomName] = useState('');
   const [roomType, setRoomType] = useState('public');
   const [roomPassword, setRoomPassword] = useState('');
   const [roomAdmin, setRoomAdmin] = useState<number | null>(null);
   const [roomBlocked, setRoomBlocked] = useState<number | null>(null);
   const [roomMuted, setRoomMuted] = useState<number | null>(null);
-  const [muteDuration, setMuteDuration] = useState('1d');
+  const [muteDuration, setMuteDuration] = useState('');
 
   // 自分を除いたroomParticipantsを取得
   const otherParticipants = roomParticipants.filter(
     (participant) => participant.userId !== currentUser.userId,
   );
   const handleSubmit = () => {
-    onSubmit({ roomType, roomPassword, roomAdmin, roomBlocked, roomMuted, muteDuration });
+    onSubmit({ roomName, roomType, roomPassword, roomAdmin, roomBlocked, roomMuted, muteDuration });
+  };
+
+  const handleNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setRoomName(e.target.value);
   };
 
   const handleAdminChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
@@ -59,6 +68,14 @@ const RoomSettingsModal: React.FC<RoomSettingsModalProps> = ({
           &times;
         </span>
         <h3>Room Settings</h3>
+        <label className="label">
+          Room Name:
+          <input
+            type="text"
+            value={roomName}
+            onChange={handleNameChange}
+          />
+        </label>
         <label className="label">
           Room Type:
           <select

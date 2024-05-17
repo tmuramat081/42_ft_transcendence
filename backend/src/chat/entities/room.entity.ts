@@ -33,7 +33,7 @@ export class Room {
 
   // ミュートユーザーとミュート期間
   @Column('json', { nullable: true })
-  roomMuted: { id: number; mutedUntil: Date }[];
+  roomMuted: { id: number; mutedUntil: string }[];
 
   // ルームの作成日時
   @Column({ nullable: false })

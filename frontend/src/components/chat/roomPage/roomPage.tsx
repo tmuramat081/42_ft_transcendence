@@ -68,6 +68,10 @@ export default function RoomPage({ params }: { params: string }) {
       setAllUsers(users);
     });
 
+    socket.on('updateRoomSettings', (room: Room) => {
+      console.log('updateRoomSettings', room);
+    });
+
     return () => {
       socket.off('user');
       socket.off('roomParticipants');
@@ -130,7 +134,7 @@ export default function RoomPage({ params }: { params: string }) {
 
   const handleRoomSettingsSubmit = (roomSettings: Room) => {
     if (!socket) return;
-    socket.emit('updateRoom', { currentUser, roomSettings });
+    socket.emit('roomSettings', { selectedRoom, roomSettings });
     console.log('roomSettings', roomSettings);
     setShowRoomSettings(false);
   };
@@ -174,6 +178,8 @@ export default function RoomPage({ params }: { params: string }) {
           roomParticipants={participants}
           allUsers={allUsers}
           currentUser={currentUser as User}
+          isOwner={isOwner}
+          isAdmin={isAdmin}
         />
       )}
       {/* ROOM参加者リスト */}

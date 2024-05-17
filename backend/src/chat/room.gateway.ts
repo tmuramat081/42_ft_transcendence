@@ -298,4 +298,91 @@ export class RoomGateway {
       throw error;
     }
   }
+
+  @SubscribeMessage('roomSettings')
+  async handleRoomSettings(
+    @MessageBody()
+    settings: {
+      selectedRoom: string;
+      roomSettings: {
+        roomName: string;
+        roomType: string;
+        roomPassword: string;
+        roomAdmin: number;
+        roomBlocked: number;
+        roomMuted: number;
+        muteDuration: string;
+      };
+    },
+  ) {
+    try {
+      this.logger.log(`Room settings: ${JSON.stringify(settings)}`);
+
+      // データベースから部屋を取得
+      const room = await this.roomRepository.findOne({
+        where: { roomName: settings.selectedRoom },
+      });
+      this.logger.log(`Room: ${JSON.stringify(room)}`);
+
+      // ルームの設定を更新
+      if (room) {
+        if (settings.roomSettings.roomName) {
+          room.roomName = settings.roomSettings.roomName;
+        }
+        if (settings.roomSettings.roomType) {
+          room.roomType = settings.roomSettings.roomType;
+        }
+        if (settings.roomSettings.roomPassword) {
+          room.roomPassword = settings.roomSettings.roomPassword;
+        }
+        if (settings.roomSettings.roomAdmin) {
+          room.roomAdmin = settings.roomSettings.roomAdmin;
+        }
+        if (settings.roomSettings.roomBlocked) {
+          if (!room.roomBlocked) {
+            room.roomBlocked = [];
+          } else if (room.roomBlocked.includes(settings.roomSettings.roomBlocked)) {
+            room.roomBlocked = room.roomBlocked.filter(
+              (blocked) => blocked !== settings.roomSettings.roomBlocked,
+            );
+          }
+          room.roomBlocked.push(settings.roomSettings.roomBlocked);
+        }
+        if (settings.roomSettings.roomMuted && settings.roomSettings.muteDuration) {
+          if (!room.roomMuted) {
+            room.roomMuted = [];
+          }
+          const mutedUser = room.roomMuted.find(
+            (muted) => muted.id === settings.roomSettings.roomMuted,
+          );
+          if (mutedUser) {
+            room.roomMuted = room.roomMuted.filter(
+              (muted) => muted.id !== settings.roomSettings.roomMuted,
+            );
+          }
+          room.roomMuted.push({
+            id: settings.roomSettings.roomMuted,
+            mutedUntil: settings.roomSettings.muteDuration,
+          });
+        }
+        await this.roomRepository.save(room);
+      } else {
+        this.logger.error(`Room ${settings.selectedRoom} not found in the database.`);
+      }
+
+      // 更新された部屋を取得してクライアントに送信
+      const updatedRoom = await this.roomRepository.findOne({
+        where: { roomName: settings.selectedRoom },
+      });
+      if (updatedRoom) {
+        this.logger.log(`Updated room: ${JSON.stringify(updatedRoom)}`);
+        this.server.to(settings.selectedRoom).emit('updateRoomSettings', updatedRoom);
+      } else {
+        this.logger.error(`Error getting updated room.`);
+      }
+    } catch (error) {
+      this.logger.error(`Error handling room settings: ${(error as Error).message}`);
+      throw error;
+    }
+  }
 }
