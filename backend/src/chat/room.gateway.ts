@@ -116,16 +116,6 @@ export class RoomGateway {
       }
       // ソケットにルームに参加させる
       socket.join(join.room);
-      // // Ownerかどうか確認
-      // if (room.roomOwner === join.user.userId) {
-      //   this.logger.log(`Owner: ${join.user.userName}`);
-      //   this.server.to(join.room).emit('owner', join.user);
-      // }
-      // // Adminかどうか確認
-      // if (room.roomAdmin === join.user.userId) {
-      //   this.logger.log(`Admin: ${join.user.userName}`);
-      //   this.server.to(join.room).emit('admin', join.user);
-      // }
       // 参加者リストを取得してクライアントに送信
       const updatedRoom = await this.roomRepository.findOne({ where: { roomName: join.room } });
       if (updatedRoom) {
