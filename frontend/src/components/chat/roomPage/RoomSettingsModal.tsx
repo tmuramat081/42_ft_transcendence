@@ -92,6 +92,7 @@ const RoomSettingsModal: React.FC<RoomSettingsModalProps> = ({
             >
               Select Admin
             </option>
+            <option value="">Unassign Admin</option>
             {otherParticipants.map((participant) => (
               <option
                 key={participant.userId}
@@ -114,6 +115,7 @@ const RoomSettingsModal: React.FC<RoomSettingsModalProps> = ({
             >
               Select User
             </option>
+            <option value="">Unblock User</option>
             {allUsers.map((user) => (
               <option
                 key={user.userId}
@@ -136,6 +138,7 @@ const RoomSettingsModal: React.FC<RoomSettingsModalProps> = ({
             >
               Select User
             </option>
+            <option value="">Unmute User</option>
             {allUsers.map((user) => (
               <option
                 key={user.userId}
@@ -157,6 +160,7 @@ const RoomSettingsModal: React.FC<RoomSettingsModalProps> = ({
               value={muteDuration}
               onChange={handleMutedDurationChange}
             >
+              <option value="">Select Duration</option>
               <option value="1d">1 Day</option>
               <option value="1w">1 Week</option>
               <option value="1m">1 Month</option>
