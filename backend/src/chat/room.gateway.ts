@@ -162,9 +162,61 @@ export class RoomGateway {
       } else {
         this.logger.error(`Error getting admin.`);
       }
+      // roomTypeをクライアントに送信
+      this.server.to(join.room).emit('roomType', room.roomType);
     } catch (error) {
       const errorMessage = (error as Error).message;
       this.logger.error(`Error joining room: ${errorMessage}`);
+      throw error;
+    }
+  }
+
+  @SubscribeMessage('verifyRoomPassword')
+  async handleVerifyRoomPassword(
+    @MessageBody() data: { roomName: string; password: string },
+    @ConnectedSocket() socket: Socket,
+  ) {
+    try {
+      this.logger.log(`verifyRoomPassword: ${data.roomName} ${data.password}`);
+      // データベースから部屋を取得
+      const room = await this.roomRepository.findOne({ where: { roomName: data.roomName } });
+      if (room) {
+        // パスワードが一致するか確認
+        if (room.roomPassword === data.password) {
+          this.server.to(socket.id).emit('passwordVerified', true);
+        } else {
+          this.server.to(socket.id).emit('passwordVerified', false);
+        }
+      } else {
+        this.logger.error(`Room ${data.roomName} not found in the database.`);
+      }
+    } catch (error) {
+      this.logger.error(`Error verifying room password: ${(error as Error).message}`);
+      throw error;
+    }
+  }
+
+  @SubscribeMessage('requestPermission')
+  async handleRequestPermission(
+    @MessageBody() data: { user: User; room: string },
+    @ConnectedSocket() socket: Socket,
+  ) {
+    try {
+      this.logger.log(`requestPermission: ${data.user.userName} requested permission`);
+      // データベースから部屋を取得
+      const room = await this.roomRepository.findOne({ where: { roomName: data.room } });
+      if (room) {
+        // ユーザーが管理者か確認
+        if (room.roomAdmin === data.user.userId) {
+          this.server.to(socket.id).emit('permissionGranted', true);
+        } else {
+          this.server.to(socket.id).emit('permissionGranted', false);
+        }
+      } else {
+        this.logger.error(`Room ${data.room} not found in the database.`);
+      }
+    } catch (error) {
+      this.logger.error(`Error requesting permission: ${(error as Error).message}`);
       throw error;
     }
   }
