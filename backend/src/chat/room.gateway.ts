@@ -165,6 +165,23 @@ export class RoomGateway {
     }
   }
 
+  @SubscribeMessage('getAllUsers')
+  async handleGetAllUsers(@MessageBody() user: User, @ConnectedSocket() socket: Socket) {
+    try {
+      // データベースから全ユーザーを取得
+      const allUsers = await this.userRepository.find();
+      if (allUsers) {
+        // 自分自身を除いてクライアントに送信
+        allUsers.filter((u) => u.userId !== user.userId);
+        this.server.to(socket.id).emit('allUsers', allUsers);
+      } else {
+        this.logger.error('No users found');
+      }
+    } catch (error) {
+      this.logger.error(error);
+    }
+  }
+
   @SubscribeMessage('talk')
   async handleMessage(
     @MessageBody() data: { selectedRoom: string; currentUser: User; message: string },

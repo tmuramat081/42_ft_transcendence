@@ -13,13 +13,14 @@ const API_URL = process.env.NEXT_PUBLIC_API_URL ?? '';
 
 export default function RoomPage({ params }: { params: string }) {
   const { socket } = useWebSocket();
+  const { getCurrentUser, loginUser } = useAuth();
   const [message, setMessage] = useState('');
   const [roomID, setRoomID] = useState('');
   const [participants, setParticipants] = useState<UserInfo[]>([]);
   const [selectedRoom, setSelectedRoom] = useState<string | null>(null);
   const [roomchatLogs, setRoomChatLogs] = useState<{ [roomId: string]: ChatMessage[] }>({});
   const [currentUser, setCurrentUser] = useState<User | null>(null);
-  const { getCurrentUser, loginUser } = useAuth();
+  const [allUsers, setAllUsers] = useState<User[]>([]);
   const [showRoomSettings, setShowRoomSettings] = useState(false);
   const [isOwner, setIsOwner] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
@@ -31,6 +32,7 @@ export default function RoomPage({ params }: { params: string }) {
       .then((user) => {
         socket.emit('getUserCurrent', user);
         socket.emit('joinRoom', { user, room: params });
+        socket.emit('getAllUsers', user);
       })
       .catch((error) => {
         console.error('Error getting user:', error);
@@ -62,11 +64,16 @@ export default function RoomPage({ params }: { params: string }) {
       //   console.log('admin', admin);
     });
 
+    socket.on('allUsers', (users: User[]) => {
+      setAllUsers(users);
+    });
+
     return () => {
       socket.off('user');
       socket.off('roomParticipants');
       socket.off('owner');
       socket.off('admin');
+      socket.off('allUsers');
     };
   }, [socket, participants]);
 
@@ -163,6 +170,8 @@ export default function RoomPage({ params }: { params: string }) {
         <RoomSettingsModal
           onClose={() => setShowRoomSettings(false)}
           onSubmit={handleRoomSettingsSubmit}
+          roomParticipants={participants}
+          allUsers={allUsers}
         />
       )}
       {/* ROOM参加者リスト */}
