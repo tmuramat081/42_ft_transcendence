@@ -172,8 +172,9 @@ export class RoomGateway {
       const allUsers = await this.userRepository.find();
       if (allUsers) {
         // 自分自身を除いてクライアントに送信
-        allUsers.filter((u) => u.userId !== user.userId);
-        this.server.to(socket.id).emit('allUsers', allUsers);
+        const users = allUsers.filter((u) => u.userId !== user.userId);
+        this.server.to(socket.id).emit('allUsers', users);
+        // this.logger.log(`All users: ${JSON.stringify(users)}`);
       } else {
         this.logger.error('No users found');
       }

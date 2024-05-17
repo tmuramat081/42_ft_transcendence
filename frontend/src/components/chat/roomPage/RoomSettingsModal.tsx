@@ -19,9 +19,8 @@ const RoomSettingsModal: React.FC<RoomSettingsModalProps> = ({
   const [roomType, setRoomType] = useState('public');
   const [roomPassword, setRoomPassword] = useState('');
   const [roomAdmin, setRoomAdmin] = useState<number | null>(null);
-  const [roomBlocked, setRoomBlocked] = useState<number[]>([]);
+  const [roomBlocked, setRoomBlocked] = useState<number | null>(null);
   const [roomMuted, setRoomMuted] = useState<{ id: number; duration: string }[]>([]);
-  // const [users, setUsers] = useState<User[]>([]);
 
   const handleSubmit = () => {
     onSubmit({ roomType, roomPassword, roomAdmin, roomBlocked, roomMuted });
@@ -32,17 +31,11 @@ const RoomSettingsModal: React.FC<RoomSettingsModalProps> = ({
   };
 
   const handleBlockedChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const selectedOptions = Array.from(e.target.selectedOptions, (option) => Number(option.value));
-    setRoomBlocked(selectedOptions);
+    setRoomBlocked(Number(e.target.value));
   };
 
   const handleMutedChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const selectedOptions = Array.from(e.target.selectedOptions, (option) => Number(option.value));
-    const updatedMuted = selectedOptions.map((id) => ({
-      id,
-      duration: roomMuted.find((mutedUser) => mutedUser.id === id)?.duration || '1h', // デフォルト値を設定
-    }));
-    setRoomMuted(updatedMuted);
+    setRoomMuted([{ id: Number(e.target.value), duration: '' }]);
   };
 
   const handleMutedDurationChange = (id: number, duration: string) => {
@@ -105,12 +98,17 @@ const RoomSettingsModal: React.FC<RoomSettingsModalProps> = ({
           </select>
         </label>
         <label className="label">
-          Block Users:
+          Block User:
           <select
-            multiple
-            value={roomBlocked.map((id) => id.toString())}
+            value={roomBlocked ?? ''}
             onChange={handleBlockedChange}
           >
+            <option
+              value=""
+              disabled
+            >
+              Select User
+            </option>
             {allUsers.map((user) => (
               <option
                 key={user.userId}
@@ -122,12 +120,17 @@ const RoomSettingsModal: React.FC<RoomSettingsModalProps> = ({
           </select>
         </label>
         <label className="label">
-          Mute Users:
+          Mute User:
           <select
-            multiple
-            value={roomMuted.map((mutedUser) => mutedUser.id)}
+            value={roomMuted.length > 0 ? roomMuted[0].id.toString() : ''}
             onChange={handleMutedChange}
           >
+            <option
+              value=""
+              disabled
+            >
+              Select User
+            </option>
             {allUsers.map((user) => (
               <option
                 key={user.userId}
@@ -138,6 +141,7 @@ const RoomSettingsModal: React.FC<RoomSettingsModalProps> = ({
             ))}
           </select>
         </label>
+
         {roomMuted.map((mutedUser) => (
           <label
             key={mutedUser.id}
