@@ -8,6 +8,7 @@ interface RoomSettingsModalProps {
   onSubmit: (data: any) => void;
   roomParticipants: UserInfo[];
   allUsers: User[];
+  currentUser: User;
 }
 
 const RoomSettingsModal: React.FC<RoomSettingsModalProps> = ({
@@ -15,6 +16,7 @@ const RoomSettingsModal: React.FC<RoomSettingsModalProps> = ({
   onSubmit,
   roomParticipants = [],
   allUsers = [],
+  currentUser,
 }) => {
   const [roomType, setRoomType] = useState('public');
   const [roomPassword, setRoomPassword] = useState('');
@@ -22,6 +24,10 @@ const RoomSettingsModal: React.FC<RoomSettingsModalProps> = ({
   const [roomBlocked, setRoomBlocked] = useState<number | null>(null);
   const [roomMuted, setRoomMuted] = useState<{ id: number; duration: string }[]>([]);
 
+  // 自分を除いたroomParticipantsを取得
+  const otherParticipants = roomParticipants.filter(
+    (participant) => participant.userId !== currentUser.userId,
+  );
   const handleSubmit = () => {
     onSubmit({ roomType, roomPassword, roomAdmin, roomBlocked, roomMuted });
   };
@@ -87,7 +93,7 @@ const RoomSettingsModal: React.FC<RoomSettingsModalProps> = ({
             >
               Select Admin
             </option>
-            {roomParticipants.map((participant) => (
+            {otherParticipants.map((participant) => (
               <option
                 key={participant.userId}
                 value={participant.userId}

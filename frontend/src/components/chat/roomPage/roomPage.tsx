@@ -172,6 +172,7 @@ export default function RoomPage({ params }: { params: string }) {
           onSubmit={handleRoomSettingsSubmit}
           roomParticipants={participants}
           allUsers={allUsers}
+          currentUser={currentUser as User}
         />
       )}
       {/* ROOM参加者リスト */}
