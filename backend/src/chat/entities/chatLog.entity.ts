@@ -6,6 +6,9 @@ export class ChatLog {
   id: number;
 
   @Column({ nullable: false })
+  roomID: number;
+
+  @Column({ nullable: false })
   roomName: string;
 
   @Column({ nullable: false })

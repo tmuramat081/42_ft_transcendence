@@ -95,6 +95,7 @@ export class RoomGateway {
         },
       });
       if (room) {
+        this.server.to(socket.id).emit('roomId', room.id);
         this.server.to(socket.id).emit('roomType', room.roomType);
         // OwnerのUser情報を取得してクライアントに送信
         const owner = await this.userRepository.findOne({
@@ -305,7 +306,8 @@ export class RoomGateway {
 
   @SubscribeMessage('talk')
   async handleMessage(
-    @MessageBody() data: { selectedRoom: string; currentUser: User; message: string },
+    @MessageBody()
+    data: { roomID: number; selectedRoom: string; currentUser: User; message: string },
     @ConnectedSocket() socket: Socket,
   ) {
     try {
@@ -323,6 +325,7 @@ export class RoomGateway {
 
       // チャットログを保存
       const chatLog = new ChatLog();
+      chatLog.roomID = data.roomID;
       chatLog.roomName = data.selectedRoom;
       chatLog.sender = data.currentUser.userName;
       chatLog.icon = data.currentUser.icon;
@@ -333,7 +336,7 @@ export class RoomGateway {
 
       // チャットログを取得
       const chatLogs = await this.chatLogRepository.find({
-        where: { roomName: data.selectedRoom },
+        where: { roomID: data.roomID },
       });
       this.logger.log(`Chat logs: ${JSON.stringify(chatLogs)}`);
       // chatLogsをchatmessage[]に変換

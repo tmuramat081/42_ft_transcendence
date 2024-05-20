@@ -14,11 +14,9 @@ const API_URL = process.env.NEXT_PUBLIC_API_URL ?? '';
 export default function RoomPage({ params }: { params: string }) {
   const { socket } = useWebSocket();
   const { getCurrentUser, loginUser } = useAuth();
-  const [message, setMessage] = useState('');
-  const [roomID, setRoomID] = useState('');
-  const [participants, setParticipants] = useState<UserInfo[]>([]);
+  const [roomID, setRoomID] = useState<number | null>(null);
   const [selectedRoom, setSelectedRoom] = useState<string | null>(null);
-  const [roomchatLogs, setRoomChatLogs] = useState<{ [roomId: string]: ChatMessage[] }>({});
+  const [roomchatLogs, setRoomChatLogs] = useState<{ [roomID: number]: ChatMessage[] }>({});
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [allUsers, setAllUsers] = useState<User[]>([]);
   const [showRoomSettings, setShowRoomSettings] = useState(false);
@@ -26,11 +24,13 @@ export default function RoomPage({ params }: { params: string }) {
   const [admin, setAdmin] = useState<User | null>(null);
   const [isOwner, setIsOwner] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
+  const [participants, setParticipants] = useState<UserInfo[]>([]);
   const [isParticipants, setIsParticipants] = useState(false);
   const [roomType, setRoomType] = useState<string | null>(null);
   const [roomPassword, setRoomPassword] = useState('');
   const [isPasswordVerified, setIsPasswordVerified] = useState(false);
   const [isPermissionGranted, setIsPermissionGranted] = useState(false);
+  const [message, setMessage] = useState('');
 
   useEffect(() => {
     if (!socket || !params) return;
@@ -56,6 +56,10 @@ export default function RoomPage({ params }: { params: string }) {
 
     socket.on('allUsers', (users: User[]) => {
       setAllUsers(users);
+    });
+
+    socket.on('roomID', (roomID: number) => {
+      setRoomID(roomID);
     });
 
     socket.on('roomName', (roomName: string) => {
@@ -112,6 +116,7 @@ export default function RoomPage({ params }: { params: string }) {
     return () => {
       socket.off('user');
       socket.off('allUsers');
+      socket.off('roomID');
       socket.off('roomType');
       socket.off('roomOwner');
       socket.off('roomAdmin');
@@ -147,20 +152,25 @@ export default function RoomPage({ params }: { params: string }) {
         }
         return message;
       });
-      setRoomChatLogs((prevRoomChatLogs) => ({
-        ...prevRoomChatLogs,
-        [roomID]: updatedChatMessages as ChatMessage[],
-      }));
+      setRoomChatLogs((prevRoomChatLogs) => {
+        return {
+          ...prevRoomChatLogs,
+          [roomID!]: updatedChatMessages.map((message) => ({
+            ...message,
+            text: message.text.toString(),
+          })),
+        };
+      });
     });
 
     return () => {
       socket.off('chatLogs');
     };
-  }, [socket, roomchatLogs, roomID]);
+  }, [socket, roomID]);
 
   const onClickSubmit = useCallback(() => {
     if (!socket) return;
-    socket.emit('talk', { selectedRoom, currentUser, message });
+    socket.emit('talk', { roomID, selectedRoom, currentUser, message });
     setMessage('');
   }, [selectedRoom, message, socket, currentUser]);
 
@@ -172,7 +182,7 @@ export default function RoomPage({ params }: { params: string }) {
       setMessage('');
       // チャットログをクリアする
       const updatedLogs = { ...roomchatLogs };
-      delete updatedLogs[selectedRoom];
+      delete updatedLogs[roomID!];
       setRoomChatLogs(updatedLogs);
       // chatページに戻る
       window.location.href = '/chat';
@@ -187,7 +197,7 @@ export default function RoomPage({ params }: { params: string }) {
       setParticipants([]);
       // チャットログをクリアする
       const updatedLogs = { ...roomchatLogs };
-      delete updatedLogs[selectedRoom];
+      delete updatedLogs[roomID!];
       setRoomChatLogs(updatedLogs);
       // chatページに戻る
       window.location.href = '/chat';
@@ -250,13 +260,20 @@ export default function RoomPage({ params }: { params: string }) {
         !isPermissionGranted &&
         roomType === 'private' ? (
         <div className="permission-prompt">
-          <h3>Waiting for Join Approval</h3>
+          <h3>Waiting for Join Approval for {selectedRoom}</h3>
           <button onClick={handlePermissionRequest}>Request Permission</button>
         </div>
       ) : (
         <>
-          <div>
-            <h3>Room Page</h3>
+          {/* 戻るボタン */}
+          <div className="back-button">
+            <button
+              onClick={() => {
+                window.location.href = '/chat';
+              }}
+            >
+              Back
+            </button>
           </div>
           {/* wrapper */}
           <div className="room-wrapper">
