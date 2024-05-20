@@ -212,126 +212,6 @@ export default function RoomPage({ params }: { params: string }) {
     socket.emit('permissionGranted', { room: selectedRoom, user: currentUser });
   };
 
-  // return (
-  //   <div className="room-container">
-  //     {!isPasswordVerified && roomType === 'password' ? (
-  //       <div className="password-prompt">
-  //         <h3>Enter Room Password</h3>
-  //         <input
-  //           type="password"
-  //           value={roomPassword}
-  //           onChange={(e) => setRoomPassword(e.target.value)}
-  //         />
-  //         <button onClick={handlePasswordSubmit}>Submit</button>
-  //       </div>
-  //     ) : !isPermissionGranted && roomType === 'private' ? (
-  //       <div className="permission-prompt">
-  //         <h3>Waiting for Admin Approval</h3>
-  //         <button onClick={handlePermissionRequest}>Request Permission</button>
-  //       </div>
-  //     ) : null}
-  //     <div>
-  //       <h3>Room Page</h3>
-  //     </div>
-  //     {/* wrapper */}
-  //     <div className="room-wrapper">
-  //       <h2 className="room-title">{selectedRoom}</h2>
-  //       {/* Leave Room ボタン */}
-  //       <button
-  //         className="btn-small"
-  //         onClick={onClickLeaveRoom}
-  //       >
-  //         Leave Room
-  //       </button>
-  //       {/* Delete Room ボタン */}
-  //       {isOwner && (
-  //         <button
-  //           className="btn-small"
-  //           onClick={onClickDeleteRoom}
-  //         >
-  //           Delete Room
-  //         </button>
-  //       )}
-  //       {/* Room Settingsボタン */}
-  //       {(isOwner || isAdmin) && (
-  //         <button
-  //           className="btn-small"
-  //           onClick={onClickSettingRoom}
-  //         >
-  //           Room Settings
-  //         </button>
-  //       )}
-  //     </div>
-  //     {/* ルーム設定ウインドウの表示 */}
-  //     {showRoomSettings && (
-  //       <RoomSettingsModal
-  //         onClose={() => setShowRoomSettings(false)}
-  //         onSubmit={handleRoomSettingsSubmit}
-  //         roomParticipants={participants}
-  //         allUsers={allUsers}
-  //         currentUser={currentUser as User}
-  //         owner={owner as User}
-  //         admin={admin as User}
-  //       />
-  //     )}
-  //     {/* ROOM参加者リスト */}
-  //     <div className="participants">
-  //       <div className="participant-icons">
-  //         {participants.map((participant, index) => (
-  //           <div
-  //             key={index}
-  //             className="participant"
-  //           >
-  //             <Avatar
-  //               src={`${API_URL}/api/uploads/${participant.icon}`}
-  //               alt={participant.userName}
-  //               className="participant-icon"
-  //               sx={{ width: 50, height: 50 }}
-  //             >
-  //               {participant.icon}
-  //             </Avatar>
-  //             <div className="participant-name">{participant.userName}</div>
-  //           </div>
-  //         ))}
-  //       </div>
-  //     </div>
-  //     {/* チャット入力欄 */}
-  //     <div className="chat-input">
-  //       <input
-  //         id="message"
-  //         type="text"
-  //         placeholder="Enter message"
-  //         value={message}
-  //         onChange={(event) => setMessage(event.target.value)}
-  //       />
-  //       <button onClick={onClickSubmit}>Send</button>
-  //     </div>
-  //     {/* チャットログ */}
-  //     <div className="chat-messages">
-  //       {roomchatLogs[roomID]?.map((message, index) => (
-  //         <div
-  //           key={index}
-  //           className={`message-bubble ${
-  //             message.user === currentUser?.userName ? 'self' : 'other'
-  //           }`}
-  //         >
-  //           <Avatar
-  //             src={`${API_URL}/api/uploads/${message.photo}`}
-  //             alt="User Icon"
-  //             className="icon"
-  //             sx={{ width: 35, height: 35 }}
-  //           >
-  //             {message.photo}
-  //           </Avatar>
-  //           <div>
-  //             <div>{message.text}</div>
-  //             <div className="timestamp">{message.timestamp}</div>
-  //           </div>
-  //         </div>
-  //       ))}
-  //     </div>
-  //   </div>
-  // );
   return (
     <div className="room-container">
       {!isOwner && !isAdmin && !isPasswordVerified && roomType === 'password' ? (
@@ -346,7 +226,7 @@ export default function RoomPage({ params }: { params: string }) {
         </div>
       ) : !isOwner && !isAdmin && !isPermissionGranted && roomType === 'private' ? (
         <div className="permission-prompt">
-          <h3>Waiting for Admin Approval</h3>
+          <h3>Waiting for Join Approval</h3>
           <button onClick={handlePermissionRequest}>Request Permission</button>
         </div>
       ) : (
