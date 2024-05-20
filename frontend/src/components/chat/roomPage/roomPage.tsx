@@ -26,6 +26,7 @@ export default function RoomPage({ params }: { params: string }) {
   const [admin, setAdmin] = useState<User | null>(null);
   const [isOwner, setIsOwner] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
+  const [isParticipants, setIsParticipants] = useState(false);
   const [roomType, setRoomType] = useState<string | null>(null);
   const [roomPassword, setRoomPassword] = useState('');
   const [isPasswordVerified, setIsPasswordVerified] = useState(false);
@@ -37,8 +38,8 @@ export default function RoomPage({ params }: { params: string }) {
     getCurrentUser()
       .then((user) => {
         socket.emit('getUserCurrent', user);
-        socket.emit('joinRoom', { user, room: params });
         socket.emit('getAllUsers', user);
+        socket.emit('getRoomInfo', params);
       })
       .catch((error) => {
         console.error('Error getting user:', error);
@@ -53,40 +54,48 @@ export default function RoomPage({ params }: { params: string }) {
       setCurrentUser(user);
     });
 
-    socket.on('roomParticipants', (roomParticipants: UserInfo[]) => {
-      setParticipants(roomParticipants);
-    });
-
-    socket.on('owner', (owner: User) => {
-      setOwner(owner);
-      if (currentUser?.userId === owner.userId) {
-        setIsOwner(true);
-      }
-    });
-
-    socket.on('admin', (admin: User) => {
-      setAdmin(admin);
-      if (currentUser?.userId === admin.userId) {
-        setIsAdmin(true);
-      }
-    });
-
     socket.on('allUsers', (users: User[]) => {
       setAllUsers(users);
     });
 
-    socket.on('roomType', (type: string) => {
-      setRoomType(type);
+    socket.on('roomName', (roomName: string) => {
+      setSelectedRoom(roomName);
     });
 
-    socket.on('updateRoomSettings', (room: Room) => {
-      console.log('updateRoomSettings', room);
+    socket.on('roomType', (roomType: string) => {
+      setRoomType(roomType);
+    });
+
+    socket.on('roomOwner', (roomOwner: User) => {
+      setOwner(roomOwner);
+      if (currentUser?.userId === roomOwner.userId) {
+        setIsOwner(true);
+      }
+    });
+
+    socket.on('roomAdmin', (roomAdmin: User) => {
+      setAdmin(roomAdmin);
+      if (currentUser?.userId === roomAdmin.userId) {
+        setIsAdmin(true);
+      }
+    });
+
+    socket.on('roomParticipants', (roomParticipants: UserInfo[]) => {
+      setParticipants(roomParticipants);
+      // Participantsの中にcurrentUserがいるかどうかを確認
+      const isCurrentUserParticipant = roomParticipants.some(
+        (participant) => participant.userId === currentUser?.userId,
+      );
+      setIsParticipants(isCurrentUserParticipant);
     });
 
     socket.on('passwordVerified', (response: boolean) => {
       setIsPasswordVerified(response);
       if (!response) {
         alert('Incorrect password');
+      }
+      if (response) {
+        socket.emit('joinRoom', { user: currentUser, room: selectedRoom });
       }
     });
 
@@ -96,20 +105,29 @@ export default function RoomPage({ params }: { params: string }) {
 
     socket.on('permissionGranted', (user: User) => {
       setIsPermissionGranted(true);
+      alert('Permission granted to ' + user.userName);
+      socket.emit('joinRoom', { user: currentUser, room: selectedRoom });
     });
 
     return () => {
       socket.off('user');
-      socket.off('roomParticipants');
-      socket.off('owner');
-      socket.off('admin');
       socket.off('allUsers');
       socket.off('roomType');
-      socket.off('updateRoomSettings');
+      socket.off('roomOwner');
+      socket.off('roomAdmin');
+      socket.off('roomParticipants');
       socket.off('passwordVerified');
+      socket.off('permissionRequested');
       socket.off('permissionGranted');
     };
-  }, [socket, participants, currentUser]);
+  }, [socket, currentUser]);
+
+  useEffect(() => {
+    if (!socket) return;
+    if (roomType === 'public') {
+      socket.emit('joinRoom', { user: currentUser, room: selectedRoom });
+    }
+  }, [socket, roomType, currentUser, selectedRoom]);
 
   useEffect(() => {
     if (!socket) return;
@@ -183,7 +201,6 @@ export default function RoomPage({ params }: { params: string }) {
   const handleRoomSettingsSubmit = (roomSettings: Room) => {
     if (!socket) return;
     socket.emit('roomSettings', { selectedRoom, roomSettings });
-    console.log('roomSettings', roomSettings);
     setShowRoomSettings(false);
   };
 
@@ -203,12 +220,15 @@ export default function RoomPage({ params }: { params: string }) {
 
   const handlePermissionRequest = () => {
     if (!socket) return;
-    // socket.emit('talk', { selectedRoom, currentUser, message: 'Requesting permission to join' });
     socket.emit('requestPermission', { room: selectedRoom, user: currentUser });
   };
 
   const handleRequestOK = () => {
     if (!socket) return;
+    if (!isAdmin || !isOwner) {
+      alert('You do not have permission to grant permission');
+      return;
+    }
     socket.emit('permissionGranted', { room: selectedRoom, user: currentUser });
   };
 
@@ -224,7 +244,11 @@ export default function RoomPage({ params }: { params: string }) {
           />
           <button onClick={handlePasswordSubmit}>Submit</button>
         </div>
-      ) : !isOwner && !isAdmin && !isPermissionGranted && roomType === 'private' ? (
+      ) : !isParticipants &&
+        !isOwner &&
+        !isAdmin &&
+        !isPermissionGranted &&
+        roomType === 'private' ? (
         <div className="permission-prompt">
           <h3>Waiting for Join Approval</h3>
           <button onClick={handlePermissionRequest}>Request Permission</button>

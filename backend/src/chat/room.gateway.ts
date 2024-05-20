@@ -67,6 +67,66 @@ export class RoomGateway {
     }
   }
 
+  @SubscribeMessage('getAllUsers')
+  async handleGetAllUsers(@MessageBody() user: User, @ConnectedSocket() socket: Socket) {
+    try {
+      // データベースから全ユーザーを取得
+      const allUsers = await this.userRepository.find();
+      if (allUsers) {
+        // 自分自身を除いてクライアントに送信
+        const users = allUsers.filter((u) => u.userId !== user.userId);
+        this.server.to(socket.id).emit('allUsers', users);
+        // this.logger.log(`All users: ${JSON.stringify(users)}`);
+      } else {
+        this.logger.error('No users found');
+      }
+    } catch (error) {
+      this.logger.error(error);
+    }
+  }
+
+  @SubscribeMessage('getRoomInfo')
+  async handleGetRoomInfo(@MessageBody() roomName: string, @ConnectedSocket() socket: Socket) {
+    try {
+      // データベースからroomNameと同じ部屋を取得
+      const room = await this.roomRepository.findOne({
+        where: {
+          roomName: roomName,
+        },
+      });
+      if (room) {
+        this.server.to(socket.id).emit('roomType', room.roomType);
+        // OwnerのUser情報を取得してクライアントに送信
+        const owner = await this.userRepository.findOne({
+          where: {
+            userId: room.roomOwner,
+          },
+        });
+        this.server.to(socket.id).emit('roomOwner', owner);
+        // AdminのUser情報を取得してクライアントに送信
+        const admin = await this.userRepository.findOne({
+          where: {
+            userId: room.roomAdmin,
+          },
+        });
+        this.server.to(socket.id).emit('roomAdmin', admin);
+        // roomParticipantsをUserInfoに変換
+        const roomParticipants: UserInfo[] = room.roomParticipants.map((participant) => {
+          return {
+            userId: participant.id,
+            userName: participant.name,
+            icon: participant.icon,
+          };
+        });
+        this.server.to(socket.id).emit('roomParticipants', roomParticipants);
+      } else {
+        this.logger.error('No room found');
+      }
+    } catch (error) {
+      this.logger.error(error);
+    }
+  }
+
   @SubscribeMessage('joinRoom')
   async handleJoinRoom(
     @MessageBody() join: { user: User; room: string },
@@ -148,22 +208,6 @@ export class RoomGateway {
       } else {
         this.logger.error(`Error getting chat logs.`);
       }
-      // ownerを取得してクライアントに送信
-      const owner = await this.userRepository.findOne({ where: { userId: room.roomOwner } });
-      if (owner) {
-        this.server.to(join.room).emit('owner', owner);
-      } else {
-        this.logger.error(`Error getting owner.`);
-      }
-      // adminを取得してクライアントに送信
-      const admin = await this.userRepository.findOne({ where: { userId: room.roomAdmin } });
-      if (admin) {
-        this.server.to(join.room).emit('admin', admin);
-      } else {
-        this.logger.error(`Error getting admin.`);
-      }
-      // roomTypeをクライアントに送信
-      this.server.to(join.room).emit('roomType', room.roomType);
     } catch (error) {
       const errorMessage = (error as Error).message;
       this.logger.error(`Error joining room: ${errorMessage}`);
@@ -256,24 +300,6 @@ export class RoomGateway {
     } catch (error) {
       this.logger.error(`Error granting permission: ${(error as Error).message}`);
       throw error;
-    }
-  }
-
-  @SubscribeMessage('getAllUsers')
-  async handleGetAllUsers(@MessageBody() user: User, @ConnectedSocket() socket: Socket) {
-    try {
-      // データベースから全ユーザーを取得
-      const allUsers = await this.userRepository.find();
-      if (allUsers) {
-        // 自分自身を除いてクライアントに送信
-        const users = allUsers.filter((u) => u.userId !== user.userId);
-        this.server.to(socket.id).emit('allUsers', users);
-        // this.logger.log(`All users: ${JSON.stringify(users)}`);
-      } else {
-        this.logger.error('No users found');
-      }
-    } catch (error) {
-      this.logger.error(error);
     }
   }
 
@@ -470,7 +496,15 @@ export class RoomGateway {
       });
       if (updatedRoom) {
         this.logger.log(`Updated room: ${JSON.stringify(updatedRoom)}`);
-        this.server.to(settings.selectedRoom).emit('updateRoomSettings', updatedRoom);
+        this.server.to(settings.selectedRoom).emit('roomName', updatedRoom.roomName);
+        this.server.to(settings.selectedRoom).emit('roomType', updatedRoom.roomType);
+        // AdminのUser情報を取得してクライアントに送信
+        const admin = await this.userRepository.findOne({
+          where: {
+            userId: updatedRoom.roomAdmin,
+          },
+        });
+        this.server.to(settings.selectedRoom).emit('roomAdmin', admin);
       } else {
         this.logger.error(`Error getting updated room.`);
       }
