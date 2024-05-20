@@ -24,7 +24,7 @@ const RoomSettingsModal: React.FC<RoomSettingsModalProps> = ({
   admin,
 }) => {
   const [roomName, setRoomName] = useState('');
-  const [roomType, setRoomType] = useState('public');
+  const [roomType, setRoomType] = useState('');
   const [roomPassword, setRoomPassword] = useState('');
   const [roomAdmin, setRoomAdmin] = useState<number | null>(null);
   const [roomBlocked, setRoomBlocked] = useState<number | null>(null);
@@ -84,6 +84,7 @@ const RoomSettingsModal: React.FC<RoomSettingsModalProps> = ({
                 type="text"
                 value={roomName}
                 onChange={handleNameChange}
+                placeholder="Enter Room Name"
               />
             </label>
             <label className="label">
@@ -92,9 +93,15 @@ const RoomSettingsModal: React.FC<RoomSettingsModalProps> = ({
                 value={roomType}
                 onChange={(e) => setRoomType(e.target.value)}
               >
+                <option
+                  value=""
+                  disabled
+                >
+                  Select Room Type
+                </option>
                 <option value="public">Public</option>
                 <option value="private">Private</option>
-                <option value="password">Password Protected</option>
+                <option value="password">Password</option>
               </select>
             </label>
             {roomType === 'password' && (
@@ -119,7 +126,7 @@ const RoomSettingsModal: React.FC<RoomSettingsModalProps> = ({
                 >
                   Select Admin
                 </option>
-                <option value="">Unassign Admin</option>
+                <option value={owner?.userId ?? ''}>Default</option>
                 {otherParticipants.map((participant) => (
                   <option
                     key={participant.userId}
