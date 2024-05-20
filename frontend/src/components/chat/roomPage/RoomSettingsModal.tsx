@@ -58,6 +58,7 @@ const RoomSettingsModal: React.FC<RoomSettingsModalProps> = ({
 
   const handleMutedChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     setRoomMuted(Number(e.target.value));
+    setMuteDuration('');
   };
 
   const handleMutedDurationChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
@@ -180,25 +181,20 @@ const RoomSettingsModal: React.FC<RoomSettingsModalProps> = ({
                 ))}
               </select>
             </label>
-            {roomMuted &&
-              otherParticipants.map((mutedUser) => (
-                <label
-                  key={mutedUser.userId}
-                  className="label"
+            {roomMuted && (
+              <label className="label">
+                Mute Duration for {allUsers.find((user) => user.userId === roomMuted)?.userName}:
+                <select
+                  value={muteDuration}
+                  onChange={handleMutedDurationChange}
                 >
-                  Mute Duration for{' '}
-                  {allUsers.find((user) => user.userId === mutedUser.userId)?.userName}:
-                  <select
-                    value={muteDuration}
-                    onChange={handleMutedDurationChange}
-                  >
-                    <option value="">Select Duration</option>
-                    <option value="1d">1 Day</option>
-                    <option value="1w">1 Week</option>
-                    <option value="1m">1 Month</option>
-                  </select>
-                </label>
-              ))}
+                  <option value="">Select Duration</option>
+                  <option value="1d">1 Day</option>
+                  <option value="1w">1 Week</option>
+                  <option value="1m">1 Month</option>
+                </select>
+              </label>
+            )}
           </>
         )}
         <button onClick={handleSubmit}>Submit</button>

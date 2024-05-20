@@ -198,7 +198,7 @@ export class RoomGateway {
 
   @SubscribeMessage('requestPermission')
   async handleRequestPermission(
-    @MessageBody() data: { user: User; room: string },
+    @MessageBody() data: { room: string; user: User },
     @ConnectedSocket() socket: Socket,
   ) {
     try {
@@ -206,17 +206,55 @@ export class RoomGateway {
       // データベースから部屋を取得
       const room = await this.roomRepository.findOne({ where: { roomName: data.room } });
       if (room) {
-        // ユーザーが管理者か確認
-        if (room.roomAdmin === data.user.userId) {
-          this.server.to(socket.id).emit('permissionGranted', true);
-        } else {
-          this.server.to(socket.id).emit('permissionGranted', false);
-        }
+        // チャットログとして保存
+        const chatLog = new ChatLog();
+        chatLog.roomName = data.room;
+        chatLog.sender = data.user.userName;
+        chatLog.icon = data.user.icon;
+        chatLog.message = 'requested permission';
+        chatLog.timestamp = formatDate(new Date());
+        await this.chatLogRepository.save(chatLog);
+        this.logger.log(`Saved chatLog: ${JSON.stringify(chatLog)}`);
+        // チャットログを取得
+        const chatLogs = await this.chatLogRepository.find({
+          where: { roomName: data.room },
+        });
+        this.logger.log(`Chat logs: ${JSON.stringify(chatLogs)}`);
+        // chatLogsをchatmessage[]に変換
+        const chatMessages: ChatMessage[] = chatLogs.map((log) => {
+          return {
+            user: log.sender,
+            photo: log.icon,
+            text: log.message,
+            timestamp: log.timestamp,
+          };
+        });
+        this.server.to(data.room).emit('chatLogs', chatMessages);
       } else {
         this.logger.error(`Room ${data.room} not found in the database.`);
       }
     } catch (error) {
       this.logger.error(`Error requesting permission: ${(error as Error).message}`);
+      throw error;
+    }
+  }
+
+  @SubscribeMessage('permissionGranted')
+  async handlePermissionGranted(
+    @MessageBody() data: { room: string; user: User },
+    @ConnectedSocket() socket: Socket,
+  ) {
+    try {
+      this.logger.log(`permissionGranted: ${data.user.userName} granted permission`);
+      // データベースから部屋を取得
+      const room = await this.roomRepository.findOne({ where: { roomName: data.room } });
+      if (room) {
+        this.server.to(data.room).emit('permissionGranted', data.user);
+      } else {
+        this.logger.error(`Room ${data.room} not found in the database.`);
+      }
+    } catch (error) {
+      this.logger.error(`Error granting permission: ${(error as Error).message}`);
       throw error;
     }
   }

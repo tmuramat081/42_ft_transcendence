@@ -90,7 +90,11 @@ export default function RoomPage({ params }: { params: string }) {
       }
     });
 
-    socket.on('permissionGranted', () => {
+    socket.on('permissionRequested', (user: User) => {
+      alert('Permission requested by ' + user.userName);
+    });
+
+    socket.on('permissionGranted', (user: User) => {
       setIsPermissionGranted(true);
     });
 
@@ -110,7 +114,25 @@ export default function RoomPage({ params }: { params: string }) {
   useEffect(() => {
     if (!socket) return;
     socket.on('chatLogs', (chatMessages: ChatMessage[]) => {
-      setRoomChatLogs((prevRoomChatLogs) => ({ ...prevRoomChatLogs, [roomID]: chatMessages }));
+      // textが'requested permission'の場合、各メッセージにOKリンクを追加する
+      const updatedChatMessages = chatMessages.map((message) => {
+        if (message.text === 'requested permission') {
+          return {
+            ...message,
+            text: (
+              <>
+                permission requested
+                <button onClick={handleRequestOK}>OK</button>
+              </>
+            ),
+          };
+        }
+        return message;
+      });
+      setRoomChatLogs((prevRoomChatLogs) => ({
+        ...prevRoomChatLogs,
+        [roomID]: updatedChatMessages as ChatMessage[],
+      }));
     });
 
     return () => {
@@ -181,7 +203,13 @@ export default function RoomPage({ params }: { params: string }) {
 
   const handlePermissionRequest = () => {
     if (!socket) return;
+    // socket.emit('talk', { selectedRoom, currentUser, message: 'Requesting permission to join' });
     socket.emit('requestPermission', { room: selectedRoom, user: currentUser });
+  };
+
+  const handleRequestOK = () => {
+    if (!socket) return;
+    socket.emit('permissionGranted', { room: selectedRoom, user: currentUser });
   };
 
   // return (
@@ -306,7 +334,7 @@ export default function RoomPage({ params }: { params: string }) {
   // );
   return (
     <div className="room-container">
-      {!isPasswordVerified && roomType === 'password' ? (
+      {!isOwner && !isAdmin && !isPasswordVerified && roomType === 'password' ? (
         <div className="password-prompt">
           <h3>Enter Room Password</h3>
           <input
@@ -316,7 +344,7 @@ export default function RoomPage({ params }: { params: string }) {
           />
           <button onClick={handlePasswordSubmit}>Submit</button>
         </div>
-      ) : !isPermissionGranted && roomType === 'private' ? (
+      ) : !isOwner && !isAdmin && !isPermissionGranted && roomType === 'private' ? (
         <div className="permission-prompt">
           <h3>Waiting for Admin Approval</h3>
           <button onClick={handlePermissionRequest}>Request Permission</button>
@@ -410,7 +438,7 @@ export default function RoomPage({ params }: { params: string }) {
               >
                 <Avatar
                   src={`${API_URL}/api/uploads/${message.photo}`}
-                  alt="User Icon"
+                  alt={message.user}
                   className="icon"
                   sx={{ width: 35, height: 35 }}
                 >
