@@ -109,6 +109,10 @@ export default function RoomPage({ params }: { params: string }) {
       alert('Permission granted to ' + user.userName);
     });
 
+    socket.on('permissionError', () => {
+      alert('You do not have permission to grant permission');
+    });
+
     socket.on('updatedRoomParticipants', (roomParticipants: UserInfo[]) => {
       setParticipants(roomParticipants);
     });
@@ -124,9 +128,16 @@ export default function RoomPage({ params }: { params: string }) {
       socket.off('passwordVerified');
       socket.off('permissionRequested');
       socket.off('permissionGranted');
+      socket.off('permissionError');
       socket.off('updatedRoomParticipants');
     };
   }, [socket, currentUser, roomID, selectedRoom, roomType]);
+
+  useEffect(() => {
+    if (!socket) return;
+    console.log('owner:', owner, 'admin:', admin);
+    console.log('isOwner:', isOwner, 'isAdmin:', isAdmin);
+  }, [socket, isOwner, isAdmin]);
 
   useEffect(() => {
     if (!socket) return;
@@ -138,7 +149,6 @@ export default function RoomPage({ params }: { params: string }) {
   useEffect(() => {
     if (!socket) return;
     socket.on('chatLogs', (chatMessages: ChatMessage[]) => {
-      console.log('chatMessages:', chatMessages);
       // textが'requested permission'の場合、各メッセージにOKリンクを追加する
       const updatedChatMessages = chatMessages.map((message) => {
         if (message.text === 'requested permission') {
@@ -154,16 +164,7 @@ export default function RoomPage({ params }: { params: string }) {
         }
         return message;
       });
-      console.log('updatedChatMessages:', updatedChatMessages);
       setRoomChatLogs(updatedChatMessages as ChatMessage[]);
-      // setRoomChatLogs((prevRoomChatLogs) => ({
-      //   ...prevRoomChatLogs,
-      //   [roomID!]: updatedChatMessages.map((message) => ({
-      //     ...message,
-      //     text: message.text.toString(),
-      //   })),
-      // }));
-      console.log('roomChatLogs:', roomchatLogs);
     });
 
     return () => {
@@ -184,9 +185,7 @@ export default function RoomPage({ params }: { params: string }) {
       setSelectedRoom(null);
       setMessage('');
       // チャットログをクリアする
-      const updatedLogs = { ...roomchatLogs };
-      delete updatedLogs[roomID!];
-      setRoomChatLogs(updatedLogs);
+      setRoomChatLogs([]);
       // chatページに戻る
       window.location.href = '/chat';
     }
@@ -199,9 +198,7 @@ export default function RoomPage({ params }: { params: string }) {
       setSelectedRoom(null);
       setParticipants([]);
       // チャットログをクリアする
-      const updatedLogs = { ...roomchatLogs };
-      delete updatedLogs[roomID!];
-      setRoomChatLogs(updatedLogs);
+      setRoomChatLogs([]);
       // chatページに戻る
       window.location.href = '/chat';
     }
@@ -239,10 +236,6 @@ export default function RoomPage({ params }: { params: string }) {
 
   const handleRequestOK = () => {
     if (!socket) return;
-    if (!isAdmin || !isOwner) {
-      alert('You do not have permission to grant permission');
-      return;
-    }
     socket.emit('permissionGranted', { roomID: roomID, room: selectedRoom, user: currentUser });
   };
 
@@ -371,9 +364,6 @@ export default function RoomPage({ params }: { params: string }) {
                 </Avatar>
                 <div>
                   <div>{message.text}</div>
-                  {/* <div className="message-text">
-                    {typeof message.text === 'string' ? message.text : <>{message.text}</>}
-                  </div> */}
                   <div className="timestamp">{message.timestamp}</div>
                 </div>
               </div>
