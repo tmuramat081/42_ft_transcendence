@@ -51,6 +51,7 @@ body {
 
 .chat-input {
   align-self: flex-end;
+  margin-bottom: 10px;
 }
 
 .chat-messages {

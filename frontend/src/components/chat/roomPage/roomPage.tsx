@@ -101,16 +101,42 @@ export default function RoomPage({ params }: { params: string }) {
     });
 
     socket.on('permissionRequested', (user: User) => {
-      alert('Permission requested by ' + user.userName);
+      console.log('Permission requested by', user.userName);
+      if (window.confirm(`Permission requested by ${user.userName}. Do you accept?`)) {
+        // ユーザーが "Accept" ボタンをクリックした場合
+        socket.emit('permissionGranted', {
+          roomID: roomID,
+          room: selectedRoom,
+          user: user,
+          admin: currentUser,
+        });
+        socket.emit('joinRoom', { roomID: roomID, room: selectedRoom, user: user });
+        // updatePermissionGrantedUI();
+      } else {
+        // ユーザーが "Reject" ボタンをクリックした場合
+        socket.emit('permissionDenied', {
+          roomID: roomID,
+          room: selectedRoom,
+          user: user,
+          admin: currentUser,
+        });
+      }
     });
 
+    // const updatePermissionGrantedUI = () => {
+    //   // 画面をリロードする
+    //   window.location.reload();
+    // };
+
     socket.on('permissionGranted', (user: User) => {
+      console.log('Permission granted to', user.userName);
       setIsPermissionGranted(true);
       alert('Permission granted to ' + user.userName);
     });
 
-    socket.on('permissionError', () => {
-      alert('You do not have permission to grant permission');
+    socket.on('permissionDenied', (user: User) => {
+      console.log('Permission denied to', user.userName);
+      alert('Permission denied by ' + user.userName);
     });
 
     socket.on('updatedRoomParticipants', (roomParticipants: UserInfo[]) => {
@@ -135,36 +161,15 @@ export default function RoomPage({ params }: { params: string }) {
 
   useEffect(() => {
     if (!socket) return;
-    console.log('owner:', owner, 'admin:', admin);
-    console.log('isOwner:', isOwner, 'isAdmin:', isAdmin);
-  }, [socket, isOwner, isAdmin]);
-
-  useEffect(() => {
-    if (!socket) return;
     if (roomType === 'public' || isParticipants || isPasswordVerified || isPermissionGranted) {
       socket.emit('joinRoom', { roomID: roomID, room: selectedRoom, user: currentUser });
     }
-  }, [socket, isParticipants, isPasswordVerified, isPermissionGranted]);
+  }, [socket, roomType, isParticipants, isPasswordVerified, isPermissionGranted]);
 
   useEffect(() => {
     if (!socket) return;
     socket.on('chatLogs', (chatMessages: ChatMessage[]) => {
-      // textが'requested permission'の場合、各メッセージにOKリンクを追加する
-      const updatedChatMessages = chatMessages.map((message) => {
-        if (message.text === 'requested permission') {
-          return {
-            ...message,
-            text: (
-              <>
-                permission requested
-                <button onClick={handleRequestOK}>OK</button>
-              </>
-            ),
-          };
-        }
-        return message;
-      });
-      setRoomChatLogs(updatedChatMessages as ChatMessage[]);
+      setRoomChatLogs(chatMessages);
     });
 
     return () => {
@@ -230,13 +235,7 @@ export default function RoomPage({ params }: { params: string }) {
 
   const handlePermissionRequest = () => {
     if (!socket) return;
-    // console.log('roomID:', roomID, 'room:', selectedRoom, 'user:', currentUser);
     socket.emit('requestPermission', { roomID: roomID, room: selectedRoom, user: currentUser });
-  };
-
-  const handleRequestOK = () => {
-    if (!socket) return;
-    socket.emit('permissionGranted', { roomID: roomID, room: selectedRoom, user: currentUser });
   };
 
   return (
