@@ -161,6 +161,10 @@ export default function RoomPage({ params }: { params: string }) {
 
   useEffect(() => {
     if (!socket) return;
+    console.log('roomType:', roomType);
+    console.log('isParticipants:', isParticipants);
+    console.log('isPasswordVerified:', isPasswordVerified);
+    console.log('isPermissionGranted:', isPermissionGranted);
     if (roomType === 'public' || isParticipants || isPasswordVerified || isPermissionGranted) {
       socket.emit('joinRoom', { roomID: roomID, room: selectedRoom, user: currentUser });
     }
@@ -189,8 +193,8 @@ export default function RoomPage({ params }: { params: string }) {
       socket.emit('leaveRoom', { roomID: roomID, room: selectedRoom, user: currentUser });
       setSelectedRoom(null);
       setMessage('');
-      // チャットログをクリアする
       setRoomChatLogs([]);
+      setIsParticipants(false);
       // chatページに戻る
       window.location.href = '/chat';
     }
@@ -202,8 +206,8 @@ export default function RoomPage({ params }: { params: string }) {
       socket.emit('deleteRoom', { roomID: roomID, room: selectedRoom, user: currentUser });
       setSelectedRoom(null);
       setParticipants([]);
-      // チャットログをクリアする
       setRoomChatLogs([]);
+      setIsParticipants(false);
       // chatページに戻る
       window.location.href = '/chat';
     }

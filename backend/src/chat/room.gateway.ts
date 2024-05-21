@@ -388,7 +388,17 @@ export class RoomGateway {
       // 更新された参加者リストを取得してクライアントに送信
       const updatedRoom = await this.roomRepository.findOne({ where: { id: leave.roomID } });
       if (updatedRoom) {
-        this.server.to(leave.room).emit('roomParticipants', updatedRoom.roomParticipants);
+        // updatedRoom.roomParticipantsをUserInfoに変換
+        const updatedRoomParticipants: UserInfo[] = updatedRoom.roomParticipants.map(
+          (participant) => {
+            return {
+              userId: participant.id,
+              userName: participant.name,
+              icon: participant.icon,
+            };
+          },
+        );
+        this.server.to(leave.room).emit('updatedRoomParticipants', updatedRoomParticipants);
       } else {
         this.logger.error(`Error getting updated room.`);
       }
