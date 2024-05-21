@@ -16,7 +16,7 @@ export default function RoomPage({ params }: { params: string }) {
   const { getCurrentUser, loginUser } = useAuth();
   const [roomID, setRoomID] = useState<number | null>(null);
   const [selectedRoom, setSelectedRoom] = useState<string | null>(null);
-  const [roomchatLogs, setRoomChatLogs] = useState<{ [roomID: number]: ChatMessage[] }>({});
+  const [roomchatLogs, setRoomChatLogs] = useState<ChatMessage[]>([]);
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [allUsers, setAllUsers] = useState<User[]>([]);
   const [showRoomSettings, setShowRoomSettings] = useState(false);
@@ -154,15 +154,16 @@ export default function RoomPage({ params }: { params: string }) {
         }
         return message;
       });
-      setRoomChatLogs((prevRoomChatLogs) => {
-        return {
-          ...prevRoomChatLogs,
-          [roomID!]: updatedChatMessages.map((message) => ({
-            ...message,
-            text: message.text.toString(),
-          })),
-        };
-      });
+      console.log('updatedChatMessages:', updatedChatMessages);
+      setRoomChatLogs(updatedChatMessages as ChatMessage[]);
+      // setRoomChatLogs((prevRoomChatLogs) => ({
+      //   ...prevRoomChatLogs,
+      //   [roomID!]: updatedChatMessages.map((message) => ({
+      //     ...message,
+      //     text: message.text.toString(),
+      //   })),
+      // }));
+      console.log('roomChatLogs:', roomchatLogs);
     });
 
     return () => {
@@ -353,7 +354,7 @@ export default function RoomPage({ params }: { params: string }) {
           </div>
           {/* チャットログ */}
           <div className="chat-messages">
-            {roomchatLogs[roomID!]?.map((message, index) => (
+            {roomchatLogs.map((message, index) => (
               <div
                 key={index}
                 className={`message-bubble ${
@@ -370,6 +371,9 @@ export default function RoomPage({ params }: { params: string }) {
                 </Avatar>
                 <div>
                   <div>{message.text}</div>
+                  {/* <div className="message-text">
+                    {typeof message.text === 'string' ? message.text : <>{message.text}</>}
+                  </div> */}
                   <div className="timestamp">{message.timestamp}</div>
                 </div>
               </div>
