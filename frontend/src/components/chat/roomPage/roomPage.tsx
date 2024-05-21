@@ -1,6 +1,6 @@
 /*eslint-disable*/
 'use client';
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, use } from 'react';
 import Avatar from '@mui/material/Avatar';
 import { useWebSocket } from '@/providers/webSocketProvider';
 import { useAuth } from '@/providers/useAuth';
@@ -58,7 +58,7 @@ export default function RoomPage({ params }: { params: string }) {
       setAllUsers(users);
     });
 
-    socket.on('roomID', (roomID: number) => {
+    socket.on('roomId', (roomID: number) => {
       setRoomID(roomID);
     });
 
@@ -98,9 +98,6 @@ export default function RoomPage({ params }: { params: string }) {
       if (!response) {
         alert('Incorrect password');
       }
-      if (response) {
-        socket.emit('joinRoom', { user: currentUser, room: selectedRoom });
-      }
     });
 
     socket.on('permissionRequested', (user: User) => {
@@ -110,7 +107,11 @@ export default function RoomPage({ params }: { params: string }) {
     socket.on('permissionGranted', (user: User) => {
       setIsPermissionGranted(true);
       alert('Permission granted to ' + user.userName);
-      socket.emit('joinRoom', { user: currentUser, room: selectedRoom });
+      // socket.emit('joinRoom', { roomID: roomID, room: selectedRoom, user: currentUser });
+    });
+
+    socket.on('updatedRoomParticipants', (roomParticipants: UserInfo[]) => {
+      setParticipants(roomParticipants);
     });
 
     return () => {
@@ -124,19 +125,30 @@ export default function RoomPage({ params }: { params: string }) {
       socket.off('passwordVerified');
       socket.off('permissionRequested');
       socket.off('permissionGranted');
+      socket.off('updatedRoomParticipants');
     };
-  }, [socket, currentUser]);
+  }, [socket, currentUser, roomID, selectedRoom, roomType, participants]);
 
   useEffect(() => {
     if (!socket) return;
-    if (roomType === 'public') {
-      socket.emit('joinRoom', { user: currentUser, room: selectedRoom });
+    if (roomType === 'public' || isParticipants || isPasswordVerified || isPermissionGranted) {
+      socket.emit('joinRoom', { roomID: roomID, room: selectedRoom, user: currentUser });
     }
-  }, [socket, roomType, currentUser, selectedRoom]);
+  }, [
+    socket,
+    roomType,
+    currentUser,
+    selectedRoom,
+    roomID,
+    isParticipants,
+    isPasswordVerified,
+    isPermissionGranted,
+  ]);
 
   useEffect(() => {
     if (!socket) return;
     socket.on('chatLogs', (chatMessages: ChatMessage[]) => {
+      console.log('chatMessages:', chatMessages);
       // textが'requested permission'の場合、各メッセージにOKリンクを追加する
       const updatedChatMessages = chatMessages.map((message) => {
         if (message.text === 'requested permission') {
@@ -177,7 +189,7 @@ export default function RoomPage({ params }: { params: string }) {
   const onClickLeaveRoom = useCallback(() => {
     if (!socket) return;
     if (selectedRoom) {
-      socket.emit('leaveRoom', { user: currentUser, room: selectedRoom });
+      socket.emit('leaveRoom', { roomID: roomID, room: selectedRoom, user: currentUser });
       setSelectedRoom(null);
       setMessage('');
       // チャットログをクリアする
@@ -192,7 +204,7 @@ export default function RoomPage({ params }: { params: string }) {
   const onClickDeleteRoom = useCallback(() => {
     if (!socket) return;
     if (selectedRoom) {
-      socket.emit('deleteRoom', { user: currentUser, room: selectedRoom });
+      socket.emit('deleteRoom', { roomID: roomID, room: selectedRoom, user: currentUser });
       setSelectedRoom(null);
       setParticipants([]);
       // チャットログをクリアする
@@ -210,7 +222,7 @@ export default function RoomPage({ params }: { params: string }) {
 
   const handleRoomSettingsSubmit = (roomSettings: Room) => {
     if (!socket) return;
-    socket.emit('roomSettings', { selectedRoom, roomSettings });
+    socket.emit('roomSettings', { roomID, selectedRoom, roomSettings });
     setShowRoomSettings(false);
   };
 
@@ -218,7 +230,7 @@ export default function RoomPage({ params }: { params: string }) {
     if (!socket) return;
     socket.emit(
       'verifyRoomPassword',
-      { roomName: selectedRoom, password: roomPassword },
+      { roomID: roomID, roomName: selectedRoom, password: roomPassword },
       (response: boolean) => {
         setIsPasswordVerified(response);
         if (!response) {
@@ -230,7 +242,8 @@ export default function RoomPage({ params }: { params: string }) {
 
   const handlePermissionRequest = () => {
     if (!socket) return;
-    socket.emit('requestPermission', { room: selectedRoom, user: currentUser });
+    // console.log('roomID:', roomID, 'room:', selectedRoom, 'user:', currentUser);
+    socket.emit('requestPermission', { roomID: roomID, room: selectedRoom, user: currentUser });
   };
 
   const handleRequestOK = () => {
@@ -239,7 +252,7 @@ export default function RoomPage({ params }: { params: string }) {
       alert('You do not have permission to grant permission');
       return;
     }
-    socket.emit('permissionGranted', { room: selectedRoom, user: currentUser });
+    socket.emit('permissionGranted', { roomID: roomID, room: selectedRoom, user: currentUser });
   };
 
   return (

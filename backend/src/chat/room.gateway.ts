@@ -130,7 +130,7 @@ export class RoomGateway {
 
   @SubscribeMessage('joinRoom')
   async handleJoinRoom(
-    @MessageBody() join: { user: User; room: string },
+    @MessageBody() join: { roomID: number; room: string; user: User },
     @ConnectedSocket() socket: Socket,
   ) {
     try {
@@ -139,7 +139,7 @@ export class RoomGateway {
       // 既に部屋に入っている場合は退出
       if (rooms.length == 2) socket.leave(rooms[1]);
       // データベースから部屋を取得
-      const room = await this.roomRepository.findOne({ where: { roomName: join.room } });
+      const room = await this.roomRepository.findOne({ where: { id: join.roomID } });
       // 参加者リストを更新
       if (room) {
         if (!room.roomParticipants) {
@@ -178,24 +178,26 @@ export class RoomGateway {
       // ソケットにルームに参加させる
       socket.join(join.room);
       // 参加者リストを取得してクライアントに送信
-      const updatedRoom = await this.roomRepository.findOne({ where: { roomName: join.room } });
+      const updatedRoom = await this.roomRepository.findOne({ where: { id: join.roomID } });
       if (updatedRoom) {
         // updatedRoom.roomParticipantsをUserInfoに変換
-        const roomParticipants: UserInfo[] = updatedRoom.roomParticipants.map((participant) => {
-          return {
-            userId: participant.id,
-            userName: participant.name,
-            icon: participant.icon,
-          };
-        });
-        this.server.to(join.room).emit('roomParticipants', roomParticipants);
+        const updatedRoomParticipants: UserInfo[] = updatedRoom.roomParticipants.map(
+          (participant) => {
+            return {
+              userId: participant.id,
+              userName: participant.name,
+              icon: participant.icon,
+            };
+          },
+        );
+        this.server.to(join.room).emit('updatedRoomParticipants', updatedRoomParticipants);
       } else {
         this.logger.error(`Error getting updated room.`);
       }
       // チャットログを取得してクライアントに送信
-      const chatLogs = await this.chatLogRepository.find({ where: { roomName: join.room } });
+      const chatLogs = await this.chatLogRepository.find({ where: { roomID: join.roomID } });
       if (chatLogs) {
-        this.logger.log(`Chat logs: ${JSON.stringify(chatLogs)}`);
+        // this.logger.log(`Chat logs: ${JSON.stringify(chatLogs)}`);
         // chatLogsをchatmessage[]に変換
         const chatMessages: ChatMessage[] = chatLogs.map((log) => {
           return {
@@ -218,13 +220,13 @@ export class RoomGateway {
 
   @SubscribeMessage('verifyRoomPassword')
   async handleVerifyRoomPassword(
-    @MessageBody() data: { roomName: string; password: string },
+    @MessageBody() data: { roomID: number; roomName: string; password: string },
     @ConnectedSocket() socket: Socket,
   ) {
     try {
       this.logger.log(`verifyRoomPassword: ${data.roomName} ${data.password}`);
       // データベースから部屋を取得
-      const room = await this.roomRepository.findOne({ where: { roomName: data.roomName } });
+      const room = await this.roomRepository.findOne({ where: { id: data.roomID } });
       if (room) {
         // パスワードが一致するか確認
         if (room.roomPassword === data.password) {
@@ -243,16 +245,17 @@ export class RoomGateway {
 
   @SubscribeMessage('requestPermission')
   async handleRequestPermission(
-    @MessageBody() data: { room: string; user: User },
+    @MessageBody() data: { roomID: number; room: string; user: User },
     @ConnectedSocket() socket: Socket,
   ) {
     try {
       this.logger.log(`requestPermission: ${data.user.userName} requested permission`);
-      // データベースから部屋を取得
-      const room = await this.roomRepository.findOne({ where: { roomName: data.room } });
+      // roomIDでデータベースから部屋を取得
+      const room = await this.roomRepository.findOne({ where: { id: data.roomID } });
       if (room) {
         // チャットログとして保存
         const chatLog = new ChatLog();
+        chatLog.roomID = data.roomID;
         chatLog.roomName = data.room;
         chatLog.sender = data.user.userName;
         chatLog.icon = data.user.icon;
@@ -262,9 +265,9 @@ export class RoomGateway {
         this.logger.log(`Saved chatLog: ${JSON.stringify(chatLog)}`);
         // チャットログを取得
         const chatLogs = await this.chatLogRepository.find({
-          where: { roomName: data.room },
+          where: { roomID: data.roomID },
         });
-        this.logger.log(`Chat logs: ${JSON.stringify(chatLogs)}`);
+        // this.logger.log(`Chat logs: ${JSON.stringify(chatLogs)}`);
         // chatLogsをchatmessage[]に変換
         const chatMessages: ChatMessage[] = chatLogs.map((log) => {
           return {
@@ -274,6 +277,7 @@ export class RoomGateway {
             timestamp: log.timestamp,
           };
         });
+        this.logger.log(`Chat messages: ${JSON.stringify(chatMessages)}`);
         this.server.to(data.room).emit('chatLogs', chatMessages);
       } else {
         this.logger.error(`Room ${data.room} not found in the database.`);
@@ -286,13 +290,13 @@ export class RoomGateway {
 
   @SubscribeMessage('permissionGranted')
   async handlePermissionGranted(
-    @MessageBody() data: { room: string; user: User },
+    @MessageBody() data: { roomID: number; room: string; user: User },
     @ConnectedSocket() socket: Socket,
   ) {
     try {
       this.logger.log(`permissionGranted: ${data.user.userName} granted permission`);
       // データベースから部屋を取得
-      const room = await this.roomRepository.findOne({ where: { roomName: data.room } });
+      const room = await this.roomRepository.findOne({ where: { id: data.roomID } });
       if (room) {
         this.server.to(data.room).emit('permissionGranted', data.user);
       } else {
@@ -311,7 +315,6 @@ export class RoomGateway {
     @ConnectedSocket() socket: Socket,
   ) {
     try {
-      // this.logger.log(`talk: ${data.user.userName} said ${data.message} in ${data.room}`);
       if (!data.selectedRoom || !data.currentUser || !data.message) {
         this.logger.error('Invalid chat message data:', data);
         this.logger.log(
@@ -338,7 +341,7 @@ export class RoomGateway {
       const chatLogs = await this.chatLogRepository.find({
         where: { roomID: data.roomID },
       });
-      this.logger.log(`Chat logs: ${JSON.stringify(chatLogs)}`);
+      // this.logger.log(`Chat logs: ${JSON.stringify(chatLogs)}`);
       // chatLogsをchatmessage[]に変換
       const chatMessages: ChatMessage[] = chatLogs.map((log) => {
         return {
@@ -357,13 +360,13 @@ export class RoomGateway {
 
   @SubscribeMessage('leaveRoom')
   async handleLeaveRoom(
-    @MessageBody() leave: { user: User; room: string },
+    @MessageBody() leave: { roomID: number; room: string; user: User },
     @ConnectedSocket() socket: Socket,
   ) {
     try {
       this.logger.log(`leaveRoom: ${leave.user.userName} left ${leave.room}`);
       // データベースから部屋を取得
-      const room = await this.roomRepository.findOne({ where: { roomName: leave.room } });
+      const room = await this.roomRepository.findOne({ where: { id: leave.roomID } });
 
       // 参加者リストを更新
       if (room) {
@@ -378,7 +381,7 @@ export class RoomGateway {
       }
 
       // 更新された参加者リストを取得してクライアントに送信
-      const updatedRoom = await this.roomRepository.findOne({ where: { roomName: leave.room } });
+      const updatedRoom = await this.roomRepository.findOne({ where: { id: leave.roomID } });
       if (updatedRoom) {
         this.server.to(leave.room).emit('roomParticipants', updatedRoom.roomParticipants);
       } else {
@@ -397,13 +400,13 @@ export class RoomGateway {
   }
 
   @SubscribeMessage('deleteRoom')
-  async handleDeleteRoom(@MessageBody() delet: { user: User; room: string }) {
+  async handleDeleteRoom(@MessageBody() delet: { roomID: number; room: string; user: User }) {
     try {
       this.logger.log(`${delet.user.userName} deleted Room: ${delet.room}`);
 
       // データベースから指定のルームを削除
       const deletedRoom = await this.roomRepository.findOne({
-        where: { roomName: delet.room },
+        where: { id: delet.roomID },
       });
       if (deletedRoom) {
         await this.roomRepository.remove(deletedRoom);
@@ -426,6 +429,7 @@ export class RoomGateway {
   async handleRoomSettings(
     @MessageBody()
     settings: {
+      roomID: number;
       selectedRoom: string;
       roomSettings: {
         roomName: string;
@@ -443,7 +447,7 @@ export class RoomGateway {
 
       // データベースから部屋を取得
       const room = await this.roomRepository.findOne({
-        where: { roomName: settings.selectedRoom },
+        where: { id: settings.roomID },
       });
       this.logger.log(`Room: ${JSON.stringify(room)}`);
 
@@ -495,7 +499,7 @@ export class RoomGateway {
 
       // 更新された部屋を取得してクライアントに送信
       const updatedRoom = await this.roomRepository.findOne({
-        where: { roomName: settings.selectedRoom },
+        where: { id: settings.roomID },
       });
       if (updatedRoom) {
         this.logger.log(`Updated room: ${JSON.stringify(updatedRoom)}`);
