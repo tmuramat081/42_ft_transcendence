@@ -135,45 +135,47 @@ export class RoomGateway {
   ) {
     try {
       this.logger.log(`joinRoom: ${join.user.userName} joined ${join.room}`);
-      const rooms = [...socket.rooms].slice(0);
       // 既に部屋に入っている場合は退出
-      if (rooms.length == 2) socket.leave(rooms[1]);
+      // const rooms = [...socket.rooms].slice(0);
+      // if (rooms.length == 2) socket.leave(rooms[1]);
+      const rooms = Array.from(socket.rooms);
+      if (rooms.length > 1) socket.leave(rooms[1]);
       // データベースから部屋を取得
       const room = await this.roomRepository.findOne({ where: { id: join.roomID } });
-      // 参加者リストを更新
-      if (room) {
-        if (!room.roomParticipants) {
-          room.roomParticipants = [];
-        }
-        // 参加者が100人を超える場合はエラーを返す
-        if (room.roomParticipants.length >= 100) {
-          this.logger.error('Room is full');
-          socket.emit('roomError', 'Room is full.');
+      if (!room) {
+        this.logger.error(`Room ${join.room} not found in the database.`);
+        socket.emit('roomError', 'Room not found.');
+        return;
+      }
+      if (!room.roomParticipants) {
+        room.roomParticipants = [];
+      }
+      // 参加者が100人を超える場合はエラーを返す
+      if (room.roomParticipants.length >= 100) {
+        this.logger.error('Room is full');
+        socket.emit('roomError', 'Room is full.');
+        return;
+      }
+      // ユーザーが存在してないか確認
+      const existingUser = room.roomParticipants.find(
+        (participant) => participant.id === join.user.userId,
+      );
+      if (!existingUser) {
+        // userRepositoryからユーザー情報を取得して追加
+        const userData = await this.userRepository.findOne({
+          where: { userId: join.user.userId },
+        });
+        if (!userData) {
+          this.logger.error(`User ${join.user.userName} not found in the database.`);
+          socket.emit('roomError', 'User not found.');
           return;
         }
-        // ユーザーが存在してないか確認
-        const existingUser = room.roomParticipants.find(
-          (participant) => participant.name === join.user.userName,
-          (participant) => participant.id === join.user.userId,
-        );
-        if (!existingUser) {
-          // userRepositoryからユーザー情報を取得して追加
-          const userData = await this.userRepository.findOne({
-            where: { userId: join.user.userId },
-          });
-          if (!userData) {
-            this.logger.error(`User ${join.user.userName} not found in the database.`);
-            return;
-          }
-          room.roomParticipants.push({
-            id: userData.userId,
-            name: userData.userName,
-            icon: userData.icon,
-          });
-        }
+        room.roomParticipants.push({
+          id: userData.userId,
+          name: userData.userName,
+          icon: userData.icon,
+        });
         await this.roomRepository.save(room);
-      } else {
-        this.logger.error(`Room ${join.room} not found in the database.`);
       }
       // ソケットにルームに参加させる
       socket.join(join.room);
@@ -197,7 +199,6 @@ export class RoomGateway {
       // チャットログを取得してクライアントに送信
       const chatLogs = await this.chatLogRepository.find({ where: { roomID: join.roomID } });
       if (chatLogs) {
-        // this.logger.log(`Chat logs: ${JSON.stringify(chatLogs)}`);
         // chatLogsをchatmessage[]に変換
         const chatMessages: ChatMessage[] = chatLogs.map((log) => {
           return {
@@ -214,7 +215,7 @@ export class RoomGateway {
     } catch (error) {
       const errorMessage = (error as Error).message;
       this.logger.error(`Error joining room: ${errorMessage}`);
-      throw error;
+      socket.emit('roomError', `Error joining room: ${errorMessage}`);
     }
   }
 

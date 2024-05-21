@@ -107,7 +107,6 @@ export default function RoomPage({ params }: { params: string }) {
     socket.on('permissionGranted', (user: User) => {
       setIsPermissionGranted(true);
       alert('Permission granted to ' + user.userName);
-      // socket.emit('joinRoom', { roomID: roomID, room: selectedRoom, user: currentUser });
     });
 
     socket.on('updatedRoomParticipants', (roomParticipants: UserInfo[]) => {
@@ -127,23 +126,14 @@ export default function RoomPage({ params }: { params: string }) {
       socket.off('permissionGranted');
       socket.off('updatedRoomParticipants');
     };
-  }, [socket, currentUser, roomID, selectedRoom, roomType, participants]);
+  }, [socket, currentUser, roomID, selectedRoom, roomType]);
 
   useEffect(() => {
     if (!socket) return;
     if (roomType === 'public' || isParticipants || isPasswordVerified || isPermissionGranted) {
       socket.emit('joinRoom', { roomID: roomID, room: selectedRoom, user: currentUser });
     }
-  }, [
-    socket,
-    roomType,
-    currentUser,
-    selectedRoom,
-    roomID,
-    isParticipants,
-    isPasswordVerified,
-    isPermissionGranted,
-  ]);
+  }, [socket, isParticipants, isPasswordVerified, isPermissionGranted]);
 
   useEffect(() => {
     if (!socket) return;
@@ -363,7 +353,7 @@ export default function RoomPage({ params }: { params: string }) {
           </div>
           {/* チャットログ */}
           <div className="chat-messages">
-            {roomchatLogs[roomID]?.map((message, index) => (
+            {roomchatLogs[roomID!]?.map((message, index) => (
               <div
                 key={index}
                 className={`message-bubble ${
