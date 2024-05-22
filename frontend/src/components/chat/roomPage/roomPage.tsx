@@ -251,7 +251,7 @@ export default function RoomPage({ params }: { params: string }) {
 
   return (
     <div className="room-container">
-      {!isOwner && !isAdmin && !isPasswordVerified && roomType === 'password' ? (
+      {!isPasswordVerified && roomType === 'password' ? (
         <div className="password-prompt">
           <h3>Enter Room Password</h3>
           <input
@@ -261,11 +261,7 @@ export default function RoomPage({ params }: { params: string }) {
           />
           <button onClick={handlePasswordSubmit}>Submit</button>
         </div>
-      ) : !isParticipants &&
-        !isOwner &&
-        !isAdmin &&
-        !isPermissionGranted &&
-        roomType === 'private' ? (
+      ) : !isParticipants && !isPermissionGranted && roomType === 'private' ? (
         <div className="permission-prompt">
           <h3>Waiting for Join Approval for {selectedRoom}</h3>
           <button onClick={handlePermissionRequest}>Request Permission</button>
