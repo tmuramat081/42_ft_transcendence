@@ -98,7 +98,7 @@ export class ChatGateway {
           icon: user.icon,
         };
       });
-      this.logger.log(`Online users info: ${JSON.stringify(onlineUsersInfo)}`);
+      // this.logger.log(`Online users info: ${JSON.stringify(onlineUsersInfo)}`);
 
       // sender以外のonlineUsersInfoをクライアントに送信
       socket.emit(

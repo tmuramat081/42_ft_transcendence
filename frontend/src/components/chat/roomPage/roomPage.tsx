@@ -37,9 +37,10 @@ export default function RoomPage({ params }: { params: string }) {
 
     getCurrentUser()
       .then((user) => {
+        console.log('params:', params);
         socket.emit('getUserCurrent', user);
         socket.emit('getAllUsers', user);
-        socket.emit('getRoomInfo', params);
+        socket.emit('getRoomInfo', { user, params });
       })
       .catch((error) => {
         console.error('Error getting user:', error);
@@ -91,6 +92,11 @@ export default function RoomPage({ params }: { params: string }) {
         (participant) => participant.userId === currentUser?.userId,
       );
       setIsParticipants(isCurrentUserParticipant);
+    });
+
+    socket.on('roomError', (error: string) => {
+      alert(error);
+      window.location.href = '/chat';
     });
 
     socket.on('passwordVerified', (response: boolean) => {
@@ -151,6 +157,7 @@ export default function RoomPage({ params }: { params: string }) {
       socket.off('roomOwner');
       socket.off('roomAdmin');
       socket.off('roomParticipants');
+      socket.off('roomError');
       socket.off('passwordVerified');
       socket.off('permissionRequested');
       socket.off('permissionGranted');

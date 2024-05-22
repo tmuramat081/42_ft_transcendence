@@ -51,6 +51,7 @@ export class RoomGateway {
   @SubscribeMessage('getUserCurrent')
   async handle(@MessageBody() user: User, @ConnectedSocket() socket: Socket) {
     try {
+      // this.logger.log(`getUserCurrent: ${user.userName}`);
       // データベースからuser.userIdと同じユーザーを取得
       const userData = await this.userRepository.findOne({
         where: {
@@ -70,13 +71,13 @@ export class RoomGateway {
   @SubscribeMessage('getAllUsers')
   async handleGetAllUsers(@MessageBody() user: User, @ConnectedSocket() socket: Socket) {
     try {
+      // this.logger.log(`getAllUsers: ${user.userName}`);
       // データベースから全ユーザーを取得
       const allUsers = await this.userRepository.find();
       if (allUsers) {
         // 自分自身を除いてクライアントに送信
         const users = allUsers.filter((u) => u.userId !== user.userId);
         this.server.to(socket.id).emit('allUsers', users);
-        // this.logger.log(`All users: ${JSON.stringify(users)}`);
       } else {
         this.logger.error('No users found');
       }
@@ -86,16 +87,28 @@ export class RoomGateway {
   }
 
   @SubscribeMessage('getRoomInfo')
-  async handleGetRoomInfo(@MessageBody() roomName: string, @ConnectedSocket() socket: Socket) {
+  async handleGetRoomInfo(
+    @MessageBody() data: { user: User; params: string },
+    @ConnectedSocket() socket: Socket,
+  ) {
     try {
+      // this.logger.log(`getRoomInfo: ${data.user.userName} requested info for ${data.params}`);
       // データベースからroomNameと同じ部屋を取得
       const room = await this.roomRepository.findOne({
         where: {
-          roomName: roomName,
+          roomName: data.params,
         },
       });
       if (room) {
+        this.logger.log(`Room found: ${room.roomName}, ${room.id}`);
+        // ブロックされていたらエラーを返す
+        if (room.roomBlocked && room.roomBlocked.includes(data.user.userId)) {
+          this.logger.error('User is blocked');
+          socket.emit('roomError', 'Room is protected.');
+          return;
+        }
         this.server.to(socket.id).emit('roomId', room.id);
+        this.logger.log(`roomType: ${room.roomType}`);
         this.server.to(socket.id).emit('roomType', room.roomType);
         // OwnerのUser情報を取得してクライアントに送信
         const owner = await this.userRepository.findOne({
@@ -136,8 +149,6 @@ export class RoomGateway {
     try {
       this.logger.log(`joinRoom: ${join.user.userName} joined ${join.room}`);
       // 既に部屋に入っている場合は退出
-      // const rooms = [...socket.rooms].slice(0);
-      // if (rooms.length == 2) socket.leave(rooms[1]);
       const rooms = Array.from(socket.rooms);
       if (rooms.length > 1) socket.leave(rooms[1]);
       // データベースから部屋を取得
@@ -156,6 +167,13 @@ export class RoomGateway {
         socket.emit('roomError', 'Room is full.');
         return;
       }
+      // ブロックリストに含まれている場合はエラーを返す
+      if (room.roomBlocked && room.roomBlocked.includes(join.user.userId)) {
+        this.logger.error('User is blocked');
+        socket.emit('roomError', 'Room is protected.');
+        return;
+      }
+
       // ユーザーが存在してないか確認
       const existingUser = room.roomParticipants.find(
         (participant) => participant.id === join.user.userId,
@@ -489,6 +507,33 @@ export class RoomGateway {
             );
           }
           room.roomBlocked.push(settings.roomSettings.roomBlocked);
+          // ブロックされたユーザーを部屋から削除
+          if (room.roomParticipants) {
+            room.roomParticipants = room.roomParticipants.filter(
+              (participant) => participant.id !== settings.roomSettings.roomBlocked,
+            );
+          }
+          await this.roomRepository.save(room);
+          const updatedRoom = await this.roomRepository.findOne({
+            where: { id: settings.roomID },
+          });
+          if (updatedRoom) {
+            // updatedRoom.roomParticipantsをUserInfoに変換
+            const updatedRoomParticipants: UserInfo[] = updatedRoom.roomParticipants.map(
+              (participant) => {
+                return {
+                  userId: participant.id,
+                  userName: participant.name,
+                  icon: participant.icon,
+                };
+              },
+            );
+            this.server
+              .to(settings.selectedRoom)
+              .emit('updatedRoomParticipants', updatedRoomParticipants);
+          } else {
+            this.logger.error(`Error getting updated room.`);
+          }
         }
         if (settings.roomSettings.roomMuted && settings.roomSettings.muteDuration) {
           if (!room.roomMuted) {
