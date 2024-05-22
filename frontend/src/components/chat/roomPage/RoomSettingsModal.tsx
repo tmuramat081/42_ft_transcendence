@@ -196,9 +196,10 @@ const RoomSettingsModal: React.FC<RoomSettingsModalProps> = ({
                   onChange={handleMutedDurationChange}
                 >
                   <option value="">Select Duration</option>
+                  <option value="1m">1 Minute</option>
                   <option value="1d">1 Day</option>
                   <option value="1w">1 Week</option>
-                  <option value="1m">1 Month</option>
+                  <option value="1M">1 Month</option>
                 </select>
               </label>
             )}
