@@ -37,7 +37,6 @@ export default function RoomPage({ params }: { params: string }) {
 
     getCurrentUser()
       .then((user) => {
-        console.log('params:', params);
         socket.emit('getUserCurrent', user);
         socket.emit('getAllUsers', user);
         socket.emit('getRoomInfo', { user, params });
@@ -135,13 +134,11 @@ export default function RoomPage({ params }: { params: string }) {
     // };
 
     socket.on('permissionGranted', (user: User) => {
-      console.log('Permission granted to', user.userName);
       setIsPermissionGranted(true);
       alert('Permission granted to ' + user.userName);
     });
 
     socket.on('permissionDenied', (user: User) => {
-      console.log('Permission denied to', user.userName);
       alert('Permission denied by ' + user.userName);
     });
 
@@ -168,10 +165,6 @@ export default function RoomPage({ params }: { params: string }) {
 
   useEffect(() => {
     if (!socket) return;
-    console.log('roomType:', roomType);
-    console.log('isParticipants:', isParticipants);
-    console.log('isPasswordVerified:', isPasswordVerified);
-    console.log('isPermissionGranted:', isPermissionGranted);
     if (roomType === 'public' || isParticipants || isPasswordVerified || isPermissionGranted) {
       socket.emit('joinRoom', { roomID: roomID, room: selectedRoom, user: currentUser });
     }
