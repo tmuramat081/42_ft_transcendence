@@ -10,8 +10,12 @@ interface RoomSettingsModalProps {
   roomParticipants: UserInfo[];
   allUsers: User[];
   currentUser: User;
+  name: string;
   owner: User;
   admin: User;
+  type: string;
+  blockedUsers: UserInfo[];
+  mutedUsers?: { user: UserInfo; mutedUntil: string }[];
 }
 
 const RoomSettingsModal: React.FC<RoomSettingsModalProps> = ({
@@ -20,8 +24,12 @@ const RoomSettingsModal: React.FC<RoomSettingsModalProps> = ({
   roomParticipants = [],
   allUsers = [],
   currentUser,
+  name,
   owner,
   admin,
+  type,
+  blockedUsers = [],
+  mutedUsers = [],
 }) => {
   const [roomName, setRoomName] = useState('');
   const [roomType, setRoomType] = useState('');
@@ -86,6 +94,8 @@ const RoomSettingsModal: React.FC<RoomSettingsModalProps> = ({
                 onChange={handleNameChange}
                 placeholder="Enter Room Name"
               />
+              <br />
+              <small>Current: {name || 'No name set'}</small>
             </label>
             <label className="label">
               Room Type:
@@ -103,6 +113,8 @@ const RoomSettingsModal: React.FC<RoomSettingsModalProps> = ({
                 <option value="private">Private</option>
                 <option value="password">Password</option>
               </select>
+              <br />
+              <small>Current: {type || 'No type set'}</small>
             </label>
             {roomType === 'password' && (
               <label className="label">
@@ -136,6 +148,8 @@ const RoomSettingsModal: React.FC<RoomSettingsModalProps> = ({
                   </option>
                 ))}
               </select>
+              <br />
+              <small>Current:{admin.userName || 'No admin set'}</small>
             </label>
           </>
         )}
@@ -164,6 +178,11 @@ const RoomSettingsModal: React.FC<RoomSettingsModalProps> = ({
                   </option>
                 ))}
               </select>
+              <br />
+              <small>
+                {/* blockedUsersの名前の一覧を表示 */}
+                Current: {blockedUsers.map((user) => user.userName).join(', ') || 'No user blocked'}
+              </small>
             </label>
             <label className="label">
               Mute User:
@@ -187,6 +206,14 @@ const RoomSettingsModal: React.FC<RoomSettingsModalProps> = ({
                   </option>
                 ))}
               </select>
+              <br />
+              <small>
+                {/* mutedUsersの名前と期間の一覧を表示 */}
+                Current:{' '}
+                {mutedUsers
+                  .map((user) => `${user.user.userName} (${user.mutedUntil})`)
+                  .join(', ') || 'No user muted'}
+              </small>
             </label>
             {roomMuted && (
               <label className="label">

@@ -60,24 +60,24 @@ export default function RoomPage({ params }: { params: string }) {
       setAllUsers(users);
     });
 
-    socket.on('roomId', (roomID: number) => {
-      setRoomID(roomID);
+    socket.on('roomId', (roomId: number) => {
+      setRoomID(roomId);
     });
 
     socket.on('roomName', (roomName: string) => {
       setSelectedRoom(roomName);
     });
 
-    socket.on('roomType', (roomType: string) => {
-      setRoomType(roomType);
+    socket.on('roomType', (type: string) => {
+      setRoomType(type);
     });
 
-    socket.on('roomBlocked', (blockedUsers: UserInfo[]) => {
-      setBlockedUsers(blockedUsers);
+    socket.on('roomBlocked', (blockedList: UserInfo[]) => {
+      setBlockedUsers(blockedList);
     });
 
-    socket.on('roomMuted', (mutedUsers: { user: UserInfo; mutedUntil: string }[]) => {
-      setMutedUsers(mutedUsers);
+    socket.on('roomMuted', (mutedList: { user: UserInfo; mutedUntil: string }[]) => {
+      setMutedUsers(mutedList);
     });
 
     socket.on('roomOwner', (roomOwner: User) => {
@@ -318,8 +318,12 @@ export default function RoomPage({ params }: { params: string }) {
               roomParticipants={participants}
               allUsers={allUsers}
               currentUser={currentUser as User}
+              name={selectedRoom as string}
               owner={owner as User}
               admin={admin as User}
+              type={roomType as string}
+              blockedUsers={blockedUsers}
+              mutedUsers={mutedUsers}
             />
           )}
           {/* ROOM参加者リスト */}
