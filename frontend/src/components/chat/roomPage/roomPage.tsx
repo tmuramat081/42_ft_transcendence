@@ -289,7 +289,7 @@ export default function RoomPage({ params }: { params: string }) {
               className="btn-small"
               onClick={onClickLeaveRoom}
             >
-              Leave Room
+              Leave
             </button>
             {/* Delete Room ボタン */}
             {isOwner && (
@@ -297,7 +297,7 @@ export default function RoomPage({ params }: { params: string }) {
                 className="btn-small"
                 onClick={onClickDeleteRoom}
               >
-                Delete Room
+                Delete
               </button>
             )}
             {/* Room Settingsボタン */}
@@ -306,7 +306,7 @@ export default function RoomPage({ params }: { params: string }) {
                 className="btn-small"
                 onClick={onClickSettingRoom}
               >
-                Room Settings
+                Settings
               </button>
             )}
           </div>

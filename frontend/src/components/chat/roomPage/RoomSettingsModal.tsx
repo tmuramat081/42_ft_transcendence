@@ -36,7 +36,9 @@ const RoomSettingsModal: React.FC<RoomSettingsModalProps> = ({
   const [roomPassword, setRoomPassword] = useState('');
   const [roomAdmin, setRoomAdmin] = useState<number | null>(null);
   const [roomBlocked, setRoomBlocked] = useState<number | null>(null);
+  const [roomUnblocked, setRoomUnblocked] = useState<number | null>(null);
   const [roomMuted, setRoomMuted] = useState<number | null>(null);
+  const [roomUnmuted, setRoomUnmuted] = useState<number | null>(null);
   const [muteDuration, setMuteDuration] = useState('');
 
   // 自分を除いたroomParticipantsを取得
@@ -49,7 +51,17 @@ const RoomSettingsModal: React.FC<RoomSettingsModalProps> = ({
   const isBoth = isOwner && isAdmin;
 
   const handleSubmit = () => {
-    onSubmit({ roomName, roomType, roomPassword, roomAdmin, roomBlocked, roomMuted, muteDuration });
+    onSubmit({
+      roomName,
+      roomType,
+      roomPassword,
+      roomAdmin,
+      roomBlocked,
+      roomUnblocked,
+      roomMuted,
+      roomUnmuted,
+      muteDuration,
+    });
   };
 
   const handleNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -64,9 +76,17 @@ const RoomSettingsModal: React.FC<RoomSettingsModalProps> = ({
     setRoomBlocked(Number(e.target.value));
   };
 
+  const handleUnblockedChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    setRoomUnblocked(Number(e.target.value));
+  };
+
   const handleMutedChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     setRoomMuted(Number(e.target.value));
     setMuteDuration('');
+  };
+
+  const handleUnmutedChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    setRoomUnmuted(Number(e.target.value));
   };
 
   const handleMutedDurationChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
@@ -185,6 +205,28 @@ const RoomSettingsModal: React.FC<RoomSettingsModalProps> = ({
               </small>
             </label>
             <label className="label">
+              Unblock User:
+              <select
+                value={roomUnblocked ?? ''}
+                onChange={handleUnblockedChange}
+              >
+                <option
+                  value=""
+                  disabled
+                >
+                  Select User
+                </option>
+                {blockedUsers.map((user) => (
+                  <option
+                    key={user.userId}
+                    value={user.userId}
+                  >
+                    {user.userName}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <label className="label">
               Mute User:
               <select
                 value={roomMuted ?? ''}
@@ -214,6 +256,28 @@ const RoomSettingsModal: React.FC<RoomSettingsModalProps> = ({
                   .map((user) => `${user.user.userName} (${user.mutedUntil})`)
                   .join(', ') || 'No user muted'}
               </small>
+            </label>
+            <label className="label">
+              Unmute User:
+              <select
+                value={roomUnmuted ?? ''}
+                onChange={handleUnmutedChange}
+              >
+                <option
+                  value=""
+                  disabled
+                >
+                  Select User
+                </option>
+                {mutedUsers.map((user) => (
+                  <option
+                    key={user.user.userId}
+                    value={user.user.userId}
+                  >
+                    {user.user.userName}
+                  </option>
+                ))}
+              </select>
             </label>
             {roomMuted && (
               <label className="label">
