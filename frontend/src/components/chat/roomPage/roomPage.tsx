@@ -138,11 +138,6 @@ export default function RoomPage({ params }: { params: string }) {
       }
     });
 
-    // const updatePermissionGrantedUI = () => {
-    //   // 画面をリロードする
-    //   window.location.reload();
-    // };
-
     socket.on('permissionGranted', (user: User) => {
       setIsPermissionGranted(true);
       alert('Permission granted to ' + user.userName);

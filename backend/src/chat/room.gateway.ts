@@ -521,7 +521,9 @@ export class RoomGateway {
         roomPassword: string;
         roomAdmin: number;
         roomBlocked: number;
+        roomUnblocked: number;
         roomMuted: number;
+        roomUnmuted: number;
         muteDuration: string;
       };
     },
@@ -558,34 +560,42 @@ export class RoomGateway {
             );
           }
           room.roomBlocked.push(settings.roomSettings.roomBlocked);
-          // ブロックされたユーザーを部屋から削除
+          // ブロックされたユーザーをParticipantsから削除
           if (room.roomParticipants) {
             room.roomParticipants = room.roomParticipants.filter(
               (participant) => participant.id !== settings.roomSettings.roomBlocked,
             );
           }
-          await this.roomRepository.save(room);
-          const updatedRoom = await this.roomRepository.findOne({
-            where: { id: settings.roomID },
-          });
-          if (updatedRoom) {
-            // updatedRoom.roomParticipantsをUserInfoに変換
-            const updatedRoomParticipants: UserInfo[] = updatedRoom.roomParticipants.map(
-              (participant) => {
-                return {
-                  userId: participant.id,
-                  userName: participant.name,
-                  icon: participant.icon,
-                };
-              },
+          // await this.roomRepository.save(room);
+          // const updatedRoom = await this.roomRepository.findOne({
+          //   where: { id: settings.roomID },
+          // });
+          // if (updatedRoom) {
+          //   // updatedRoom.roomParticipantsをUserInfoに変換
+          //   const updatedRoomParticipants: UserInfo[] = updatedRoom.roomParticipants.map(
+          //     (participant) => {
+          //       return {
+          //         userId: participant.id,
+          //         userName: participant.name,
+          //         icon: participant.icon,
+          //       };
+          //     },
+          //   );
+          //   this.server
+          //     .to(settings.selectedRoom)
+          //     .emit('updatedRoomParticipants', updatedRoomParticipants);
+          // } else {
+          //   this.logger.error(`Error getting updated room.`);
+          // }
+        }
+        if (settings.roomSettings.roomUnblocked) {
+          if (room.roomBlocked) {
+            room.roomBlocked = room.roomBlocked.filter(
+              (blocked) => blocked !== settings.roomSettings.roomUnblocked,
             );
-            this.server
-              .to(settings.selectedRoom)
-              .emit('updatedRoomParticipants', updatedRoomParticipants);
-          } else {
-            this.logger.error(`Error getting updated room.`);
           }
         }
+
         if (settings.roomSettings.roomMuted && settings.roomSettings.muteDuration) {
           if (!room.roomMuted) {
             room.roomMuted = [];
@@ -610,6 +620,13 @@ export class RoomGateway {
             mutedUntil: mutedUntilFormatted,
           });
         }
+        if (settings.roomSettings.roomUnmuted) {
+          if (room.roomMuted) {
+            room.roomMuted = room.roomMuted.filter(
+              (muted) => muted.id !== settings.roomSettings.roomUnmuted,
+            );
+          }
+        }
         await this.roomRepository.save(room);
       } else {
         this.logger.error(`Room ${settings.selectedRoom} not found in the database.`);
@@ -630,6 +647,19 @@ export class RoomGateway {
           },
         });
         this.server.to(settings.selectedRoom).emit('roomAdmin', admin);
+        // updatedRoom.roomParticipantsをUserInfoに変換
+        const updatedRoomParticipants: UserInfo[] = updatedRoom.roomParticipants.map(
+          (participant) => {
+            return {
+              userId: participant.id,
+              userName: participant.name,
+              icon: participant.icon,
+            };
+          },
+        );
+        this.server
+          .to(settings.selectedRoom)
+          .emit('updatedRoomParticipants', updatedRoomParticipants);
       } else {
         this.logger.error(`Error getting updated room.`);
       }
