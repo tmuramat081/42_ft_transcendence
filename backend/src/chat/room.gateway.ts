@@ -18,6 +18,7 @@ import { DmLog } from './entities/dmLog.entity';
 import { OnlineUsers } from './entities/onlineUsers.entity';
 import { GameRoom } from '../games/entities/gameRoom.entity';
 import { UserInfo, ChatMessage, formatDate, convertDurationToMs } from './tools';
+import { format } from 'path';
 
 @WebSocketGateway({ cors: { origin: '*' } })
 export class RoomGateway {
@@ -108,7 +109,6 @@ export class RoomGateway {
           return;
         }
         this.server.to(socket.id).emit('roomId', room.id);
-        this.logger.log(`roomType: ${room.roomType}`);
         this.server.to(socket.id).emit('roomType', room.roomType);
         // OwnerのUser情報を取得してクライアントに送信
         const owner = await this.userRepository.findOne({
@@ -133,6 +133,16 @@ export class RoomGateway {
           };
         });
         this.server.to(socket.id).emit('roomParticipants', roomParticipants);
+        // roomMutedのmutedUntilが現在時刻を過ぎている場合は削除
+        if (room.roomMuted) {
+          const formatNow = formatDate(new Date());
+          const mutedUsers = room.roomMuted.filter((muted) => {
+            return formatNow < muted.mutedUntil;
+          });
+          room.roomMuted = mutedUsers;
+          await this.roomRepository.save(room);
+        }
+        this.logger.log(`mutedUsers: ${JSON.stringify(room.roomMuted)}`);
       } else {
         this.logger.error('No room found');
       }
