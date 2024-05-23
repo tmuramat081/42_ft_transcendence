@@ -17,7 +17,7 @@ import { User } from '../users/entities/user.entity';
 import { DmLog } from './entities/dmLog.entity';
 import { OnlineUsers } from './entities/onlineUsers.entity';
 import { GameRoom } from '../games/entities/gameRoom.entity';
-import { UserInfo, ChatMessage, formatDate } from './tools';
+import { UserInfo, ChatMessage, formatDate, convertDurationToMs } from './tools';
 
 @WebSocketGateway({ cors: { origin: '*' } })
 export class RoomGateway {
@@ -547,9 +547,16 @@ export class RoomGateway {
               (muted) => muted.id !== settings.roomSettings.roomMuted,
             );
           }
+          // 現在の日時を取得
+          const now = new Date();
+          // muteDurationをミリ秒に変換し、現在の日時に追加
+          const muteDurationInMs = convertDurationToMs(settings.roomSettings.muteDuration);
+          const mutedUntil = new Date(now.getTime() + muteDurationInMs);
+          // mutedUntilを日本時間に変換
+          const mutedUntilFormatted = formatDate(mutedUntil);
           room.roomMuted.push({
             id: settings.roomSettings.roomMuted,
-            mutedUntil: settings.roomSettings.muteDuration,
+            mutedUntil: mutedUntilFormatted,
           });
         }
         await this.roomRepository.save(room);
