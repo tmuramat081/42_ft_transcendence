@@ -1,3 +1,4 @@
+// privateの申請表示どうする？
 /*eslint-disable*/
 'use client';
 import React, { useState, useEffect, useCallback, use } from 'react';

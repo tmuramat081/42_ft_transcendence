@@ -400,6 +400,19 @@ export class RoomGateway {
         `${data.selectedRoom} received ${data.message} from ${data.currentUser.userName}`,
       );
 
+      // ユーザーがミュートされているか確認
+      const room = await this.roomRepository.findOne({ where: { id: data.roomID } });
+      const mutedUser = room.roomMuted.find(
+        (muted) => muted.id === data.currentUser.userId && new Date(muted.mutedUntil) > new Date(),
+      );
+
+      if (mutedUser) {
+        this.logger.error(
+          `User ${data.currentUser.userName} is muted until ${mutedUser.mutedUntil} in ${data.selectedRoom}`,
+        );
+        return;
+      }
+
       // チャットログを保存
       const chatLog = new ChatLog();
       chatLog.roomID = data.roomID;

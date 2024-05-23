@@ -188,7 +188,6 @@ const RoomSettingsModal: React.FC<RoomSettingsModalProps> = ({
                 >
                   Select User
                 </option>
-                <option value="">Unblock User</option>
                 {allUsers.map((user) => (
                   <option
                     key={user.userId}
@@ -238,8 +237,7 @@ const RoomSettingsModal: React.FC<RoomSettingsModalProps> = ({
                 >
                   Select User
                 </option>
-                <option value="">Unmute User</option>
-                {allUsers.map((user) => (
+                {otherParticipants.map((user) => (
                   <option
                     key={user.userId}
                     value={user.userId}
@@ -257,6 +255,22 @@ const RoomSettingsModal: React.FC<RoomSettingsModalProps> = ({
                   .join(', ') || 'No user muted'}
               </small>
             </label>
+            {roomMuted && (
+              <label className="label">
+                Mute Duration for {allUsers.find((user) => user.userId === roomMuted)?.userName}:
+                <select
+                  value={muteDuration}
+                  onChange={handleMutedDurationChange}
+                >
+                  <option value="">Select Duration</option>
+                  <option value="1m">1 Minute</option>
+                  <option value="1h">1 Hour</option>
+                  <option value="1d">1 Day</option>
+                  <option value="1w">1 Week</option>
+                  <option value="1M">1 Month</option>
+                </select>
+              </label>
+            )}
             <label className="label">
               Unmute User:
               <select
@@ -279,22 +293,6 @@ const RoomSettingsModal: React.FC<RoomSettingsModalProps> = ({
                 ))}
               </select>
             </label>
-            {roomMuted && (
-              <label className="label">
-                Mute Duration for {allUsers.find((user) => user.userId === roomMuted)?.userName}:
-                <select
-                  value={muteDuration}
-                  onChange={handleMutedDurationChange}
-                >
-                  <option value="">Select Duration</option>
-                  <option value="1m">1 Minute</option>
-                  <option value="1h">1 Hour</option>
-                  <option value="1d">1 Day</option>
-                  <option value="1w">1 Week</option>
-                  <option value="1M">1 Month</option>
-                </select>
-              </label>
-            )}
           </>
         )}
         <button onClick={handleSubmit}>Submit</button>
