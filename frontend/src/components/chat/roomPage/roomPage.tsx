@@ -27,6 +27,8 @@ export default function RoomPage({ params }: { params: string }) {
   const [participants, setParticipants] = useState<UserInfo[]>([]);
   const [isParticipants, setIsParticipants] = useState(false);
   const [roomType, setRoomType] = useState<string | null>(null);
+  const [blockedUsers, setBlockedUsers] = useState<UserInfo[]>([]);
+  const [mutedUsers, setMutedUsers] = useState<{ user: UserInfo; mutedUntil: string }[]>([]);
   const [roomPassword, setRoomPassword] = useState('');
   const [isPasswordVerified, setIsPasswordVerified] = useState(false);
   const [isPermissionGranted, setIsPermissionGranted] = useState(false);
@@ -68,6 +70,14 @@ export default function RoomPage({ params }: { params: string }) {
 
     socket.on('roomType', (roomType: string) => {
       setRoomType(roomType);
+    });
+
+    socket.on('roomBlocked', (blockedUsers: UserInfo[]) => {
+      setBlockedUsers(blockedUsers);
+    });
+
+    socket.on('roomMuted', (mutedUsers: { user: UserInfo; mutedUntil: string }[]) => {
+      setMutedUsers(mutedUsers);
     });
 
     socket.on('roomOwner', (roomOwner: User) => {

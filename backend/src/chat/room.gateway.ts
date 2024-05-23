@@ -133,6 +133,27 @@ export class RoomGateway {
           };
         });
         this.server.to(socket.id).emit('roomParticipants', roomParticipants);
+        // roomBlockedからUser情報を取得してUserInfoに変換
+        if (room.roomBlocked) {
+          const blockedUsers: UserInfo[] = [];
+          for (const blocked of room.roomBlocked) {
+            const blockedUser = await this.userRepository.findOne({
+              where: {
+                userId: blocked,
+              },
+            });
+            if (blockedUser) {
+              blockedUsers.push({
+                userId: blockedUser.userId,
+                userName: blockedUser.userName,
+                icon: blockedUser.icon,
+              });
+            }
+          }
+          this.logger.log(`Blocked users: ${JSON.stringify(blockedUsers)}`);
+          this.server.to(socket.id).emit('roomBlocked', blockedUsers);
+        }
+
         // roomMutedのmutedUntilが現在時刻を過ぎている場合は削除
         if (room.roomMuted) {
           const formatNow = formatDate(new Date());
@@ -142,7 +163,27 @@ export class RoomGateway {
           room.roomMuted = mutedUsers;
           await this.roomRepository.save(room);
         }
-        this.logger.log(`mutedUsers: ${JSON.stringify(room.roomMuted)}`);
+        // { user: UserInfo; mutedUntil: string }[]に変換
+        const mutedUsers: { user: UserInfo; mutedUntil: string }[] = [];
+        for (const muted of room.roomMuted) {
+          const mutedUser = await this.userRepository.findOne({
+            where: {
+              userId: muted.id,
+            },
+          });
+          if (mutedUser) {
+            mutedUsers.push({
+              user: {
+                userId: mutedUser.userId,
+                userName: mutedUser.userName,
+                icon: mutedUser.icon,
+              },
+              mutedUntil: muted.mutedUntil,
+            });
+          }
+        }
+        this.logger.log(`mutedUsers: ${JSON.stringify(mutedUsers)}`);
+        this.server.to(socket.id).emit('roomMuted', mutedUsers);
       } else {
         this.logger.error('No room found');
       }
