@@ -330,23 +330,34 @@ export class RoomGateway {
       // roomIDでデータベースから部屋を取得
       const room = await this.roomRepository.findOne({ where: { id: data.roomID } });
       if (room) {
-        // this.server.to(data.room).emit('permissionRequested', data.user);
-        const admin = await this.userRepository.findOne({ where: { userId: room.roomAdmin } });
-        if (admin) {
-          // roomAdminにpermissionRequestedイベントを送信
-          this.server.to(admin.userName).emit('permissionRequested', {
-            roomID: data.roomID,
-            roomName: data.room,
-            user: data.user,
-          });
-          // this.server.emit('permissionRequested', {
-          //   roomID: data.roomID,
-          //   roomName: data.room,
-          //   user: data.user,
-          // });
-        } else {
-          this.logger.error(`Admin not found in the database.`);
+        // ブロックリストをチェック
+        if (room.roomBlocked && room.roomBlocked.includes(data.user.userId)) {
+          this.logger.error(`User ${data.user.userName} is blocked in ${data.room}`);
+          return;
         }
+        // チャットログとして保存
+        const chatLog = new ChatLog();
+        chatLog.roomID = data.roomID;
+        chatLog.roomName = data.room;
+        chatLog.sender = data.user.userName;
+        chatLog.icon = data.user.icon;
+        chatLog.message = 'permission requested';
+        chatLog.timestamp = formatDate(new Date());
+        await this.chatLogRepository.save(chatLog);
+
+        // chatLogsをchatmessage[]に変換
+        const chatLogs = await this.chatLogRepository.find({
+          where: { roomID: data.roomID },
+        });
+        const chatMessages: ChatMessage[] = chatLogs.map((log) => {
+          return {
+            user: log.sender,
+            photo: log.icon,
+            text: log.message,
+            timestamp: log.timestamp,
+          };
+        });
+        this.server.to(data.room).emit('chatLogs', chatMessages);
       } else {
         this.logger.error(`Room ${data.room} not found in the database.`);
       }
@@ -356,51 +367,44 @@ export class RoomGateway {
     }
   }
 
-  @SubscribeMessage('permissionGranted')
-  async handlePermissionGranted(
-    @MessageBody() data: { roomID: number; room: string; user: User; admin: User },
+  @SubscribeMessage('permissionResponse')
+  async handlePermissionResponse(
+    @MessageBody()
+    data: { sender: string; roomID: number; room: string; isAccepted: boolean; responder: User },
     @ConnectedSocket() socket: Socket,
   ) {
     try {
       this.logger.log(
-        `permissionGranted: ${data.admin.userName} granted permission to ${data.user.userName} in ${data.room}`,
+        `permissionResponse: ${data.responder.userName} responded ${data.isAccepted} in ${data.room}`,
       );
       // データベースから部屋を取得
       const room = await this.roomRepository.findOne({ where: { id: data.roomID } });
+      // senderのIDを取得してブロックリストをチェック
+      const sender = await this.userRepository.findOne({
+        where: { userName: data.sender },
+      });
+      if (!sender) {
+        this.logger.error(`User ${data.sender} not found in the database.`);
+        return;
+      }
       if (room) {
-        // ブロックリストをチェック
-        if (room.roomBlocked && room.roomBlocked.includes(data.user.userId)) {
-          this.logger.error(`User ${data.user.userName} is blocked in ${data.room}`);
-          return;
+        // responderがroomAdminか確認
+        if (room.roomAdmin !== data.responder.userId) {
+          this.logger.error(`User ${data.responder.userName} is not an admin in ${data.room}`);
+          socket.emit('roomError', 'You are not room admin.');
         }
-        this.server.to(data.room).emit('permissionGranted', data.user);
+        if (data.isAccepted) {
+          this.logger.log(`Permission granted ${data.sender}`);
+          this.server.to(data.room).emit('permissionGranted', sender);
+        } else {
+          this.logger.log(`Permission denied ${data.sender}`);
+          this.server.to(data.room).emit('permissionDenied', sender);
+        }
       } else {
         this.logger.error(`Room ${data.room} not found in the database.`);
       }
     } catch (error) {
-      this.logger.error(`Error granting permission: ${(error as Error).message}`);
-      throw error;
-    }
-  }
-
-  @SubscribeMessage('permissionDenied')
-  async handlePermissionDenied(
-    @MessageBody() data: { roomID: number; room: string; user: User; admin: User },
-    @ConnectedSocket() socket: Socket,
-  ) {
-    try {
-      this.logger.log(
-        `permissionDenied: ${data.admin.userName} denied permission to ${data.user.userName} in ${data.room}`,
-      );
-      // データベースから部屋を取得
-      const room = await this.roomRepository.findOne({ where: { id: data.roomID } });
-      if (room) {
-        this.server.to(data.room).emit('permissionDenied', data.admin);
-      } else {
-        this.logger.error(`Room ${data.room} not found in the database.`);
-      }
-    } catch (error) {
-      this.logger.error(`Error denying permission: ${(error as Error).message}`);
+      this.logger.error(`Error responding to permission request: ${(error as Error).message}`);
       throw error;
     }
   }

@@ -18,6 +18,7 @@ import { DmLog } from './entities/dmLog.entity';
 import { OnlineUsers } from './entities/onlineUsers.entity';
 import { GameRoom } from '../games/entities/gameRoom.entity';
 import { UserInfo, ChatMessage, formatDate } from './tools';
+import { OnGatewayConnection, OnGatewayDisconnect } from '@nestjs/websockets';
 
 @WebSocketGateway({ cors: { origin: '*' } })
 export class ChatGateway {

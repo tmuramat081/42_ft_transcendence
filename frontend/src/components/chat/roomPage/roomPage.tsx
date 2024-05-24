@@ -116,38 +116,13 @@ export default function RoomPage({ params }: { params: string }) {
       }
     });
 
-    // socket.on('permissionRequested', (user: User) => {
-    //   console.log('Permission requested by', user.userName);
-    //   if (window.confirm(`Permission requested by ${user.userName}. Do you accept?`)) {
-    //     // ユーザーが "Accept" ボタンをクリックした場合
-    //     socket.emit('permissionGranted', {
-    //       roomID: roomID,
-    //       room: selectedRoom,
-    //       user: user,
-    //       admin: currentUser,
-    //     });
-    //     socket.emit('joinRoom', { roomID: roomID, room: selectedRoom, user: user });
-    //     // updatePermissionGrantedUI();
-    //   } else {
-    //     // ユーザーが "Reject" ボタンをクリックした場合
-    //     socket.emit('permissionDenied', {
-    //       roomID: roomID,
-    //       room: selectedRoom,
-    //       user: user,
-    //       admin: currentUser,
-    //     });
-    //   }
-    // });
-
-    socket.on('permissionGranted', (user: User) => {
-      setIsPermissionGranted(true);
-      alert('Permission granted to ' + user.userName);
+    socket.on('permissionGranted', (sender: User) => {
+      alert('Permission granted: ' + sender.userName);
+      socket.emit('joinRoom', { roomID: roomID, room: selectedRoom, user: sender });
     });
 
-    socket.on('permissionDenied', (user: User) => {
-      alert('Permission denied by ' + user.userName);
-      // OKをクリックしたらチャットページに戻る
-      window.location.href = '/chat';
+    socket.on('permissionDenied', (sender: User) => {
+      alert('Permission denied: ' + sender.userName);
     });
 
     socket.on('updatedRoomParticipants', (roomParticipants: UserInfo[]) => {
@@ -181,13 +156,41 @@ export default function RoomPage({ params }: { params: string }) {
   useEffect(() => {
     if (!socket) return;
     socket.on('chatLogs', (chatMessages: ChatMessage[]) => {
-      setRoomChatLogs(chatMessages);
+      // messageが 'permission requested'の場合、accept/rejectのボタンを表示
+      const modifiedMessages = chatMessages.map((message) => {
+        if (message.text === 'permission requested') {
+          return {
+            ...message,
+            text: (
+              <>
+                Permission requested
+                <button onClick={() => handlePermission(message.user, true)}>Accept</button>
+                <button onClick={() => handlePermission(message.user, false)}>Reject</button>
+              </>
+            ),
+          };
+        }
+        return message;
+      });
+      setRoomChatLogs(modifiedMessages as ChatMessage[]);
     });
 
     return () => {
       socket.off('chatLogs');
     };
   }, [socket, roomID]);
+
+  // ボタンが押されたときの処理
+  const handlePermission = (sender: string, isAccepted: boolean) => {
+    if (!socket) return;
+    socket.emit('permissionResponse', {
+      sender,
+      roomID,
+      room: selectedRoom,
+      isAccepted,
+      responder: currentUser, // ボタンを押した人の情報を追加
+    });
+  };
 
   const onClickSubmit = useCallback(() => {
     if (!socket) return;
@@ -252,7 +255,7 @@ export default function RoomPage({ params }: { params: string }) {
 
   return (
     <div className="room-container">
-      {!isPasswordVerified && roomType === 'password' ? (
+      {!isOwner && !isParticipants && !isPasswordVerified && roomType === 'password' ? (
         <div className="password-prompt">
           <h3>Enter Room Password</h3>
           <input
@@ -262,7 +265,7 @@ export default function RoomPage({ params }: { params: string }) {
           />
           <button onClick={handlePasswordSubmit}>Submit</button>
         </div>
-      ) : !isParticipants && !isPermissionGranted && roomType === 'private' ? (
+      ) : !isOwner && !isParticipants && !isPermissionGranted && roomType === 'private' ? (
         <div className="permission-prompt">
           <h3>Waiting for Join Approval for {selectedRoom}</h3>
           <button onClick={handlePermissionRequest}>Request Permission</button>
