@@ -101,7 +101,7 @@ export class RoomGateway {
         },
       });
       if (room) {
-        this.logger.log(`Room found: ${room.roomName}, ${room.id}`);
+        // this.logger.log(`Room found: ${room.roomName}, ${room.id}`);
         // ブロックされていたらエラーを返す
         if (room.roomBlocked && room.roomBlocked.includes(data.user.userId)) {
           this.logger.error('User is blocked');
@@ -133,6 +133,10 @@ export class RoomGateway {
           };
         });
         this.server.to(socket.id).emit('roomParticipants', roomParticipants);
+
+        if (!room.roomBlocked) {
+          room.roomBlocked = [];
+        }
         // roomBlockedからUser情報を取得してUserInfoに変換
         if (room.roomBlocked) {
           const blockedUsers: UserInfo[] = [];
@@ -150,10 +154,13 @@ export class RoomGateway {
               });
             }
           }
-          this.logger.log(`Blocked users: ${JSON.stringify(blockedUsers)}`);
+          // this.logger.log(`Blocked users: ${JSON.stringify(blockedUsers)}`);
           this.server.to(socket.id).emit('roomBlocked', blockedUsers);
         }
 
+        if (!room.roomMuted) {
+          room.roomMuted = [];
+        }
         // roomMutedのmutedUntilが現在時刻を過ぎている場合は削除
         if (room.roomMuted) {
           const formatNow = formatDate(new Date());
@@ -182,7 +189,7 @@ export class RoomGateway {
             });
           }
         }
-        this.logger.log(`mutedUsers: ${JSON.stringify(mutedUsers)}`);
+        // this.logger.log(`mutedUsers: ${JSON.stringify(mutedUsers)}`);
         this.server.to(socket.id).emit('roomMuted', mutedUsers);
       } else {
         this.logger.error('No room found');
@@ -323,7 +330,23 @@ export class RoomGateway {
       // roomIDでデータベースから部屋を取得
       const room = await this.roomRepository.findOne({ where: { id: data.roomID } });
       if (room) {
-        this.server.to(data.room).emit('permissionRequested', data.user);
+        // this.server.to(data.room).emit('permissionRequested', data.user);
+        const admin = await this.userRepository.findOne({ where: { userId: room.roomAdmin } });
+        if (admin) {
+          // roomAdminにpermissionRequestedイベントを送信
+          this.server.to(admin.userName).emit('permissionRequested', {
+            roomID: data.roomID,
+            roomName: data.room,
+            user: data.user,
+          });
+          // this.server.emit('permissionRequested', {
+          //   roomID: data.roomID,
+          //   roomName: data.room,
+          //   user: data.user,
+          // });
+        } else {
+          this.logger.error(`Admin not found in the database.`);
+        }
       } else {
         this.logger.error(`Room ${data.room} not found in the database.`);
       }
@@ -372,7 +395,7 @@ export class RoomGateway {
       // データベースから部屋を取得
       const room = await this.roomRepository.findOne({ where: { id: data.roomID } });
       if (room) {
-        this.server.to(data.room).emit('permissionDenied', data.user);
+        this.server.to(data.room).emit('permissionDenied', data.admin);
       } else {
         this.logger.error(`Room ${data.room} not found in the database.`);
       }
@@ -402,6 +425,9 @@ export class RoomGateway {
 
       // ユーザーがミュートされているか確認
       const room = await this.roomRepository.findOne({ where: { id: data.roomID } });
+      if (!room.roomMuted) {
+        room.roomMuted = [];
+      }
       const mutedUser = room.roomMuted.find(
         (muted) => muted.id === data.currentUser.userId && new Date(muted.mutedUntil) > new Date(),
       );
@@ -579,27 +605,6 @@ export class RoomGateway {
               (participant) => participant.id !== settings.roomSettings.roomBlocked,
             );
           }
-          // await this.roomRepository.save(room);
-          // const updatedRoom = await this.roomRepository.findOne({
-          //   where: { id: settings.roomID },
-          // });
-          // if (updatedRoom) {
-          //   // updatedRoom.roomParticipantsをUserInfoに変換
-          //   const updatedRoomParticipants: UserInfo[] = updatedRoom.roomParticipants.map(
-          //     (participant) => {
-          //       return {
-          //         userId: participant.id,
-          //         userName: participant.name,
-          //         icon: participant.icon,
-          //       };
-          //     },
-          //   );
-          //   this.server
-          //     .to(settings.selectedRoom)
-          //     .emit('updatedRoomParticipants', updatedRoomParticipants);
-          // } else {
-          //   this.logger.error(`Error getting updated room.`);
-          // }
         }
         if (settings.roomSettings.roomUnblocked) {
           if (room.roomBlocked) {

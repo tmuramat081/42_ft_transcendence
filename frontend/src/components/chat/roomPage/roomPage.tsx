@@ -116,28 +116,28 @@ export default function RoomPage({ params }: { params: string }) {
       }
     });
 
-    socket.on('permissionRequested', (user: User) => {
-      console.log('Permission requested by', user.userName);
-      if (window.confirm(`Permission requested by ${user.userName}. Do you accept?`)) {
-        // ユーザーが "Accept" ボタンをクリックした場合
-        socket.emit('permissionGranted', {
-          roomID: roomID,
-          room: selectedRoom,
-          user: user,
-          admin: currentUser,
-        });
-        socket.emit('joinRoom', { roomID: roomID, room: selectedRoom, user: user });
-        // updatePermissionGrantedUI();
-      } else {
-        // ユーザーが "Reject" ボタンをクリックした場合
-        socket.emit('permissionDenied', {
-          roomID: roomID,
-          room: selectedRoom,
-          user: user,
-          admin: currentUser,
-        });
-      }
-    });
+    // socket.on('permissionRequested', (user: User) => {
+    //   console.log('Permission requested by', user.userName);
+    //   if (window.confirm(`Permission requested by ${user.userName}. Do you accept?`)) {
+    //     // ユーザーが "Accept" ボタンをクリックした場合
+    //     socket.emit('permissionGranted', {
+    //       roomID: roomID,
+    //       room: selectedRoom,
+    //       user: user,
+    //       admin: currentUser,
+    //     });
+    //     socket.emit('joinRoom', { roomID: roomID, room: selectedRoom, user: user });
+    //     // updatePermissionGrantedUI();
+    //   } else {
+    //     // ユーザーが "Reject" ボタンをクリックした場合
+    //     socket.emit('permissionDenied', {
+    //       roomID: roomID,
+    //       room: selectedRoom,
+    //       user: user,
+    //       admin: currentUser,
+    //     });
+    //   }
+    // });
 
     socket.on('permissionGranted', (user: User) => {
       setIsPermissionGranted(true);
@@ -146,6 +146,8 @@ export default function RoomPage({ params }: { params: string }) {
 
     socket.on('permissionDenied', (user: User) => {
       alert('Permission denied by ' + user.userName);
+      // OKをクリックしたらチャットページに戻る
+      window.location.href = '/chat';
     });
 
     socket.on('updatedRoomParticipants', (roomParticipants: UserInfo[]) => {

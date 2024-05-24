@@ -63,6 +63,28 @@ export default function ChatPage() {
       console.error(error);
     });
 
+    socket.on('permissionRequested', ({ roomID, roomName, user }) => {
+      console.log('Permission requested by', user.userName);
+      if (window.confirm(`${roomName}: Permission requested by ${user.userName}. Do you accept?`)) {
+        // ユーザーが "Accept" ボタンをクリックした場合
+        socket.emit('permissionGranted', {
+          roomID: roomID,
+          room: roomName,
+          user: user,
+          admin: LoginUser,
+        });
+        socket.emit('joinRoom', { roomID: roomID, room: roomName, user: user });
+      } else {
+        // ユーザーが "Reject" ボタンをクリックした場合
+        socket.emit('permissionDenied', {
+          roomID: roomID,
+          room: roomName,
+          user: user,
+          admin: LoginUser,
+        });
+      }
+    });
+
     return () => {
       socket.off('loginUser');
       socket.off('roomList');
