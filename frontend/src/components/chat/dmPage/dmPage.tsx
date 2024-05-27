@@ -220,7 +220,7 @@ export default function DMPage({ params }: { params: string }) {
               src={`${API_URL}/api/uploads/${
                 message.senderId === sender?.userId ? sender.icon : receiver?.icon
               }`}
-              alt="User Icon"
+              alt={message.senderId === sender?.userId ? sender.userName : receiver?.userName}
               className="icon"
               sx={{ width: 35, height: 35 }}
             ></Avatar>

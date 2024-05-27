@@ -14,9 +14,16 @@ export type UserData = {
 };
 
 export type Room = {
-  id: number;
+  roomID: number;
   roomName: string;
   roomParticipants: UserInfo[];
+  roomType: string;
+  roomPassword: string;
+  roomOwner: number;
+  roomAdmin: number;
+  roomBlocked: number[];
+  roomMuted: { id: number; mutedUntil: string }[];
+  createdAt: string;
 };
 
 export type ChatMessage = {
