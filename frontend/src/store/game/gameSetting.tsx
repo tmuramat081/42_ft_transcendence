@@ -7,7 +7,7 @@ type State = {
 };
 
 const defaultGameSetting: GameSetting = {
-    difficulty: 'Easy',
+    difficulty: 'EASY',
     matchPoint: 5,
     player1Score: 0,
     player2Score: 0,
