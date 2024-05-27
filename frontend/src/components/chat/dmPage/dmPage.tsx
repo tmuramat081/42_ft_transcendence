@@ -201,7 +201,7 @@ export default function DMPage({ params }: { params: string }) {
   }, [loginUser, socket, receiver]);
 
   const handleGoToGame = () => {
-    if (!loginUser || !receiver) return;
+    if (!loginUser || !receiver || !socket) return;
 
     const match: Invitation = {
       guestId: loginUser.userId,
