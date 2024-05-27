@@ -172,7 +172,7 @@ export default function DMPage({ params }: { params: string }) {
     gameSocket.emit('inviteFriend', invitation, (res: boolean) => {
       if (res) {
         console.log('Invited friend');
-        updateInvitedFriendState(receiver.userId, true);
+        updateInvitedFriendState({ friendId: receiver.userId });
         router.push('/game/index');
       } else {
         console.error('Failed to invite friend');
