@@ -11,7 +11,7 @@ export default function Page() {
   return (
     <Layout title='Game'>
     <article>
-      <h2>DMページ</h2>
+      <h2>DM Page</h2>
       <section>
         <DMPage params={recipient} />
       </section>

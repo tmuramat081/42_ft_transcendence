@@ -6,7 +6,7 @@ import {
   MessageBody,
   ConnectedSocket,
 } from '@nestjs/websockets';
-// import { UsersService } from '../users/users.service';
+import { UsersService } from '../users/users.service';
 import { Logger } from '@nestjs/common';
 import { Server, Socket } from 'socket.io';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -18,6 +18,7 @@ import { DmLog } from './entities/dmLog.entity';
 import { OnlineUsers } from './entities/onlineUsers.entity';
 import { GameRoom } from '../games/entities/gameRoom.entity';
 import { UserInfo, ChatMessage, formatDate } from './tools';
+import { OnGatewayConnection, OnGatewayDisconnect } from '@nestjs/websockets';
 
 @WebSocketGateway({ cors: { origin: '*' } })
 export class ChatGateway {
@@ -45,8 +46,24 @@ export class ChatGateway {
     @InjectRepository(GameRoom)
     private gameRoomRepository: Repository<GameRoom>,
 
-    // private readonly usersService: UsersService,
+    private readonly usersService: UsersService,
   ) {}
+
+  @SubscribeMessage(`getLoginUser`)
+  async handleGetCurrentUser(@MessageBody() user: User, @ConnectedSocket() socket: Socket) {
+    try {
+      const userId = user.userId;
+      const loginUser = await this.userRepository.findOne({ where: { userId: Number(userId) } });
+      if (!loginUser) {
+        this.logger.error(`User not found: ${userId}`);
+        return;
+      }
+      socket.emit('loginUser', loginUser);
+    } catch (error) {
+      this.logger.error(`Error getting user: ${(error as Error).message}`);
+      throw error;
+    }
+  }
 
   @SubscribeMessage('getRoomList')
   async handleGetRoomList(@MessageBody() LoginUser: User, @ConnectedSocket() socket: Socket) {
@@ -62,102 +79,27 @@ export class ChatGateway {
     }
   }
 
-  @SubscribeMessage(`getLoginUser`)
-  async handleGetCurrentUser(@MessageBody() user: User, @ConnectedSocket() socket: Socket) {
-    try {
-      const userId = user.userId;
-      const loginUser = await this.userRepository.findOne({ where: { userId: Number(userId) } });
-      if (!loginUser) {
-        this.logger.error(`User not found: ${userId}`);
-        return;
-      }
-      // this.logger.log(`Login user: ${JSON.stringify(loginUser)}`);
-      socket.emit('loginUser', loginUser);
-
-      // onlineUsersにユーザーを追加
-      const existingUser = await this.onlineUsersRepository.findOne({
-        where: { userId: loginUser.userId, name: loginUser.userName },
-      });
-      if (!existingUser) {
-        const onlineUser = new OnlineUsers();
-        onlineUser.userId = loginUser.userId;
-        onlineUser.name = loginUser.userName;
-        onlineUser.icon = loginUser.icon;
-        await this.onlineUsersRepository.save(onlineUser);
-      }
-    } catch (error) {
-      this.logger.error(`Error getting user: ${(error as Error).message}`);
-      throw error;
-    }
-  }
-
-  @SubscribeMessage(`logoutUser`)
-  async handleLogoutUser(@MessageBody() user: User, @ConnectedSocket() socket: Socket) {
-    try {
-      const userId = user.userId;
-      const logoutUser = await this.onlineUsersRepository.findOne({ where: { userId: userId } });
-      if (!logoutUser) {
-        this.logger.error(`User not found: ${userId}`);
-        return;
-      }
-      this.logger.log(`Logout user: ${JSON.stringify(logoutUser)}`);
-      await this.onlineUsersRepository.remove(logoutUser);
-      // onlineUsersを取得してクライアントに送信
-      const onlineUsers = await this.onlineUsersRepository.find();
-      // onlineUsersをUserInfoに変換
-      const onlineUsersInfo: UserInfo[] = onlineUsers.map((user) => {
-        return {
-          userId: user.userId,
-          userName: user.name,
-          icon: user.icon,
-        };
-      });
-      // 全クライアントに送信
-      this.server.emit('onlineUsers', onlineUsersInfo);
-    } catch (error) {
-      this.logger.error(`Error logging out user: ${(error as Error).message}`);
-      throw error;
-    }
-  }
-
   @SubscribeMessage('getOnlineUsers')
   async handleGetOnlineUsers(@MessageBody() LoginUser: User, @ConnectedSocket() socket: Socket) {
     try {
       if (!LoginUser || !LoginUser.userId || !LoginUser.userName) {
         throw new Error('Invalid sender data.');
       }
-      // ダミーユーザーを登録
-      // await this.createDummyUsers();
-
-      // オンラインユーザーを全て削除
-      // await this.onlineUsersRepository.delete({});
-
-      // 空のオンラインユーザーを削除
-      // await this.deleteEmptyOnlineUsers();
-
-      // 重複したオンラインユーザーを削除
-      // await this.deleteDuplicateOnlineUsers();
-
       // usersService.loginUserIdsからloninUserのリストを取得
-      // const onlineUserIds: number[] = await this.usersService.loginUserIds;
-      // this.logger.log(`Online user ids: ${onlineUserIds}`);
+      const onlineUserIds: number[] = await this.usersService.loginUserIds;
 
       // onlineUserIdsからユーザー情報を取得
-      // const onlineUsers: User[] = await this.userRepository.findByIds(onlineUserIds);
+      const onlineUsers: User[] = await this.userRepository.findByIds(onlineUserIds);
 
-      // データベースからオンラインユーザーリストを取得
-      const onlineUsers = await this.onlineUsersRepository.find();
-
-      // this.logger.log(`Online users: ${JSON.stringify(onlineUsers)}`);
-
-      // onlineUsersをUserInfoに変換
+      // onlineUsers[]をUserInfo[]に変換
       const onlineUsersInfo: UserInfo[] = onlineUsers.map((user) => {
         return {
           userId: user.userId,
-          userName: user.name,
+          userName: user.userName,
           icon: user.icon,
         };
       });
+      // this.logger.log(`Online users info: ${JSON.stringify(onlineUsersInfo)}`);
 
       // sender以外のonlineUsersInfoをクライアントに送信
       socket.emit(
@@ -166,127 +108,6 @@ export class ChatGateway {
       );
     } catch (error) {
       this.logger.error(`Error getting online users: ${(error as Error).message}`);
-      throw error;
-    }
-  }
-
-  async deleteEmptyOnlineUsers() {
-    // 空のオンラインユーザーを取得
-    const emptyOnlineUsers = await this.onlineUsersRepository.find({
-      where: {
-        userId: -1,
-        name: '',
-        icon: '',
-      },
-    });
-
-    // 取得した空のオンラインユーザーを削除
-    await Promise.all(emptyOnlineUsers.map((user) => this.onlineUsersRepository.remove(user)));
-  }
-
-  async deleteDuplicateOnlineUsers() {
-    // オンラインユーザーを全て取得
-    const allOnlineUsers = await this.onlineUsersRepository.find();
-
-    // 名前とidが一致するユーザーを検索して削除
-    for (let i = 0; i < allOnlineUsers.length; i++) {
-      const currentUser = allOnlineUsers[i];
-      for (let j = i + 1; j < allOnlineUsers.length; j++) {
-        const nextUser = allOnlineUsers[j];
-        if (currentUser.name === nextUser.name && currentUser.userId === nextUser.userId) {
-          await this.onlineUsersRepository.remove(nextUser);
-          console.log('Duplicate online user deleted:', nextUser);
-        }
-      }
-    }
-  }
-
-  // ダミーユーザーを登録
-  // async createDummyUsers() {
-  //   const dummyUsers: UserInfo[] = [
-  //     {
-  //       userId: 11,
-  //       userName: 'Bob',
-  //       icon: 'https://www.plazastyle.com/images/charapla-spongebob/img_character01.png',
-  //     },
-  //     {
-  //       userId: 12,
-  //       userName: 'Patrick',
-  //       icon: 'https://www.plazastyle.com/images/charapla-spongebob/img_character02.png',
-  //     },
-  //     {
-  //       userId: 13,
-  //       userName: 'plankton',
-  //       icon: 'https://www.plazastyle.com/images/charapla-spongebob/img_character05.png',
-  //     },
-  //     {
-  //       userId: 14,
-  //       userName: 'sandy',
-  //       icon: 'https://www.plazastyle.com/images/charapla-spongebob/img_character06.png',
-  //     },
-  //     {
-  //       userId: 15,
-  //       userName: 'Mr.krabs',
-  //       icon: 'https://www.plazastyle.com/images/charapla-spongebob/img_character04.png',
-  //     },
-  //     {
-  //       userId: 16,
-  //       userName: 'gary',
-  //       icon: 'https://www.plazastyle.com/images/charapla-spongebob/img_character07.png',
-  //     },
-  //   ];
-  //   await Promise.all(
-  //     dummyUsers.map(async (user) => {
-  //       const onlineUser = new OnlineUsers();
-  //       onlineUser.userId = user.userId;
-  //       onlineUser.name = user.userName;
-  //       onlineUser.icon = user.icon;
-  //       await this.onlineUsersRepository.save(onlineUser);
-  //     }),
-  //   );
-  // }
-
-  @SubscribeMessage('talk')
-  async handleMessage(
-    @MessageBody() data: { selectedRoom: string; loginUser: User; message: string },
-    @ConnectedSocket() socket: Socket,
-  ) {
-    try {
-      if (!data.selectedRoom || !data.loginUser || !data.message) {
-        this.logger.error('Invalid chat message data:', data);
-        return;
-      }
-      this.logger.log(
-        `${data.selectedRoom} received ${data.message} from ${data.loginUser.userName}`,
-      );
-
-      // チャットログを保存
-      const chatLog = new ChatLog();
-      chatLog.roomName = data.selectedRoom;
-      chatLog.sender = data.loginUser.userName;
-      chatLog.icon = data.loginUser.icon;
-      chatLog.message = data.message;
-      chatLog.timestamp = formatDate(new Date());
-      await this.chatLogRepository.save(chatLog);
-      this.logger.log(`Saved chatLog: ${JSON.stringify(chatLog)}`);
-
-      // チャットログを取得
-      const chatLogs = await this.chatLogRepository.find({
-        where: { roomName: data.selectedRoom },
-      });
-      this.logger.log(`Chat logs: ${JSON.stringify(chatLogs)}`);
-      // chatLogsをchatmessage[]に変換
-      const chatMessages: ChatMessage[] = chatLogs.map((log) => {
-        return {
-          user: log.sender,
-          photo: log.icon,
-          text: log.message,
-          timestamp: log.timestamp,
-        };
-      });
-      this.server.to(data.selectedRoom).emit('chatLogs', chatMessages);
-    } catch (error) {
-      this.logger.error(`Error handling message: ${(error as Error).message}`);
       throw error;
     }
   }
@@ -313,6 +134,10 @@ export class ChatGateway {
         const room = new Room();
         room.roomName = create.roomName;
         room.roomParticipants = [];
+        room.roomType = 'public';
+        room.roomOwner = create.LoginUser.userId;
+        room.roomAdmin = create.LoginUser.userId;
+        room.createdAt = new Date();
         await this.roomRepository.save(room);
         socket.join(create.roomName);
         const rooms = await this.roomRepository.find();
@@ -327,161 +152,6 @@ export class ChatGateway {
       }
     } catch (error) {
       this.logger.error(`Error creating room: ${(error as Error).message}`);
-      throw error;
-    }
-  }
-
-  @SubscribeMessage('joinRoom')
-  async handleJoinRoom(
-    @MessageBody() join: { loginUser: User; room: string },
-    @ConnectedSocket() socket: Socket,
-  ) {
-    try {
-      this.logger.log(`joinRoom: ${join.loginUser.userName} joined ${join.room}`);
-      const rooms = [...socket.rooms].slice(0);
-      // 既に部屋に入っている場合は退出
-      if (rooms.length == 2) socket.leave(rooms[1]);
-      // データベースから部屋を取得
-      const room = await this.roomRepository.findOne({ where: { roomName: join.room } });
-      // 参加者リストを更新
-      if (room) {
-        if (!room.roomParticipants) {
-          room.roomParticipants = [];
-        }
-        // 参加者が100人を超える場合はエラーを返す
-        if (room.roomParticipants.length >= 100) {
-          this.logger.error('Room is full');
-          socket.emit('roomError', 'Room is full.');
-          return;
-        }
-        // ユーザーが存在してないか確認
-        const existingUser = room.roomParticipants.find(
-          (participant) => participant.name === join.loginUser.userName,
-          (participant) => participant.id === join.loginUser.userId,
-        );
-        if (!existingUser) {
-          // userRepositoryからユーザー情報を取得して追加
-          const user = await this.userRepository.findOne({
-            where: { userId: join.loginUser.userId },
-          });
-          if (!user) {
-            this.logger.error(`User ${join.loginUser.userName} not found in the database.`);
-            return;
-          }
-          room.roomParticipants.push({
-            id: user.userId,
-            name: user.userName,
-            icon: user.icon,
-          });
-        }
-        await this.roomRepository.save(room);
-      } else {
-        this.logger.error(`Room ${join.room} not found in the database.`);
-      }
-      // ソケットにルームに参加させる
-      socket.join(join.room);
-      // 参加者リストを取得してクライアントに送信
-      const updatedRoom = await this.roomRepository.findOne({ where: { roomName: join.room } });
-      if (updatedRoom) {
-        // updatedRoom.roomParticipantsをUserInfoに変換
-        const roomParticipants: UserInfo[] = updatedRoom.roomParticipants.map((participant) => {
-          return {
-            userId: participant.id,
-            userName: participant.name,
-            icon: participant.icon,
-          };
-        });
-        this.server.to(join.room).emit('roomParticipants', roomParticipants);
-      } else {
-        this.logger.error(`Error getting updated room.`);
-      }
-      // チャットログを取得してクライアントに送信
-      const chatLogs = await this.chatLogRepository.find({ where: { roomName: join.room } });
-      if (chatLogs) {
-        this.logger.log(`Chat logs: ${JSON.stringify(chatLogs)}`);
-        // chatLogsをchatmessage[]に変換
-        const chatMessages: ChatMessage[] = chatLogs.map((log) => {
-          return {
-            user: log.sender,
-            photo: log.icon,
-            text: log.message,
-            timestamp: log.timestamp,
-          };
-        });
-        this.server.to(join.room).emit('chatLogs', chatMessages);
-      } else {
-        this.logger.error(`Error getting chat logs.`);
-      }
-    } catch (error) {
-      const errorMessage = (error as Error).message;
-      this.logger.error(`Error joining room: ${errorMessage}`);
-      throw error;
-    }
-  }
-
-  @SubscribeMessage('leaveRoom')
-  async handleLeaveRoom(
-    @MessageBody() leave: { LoginUser: User; room: string },
-    @ConnectedSocket() socket: Socket,
-  ) {
-    try {
-      this.logger.log(`leaveRoom: ${leave.LoginUser.userName} left ${leave.room}`);
-      // データベースから部屋を取得
-      const room = await this.roomRepository.findOne({ where: { roomName: leave.room } });
-
-      // 参加者リストを更新
-      if (room) {
-        if (room.roomParticipants) {
-          room.roomParticipants = room.roomParticipants.filter(
-            (participant) => participant.name !== leave.LoginUser.userName,
-          );
-          await this.roomRepository.save(room);
-        }
-      } else {
-        this.logger.error(`Room ${leave.room} not found in the database.`);
-      }
-
-      // 更新された参加者リストを取得してクライアントに送信
-      const updatedRoom = await this.roomRepository.findOne({ where: { roomName: leave.room } });
-      if (updatedRoom) {
-        this.server.to(leave.room).emit('roomParticipants', updatedRoom.roomParticipants);
-      } else {
-        this.logger.error(`Error getting updated room.`);
-      }
-
-      // ソケットからルームを退出させる
-      const rooms = Object.keys(socket.rooms);
-      if (rooms.includes(leave.room)) {
-        socket.leave(leave.room);
-      }
-    } catch (error) {
-      this.logger.error(`Error leaving room: ${(error as Error).message}`);
-      throw error;
-    }
-  }
-
-  @SubscribeMessage('deleteRoom')
-  async handleDeleteRoom(@MessageBody() delet: { LoginUser: User; room: string }) {
-    try {
-      this.logger.log(`${delet.LoginUser.userName} deleted Room: ${delet.room}`);
-
-      // データベースから指定のルームを削除
-      const deletedRoom = await this.roomRepository.findOne({
-        where: { roomName: delet.room },
-      });
-      if (deletedRoom) {
-        await this.roomRepository.remove(deletedRoom);
-        this.logger.log(`Room ${delet.room} has been deleted from the database.`);
-      } else {
-        this.logger.error(`Room ${delet.room} not found in the database.`);
-      }
-
-      // 新しい roomList を取得してコンソールに出力
-      const updatedRoomList = await this.roomRepository.find();
-
-      this.server.emit('roomList', updatedRoomList);
-    } catch (error) {
-      this.logger.error(`Error deleting room: ${(error as Error).message}`);
       throw error;
     }
   }

@@ -1,4 +1,4 @@
-import { User } from '../users/entities/user.entity';
+/*eslint-disable*/
 
 export interface UserInfo {
   userId: number;
@@ -38,4 +38,25 @@ export function formatDate(date: Date): string {
     timeZone: 'Asia/Tokyo',
   };
   return date.toLocaleString('ja-JP', options);
+}
+
+// 期間をミリ秒に変換する関数
+export function convertDurationToMs(duration: string): number {
+  const unit = duration.slice(-1);
+  const value = parseInt(duration.slice(0, -1), 10);
+
+  switch (unit) {
+    case 'm': // 分
+      return value * 60000; // 1分 = 60000ミリ秒
+    case 'h': // 時間
+      return value * 3600000; // 1時間 = 3600000ミリ秒
+    case 'd': // 日
+      return value * 86400000; // 1日 = 86400000ミリ秒
+    case 'w': // 週
+      return value * 7 * 86400000; // 1週間 = 7日 * 86400000ミリ秒
+    case 'M': // 月
+      return value * 30 * 86400000; // 1ヶ月 = 30日 * 86400000ミリ秒 (単純化)
+    default:
+      throw new Error('Unsupported duration unit');
+  }
 }
