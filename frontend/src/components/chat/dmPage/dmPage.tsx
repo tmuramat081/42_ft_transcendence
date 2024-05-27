@@ -184,7 +184,7 @@ export default function DMPage({ params }: { params: string }) {
   // 招待を受け入れる
   const handleJoinClick = useCallback((friend: Friend) => {
     // console.log(friend)
-    if (loginUser) {
+    if (loginUser && socket) {
       const match: Invitation = {
         guestId: loginUser.userId,
         hostId: friend.userId,
