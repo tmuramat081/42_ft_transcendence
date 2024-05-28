@@ -83,6 +83,14 @@ export default function SignUp() {
         errors.password = 'Please enter at least 8 characters';
         isValid = false;
       }
+
+      // パスワードがパスワードは大文字、小文字、数字、記号を含んでいるか
+      //  /^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[!@#\$%\^&\*_\(\)\-\[\]\~\.\`\;\:])/,
+      const pattern = /^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[!@#\$%\^&\*_\(\)\-\[\]\~\.\`\;\:]).+$/;
+      if (password && !pattern.test(password)) {
+        errors.password = 'Password must include uppercase letters, lowercase letters, numbers, and symbols';
+        isValid = false;
+      }
     }
     // 相関チェック
     if (data.get('password') !== data.get('passwordConfirm')) {
@@ -131,6 +139,10 @@ export default function SignUp() {
         return res.json();
       })
       .then((data: SignUpResponse) => {
+        if (data.accessToken === undefined) {
+          alert('Failed to sign up');
+          return;
+        }
         console.log('Success:', data.accessToken);
         setToken(data.accessToken);
         router.push(APP_ROUTING.DASHBOARD.path);
