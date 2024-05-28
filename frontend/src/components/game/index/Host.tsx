@@ -1,5 +1,5 @@
 import { CircularProgress, Typography, Grid, Modal, Button } from '@mui/material';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useState, Suspense, useRef } from 'react';
 import { useInvitedFriendStrore } from '@/store/game/invitedFriendState';
 import { usePlayStateStore, PlayState } from '@/store/game/playState';
 import { useRouter, usePathname, useSearchParams } from 'next/navigation';
@@ -21,22 +21,43 @@ export const NavigationEventsHost = (() =>{
     const { invitedFriendState } = useInvitedFriendStrore();
     const updateInvitedFriendState = useInvitedFriendStrore((store) => store.updateInvitedFriendState);
 
+    const prevPathnameRef = useRef(pathname);
+    const prevSearchParamsRef = useRef(searchParams);
+
     useEffect(() => {
-      const url = `${pathname}?${searchParams}`
+        const currentUrl = `${pathname}?${searchParams}`;
+        const prevUrl = `${prevPathnameRef.current}?${prevSearchParamsRef.current}`;
     //   console.log(url)
       // You can now use the current URL
       // ...
-      if (invitedFriendState.friendId !== null && loginUser) {
-        const invitation: Invitation = {
-            guestId: invitedFriendState.friendId,
-            hostId: loginUser.userId,
-        };
+    //   if (invitedFriendState.friendId !== null && loginUser) {
+    //     const invitation: Invitation = {
+    //         guestId: invitedFriendState.friendId,
+    //         hostId: loginUser.userId,
+    //     };
+    //     // console.log('cancelInvitation')
+    //     socket.emit('cancelInvitation', invitation);
+    //     updateInvitedFriendState({friendId: null});
+    //     }
+    //     //cancelPlay();
 
-        socket.emit('cancelInvitation', invitation);
-        updateInvitedFriendState({friendId: null});
-    }
-        //cancelPlay();
-    }, [pathname, searchParams])
+        // URLが変更されたかを確認
+        if (currentUrl !== prevUrl) {
+            if (invitedFriendState.friendId !== null && loginUser) {
+                const invitation = {
+                    guestId: invitedFriendState.friendId,
+                    hostId: loginUser.userId,
+                };
+                socket.emit('cancelInvitation', invitation);
+                updateInvitedFriendState({ friendId: null });
+            }
+            // 他の必要な処理
+        }
+
+        // 現在の値を前の値として保存
+        prevPathnameRef.current = pathname;
+        prevSearchParamsRef.current = searchParams;
+    }, [pathname, searchParams, invitedFriendState.friendId, loginUser])
    
     return null
 });
@@ -102,7 +123,7 @@ export const Host = () => {
     }, [loginUser, invitedFriendState, socket, updateInvitedFriendState]);
 
     return (
-        <Modal open={true} aria-labbelleby="modal-modal-title">
+        <Modal open={true} aria-labbelleby="modal-modal-title"> 
             <Grid container justifyContent='center' alignItems='center' direction='column' sx={{
                 position: 'absolute',
                 top: '50%',
@@ -124,7 +145,7 @@ export const Host = () => {
                         <Typography variant='h6' id='modal-modal-title' align='center' gutterBottom>
                             {invitationDenied && 'Invitation was denied'}
                             {playState !== PlayState.stateNothing && 'waiting...'}
-                            {playState === PlayState.stateNothing && !invitationDenied && 'waiting for opponent...'}
+                            {playState === PlayState.stateNothing && !invitationDenied && '待機中・・・'}
                         </Typography>
                     </Grid>
                 </>

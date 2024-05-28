@@ -31,6 +31,14 @@ export const Start = ({ setOpenMatchError }: Props) => {
             //setOpenMatchError(true);
             return;
         }
+        if (aliasName === "") {
+            setOpenMatchError(true);
+
+            // 面倒なのでアラートで対応
+            console.log('aliasName is empty');
+            alert('aliasName is empty');
+            return;
+        }
         // マッチングエラーを非表示
         setOpenMatchError(false);
         // ユーザーの状態を更新
@@ -101,7 +109,7 @@ export const Start = ({ setOpenMatchError }: Props) => {
                   }}
                 >
                   <Box fontWeight="fontWeightBold">
-                    Start
+                    ゲームに参加
                   </Box>
                 </Button>
             </Grid>

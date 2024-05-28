@@ -9,6 +9,10 @@ import { useAuth } from '@/providers/useAuth';
 import { DirectMessage } from '@/types/chat/chat';
 import { User } from '@/types/user';
 import './dmPage.css';
+import { Invitation } from '@/types/game/game';
+import { useSocketStore } from '@/store/game/clientSocket';
+import { useInvitedFriendStrore } from '@/store/game/invitedFriendState';
+import { Friend } from '@/types/game/friend';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? '';
 const BLOCKED_USER_KEY = 'blockedUser';
@@ -22,6 +26,9 @@ export default function DMPage({ params }: { params: string }) {
   const [receiver, setReceiver] = useState<User | null>(null);
   const [dmLogs, setDMLogs] = useState<DirectMessage[]>([]);
   const [blocked, setBlocked] = useState(false);
+  const { socket: gameSocket } = useSocketStore();
+  const { invitedFriendState } = useInvitedFriendStrore();
+  const updateInvitedFriendState = useInvitedFriendStrore((state) => state.updateInvitedFriendState);
 
   useEffect(() => {
     if (!socket || !params) return;
@@ -95,7 +102,7 @@ export default function DMPage({ params }: { params: string }) {
   }, [sender, receiver, socket, blocked]);
 
   useEffect(() => {
-    if (!socket || blocked) return;
+    if (!socket || blocked || !receiver || !loginUser) return;
     socket.on('dmLogs', (directMessages: DirectMessage[]) => {
       // directMessagesのtextが'Game Invitation'の場合、各メッセージにゲームへのリンクを追加する
       const modifiedMessages = directMessages.map((message) => {
@@ -106,6 +113,7 @@ export default function DMPage({ params }: { params: string }) {
               <>
                 Game Invitation
                 <button onClick={handleGoToGame}>Go to Game</button>
+                {/* <button onClick={handleJoinClick({userId: receiver.userId, userName: receiver.userName, icon: receiver.icon })}>Go to Game</button> */}
               </>
             ),
           };
@@ -120,7 +128,7 @@ export default function DMPage({ params }: { params: string }) {
     return () => {
       socket.off('dmLogs');
     };
-  }, [socket, blocked]);
+  }, [socket, blocked, loginUser, receiver]);
 
   const onClickSubmit = useCallback(() => {
     if (!socket || blocked) return;
@@ -150,15 +158,68 @@ export default function DMPage({ params }: { params: string }) {
   }, [sender, receiver, socket, blocked]);
 
   const onClickInviteGame = useCallback(() => {
-    if (!socket || blocked) return;
+    if (!socket || blocked || !loginUser || !receiver) return;
+
     // ゲーム招待メッセージを送信
     socket.emit('sendDM', { sender: sender, receiver: receiver, message: 'Game Invitation' });
     console.log(`${sender?.userName} sent Game Invitation to ${receiver?.userName}`);
+
+    // maoyagi ver
+    const invitation: Invitation = {
+      guestId: receiver.userId,
+      hostId: loginUser.userId,
+    }
+    gameSocket.emit('inviteFriend', invitation, (res: boolean) => {
+      if (res) {
+        console.log('Invited friend');
+        updateInvitedFriendState({ friendId: receiver.userId });
+        router.push('/game/index');
+      } else {
+        console.error('Failed to invite friend');
+      }
+    });
+
   }, [socket, sender, receiver]);
 
+  // 招待を受け入れる
+  const handleJoinClick = useCallback((friend: Friend) => {
+    // console.log(friend)
+    if (loginUser && socket) {
+      const match: Invitation = {
+        guestId: loginUser.userId,
+        hostId: friend.userId,
+      };
+      // console.log(match)
+      socket.emit('acceptInvitation', match, (res: boolean) => {
+        if (!res) {
+          // error表示
+          //setOpenDialogError(true);
+          console.error('Failed to accept invitation');
+        }
+      })
+    }
+  }, [loginUser, socket, receiver]);
+
   const handleGoToGame = () => {
-    router.push('/game');
+    if (!loginUser || !receiver || !socket) return;
+
+    const match: Invitation = {
+      guestId: loginUser.userId,
+      hostId: receiver.userId,
+    };
+    // console.log(match)
+    socket.emit('acceptInvitation', match, (res: boolean) => {
+      if (!res) {
+        // error表示
+        //setOpenDialogError(true);
+        console.error('Failed to accept invitation');
+      }
+    })    
+    router.push('/game/index');
   };
+
+  // console.log(sender)
+  // console.log(receiver)
 
   return (
     <div className="dm-container">
@@ -225,6 +286,7 @@ export default function DMPage({ params }: { params: string }) {
               sx={{ width: 35, height: 35 }}
             ></Avatar>
             <div>
+              <div>{message.senderId}</div>
               <div>{message.text}</div>
               <div className="timestamp">{message.timestamp}</div>
             </div>

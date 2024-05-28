@@ -14,6 +14,7 @@ export default function FriendList() {
   }, [loginUser]);
 
   useAsyncEffect(async () => {
+    console.log('get friend list');
     await getCurrentUser();
   }, []);
 

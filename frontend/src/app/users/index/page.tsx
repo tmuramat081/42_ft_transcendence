@@ -3,12 +3,20 @@ import UserProfileList from '@/components/users/list/userList';
 import { FindUsersResponse } from '@/types/user/findUsers';
 import { Box } from '@mui/material';
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL ?? '';
+// const API_URL = process.env.NEXT_PUBLIC_API_URL ?? '';
+
+const BACKEND_URL = 'http://backend:3000';
 
 export default async function Page() {
   let users: FindUsersResponse[] = [];
   try {
-    const response = await fetch(`${API_URL}/users/`, {
+    // const response = await fetch(`${API_URL}/users/`, {
+    //   method: 'GET',
+    //   headers: { 'Content-Type': 'application/json' },
+    //   credentials: 'include',
+    //   cache: 'no-store',
+    // });
+    const response = await fetch(`${BACKEND_URL}/users/`, {
       method: 'GET',
       headers: { 'Content-Type': 'application/json' },
       credentials: 'include',

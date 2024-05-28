@@ -20,6 +20,8 @@ import { Invitation } from '@/types/game/game';
 import { useInvitedFriendStrore } from '@/store/game/invitedFriendState';
 import { BadgedAvatar, AvatarFontSize } from '@/components/game/common/BadgedAvatar';
 import { FriendListItem } from '@/components/users/FriendListItem';
+// import FriendList from '@/components/dashboard/friendList';
+import { FriendList } from '@/components/users/FriendList';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? '';
 
@@ -374,11 +376,12 @@ export default function Profile({ params }: { params: { name: string } }) {
                   {user?.point}
                 </Typography>
               </Grid> */}
-              { loginUser !== null && user !== null && loginUser.userId !== user.userId && loginUser.blocked.filter((friend) => friend.userId === user.userId).length <= 0 &&
+
+              {/* { loginUser !== null && user !== null && loginUser.userId !== user.userId && loginUser.blocked.filter((friend) => friend.userId === user.userId).length <= 0 &&
                 (
-                    <Button variant='contained' sx={{width: '100%'}} color='primary' onClick={() => inviteGame({userId: user.userId, userName: user.userName})}>ゲームに誘う</Button>
+                    <Button variant='contained' sx={{width: '100%'}} color='primary' onClick={() => inviteGame({userId: user.userId, userName: user.userName, icon: user.icon })}>ゲームに誘う</Button>
                 )
-              }  
+              }   */}
             </Grid>
           </Grid>
         </Grid>
@@ -420,7 +423,7 @@ export default function Profile({ params }: { params: { name: string } }) {
               <Typography gutterBottom variant='h5' component='div'>
                 Friends
               </Typography>
-              <List>
+              {/* <List>
                 {user && user.friends && user.friends.map((friend, index) => (
                   // <ListItem key={index}>
                   //   <Link href={`/users/${friend.userName}`}>
@@ -428,9 +431,10 @@ export default function Profile({ params }: { params: { name: string } }) {
                   //   <ListItemText primary={friend.userName} secondary={`${friend.userName}`} />
                   //   </Link>
                   // </ListItem>
-                  <FriendListItem key={index} friend={{userId: friend.userId, userName: friend.userName}} />
+                  <FriendListItem key={index} friend={{userId: friend.userId, userName: friend.userName, icon: friend.icon}} />
                 ))}
-              </List>
+              </List> */}
+              <FriendList friends={user.friends} user={user} />
             </Grid>
           </Grid>
         {/* Match results */}

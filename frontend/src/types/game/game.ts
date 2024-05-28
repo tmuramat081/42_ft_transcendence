@@ -1,7 +1,7 @@
 export const DiffucultyLevel = {
-    EASY: 'Easy',
-    NORMAL: 'Normal',
-    HARD: 'Hard',
+    EASY: 'EASY',
+    NORMAL: 'NORMAL',
+    HARD: 'HARD',
 } as const;
 
 // keyのunion型にする

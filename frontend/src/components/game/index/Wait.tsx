@@ -178,7 +178,7 @@ export const Wait = ({ openMatchError }: Props) => {
                           gutterBottom
                         >
                             {playState === PlayState.stateWaiting && !openMatchError && (
-                                'Waiting...'
+                                '待機中...'
                             )}
                             {playState === PlayState.stateWaiting && openMatchError && (
                                 'Error'
@@ -196,7 +196,7 @@ export const Wait = ({ openMatchError }: Props) => {
                               color='secondary'
                               onClick={cancelPlay}
                             >
-                                Cancel
+                                キャンセル
                             </Button>
                         </Grid>
                     )}
