@@ -1,3 +1,4 @@
+'use client';
 import { Box, Grid, Typography } from '@mui/material';
 import UserProfileCard from './userCard';
 import { FindUsersResponse } from '@/types/user/findUsers';
@@ -33,6 +34,7 @@ export default function UserProfileList({ userList }: Props) {
         spacing={2}
         justifyContent="center"
         alignItems="flex-start"
+        sx={{ pt: 2 }}
       >
         {userList.map((user: FindUsersResponse) => (
           <Grid
