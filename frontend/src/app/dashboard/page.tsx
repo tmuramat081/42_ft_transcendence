@@ -38,11 +38,11 @@ export default function Page() {
             borderTop: '5px solid #00babc',
             boxShadow: 4,
             borderRadius: 4,
-            minHeight: 600,
+            minHeight: 450,
             minWidth: 400,
           }}
         >
-          …{/* ユーザープロフィール */}
+          {/* ユーザープロフィール */}
           <UserProfile />
           {/* ボタン */}
           <Box
@@ -50,7 +50,6 @@ export default function Page() {
               py: 2,
               display: 'flex',
               flexDirection: 'column',
-              justifyContent: 'flex-start',
               gap: 2,
             }}
           >
@@ -58,10 +57,10 @@ export default function Page() {
               variant="contained"
               color="primary"
               onClick={() => {
-                router.push('/game');
+                router.push('/users/index');
               }}
             >
-              Start Game
+              Profile
             </Button>
             <Button
               variant="contained"
@@ -71,6 +70,15 @@ export default function Page() {
               }}
             >
               Chat
+            </Button>
+            <Button
+              variant="contained"
+              color="primary"
+              onClick={() => {
+                router.push('/game/index');
+              }}
+            >
+              Start Game
             </Button>
           </Box>
         </Box>
@@ -83,13 +91,12 @@ export default function Page() {
             borderTop: '5px solid #00babc',
             boxShadow: 4,
             borderRadius: 4,
-            minHeight: 600,
+            minHeight: 450,
             minWidth: 400,
           }}
         >
           {/* フレンドリスト */}
           <FriendList />
-          <
         </Box>
       </Box>
     </>
