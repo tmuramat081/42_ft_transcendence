@@ -12,12 +12,12 @@ export default function FriendList() {
   useEffect(() => {
     if (loginUser) {
       setFriendList(loginUser.friends);
-      console.log(loginUser.friends);
+      // console.log(loginUser.friends);
     }
   }, [loginUser]);
 
   useAsyncEffect(async () => {
-    console.log('get friend list');
+    // console.log('get friend list');
     await getCurrentUser();
   }, []);
 

@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react';
 import { useAuth } from '@/providers/useAuth';
 import Avatar from '@mui/material/Avatar';
 import { useAsyncEffect } from '@/hooks/effect/useAsyncEffect';
-import { Box, Button, Container, Switch, TextField, Typography, useTheme, Modal } from '@mui/material';
+import { Box, Button, Container, Switch, TextField, Typography, useTheme, Modal, Alert } from '@mui/material';
 import { FormFields, useFormValidation } from '@/hooks/form/useFormValidation';
 import useApi from '@/hooks/httpClient/useApi';
 import { HTTP_METHOD } from '@/constants/api.constant';
@@ -26,7 +26,6 @@ const style = {
   p: 4,
   textAlign: 'center',
 };
-
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? '';
 
@@ -62,6 +61,8 @@ export default function UpdateUserForm() {
   const [code, setCode] = useState<string>('');
 
   const [showModal, setShowModal] = useState(false);
+
+  const [errorMessage, setErrorMessage] = useState<string>('');
 
   // APIリクエスト
   const { fetchData: updateUser } = useApi({
@@ -182,7 +183,10 @@ export default function UpdateUserForm() {
         router.push(APP_ROUTING.DASHBOARD.path);
       })
       .catch((error) => {
+        // Alert メッセージを表示
         console.error(error);
+        setErrorMessage('エラーが発生しました');
+        return;
       });
   };
 
@@ -208,7 +212,9 @@ export default function UpdateUserForm() {
     console.log('Submitted 2FA code:', code);
     console.log('loginUser: ', loginUser?.userId);
 
-    fetch("http://localhost:3001/auth/2fa/verify", {
+    // URLを変更
+    //fetch("http://localhost:3001/auth/2fa/verify", {
+    fetch(`${API_URL}/auth/2fa/verify`, {
       method: 'POST',
       credentials: 'include',
         headers: {
@@ -222,7 +228,11 @@ export default function UpdateUserForm() {
       })
       .then((res) => {
           //console.log(res.data);
-          return res.json();
+          if (res.ok) {
+            return res.json();
+          } else {
+            throw new Error('Network response was not ok.');
+          }
       })
       .then((data) => {
           console.log('Success:', data.accessToken);
@@ -230,8 +240,7 @@ export default function UpdateUserForm() {
       })
       .catch((error) => {
           console.error('Error:', error);
-
-          // redirect
+          setErrorMessage('2FAコードが正しくありません');
       });
   };
 
@@ -245,7 +254,7 @@ export default function UpdateUserForm() {
         // const data = await response.json();
         // setQrCodeUrl(data.qrCode);
 
-        fetch('http://localhost:3001/auth/2fa/generate', {
+        fetch(`${API_URL}/auth/2fa/generate`, {
             method: 'GET',
             credentials: 'include',
             // headers: {
@@ -254,7 +263,11 @@ export default function UpdateUserForm() {
         })
         .then((res) => {
             //console.log(res.data);
-            return res.json();
+            if (res.ok) {
+              return res.json();
+            } else {
+              throw new Error('Network response was not ok.');
+            }
         })
         .then((data) => {
             console.log('Success:', data.qrCord);
@@ -265,8 +278,7 @@ export default function UpdateUserForm() {
         })
         .catch((error) => {
             console.error('Error:', error);
-
-            // redirect
+            setErrorMessage('QRコードの取得に失敗しました');
         });
     } else {
         // ここに2FA無効化のロジックを追加
@@ -282,7 +294,11 @@ export default function UpdateUserForm() {
         })
         .then((res) => {
             //console.log(res.data);
-            return res.json();
+            if (res.ok) {
+              return res.json();
+            } else {
+              throw new Error('Network response was not ok.');
+            }
         })
         .then((data) => {
             console.log('Success:', data);
@@ -290,8 +306,7 @@ export default function UpdateUserForm() {
         })
         .catch((error) => {
             console.error('Error:', error);
-
-            // redirect
+            setErrorMessage('2FAの無効化に失敗しました');
         });
     }
   };
@@ -318,6 +333,7 @@ export default function UpdateUserForm() {
           borderRadius: 2,
         }}
       >
+        {errorMessage && <Alert severity="error">{errorMessage}</Alert>}
         <Typography
           component="h1"
           variant="h5"

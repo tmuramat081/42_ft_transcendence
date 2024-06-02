@@ -108,17 +108,21 @@ export class UsersController {
 
         // アクセストークンを作成
         // saveは例外を投げる為、try-catchで囲む
-        const user: User = await this.usersService.signUp(userData);
-        const accessToken: string = await this.usersService.generateJwt(user);
-            
-        res.cookie('jwt', accessToken, { 
-          httpOnly: true,
-          secure: process.env.NODE_ENV === 'production',
-          sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
-        })
-        this.usersService.addLoginUserId(user.userId);
+        try {
+            const user: User = await this.usersService.signUp(userData);
+            const accessToken: string = await this.usersService.generateJwt(user);
+                
+            res.cookie('jwt', accessToken, { 
+            httpOnly: true,
+            secure: process.env.NODE_ENV === 'production',
+            sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
+            })
+            this.usersService.addLoginUserId(user.userId);
 
-        return JSON.stringify({"accessToken": accessToken});           
+            return JSON.stringify({"accessToken": accessToken});   
+        } catch (error) {
+            throw error;
+        } 
     }
   
     @Post('/signin')

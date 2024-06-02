@@ -9,6 +9,7 @@ import Box from '@mui/material/Box';
 import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
 import Typography from '@mui/material/Typography';
 import Container from '@mui/material/Container';
+import Alert from '@mui/material/Alert';
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
@@ -39,6 +40,8 @@ export default function SignIn() {
     name: '',
     password: '',
   });
+
+  const [ errorMessage, setErrorMessages ] = useState<string>('');
 
   // validation
   const validate = (data: FormData): boolean => {
@@ -76,7 +79,11 @@ export default function SignIn() {
       body: JSON.stringify({ userName: data.get('name'), password: data.get('password') }),
     })
       .then((res) => {
-        return res.json();
+        if (res.ok) {
+          return res.json();
+        } else { 
+          throw new Error('Failed to sign in');
+        }
       })
       .then((data: SignInResponse) => {
         if (data.status === 'SUCCESS' && data.userId === undefined) {
@@ -86,9 +93,12 @@ export default function SignIn() {
           setValidationUserId(data.userId);
           setShow2Fa(true);
         }
+        // ログイン失敗
       })
       .catch((error) => {
+        // Alertメッセージを表示
         console.error('Error:', error);
+        setErrorMessages('Failed to sign in');
       });
   };
 
@@ -145,6 +155,11 @@ export default function SignIn() {
             borderRadius: 2,
           }}
         >
+          {errorMessage && (
+            <Alert severity="error">
+              {errorMessage}
+            </Alert>
+          )}
           <Avatar sx={{ m: 1, bgcolor: theme.palette.primary.main }}>
             <LockOutlinedIcon />
           </Avatar>

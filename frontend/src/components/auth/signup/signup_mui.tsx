@@ -7,6 +7,7 @@ import Box from '@mui/material/Box';
 import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
 import Typography from '@mui/material/Typography';
 import Container from '@mui/material/Container';
+import Alert from '@mui/material/Alert';
 import { useTheme } from '@mui/material/styles';
 
 import CircularProgress from '@mui/material/CircularProgress';
@@ -40,6 +41,8 @@ export default function SignUp() {
     password: '',
     passwordConfirm: '',
   });
+
+  const [ errorMessage, setErrorMessage ] = useState<string>('');
 
   //field修正
 
@@ -128,15 +131,27 @@ export default function SignUp() {
       }),
     })
       .then((res) => {
-        return res.json();
+        if (res.ok) {
+          return res.json();
+        } else if (res.status === 409) {
+          // alert('The user is already in use');
+          throw new Error('The user is already in use');
+        } else if (res.status === 401) {
+          // alert('Failed to sign up');
+          throw new Error('Failed to sign up');
+        }
       })
       .then((data: SignUpResponse) => {
-        console.log('Success:', data.accessToken);
+        // 
+        // console.log('Success:', data.accessToken);
         setToken(data.accessToken);
         router.push(APP_ROUTING.DASHBOARD.path);
       })
       .catch((error) => {
+        // alertメッセージ
         console.error('Error:', error);
+        //alert('Failed to sign up');
+        setErrorMessage('Failed to sign up');
       });
 
     console.log('送信されたデータ:', {
@@ -183,6 +198,11 @@ export default function SignUp() {
             borderRadius: 2,
           }}
         >
+        {errorMessage && (
+          <Alert severity="error">
+            {errorMessage}
+          </Alert>
+        )}
           <Avatar sx={{ m: 1, bgcolor: theme.palette.primary.main }}>
             <LockOutlinedIcon />
           </Avatar>
