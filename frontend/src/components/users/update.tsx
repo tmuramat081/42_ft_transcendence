@@ -3,13 +3,30 @@ import { useState, useEffect } from 'react';
 import { useAuth } from '@/providers/useAuth';
 import Avatar from '@mui/material/Avatar';
 import { useAsyncEffect } from '@/hooks/effect/useAsyncEffect';
-import { Box, Button, Container, Switch, TextField, Typography, useTheme } from '@mui/material';
+import { Box, Button, Container, Switch, TextField, Typography, useTheme, Modal } from '@mui/material';
 import { FormFields, useFormValidation } from '@/hooks/form/useFormValidation';
 import useApi from '@/hooks/httpClient/useApi';
 import { HTTP_METHOD } from '@/constants/api.constant';
 import Update2FaModal from './2fa/twoFaModal';
 import { useRouter } from 'next/navigation';
 import { APP_ROUTING } from '@/constants/routing.constant';
+// import Modal from './2fa/modal'; // Modalコンポーネントをインポート
+import styles from  "./toggleSwitch.module.css"
+import { MuiOtpInput } from 'mui-one-time-password-input';
+
+const style = {
+  position: 'absolute' as 'absolute',
+  top: '50%',
+  left: '50%',
+  transform: 'translate(-50%, -50%)',
+  width: 400,
+  bgcolor: 'background.paper',
+  border: '2px solid #000',
+  boxShadow: 24,
+  p: 4,
+  textAlign: 'center',
+};
+
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? '';
 
@@ -40,6 +57,11 @@ export default function UpdateUserForm() {
   const [show2FaModal, setShow2FaModal] = useState(false);
   // 42認証の利用有無
   const is42Auth = loginUser?.name42;
+
+  const [qrCodeUrl, setQrCodeUrl] = useState<string>('');
+  const [code, setCode] = useState<string>('');
+
+  const [showModal, setShowModal] = useState(false);
 
   // APIリクエスト
   const { fetchData: updateUser } = useApi({
@@ -175,6 +197,105 @@ export default function UpdateUserForm() {
     }
   };
 
+  const handle2FAToggle = (e: React.ChangeEvent<HTMLInputElement>) => {
+    //setTwoFactorAuth(e.target.checked);
+    setShow2FaModal(e.target.checked);
+  };
+
+  const handleSubmit2Fa = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    // ここに2FAコードを検証するロジックを追加
+    console.log('Submitted 2FA code:', code);
+    console.log('loginUser: ', loginUser?.userId);
+
+    fetch("http://localhost:3001/auth/2fa/verify", {
+      method: 'POST',
+      credentials: 'include',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+
+      body: JSON.stringify({ userId: loginUser?.userId, code: code }),
+      // headers: {
+      //     "Authorization": `Bearer ${token}`
+      // }
+      })
+      .then((res) => {
+          //console.log(res.data);
+          return res.json();
+      })
+      .then((data) => {
+          console.log('Success:', data.accessToken);
+          setShowModal(false)
+      })
+      .catch((error) => {
+          console.error('Error:', error);
+
+          // redirect
+      });
+  };
+
+  // 2FA有効化時にモーダルを表示
+  const enableTwoFactorAuth = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setTwoFactorAuth(e.target.checked);
+    if (e.target.checked) {
+        setShowModal(true);
+        // ここに2FA有効化のロジックを追加
+        // const response = await fetch('http://localhost:3001/auth/2fa/generate');
+        // const data = await response.json();
+        // setQrCodeUrl(data.qrCode);
+
+        fetch('http://localhost:3001/auth/2fa/generate', {
+            method: 'GET',
+            credentials: 'include',
+            // headers: {
+            //     "Authorization": `Bearer ${token}`
+            // }
+        })
+        .then((res) => {
+            //console.log(res.data);
+            return res.json();
+        })
+        .then((data) => {
+            console.log('Success:', data.qrCord);
+            setQrCodeUrl(data.qrCord);
+            //setShowModal(false)
+            //console.log('QRコード:', qrCodeUrl);
+            //Router.push('/');
+        })
+        .catch((error) => {
+            console.error('Error:', error);
+
+            // redirect
+        });
+    } else {
+        // ここに2FA無効化のロジックを追加
+        // const response = await fetch('http://localhost:3001/auth/2fa/disable');
+        // const data = await response.json();
+        // console.log('2FA無効化:', data);
+        fetch('http://localhost:3001/auth/2fa/disable', {
+            method: 'POST',
+            credentials: 'include',
+            // headers: {
+            //     "Authorization": `Bearer ${token}`
+            // }
+        })
+        .then((res) => {
+            //console.log(res.data);
+            return res.json();
+        })
+        .then((data) => {
+            console.log('Success:', data);
+            //Router.push('/');
+        })
+        .catch((error) => {
+            console.error('Error:', error);
+
+            // redirect
+        });
+    }
+  };
+
   if (loading || !loginUser) {
     return <p>loading...</p>;
   }
@@ -226,8 +347,18 @@ export default function UpdateUserForm() {
             />
           </label>
           <div>
-            <Switch defaultChecked={twoFactorAuth} />
-            <span>2FA認証</span>
+            {/* <Switch defaultChecked={twoFactorAuth} onChange={enableTwoFactorAuth}/> */}
+            {/* <span>2FA認証</span> */}
+            <label className={styles.switch}>
+            <input
+              type="checkbox"
+              checked={twoFactorAuth}
+              onChange={enableTwoFactorAuth}
+
+            />
+            <span className={styles.slider}></span>
+            </label>
+            <span>{twoFactorAuth ? '2FA有効' : '2FA無効'}</span>
           </div>
         </Box>
 
@@ -319,12 +450,41 @@ export default function UpdateUserForm() {
         </Box>
 
         {/* 2FAモーダル */}
-        <Update2FaModal
+        {/* <Update2FaModal
           showModal={show2FaModal}
           onClose={() => setShow2FaModal(false)}
           loginUser={loginUser}
-        />
+        /> */}
       </Box>
+      <Modal open={showModal} onClose={() => {
+          setShowModal(false)
+          setTwoFactorAuth(false)
+          // 無効リクエストを送る
+        }} aria-labelledby="modal-modal-title" aria-describedby="modal-modal-description">
+
+          <Box sx={style} component="form" onSubmit={handleSubmit2Fa} noValidate>
+          {/* 2FAフォームコンポーネント */}
+
+          {qrCodeUrl && (
+            <>
+            <img src={qrCodeUrl} alt="QR Code" />
+            <MuiOtpInput
+              value={code}
+              onChange={setCode}
+              length={6}
+            />
+          <Button
+            type="submit"
+            fullWidth
+            variant="contained"
+            sx={{ mt: 3, mb: 2 }}
+          >
+            Submit
+          </Button>
+          </>
+          )}
+          </Box>
+        </Modal>
     </Container>
   );
 }
