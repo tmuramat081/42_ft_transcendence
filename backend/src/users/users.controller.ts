@@ -314,7 +314,6 @@ export class UsersController {
     //@UseGuards(JwtAuthGuard)
     @Get("/:name")
     async FindOneByName(@Param('name') name: string): Promise<string> {
-        //console.log("FindOneByName")
         const resultUser =  await this.usersService.findOneByName(name);
 
         const user: ReturnUserDto = {
