@@ -387,6 +387,13 @@ export class UsersService {
   // }
 
   async updateUser(user: User, updateUser: UpdateUserDto): Promise<User> {
+    const conflictUser = await this.userRepository.findOne({ where: { userName: updateUser.userName } });
+    if (conflictUser) {
+      //return null;
+      // console.log('User name already exists');
+      throw new BadRequestException('User name already exists');  
+    }
+
     // passwordの確認
     // updateUserのpasswordとuserのpasswordが一致するか確認
     // console.log(user.password)
@@ -420,7 +427,6 @@ export class UsersService {
     
     targetUser.userName = updateUser.userName ? updateUser.userName : targetUser.userName;
     targetUser.email = updateUser.email ? updateUser.email : targetUser.email;
-
 
     // 更新後のデータを返す
     const resultUser: User = await this.userRepository.saveUser(targetUser);
