@@ -1039,6 +1039,8 @@ export class GameGateway {
       return ;
     }
 
+    // console.log('watchGame', data.roomName)
+
     // 観戦者を追加
     room.supporters.push(socket);
     this.logger.log(`watchGame: ${socket.id} joined to ${data.roomName}`);

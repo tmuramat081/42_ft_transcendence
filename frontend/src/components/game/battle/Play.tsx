@@ -16,26 +16,31 @@ import { usePlayersStore } from '@/store/game/player';
 
 // updatePointApiを呼び出すcontroller
 
+
 export const NavigationEvents = (() =>{
     const pathname = usePathname();
     const searchParams = useSearchParams();
     //const updatePlayState = usePlayStateStore((store) => store.updatePlayState);
     const { socket } = useSocketStore();
     const { playState } = usePlayStateStore();
-
+    const prevPathnameRef = useRef(pathname);
+    const prevSearchParamsRef = useRef(searchParams);
 
     useEffect(() => {
-      const url = `${pathname}?${searchParams}`
+        const currentUrl = `${pathname}?${searchParams}`;
+        const prevUrl = `${prevPathnameRef.current}?${prevSearchParamsRef.current}`;
     //   console.log(url)
       // You can now use the current URL
       // ...
-        const cancelOngoingBattle = () => {
-            if (playState === PlayState.statePlaying) {
-                socket.emit('cancelOngoingBattle');
-            }
-        };
 
-        cancelOngoingBattle();
+        if (currentUrl !== prevUrl) {
+            const cancelOngoingBattle = () => {
+                if (playState === PlayState.statePlaying) {
+                    socket.emit('cancelOngoingBattle');
+                }
+            };
+            cancelOngoingBattle();
+        }
 
     }, [pathname, searchParams])
    

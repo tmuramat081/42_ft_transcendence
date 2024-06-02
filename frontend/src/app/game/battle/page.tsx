@@ -29,13 +29,15 @@ export default function Battle() {
     const [finishedGameInfo, setFinishedGameInfo] = useState<FinishedGameInfo>(defaultFinishedGameInfo);
 
     // test
-    const updatePlayState = usePlayStateStore((store) => store.updatePlayState);
-    useEffect(() => {
-        //updatePlayState(PlayState.stateSelecting);
-        //updatePlayState(PlayState.stateFinished);
-    }, []);
+    // const updatePlayState = usePlayStateStore((store) => store.updatePlayState);
+    // useEffect(() => {
+    //     //updatePlayState(PlayState.stateSelecting);
+    //     //updatePlayState(PlayState.stateFinished);
+    // }, []);
 
     const [ openMatchError, setOpenMatchError ] = useState(false);
+
+    // console.log('playState:', playState);
 
     return (
         <Layout title='Play'>
