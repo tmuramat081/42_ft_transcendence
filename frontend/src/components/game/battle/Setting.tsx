@@ -42,6 +42,8 @@ export const NavigationEvents = (() =>{
             };
             cancelOngoingBattle();
         }
+    }, [pathname, searchParams])
+    
   return null;
 });
 
