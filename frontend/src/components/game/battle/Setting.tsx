@@ -43,7 +43,7 @@ export const NavigationEvents = (() =>{
             cancelOngoingBattle();
         }
   return null;
-};
+});
 
 //ゲーム開始前の設定画面
 export const Setting = () => {
