@@ -3,24 +3,33 @@
 import styles from './page.module.css';
 
 import Link from 'next/link';
+import { useEffect } from 'react';
+import { useRouter} from 'next/navigation';
+import { Loading } from '@/components/game/common/Loading';
 
 /**
  * TOPページ
  * [TODO] 画面設計後に実装する
  */
 export default function Home() {
+  const router = useRouter();
+
+  useEffect(() => {
+    router.push('/auth/signin');
+  }, []);
+
   return (
     <>
-      <h1>TOPページ</h1>
+      {/* <h1>TOPページ</h1> */}
       {/* CSSモジュールを読み込み */}
-      <main className={styles.main}>
+      {/* <main className={styles.main}>
         <ul>
-          <li>
+          <li> */}
             {/* ルーティング */}
-            <Link href="./game/rooms/list">ゲーム</Link>
-          </li>
+            {/* <Link href="./game/rooms/list">ゲーム</Link>
+          </li> */}
           {/* chatページを追加 */}
-          <li>
+          {/* <li>
             <Link href="./chat">チャット</Link>
           </li>
           <li>
@@ -38,7 +47,8 @@ export default function Home() {
             </Link>
           </li>
         </ul>
-      </main>
+      </main> */}
+      <Loading />
     </>
   );
 }
