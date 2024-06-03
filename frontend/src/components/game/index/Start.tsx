@@ -1,6 +1,6 @@
 /* eslint-disable */
 import VideogameAssetSharpIcon from '@mui/icons-material/VideogameAssetSharp';
-import { Button, Grid, Box, Typography, TextField } from '@mui/material'
+import { Button, Grid, Box, Typography, TextField, Alert } from '@mui/material'
 import { usePlayStateStore, PlayState } from '@/store/game/playState';
 import { useSocketStore } from '@/store/game/clientSocket';
 import { useAuth } from '@/providers/useAuth';
@@ -18,6 +18,7 @@ export const Start = ({ setOpenMatchError }: Props) => {
     // (store) => store.updatePlayState: storeの中のupdatePlayStateを取得?
     const updatePlayState = usePlayStateStore((store) => store.updatePlayState);
     const [aliasName, setAliasName] = useState<string>("");
+    const [errorMessage, setErrorMessage] = useState<string>("");
 
     useEffect(() => {
         getCurrentUser();
@@ -35,8 +36,9 @@ export const Start = ({ setOpenMatchError }: Props) => {
             setOpenMatchError(true);
 
             // 面倒なのでアラートで対応
-            console.log('aliasName is empty');
-            alert('aliasName is empty');
+            console.error('aliasName is empty');
+            // alert('aliasName is empty');
+            setErrorMessage('aliasName is empty');
             return;
         }
         // マッチングエラーを非表示
@@ -73,6 +75,11 @@ export const Start = ({ setOpenMatchError }: Props) => {
           <Typography variant="h5" align="center">
             StartGame
           </Typography>
+          {errorMessage && (
+              <Alert severity="error">
+                {errorMessage}
+              </Alert>
+            )}
 
           <Grid 
             container 
