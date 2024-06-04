@@ -4,6 +4,7 @@ import { User } from '@/types/user';
 import { useEffect, useState } from 'react';
 import { Box } from '@mui/material';
 import useApi from '@/hooks/httpClient/useApi';
+import { FriendList as FL } from '../users/FriendList';
 
 export default function FriendList() {
   const { loginUser, getCurrentUser } = useAuth();
@@ -22,17 +23,18 @@ export default function FriendList() {
   }, []);
 
   return (
-    <Box sx={{ px: 2, py: 4 }}>
-      <h2>Friend List</h2>
-      {friendList.length === 0 ? (
-        <Box>No friends</Box>
-      ) : (
-        <Box>
-          {friendList.map((friend) => (
-            <Box key={friend.userId}>{friend.userName}</Box>
-          ))}
-        </Box>
-      )}
-    </Box>
+    // <Box sx={{ px: 2, py: 4 }}>
+    //   <h2>Friend List</h2>
+    //   {friendList.length === 0 ? (
+    //     <Box>No friends</Box>
+    //   ) : (
+    //     <Box>
+    //       {friendList.map((friend) => (
+    //         <Box key={friend.userId}>{friend.userName}</Box>
+    //       ))}
+    //     </Box>
+    //   )}
+    // </Box>
+    <FL friends={friendList} user={loginUser} />
   );
 }
