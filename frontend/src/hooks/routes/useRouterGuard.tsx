@@ -14,13 +14,22 @@ export const useRouterGuard = () => {
 
     const privateRoutes = [
         '/users/update', 
-        '/dashboard'
+        '/dashboard',
+        '/game/index',
+        '/game/battle',
+        '/chat'
     ];
 
     const publicRoutes = [
         '/auth/signin',
         '/auth/signin-oauth',
         '/auth/signup', 
+    ];
+
+    // 動的なルートの正規表現パターン
+    const dynamicPrivateRoutes = [
+        /^\/room\/[^\/]+$/, // 例: /room/[name]
+        /^\/users\/[^\/]+$/ // 例: /room/[name]
     ];
 
   
@@ -42,6 +51,17 @@ export const useRouterGuard = () => {
         // ユーザーが認証されていなければ、/loginにリダイレクト
         console.log("useRouterGuard: login", loginUser)
         router.push(APP_ROUTING.AUTH.SIGN_IN.path);
+      }
+
+      // 動的なルートのチェック
+      if (!loginUser) {
+        for (const pattern of dynamicPrivateRoutes) {
+            if (pattern.test(pathname)) {
+                console.log("useRouterGuard: login (dynamic)", loginUser)
+                router.push(APP_ROUTING.AUTH.SIGN_IN.path);
+                break;
+            }
+        }
       }
     }, [loginUser, loading, pathname]);
   }
