@@ -2,7 +2,9 @@
 
 import { Box, Button, Modal } from '@mui/material';
 import { MuiOtpInput } from 'mui-one-time-password-input';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useAuth } from '@/providers/useAuth';
+
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? '';
 
@@ -20,6 +22,11 @@ type Props = {
  */
 export default function TwoFaModal({ validationUserId, showModal }: Props) {
   const [code, setCode] = useState<string>('');
+  const {signin, loginUser, getCurrentUser, loading} = useAuth();
+
+  // useEffect(() => {
+  //   getCurrentUser();
+  // }, []);
 
   const handleSubmit2fa = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -45,6 +52,7 @@ export default function TwoFaModal({ validationUserId, showModal }: Props) {
           console.log('Success:', data.accessToken);
           //setToken(data.accessToken);
           //router.push('/');
+          getCurrentUser();
         } else {
           // errorメッセージを表示
         }

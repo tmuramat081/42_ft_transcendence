@@ -11,36 +11,41 @@ import {
   FormLabel,
 } from '@mui/material';
 import { useRouter, usePathname, useSearchParams } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { useSocketStore } from '@/store/game/clientSocket';
 import { useGameSettingStore } from '@/store/game/gameSetting';
 import { PlayState, usePlayStateStore } from '@/store/game/playState';
 import { DiffucultyLevel, GameSetting } from '@/types/game/game';
 import { usePlayersStore } from '@/store/game/player';
 
-export const NavigationEvents = () => {
-  const pathname = usePathname();
-  const searchParams = useSearchParams();
-  //const updatePlayState = usePlayStateStore((store) => store.updatePlayState);
-  const { socket } = useSocketStore();
-  const { playState } = usePlayStateStore();
+export const NavigationEvents = (() =>{
+    const pathname = usePathname();
+    const searchParams = useSearchParams();
+    //const updatePlayState = usePlayStateStore((store) => store.updatePlayState);
+    const { socket } = useSocketStore();
+    const { playState } = usePlayStateStore();
+    const prevPathnameRef = useRef(pathname);
+    const prevSearchParamsRef = useRef(searchParams);
 
-  useEffect(() => {
-    const url = `${pathname}?${searchParams}`;
+    useEffect(() => {
+        const currentUrl = `${pathname}?${searchParams}`;
+        const prevUrl = `${prevPathnameRef.current}?${prevSearchParamsRef.current}`;
     //   console.log(url)
-    // You can now use the current URL
-    // ...
-    const cancelOngoingBattle = () => {
-      if (playState === PlayState.statePlaying) {
-        socket.emit('cancelOngoingBattle');
-      }
-    };
+      // You can now use the current URL
+      // ...
 
-    cancelOngoingBattle();
-  }, [pathname, searchParams]);
-
+        if (currentUrl !== prevUrl) {
+            const cancelOngoingBattle = () => {
+                if (playState === PlayState.statePlaying) {
+                    socket.emit('cancelOngoingBattle');
+                }
+            };
+            cancelOngoingBattle();
+        }
+    }, [pathname, searchParams])
+    
   return null;
-};
+});
 
 //ゲーム開始前の設定画面
 export const Setting = () => {

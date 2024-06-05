@@ -5,7 +5,6 @@ import { useAuth } from '@/providers/useAuth';
 import { useState, useEffect } from 'react';
 
 // 画像がない場合は文字列から色を生成する
-// ?テストする
 const stringToColor = (string: string, isLoadingError: boolean) => {
     let hash = 0;
     let i;
@@ -23,7 +22,7 @@ const stringToColor = (string: string, isLoadingError: boolean) => {
         value += ('00' + color.toString(16)).substr(-2);
     }
 
-    console.log(value)
+    // console.log(value)
 
     return isLoadingError ? value : '';
 };
