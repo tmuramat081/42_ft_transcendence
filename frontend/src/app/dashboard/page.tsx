@@ -6,18 +6,43 @@ import MatchResult from '@/components/dashboard/matchResult';
 import { Button, Box } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
 import { useRouter } from 'next/navigation';
+import { useAuth } from '@/providers/useAuth';
+import { useEffect, useState } from 'react';
+import { useAsyncEffect } from '@/hooks/effect/useAsyncEffect';
+import { User } from '@/types/user';
 
 /**
  * ダッシュボード画面
  */
 export default function Page() {
+  const { loginUser, getCurrentUser } = useAuth();
+  const [user, setUser] = useState<User | null>(null);
   // スタイルテーマ
   const theme = useTheme();
   // ルーティング
   const router = useRouter();
 
+  useEffect(() => {
+    if (loginUser) {
+      setUser(loginUser);
+    }
+  }, [loginUser]);
+
+  useAsyncEffect(async () => {
+    await getCurrentUser();
+  }, []);
+
+  if (user === null) return;
+
   return (
-    <>
+    <Box
+      sx={{
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'center',
+        width: '100%',
+      }}
+    >
       <Box
         sx={{
           marginTop: 12,
@@ -25,8 +50,14 @@ export default function Page() {
           flexDirection: 'row',
           alignItems: 'center',
           justifyContent: 'center',
+          borderTop: '5px solid #00babc',
+          bgcolor: theme.palette.background.paper,
+          width: '100%',
+          maxWidth: 800,
           px: 4,
           gap: 2,
+          boxShadow: 4,
+          borderRadius: 4,
         }}
       >
         <Box
@@ -34,12 +65,6 @@ export default function Page() {
             display: 'flex',
             flexDirection: 'column',
             alignItems: 'center',
-            bgcolor: theme.palette.background.paper,
-            borderTop: '5px solid #00babc',
-            boxShadow: 4,
-            borderRadius: 4,
-            minHeight: 450,
-            minWidth: 400,
           }}
         >
           {/* ユーザープロフィール */}
@@ -57,7 +82,7 @@ export default function Page() {
               variant="contained"
               color="primary"
               onClick={() => {
-                router.push('/users/index');
+                router.push(`/users/${loginUser?.userName}`);
               }}
             >
               Profile
@@ -86,19 +111,20 @@ export default function Page() {
           sx={{
             display: 'flex',
             flexDirection: 'column',
+          
             alignItems: 'center',
-            bgcolor: theme.palette.background.paper,
-            borderTop: '5px solid #00babc',
-            boxShadow: 4,
-            borderRadius: 4,
-            minHeight: 450,
-            minWidth: 400,
           }}
         >
           {/* フレンドリスト */}
-          <FriendList />
+          <FriendList 
+            user={loginUser}
+          />
+          {/* マッチ結果 */}
+          <MatchResult 
+            user={loginUser}
+          />
         </Box>
       </Box>
-    </>
+    </Box>
   );
 }

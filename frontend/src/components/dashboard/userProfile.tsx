@@ -1,7 +1,6 @@
 import { useAsyncEffect } from '@/hooks/effect/useAsyncEffect';
 import { useAuth } from '@/providers/useAuth';
 import { useEffect, useState } from 'react';
-import { User } from '@/types/user';
 import { Box } from '@mui/material';
 import { Avatar, Button, Card, CardActions, CardHeader } from '@mui/material';
 import UserDetailModal from '@/components/users/list/detailModal';
@@ -21,7 +20,6 @@ export default function UserProfile() {
   useEffect(() => {
     if (loginUser) {
       setUser(loginUser);
-      console.log(loginUser);
     }
   }, [loginUser]);
 
@@ -29,12 +27,10 @@ export default function UserProfile() {
     await getCurrentUser();
   }, []);
 
-  
   if (!user) return null;
 
   return (
     <Box sx={{ px: 2, py: 4 }}>
-      <h2>User Profile</h2>
       <Card>
         <CardHeader
           avatar={
@@ -46,9 +42,6 @@ export default function UserProfile() {
           title={`${user.userId} ${user.userName}`}
           subheader={user.email}
         />
-        <CardActions sx={{ justifyContent: 'flex-end' }}>
-          <Button onClick={handleOpenDetailModal}>フレンド追加</Button>
-        </CardActions>
       </Card>
       <UserDetailModal
         userName={user.userName}
