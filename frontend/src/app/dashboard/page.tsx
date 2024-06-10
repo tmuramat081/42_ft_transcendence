@@ -16,23 +16,16 @@ import { User } from '@/types/user';
  */
 export default function Page() {
   const { loginUser, getCurrentUser } = useAuth();
-  const [user, setUser] = useState<User | null>(null);
   // スタイルテーマ
   const theme = useTheme();
   // ルーティング
   const router = useRouter();
 
-  useEffect(() => {
-    if (loginUser) {
-      setUser(loginUser);
-    }
-  }, [loginUser]);
-
   useAsyncEffect(async () => {
     await getCurrentUser();
   }, []);
 
-  if (user === null) return;
+  if (loginUser === null) return;
 
   return (
     <Box
@@ -41,6 +34,7 @@ export default function Page() {
         justifyContent: 'center',
         alignItems: 'center',
         width: '100%',
+        height: '100%'
       }}
     >
       <Box
@@ -54,6 +48,8 @@ export default function Page() {
           bgcolor: theme.palette.background.paper,
           width: '100%',
           maxWidth: 800,
+          height: '100%',
+          minHeight: 400,
           px: 4,
           gap: 2,
           boxShadow: 4,
@@ -87,6 +83,15 @@ export default function Page() {
             >
               Profile
             </Button>
+             <Button
+              variant="contained"
+              color="primary"
+              onClick={() => {
+                router.push('/users/index');
+              }}
+            >
+              User List
+            </Button>
             <Button
               variant="contained"
               color="primary"
@@ -111,7 +116,7 @@ export default function Page() {
           sx={{
             display: 'flex',
             flexDirection: 'column',
-          
+            justifyContent: 'center',
             alignItems: 'center',
           }}
         >
