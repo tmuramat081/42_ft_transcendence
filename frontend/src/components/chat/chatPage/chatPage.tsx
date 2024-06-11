@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { Avatar } from '@mui/material';
 import Notification from './Notification';
-// import RoomSettingsModal from './RoomSettingsModal';
+import Alert from '@mui/material/Alert';
 import { useRouter } from 'next/navigation';
 import { useWebSocket } from '@/providers/webSocketProvider';
 import { useAuth } from '@/providers/useAuth';
@@ -22,6 +22,7 @@ export default function ChatPage() {
   const [onlineUsers, setOnlineUsers] = useState<UserInfo[]>([]);
   const [notification, setNotification] = useState<string | null>(null);
   const [LoginUser, setLoginUser] = useState<User | null>(null);
+  const [errorMessage, setErrorMessages] = useState<string>('');
 
   useEffect(() => {
     if (!socket) return;
@@ -61,6 +62,7 @@ export default function ChatPage() {
 
     socket.on('roomError', (error) => {
       console.error(error);
+      setErrorMessages(error);
     });
 
     return () => {
@@ -96,6 +98,7 @@ export default function ChatPage() {
 
   return (
     <div className="chat-container">
+      {errorMessage && <Alert severity="error">{errorMessage}</Alert>}
       {/* 戻るボタン */}
       <div className="back-button">
         <button
