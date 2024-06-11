@@ -188,14 +188,16 @@ const RoomSettingsModal: React.FC<RoomSettingsModalProps> = ({
                 >
                   Select User
                 </option>
-                {allUsers.map((user) => (
-                  <option
-                    key={user.userId}
-                    value={user.userId}
-                  >
-                    {user.userName}
-                  </option>
-                ))}
+                {allUsers
+                  .filter((user) => !blockedUsers.some((blocked) => blocked.userId === user.userId))
+                  .map((user) => (
+                    <option
+                      key={user.userId}
+                      value={user.userId}
+                    >
+                      {user.userName}
+                    </option>
+                  ))}
               </select>
               <br />
               <small>

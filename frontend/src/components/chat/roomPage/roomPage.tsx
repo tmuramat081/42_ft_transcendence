@@ -110,7 +110,6 @@ export default function RoomPage({ params }: { params: string }) {
 
     socket.on('roomError', (error: string) => {
       setErrorMessages(error);
-      window.location.href = '/chat';
     });
 
     socket.on('passwordVerified', (response: boolean) => {

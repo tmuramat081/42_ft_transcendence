@@ -592,7 +592,6 @@ export class RoomGateway {
       const room = await this.roomRepository.findOne({
         where: { id: settings.roomID },
       });
-      this.logger.log(`Room: ${JSON.stringify(room)}`);
 
       // ルームの設定を更新
       if (room) {
@@ -696,6 +695,49 @@ export class RoomGateway {
         this.server
           .to(settings.selectedRoom)
           .emit('updatedRoomParticipants', updatedRoomParticipants);
+        if (!updatedRoom.roomBlocked) {
+          updatedRoom.roomBlocked = [];
+        }
+        // updatedRoom.roomBlockedをUserInfoに変換
+        const blockedUsers: UserInfo[] = [];
+        for (const blocked of updatedRoom.roomBlocked) {
+          const blockedUser = await this.userRepository.findOne({
+            where: {
+              userId: blocked,
+            },
+          });
+          if (blockedUser) {
+            blockedUsers.push({
+              userId: blockedUser.userId,
+              userName: blockedUser.userName,
+              icon: blockedUser.icon,
+            });
+          }
+        }
+        this.server.to(settings.selectedRoom).emit('roomBlocked', blockedUsers);
+        if (!updatedRoom.roomMuted) {
+          updatedRoom.roomMuted = [];
+        }
+        // { user: UserInfo; mutedUntil: string }[]に変換
+        const mutedUsers: { user: UserInfo; mutedUntil: string }[] = [];
+        for (const muted of updatedRoom.roomMuted) {
+          const mutedUser = await this.userRepository.findOne({
+            where: {
+              userId: muted.id,
+            },
+          });
+          if (mutedUser) {
+            mutedUsers.push({
+              user: {
+                userId: mutedUser.userId,
+                userName: mutedUser.userName,
+                icon: mutedUser.icon,
+              },
+              mutedUntil: muted.mutedUntil,
+            });
+          }
+        }
+        this.server.to(settings.selectedRoom).emit('roomMuted', mutedUsers);
       } else {
         this.logger.error(`Error getting updated room.`);
       }
