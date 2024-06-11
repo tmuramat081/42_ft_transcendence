@@ -61,7 +61,6 @@ export default function ChatPage() {
     });
 
     socket.on('roomError', (error) => {
-      console.error(error);
       setErrorMessages(error);
     });
 
@@ -88,7 +87,8 @@ export default function ChatPage() {
   };
 
   const handleRoomClick = (roomId: string) => {
-    router.push(`/room/${roomId}`); // roomPageへの遷移
+    const encodedRoomId = encodeURIComponent(roomId); // roomIdをエンコード
+    router.push(`/room/${encodedRoomId}`); // roomPageへの遷移
   };
 
   // 通知を閉じる関数

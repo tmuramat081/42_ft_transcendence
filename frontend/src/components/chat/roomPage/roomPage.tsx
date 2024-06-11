@@ -37,6 +37,8 @@ export default function RoomPage({ params }: { params: string }) {
 
   useEffect(() => {
     if (!socket || !params) return;
+    // URLパラメータをデコード
+    const roomId = decodeURIComponent(params);
 
     getCurrentUser()
       .then((user) => {
@@ -47,7 +49,7 @@ export default function RoomPage({ params }: { params: string }) {
       .catch((error) => {
         console.error('Error getting user:', error);
       });
-    setSelectedRoom(params);
+    setSelectedRoom(roomId);
   }, [socket, params]);
 
   useEffect(() => {
