@@ -109,7 +109,7 @@ export default function RoomPage({ params }: { params: string }) {
     });
 
     socket.on('roomError', (error: string) => {
-      alert(error);
+      setErrorMessages(error);
       window.location.href = '/chat';
     });
 

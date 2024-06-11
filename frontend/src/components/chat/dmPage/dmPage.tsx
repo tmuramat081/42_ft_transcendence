@@ -65,6 +65,10 @@ export default function DMPage({ params }: { params: string }) {
       // console.log('Left DM Room');
     });
 
+    socket.on('dmError', (error) => {
+      setErrorMessages(error);
+    });
+
     const blockedUsers = JSON.parse(localStorage.getItem(BLOCKED_USER_KEY) || '[]');
     setBlocked(blockedUsers.includes(receiver?.userId || -1));
 
@@ -84,6 +88,7 @@ export default function DMPage({ params }: { params: string }) {
       socket.off('joinDMRoomConfirmation');
       socket.off('leaveDMRoomConfirmation');
       socket.off('blockedUsers');
+      socket.off('dmError');
     };
   }, [socket, receiver]);
 
