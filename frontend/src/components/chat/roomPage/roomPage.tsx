@@ -3,6 +3,7 @@
 'use client';
 import React, { useState, useEffect, useCallback, use } from 'react';
 import Avatar from '@mui/material/Avatar';
+import Alert from '@mui/material/Alert';
 import { useWebSocket } from '@/providers/webSocketProvider';
 import { useAuth } from '@/providers/useAuth';
 import { UserInfo, ChatMessage, Room } from '@/types/chat/chat';
@@ -34,6 +35,7 @@ export default function RoomPage({ params }: { params: string }) {
   const [isPasswordVerified, setIsPasswordVerified] = useState(false);
   const [isPermissionGranted, setIsPermissionGranted] = useState(false);
   const [message, setMessage] = useState('');
+  const [errorMessage, setErrorMessages] = useState<string>('');
 
   useEffect(() => {
     if (!socket || !params) return;
@@ -44,7 +46,7 @@ export default function RoomPage({ params }: { params: string }) {
       .then((user) => {
         socket.emit('getUserCurrent', user);
         socket.emit('getAllUsers', user);
-        socket.emit('getRoomInfo', { user, params });
+        socket.emit('getRoomInfo', { user, roomId });
       })
       .catch((error) => {
         console.error('Error getting user:', error);
@@ -274,6 +276,7 @@ export default function RoomPage({ params }: { params: string }) {
         </div>
       ) : (
         <>
+          {errorMessage && <Alert severity="error">{errorMessage}</Alert>}
           {/* 戻るボタン */}
           <div className="back-button">
             <button
