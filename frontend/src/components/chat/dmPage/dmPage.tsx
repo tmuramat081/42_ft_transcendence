@@ -1,7 +1,7 @@
 /*eslint-disable*/
 'use client';
 import React, { useState, useEffect, useCallback } from 'react';
-import Image from 'next/image';
+import Alert from '@mui/material/Alert';
 import { Avatar } from '@mui/material';
 import { useRouter } from 'next/navigation';
 import { useWebSocket } from '@/providers/webSocketProvider';
@@ -28,7 +28,10 @@ export default function DMPage({ params }: { params: string }) {
   const [blocked, setBlocked] = useState(false);
   const { socket: gameSocket } = useSocketStore();
   const { invitedFriendState } = useInvitedFriendStrore();
-  const updateInvitedFriendState = useInvitedFriendStrore((state) => state.updateInvitedFriendState);
+  const updateInvitedFriendState = useInvitedFriendStrore(
+    (state) => state.updateInvitedFriendState,
+  );
+  const [errorMessage, setErrorMessages] = useState<string>('');
 
   useEffect(() => {
     if (!socket || !params) return;
@@ -62,6 +65,10 @@ export default function DMPage({ params }: { params: string }) {
       // console.log('Left DM Room');
     });
 
+    socket.on('dmError', (error) => {
+      setErrorMessages(error);
+    });
+
     const blockedUsers = JSON.parse(localStorage.getItem(BLOCKED_USER_KEY) || '[]');
     setBlocked(blockedUsers.includes(receiver?.userId || -1));
 
@@ -81,6 +88,7 @@ export default function DMPage({ params }: { params: string }) {
       socket.off('joinDMRoomConfirmation');
       socket.off('leaveDMRoomConfirmation');
       socket.off('blockedUsers');
+      socket.off('dmError');
     };
   }, [socket, receiver]);
 
@@ -168,7 +176,7 @@ export default function DMPage({ params }: { params: string }) {
     const invitation: Invitation = {
       guestId: receiver.userId,
       hostId: loginUser.userId,
-    }
+    };
     gameSocket.emit('inviteFriend', invitation, (res: boolean) => {
       if (res) {
         console.log('Invited friend');
@@ -178,27 +186,29 @@ export default function DMPage({ params }: { params: string }) {
         console.error('Failed to invite friend');
       }
     });
-
   }, [socket, sender, receiver]);
 
   // 招待を受け入れる
-  const handleJoinClick = useCallback((friend: Friend) => {
-    // console.log(friend)
-    if (loginUser && socket) {
-      const match: Invitation = {
-        guestId: loginUser.userId,
-        hostId: friend.userId,
-      };
-      // console.log(match)
-      socket.emit('acceptInvitation', match, (res: boolean) => {
-        if (!res) {
-          // error表示
-          //setOpenDialogError(true);
-          console.error('Failed to accept invitation');
-        }
-      })
-    }
-  }, [loginUser, socket, receiver]);
+  const handleJoinClick = useCallback(
+    (friend: Friend) => {
+      // console.log(friend)
+      if (loginUser && socket) {
+        const match: Invitation = {
+          guestId: loginUser.userId,
+          hostId: friend.userId,
+        };
+        // console.log(match)
+        socket.emit('acceptInvitation', match, (res: boolean) => {
+          if (!res) {
+            // error表示
+            //setOpenDialogError(true);
+            console.error('Failed to accept invitation');
+          }
+        });
+      }
+    },
+    [loginUser, socket, receiver],
+  );
 
   const handleGoToGame = () => {
     if (!loginUser || !receiver || !socket) return;
@@ -214,7 +224,7 @@ export default function DMPage({ params }: { params: string }) {
         //setOpenDialogError(true);
         console.error('Failed to accept invitation');
       }
-    })    
+    });
     router.push('/game/index');
   };
 
@@ -223,6 +233,7 @@ export default function DMPage({ params }: { params: string }) {
 
   return (
     <div className="dm-container">
+      {errorMessage && <Alert severity="error">{errorMessage}</Alert>}
       {/* Backボタン */}
       <div className="back-button">
         <button
