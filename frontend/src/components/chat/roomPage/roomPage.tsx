@@ -11,7 +11,8 @@ import { User } from '@/types/user';
 import './roomPage.css';
 import RoomSettingsModal from './RoomSettingsModal';
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL ?? '';
+// const API_URL = process.env.NEXT_PUBLIC_API_URL ?? '';
+const API_URL = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3001';
 
 export default function RoomPage({ params }: { params: string }) {
   const { socket } = useWebSocket();

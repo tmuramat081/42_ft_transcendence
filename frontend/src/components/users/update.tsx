@@ -27,7 +27,8 @@ const style = {
   textAlign: 'center',
 };
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL ?? '';
+// const API_URL = process.env.NEXT_PUBLIC_API_URL ?? '';
+const API_URL = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3001';
 
 // 入力フォーム項目
 const inputFields: FormFields = {
@@ -285,7 +286,7 @@ export default function UpdateUserForm() {
         // const response = await fetch('http://localhost:3001/auth/2fa/disable');
         // const data = await response.json();
         // console.log('2FA無効化:', data);
-        fetch('http://localhost:3001/auth/2fa/disable', {
+        fetch(`${API_URL}/auth/2fa/disable`, {
             method: 'POST',
             credentials: 'include',
             // headers: {

@@ -2,7 +2,8 @@
 import { createContext, useContext, useEffect, useState } from 'react';
 import { Socket, io } from 'socket.io-client';
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL;
+// const API_URL = process.env.NEXT_PUBLIC_API_URL;
+const API_URL = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3001';
 // console.log('API_URL:', API_URL);
 
 type SocketContextType = {

@@ -8,7 +8,8 @@ import useApi from '@/hooks/httpClient/useApi';
 import { User } from '@/types/user';
 import { Generate2faResponse } from '@/types/user/generate2fa';
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL ?? '';
+// const API_URL = process.env.NEXT_PUBLIC_API_URL ?? '';
+const API_URL = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3001';
 
 type Props = {
   showModal: boolean;

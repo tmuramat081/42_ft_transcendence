@@ -3,7 +3,8 @@ import { Avatar, Button, Card, CardActions, CardHeader } from '@mui/material';
 import { useState } from 'react';
 import UserDetailModal from './detailModal';
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL ?? '';
+// const API_URL = process.env.NEXT_PUBLIC_API_URL ?? '';
+const API_URL = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3001';
 
 type Props = {
   user: FindUsersResponse;

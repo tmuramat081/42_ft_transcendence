@@ -13,7 +13,7 @@ const stringToColor = (string: string, isLoadingError: boolean) => {
         hash = string.charCodeAt(i) + ((hash << 5) - hash);
     } 
 
-    console.log(hash)
+    // console.log(hash)
 
     let value = '#';
 

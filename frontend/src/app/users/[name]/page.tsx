@@ -23,7 +23,8 @@ import { FriendListItem } from '@/components/users/FriendListItem';
 // import FriendList from '@/components/dashboard/friendList';
 import { FriendList } from '@/components/users/FriendList';
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL ?? '';
+// const API_URL = process.env.NEXT_PUBLIC_API_URL ?? '';
+const API_URL = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3001';
 
 export default function Profile({ params }: { params: { name: string } }) {
   // console.log(params.name);

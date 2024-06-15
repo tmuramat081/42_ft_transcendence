@@ -6,8 +6,8 @@ import { Box } from '@mui/material';
 import { Avatar, Button, Card, CardActions, CardHeader } from '@mui/material';
 import UserDetailModal from '@/components/users/list/detailModal';
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL ?? '';
-
+// const API_URL = process.env.NEXT_PUBLIC_API_URL ?? '';
+const API_URL = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3001';
 
 export default function UserProfile() {
   const { loginUser, getCurrentUser } = useAuth();

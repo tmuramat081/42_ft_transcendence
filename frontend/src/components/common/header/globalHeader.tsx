@@ -7,7 +7,8 @@ import { useAuth } from '@/providers/useAuth';
 import { useEffect, useState } from 'react';
 import { SOCKET_EVENTS } from '@/constants/socket.constant';
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL ?? '';
+// const API_URL = process.env.NEXT_PUBLIC_API_URL ?? '';
+const API_URL = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3001';
 
 const GlobalHeader = () => {
   const [isConnected, setIsConnected] = useState<boolean>(false);

@@ -19,7 +19,8 @@ import { APP_ROUTING } from '@/constants/routing.constant';
 import Link from '@mui/material/Link';
 import { useAsyncEffect } from '@/hooks/effect/useAsyncEffect';
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL ?? '';
+// const API_URL = process.env.NEXT_PUBLIC_API_URL ?? '';
+const API_URL = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3001';
 
 type SignUpResponse = {
   accessToken: string;

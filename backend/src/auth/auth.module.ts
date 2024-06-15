@@ -13,11 +13,11 @@ import { TwoFactorAuthStrategy } from './strategy/2fa.strategy';
 
 @Module({
   //forwardRefは循環参照を解決するために使われる
-  imports: [forwardRef(() => UsersModule), HttpModule],
+  // imports: [forwardRef(() => UsersModule), HttpModule],
+  imports: [UsersModule, HttpModule],
   controllers: [AuthController],
   providers: [
     AuthService,
-    UsersService,
     IntraStrategy,
     IntraAuthGuard,
     TwoFactorAuthGuard,

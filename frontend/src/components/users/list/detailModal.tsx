@@ -6,7 +6,8 @@ import { FindUsersResponse } from '@/types/user/findUsers';
 import { Modal } from '@mui/material';
 import Avatar from '@mui/material/Avatar';
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL ?? '';
+// const API_URL = process.env.NEXT_PUBLIC_API_URL ?? '';
+const API_URL = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3001';
 
 type Props = {
   userName: string;
