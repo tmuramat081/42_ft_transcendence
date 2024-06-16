@@ -2,7 +2,7 @@ import { useAsyncEffect } from '@/hooks/effect/useAsyncEffect';
 import { useAuth } from '@/providers/useAuth';
 import { useEffect, useState } from 'react';
 import { Box } from '@mui/material';
-import { Avatar, Button, Card, CardActions, CardHeader } from '@mui/material';
+import { Avatar, Card, CardHeader, Typography } from '@mui/material';
 import UserDetailModal from '@/components/users/list/detailModal';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? '';
@@ -31,6 +31,7 @@ export default function UserProfile() {
 
   return (
     <Box sx={{ px: 2, py: 4 }}>
+      <Typography variant="h4">Your Profile</Typography>
       <Card>
         <CardHeader
           avatar={
@@ -48,7 +49,6 @@ export default function UserProfile() {
         open={showUserDetailModal}
         onClose={() => setShowUserDetailModal(false)}
       />
-
     </Box>
   );
 

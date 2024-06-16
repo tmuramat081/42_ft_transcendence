@@ -1,15 +1,16 @@
-import { useState } from 'react';
 import { FriendList as FL } from '../users/FriendList';
 import { User } from '@/types/user';
+import { Typography, Grid } from '@mui/material';
 
 type Props = {
   user: User;
 };
 
 export default function FriendList({ user }: Props) {
-  const [friendList, setFriendList] = useState<User[]>([]);
-
   return (
-    <FL friends={friendList} user={user} />
+    <Grid container sx={{ mt: 2 }}>
+      <Typography variant="h4">Friend List</Typography>
+      <FL friends={user.friends} user={user} />
+    </Grid>
   );
 }

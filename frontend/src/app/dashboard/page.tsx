@@ -34,33 +34,35 @@ export default function Page() {
         justifyContent: 'center',
         alignItems: 'center',
         width: '100%',
-        height: '100%'
+        height: 'auto',
+        gap: 10,
       }}
     >
       <Box
         sx={{
+          flex: 1,
           marginTop: 12,
           display: 'flex',
           flexDirection: 'row',
           alignItems: 'center',
           justifyContent: 'center',
-          borderTop: '5px solid #00babc',
-          bgcolor: theme.palette.background.paper,
           width: '100%',
-          maxWidth: 800,
+          maxWidth: 1024,
           height: '100%',
           minHeight: 400,
-          px: 4,
-          gap: 2,
-          boxShadow: 4,
-          borderRadius: 4,
         }}
       >
         <Box
           sx={{
+            flex: 1,
             display: 'flex',
             flexDirection: 'column',
+            justifyContent: 'center',
             alignItems: 'center',
+            borderTop: '5px solid #00babc',
+            bgcolor: theme.palette.background.paper,
+            boxShadow: 4,
+            borderRadius: 4,
           }}
         >
           {/* ユーザープロフィール */}
@@ -68,10 +70,12 @@ export default function Page() {
           {/* ボタン */}
           <Box
             sx={{
-              py: 2,
               display: 'flex',
               flexDirection: 'column',
               gap: 2,
+              width: '100%',
+              py: 2,
+              px: 4,
             }}
           >
             <Button
@@ -83,7 +87,7 @@ export default function Page() {
             >
               Profile
             </Button>
-             <Button
+            <Button
               variant="contained"
               color="primary"
               onClick={() => {
@@ -114,20 +118,37 @@ export default function Page() {
         </Box>
         <Box
           sx={{
+            flex: 1,
             display: 'flex',
             flexDirection: 'column',
             justifyContent: 'center',
             alignItems: 'center',
+            borderTop: '5px solid #00babc',
+            bgcolor: theme.palette.background.paper,
+            boxShadow: 4,
+            borderRadius: 4,
+            px: 4,
           }}
         >
-          {/* フレンドリスト */}
-          <FriendList 
-            user={loginUser}
-          />
           {/* マッチ結果 */}
-          <MatchResult 
-            user={loginUser}
-          />
+          <MatchResult user={loginUser} />
+        </Box>
+        {/* フレンドリスト */}
+        <Box
+          sx={{
+            flex: 1,
+            display: 'flex',
+            flexDirection: 'column',
+            justifyContent: 'center',
+            alignItems: 'center',
+            borderTop: '5px solid #00babc',
+            bgcolor: theme.palette.background.paper,
+            boxShadow: 4,
+            borderRadius: 4,
+            px: 4,
+          }}
+        >
+          <FriendList user={loginUser} />
         </Box>
       </Box>
     </Box>

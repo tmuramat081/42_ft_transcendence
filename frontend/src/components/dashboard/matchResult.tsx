@@ -36,7 +36,8 @@ export default function MatchResult({ user }: Props) {
 
   return (
     <>
-      <Grid container>
+      <Grid container sx={{ mt: 2 }}>
+        <Typography variant="h4">Match Results</Typography>
         <Grid item>
           <Grid
             container
