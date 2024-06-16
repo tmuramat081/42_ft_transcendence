@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { Box } from '@mui/material';
 import { Avatar, Card, CardHeader, Typography } from '@mui/material';
 import UserDetailModal from '@/components/users/list/detailModal';
+import { User } from '@/types/user';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? '';
 

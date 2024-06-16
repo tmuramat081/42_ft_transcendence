@@ -1,6 +1,7 @@
 'use client';
 import { Avatar, Button, Card, CardActions, CardHeader } from '@mui/material';
 import { useRouter } from 'next/navigation';
+import { FindUsersResponse } from '@/types/user/findUsers';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? '';
 
