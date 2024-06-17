@@ -1,7 +1,7 @@
-import { FindUsersResponse } from '@/types/user/findUsers';
+'use client';
 import { Avatar, Button, Card, CardActions, CardHeader } from '@mui/material';
-import { useState } from 'react';
-import UserDetailModal from './detailModal';
+import { useRouter } from 'next/navigation';
+import { FindUsersResponse } from '@/types/user/findUsers';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? '';
 
@@ -13,10 +13,7 @@ type Props = {
  * プロフィールカード
  */
 export default function UserProfileCard({ user }: Props) {
-  const [showUserDetailModal, setShowUserDetailModal] = useState<boolean>(false);
-  const handleOpenDetailModal = () => {
-    setShowUserDetailModal(true);
-  };
+  const router = useRouter();
 
   return (
     <>
@@ -32,14 +29,11 @@ export default function UserProfileCard({ user }: Props) {
           subheader={user.email}
         />
         <CardActions sx={{ justifyContent: 'flex-end' }}>
-          <Button onClick={handleOpenDetailModal}>フレンド追加</Button>
+          <Button onClick={() => {
+            router.push(`/users/${user.userName}`);
+          }}>DETAIL</Button>
         </CardActions>
       </Card>
-      <UserDetailModal
-        userName={user.userName}
-        open={showUserDetailModal}
-        onClose={() => setShowUserDetailModal(false)}
-      />
     </>
   );
 }
