@@ -3,7 +3,7 @@ import { HTTP_METHOD } from '@/constants/api.constant';
 import { useAsyncEffect } from '@/hooks/effect/useAsyncEffect';
 import useApi from '@/hooks/httpClient/useApi';
 import { FindUsersResponse } from '@/types/user/findUsers';
-import { Modal } from '@mui/material';
+import { Modal, Box, Button, Typography } from '@mui/material';
 import Avatar from '@mui/material/Avatar';
 
 // const API_URL = process.env.NEXT_PUBLIC_API_URL ?? '';
@@ -16,42 +16,60 @@ type Props = {
 };
 
 export default function UserDetailModal({ userName, open, onClose }: Props) {
-  const { data: user, fetchData: fetchListUser } = useApi<FindUsersResponse>({
-    path: `users/${userName}`,
-    method: HTTP_METHOD.GET,
+  const { fetchData: addFriend } = useApi({
+    path: `users/friend/add/${userName}`,
+    method: HTTP_METHOD.POST,
   });
 
-  useAsyncEffect(async () => {
+  const handleAddFriend = async () => {
     try {
-      await fetchListUser();
+      await addFriend();
     } catch (error) {
       console.error(error);
+    } finally {
+      onClose();
     }
-  }, [userName]);
-
-  if (!user) {
-    return (
-      <div>
-        <h1>ユーザーが見つかりません</h1>
-      </div>
-    );
-  }
+  };
 
   return (
     <Modal
       open={open}
       onClose={onClose}
     >
-      <div>
-        <h1>{user.userName}</h1>
-        <p>{user.email}</p>
-        <p>{user.userId}</p>
-        <p>{user.icon}</p>
-        <Avatar
-          alt={user.userName}
-          src={`${API_URL}/api/uploads/${user.icon}`}
-        />
-      </div>
+      <Box
+        sx={{
+          position: 'absolute',
+          flexDirection: 'column',
+          justifyContent: 'center',
+          alignItems: 'center',
+          top: '50%',
+          left: '50%',
+          transform: 'translate(-50%, -50%)',
+          width: 400,
+          bgcolor: 'background.paper',
+          boxShadow: 24,
+          borderRadius: '10px',
+          p: 4,
+        }}
+      >
+        <Typography
+          variant="h6"
+        >
+          Add to Friend List?
+        </Typography>
+        <Typography
+          variant="body1"
+        >
+          {userName}
+        </Typography>
+        <Button
+          variant="contained"
+          color="primary"
+          onClick={handleAddFriend}
+        >
+          ADD
+        </Button>
+      </Box>
     </Modal>
   );
 }
