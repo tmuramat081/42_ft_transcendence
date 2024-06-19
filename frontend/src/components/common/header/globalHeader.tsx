@@ -103,7 +103,7 @@ const GlobalHeader = () => {
                     src={`${API_URL}/api/uploads/${loginUser.icon}`}
                     sx={{ width: 32, height: 32 }}
                   >
-                    {loginUser.icon}
+                    {/* {loginUser.icon} */}
                   </Avatar>
                 </Badge>
               </Link>
