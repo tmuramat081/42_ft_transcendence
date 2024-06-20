@@ -708,7 +708,7 @@ export class GameGateway {
   denyInvitation(@ConnectedSocket() socket: Socket, @MessageBody() data: DenyInvitationDto) {
     // 招待リストから削除
     const inivitation = this.invitationList.find(data.hostId)
-    console.log(inivitation)
+    // console.log(inivitation)
     if (inivitation !== undefined) {
       this.invitationList.delete(data.hostId);
     } else {
@@ -724,7 +724,7 @@ export class GameGateway {
     //   });
     // }
 
-    console.log(inivitation.hostSocketId)
+    // console.log(inivitation.hostSocketId)
 
     this.server.to(inivitation.hostSocketId).emit('denyInvitation');
   }

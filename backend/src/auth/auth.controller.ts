@@ -197,12 +197,12 @@ export class AuthController {
     // return JSON.stringify({"accessToken": accessToken});
 
     try {
-      console.log('verify');
-      console.log(dto);
+      // console.log('verify');
+      // console.log(dto);
 
       const user = await this.usersService.findOne(dto.userId);
 
-      console.log(user);
+      // console.log(user);
 
       // dtowを渡すように変更する？ userを渡すようにする？
       const verified = await this.authService.verify2fa(dto.userId, dto.code);
@@ -210,7 +210,7 @@ export class AuthController {
           throw new UnauthorizedException('Invalid code');
       }
 
-      console.log('verified');
+      // console.log('verified');
 
       // const payload: JwtPayload = { userId: user.userId, userName: user.userName, email: user.email, twoFactorAuth: true };
       // const accessToken: string = this.jwtService.sign(payload);

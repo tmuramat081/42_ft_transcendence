@@ -483,7 +483,7 @@ export class UsersService {
     const fs = require('fs');
     const filePath = path.join(process.cwd(), process.env.AVATAR_IMAGE_DIR, iconName)
 
-    console.log('filePath: ', filePath)
+    // console.log('filePath: ', filePath)
 
     // ファイルが存在する場合
     if (fs.existsSync(filePath)) {
