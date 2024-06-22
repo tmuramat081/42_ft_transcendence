@@ -114,7 +114,7 @@ export class UpdateUserDto {
   @IsString()
   @MinLength(4)
   @MaxLength(20)
-  @Match('password', { message: 'パスワードが一致しません' })
+  @Match('newPassword', { message: 'パスワードが一致しません' })
     newPasswordConfirm: string;
 
   @IsString()

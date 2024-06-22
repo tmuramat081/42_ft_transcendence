@@ -7,6 +7,8 @@ export interface Field {
   hasError: boolean;
   // 必須チェックの有無
   isRequired: boolean;
+  // 最小文字数
+  minLength?: number;
   // 最大文字数
   maxLength?: number;
   // エラーメッセージ
@@ -51,7 +53,10 @@ export function useFormValidation(initialFields: FormFields): ValidationResults 
     }
 
     // 桁数チェック
-    if (currentField.maxLength && currentField.maxLength < value.replace(/[\n\s]/g, '').length) {
+    if (currentField.minLength && currentField.minLength > value.replace(/[\n\s]/g, '').length) {
+      hasError = true;
+      errorMessages.push(`${currentField.minLength}文字以上で入力してください。`);
+    } else if (currentField.maxLength && currentField.maxLength < value.replace(/[\n\s]/g, '').length) {
       hasError = true;
       errorMessages.push(`${currentField.maxLength}文字以内で入力してください。`);
     }
