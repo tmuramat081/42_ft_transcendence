@@ -21,7 +21,8 @@ import { useTheme } from '@mui/material/styles';
 import TwoFaModal from '@/components/auth/signin/modal/twoFaModal';
 import { useAsyncEffect } from '@/hooks/effect/useAsyncEffect';
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL ?? '';
+// const API_URL = process.env.NEXT_PUBLIC_API_URL ?? '';
+const API_URL = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3001';
 
 type SignInResponse = {
   status: string;

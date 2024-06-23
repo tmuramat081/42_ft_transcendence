@@ -14,6 +14,9 @@ import { useAuth } from '@/providers/useAuth';
 import { usePublicRoute } from '@/hooks/routes/usePublicRoute';
 import Modal from '../../users/2fa/modal'; // Modalコンポーネントをインポート
 
+// const API_URL = process.env.NEXT_PUBLIC_API_URL ?? '';
+const API_URL = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3001';
+
 export default function Form() {
     // 2faが必要な場合のstate
     const [validationUserId, setValidationUserId] = useState(0);
@@ -28,7 +31,8 @@ export default function Form() {
     }, []);
 
     useEffect(() => {
-        fetch('http://localhost:3001/auth/login42', {
+        // fetch('http://localhost:3001/auth/login42', {
+        fetch(`${API_URL}/auth/login42`, {
             method: 'GET',
             credentials: 'include',
             headers: {
@@ -62,7 +66,7 @@ export default function Form() {
         console.log('Submitted 2FA code:', code);
         console.log('validationUserId:', validationUserId);
   
-        fetch('http://localhost:3001/auth/2fa/verify', {
+        fetch(`${API_URL}/auth/2fa/verify`, {
           method: 'POST',
           credentials: 'include',
           headers: {

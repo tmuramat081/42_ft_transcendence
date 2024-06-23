@@ -2,6 +2,8 @@ import { useAuth } from '@/providers/useAuth';
 import { useEffect } from 'react';
 import Avatar from '@mui/material/Avatar';
 
+const API_URL = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3001';
+
 export default function Info() {
   const { loginUser, getCurrentUser, loading } = useAuth();
 
@@ -24,7 +26,7 @@ export default function Info() {
       <h1>User Info</h1>
       <Avatar
         alt={loginUser.userName}
-        src={'http://localhost:3001/api/uploads/' + loginUser.icon}
+        src={API_URL + '/api/uploads/' + loginUser.icon}
       />
       <p>Username: {loginUser.userName}</p>
       <p>Email: {loginUser.email}</p>

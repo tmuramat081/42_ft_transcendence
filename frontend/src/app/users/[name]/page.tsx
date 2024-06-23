@@ -23,7 +23,8 @@ import { FriendListItem } from '@/components/users/FriendListItem';
 // import FriendList from '@/components/dashboard/friendList';
 import { FriendList } from '@/components/users/FriendList';
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL ?? '';
+// const API_URL = process.env.NEXT_PUBLIC_API_URL ?? '';
+const API_URL = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3001';
 
 export default function Profile({ params }: { params: { name: string } }) {
   // console.log(params.name);
@@ -135,7 +136,8 @@ export default function Profile({ params }: { params: { name: string } }) {
   useEffect(() => {
     // サーバーサイドでの処理なのでhttp://localhost:3001は使えない
     // そのため、http://backend:3000を使う
-    fetch("http://localhost:3001/users/" + params.name, {
+    // fetch("http://localhost:3001/users/" + params.name, {
+    fetch(API_URL + "/users/" + params.name, {
         method: "GET",
         headers: { "Content-Type": "application/json" },
         credentials: 'include',
@@ -179,7 +181,8 @@ export default function Profile({ params }: { params: { name: string } }) {
     }
     console.log('friend');
     
-    fetch("http://localhost:3001/users/friend/add/" + user.userName, {
+    // fetch("http://localhost:3001/users/friend/add/" + user.userName, {
+    fetch(API_URL + "/users/friend/add/" + user.userName, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: 'include',
@@ -202,7 +205,8 @@ export default function Profile({ params }: { params: { name: string } }) {
     }
     console.log('friend');
     
-    fetch("http://localhost:3001/users/friend/remove/" + user.userName, {
+    // fetch("http://localhost:3001/users/friend/remove/" + user.userName, {
+    fetch(API_URL + "/users/friend/remove/" + user.userName, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: 'include',
@@ -226,7 +230,8 @@ export default function Profile({ params }: { params: { name: string } }) {
     }
     // console.log('block');
 
-    fetch("http://localhost:3001/users/block/" + user.userName, {
+    // fetch("http://localhost:3001/users/block/" + user.userName, {
+    fetch(API_URL + "/users/block/" + user.userName, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: 'include',
@@ -249,7 +254,8 @@ export default function Profile({ params }: { params: { name: string } }) {
     }
     // console.log('unblock');
 
-    fetch("http://localhost:3001/users/unblock/" + user.userName, {
+    // fetch("http://localhost:3001/users/unblock/" + user.userName, {
+    fetch(API_URL + "/users/unblock/" + user.userName, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: 'include',

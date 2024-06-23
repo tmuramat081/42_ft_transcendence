@@ -288,7 +288,6 @@ export const Play = ({ updateFinishedGameInfo }: Props) => {
 
         const render = () => {
             drawField(context, gameInfo, gameParameter);
-            // ?
             animationFrameId = window.requestAnimationFrame(render);
         }
 

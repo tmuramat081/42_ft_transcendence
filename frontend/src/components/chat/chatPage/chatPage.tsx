@@ -11,7 +11,8 @@ import { UserInfo, ChatMessage, Room } from '@/types/chat/chat';
 import { User } from '@/types/user';
 import './chatPage.css';
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL ?? '';
+// const API_URL = process.env.NEXT_PUBLIC_API_URL ?? '';
+const API_URL = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3001';
 
 export default function ChatPage() {
   const router = useRouter();

@@ -27,15 +27,16 @@ const style = {
   textAlign: 'center',
 };
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL ?? '';
+// const API_URL = process.env.NEXT_PUBLIC_API_URL ?? '';
+const API_URL = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3001';
 
 // 入力フォーム項目
 const inputFields: FormFields = {
-  userName: { value: '', hasError: false, isRequired: true, errorMessages: [] },
+  userName: { value: '', hasError: false, isRequired: true, errorMessages: [], minLength: 4, maxLength: 20 },
   email: { value: '', hasError: false, isRequired: true, errorMessages: [] },
-  newPassword: { value: '', hasError: false, isRequired: true, errorMessages: [] },
-  newPasswordConfirm: { value: '', hasError: false, isRequired: true, errorMessages: [] },
-  password: { value: '', hasError: false, isRequired: true, errorMessages: [] },
+  newPassword: { value: '', hasError: false, isRequired: false, errorMessages: [], minLength: 4, maxLength: 20 },
+  newPasswordConfirm: { value: '', hasError: false, isRequired: false, errorMessages: [], minLength: 4, maxLength: 20 },
+  password: { value: '', hasError: false, isRequired: true, errorMessages: [], minLength: 4, maxLength: 20 },
 };
 
 export default function UpdateUserForm() {
@@ -84,17 +85,63 @@ export default function UpdateUserForm() {
     if (loginUser) {
       const { userName, email, twoFactorAuth } = loginUser;
       const fields: FormFields = {
-        userName: { value: userName, hasError: false, isRequired: true, errorMessages: [] },
+        userName: { value: userName, hasError: false, isRequired: true, errorMessages: [], minLength: 4, maxLength: 20 },
         email: { value: email, hasError: false, isRequired: true, errorMessages: [] },
-        newPassword: { value: '', hasError: false, isRequired: true, errorMessages: [] },
-        newPasswordConfirm: { value: '', hasError: false, isRequired: true, errorMessages: [] },
-        password: { value: '', hasError: false, isRequired: true, errorMessages: [] },
+        newPassword: { value: '', hasError: false, isRequired: false, errorMessages: [], minLength: 4, maxLength: 20 },
+        newPasswordConfirm: { value: '', hasError: false, isRequired: false, errorMessages: [], minLength: 4, maxLength: 20 },
+        password: { value: '', hasError: false, isRequired: true, errorMessages: [], minLength: 4, maxLength: 20 },
       };
       setFields(fields);
       setTwoFactorAuth(twoFactorAuth);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [loginUser]);
+
+  // バリデーション
+  // const validate = () => {
+  //   let isValid = true;
+
+  //   // エラーを初期化
+  //   Object.keys(fields).forEach((key) => {
+  //     fields[key].hasError = false;
+  //     fields[key].errorMessages = [];
+  //   });
+
+  //   // 42認証の場合はパスワードの入力チェックをスキップ
+  //   if (is42Auth) {
+  //     fields.newPassword.isRequired = false;
+  //     fields.newPasswordConfirm.isRequired = false;
+  //     fields.password.isRequired = false;
+  //   }
+
+  //   Object.keys(fields).forEach((key) => {
+  //     const field = fields[key as keyof FormFields];
+
+  //     field.errorMessages = [];
+  //     if (field.isRequired && !field.value) {
+  //       // 必須チェック
+  //       field.hasError = true;
+  //       field.errorMessages?.push('必須項目です');
+  //       isValid = false;
+  //     }
+  //     if (field.maxLength && field.value.length > field.maxLength) {
+  //       // 文字数チェック
+  //       field.hasError = true;
+  //       field.errorMessages?.push(`${field.maxLength}文字以内で入力してください`);
+  //       isValid = false;
+  //     }
+  //     if (key === 'newPassword' && field.value !== fields.newPasswordConfirm.value) {
+  //       // 相関チェック
+  //       field.hasError = true;
+  //       field.errorMessages?.push('パスワードが一致しません');
+  //       isValid = false;
+  //     }
+  //     if (field.hasError) {
+  //       setFields({ ...fields, [key]: field });
+  //     }
+  //   });
+  //   return isValid;
+  // };
 
   // バリデーション
   const validate = () => {
@@ -113,6 +160,8 @@ export default function UpdateUserForm() {
       fields.password.isRequired = false;
     }
 
+    const passwordRegex = /((?=.*\d)|(?=.*\W+))(?![.\n])(?=.*[A-Z])(?=.*[a-z]).*$/;
+
     Object.keys(fields).forEach((key) => {
       const field = fields[key as keyof FormFields];
 
@@ -123,17 +172,44 @@ export default function UpdateUserForm() {
         field.errorMessages?.push('必須項目です');
         isValid = false;
       }
-      if (field.maxLength && field.value.length > field.maxLength) {
+      if (field.isRequired && field.minLength && field.value.length < field.minLength) {
+        // 文字数チェック
+        field.hasError = true;
+        field.errorMessages?.push(`${field.minLength}文字以上で入力してください`);
+        isValid = false;
+      }
+      if (field.isRequired && field.maxLength && field.value.length > field.maxLength) {
         // 文字数チェック
         field.hasError = true;
         field.errorMessages?.push(`${field.maxLength}文字以内で入力してください`);
         isValid = false;
       }
-      if (key === 'newPassword' && field.value !== fields.newPasswordConfirm.value) {
-        // 相関チェック
-        field.hasError = true;
-        field.errorMessages?.push('パスワードが一致しません');
-        isValid = false;
+      // if (field.value.length < 3 || field.value.length > 20) {
+      //   // 長さチェック
+      //   field.hasError = true;
+      //   field.errorMessages?.push('3～20文字で入力してください');
+      //   isValid = false;
+      // }
+      if (key === 'newPassword' && field.value) {
+        // 新しいパスワードが入力された場合
+        if (!fields.newPasswordConfirm.value) {
+          // 確認用パスワードが入力されていない場合
+          fields.newPasswordConfirm.hasError = true;
+          fields.newPasswordConfirm.errorMessages?.push('確認用パスワードを入力してください');
+          isValid = false;
+        }
+        if (field.value !== fields.newPasswordConfirm.value) {
+          // 相関チェック
+          field.hasError = true;
+          field.errorMessages?.push('パスワードが一致しません');
+          isValid = false;
+        }
+        if (!passwordRegex.test(field.value)) {
+          // 正規表現チェック
+          field.hasError = true;
+          field.errorMessages?.push('パスワードは指定の形式に従ってください');
+          isValid = false;
+        }
       }
       if (field.hasError) {
         setFields({ ...fields, [key]: field });
@@ -141,6 +217,8 @@ export default function UpdateUserForm() {
     });
     return isValid;
   };
+
+
 
   // 送信ボタン押下時の処理
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
@@ -160,6 +238,8 @@ export default function UpdateUserForm() {
         : undefined,
       password: fields.password.value ? fields.password.value : undefined,
     };
+
+    // console.log('requestBody:', requestBody);
     promises.push(
       updateUser({
         body: requestBody,
@@ -285,7 +365,7 @@ export default function UpdateUserForm() {
         // const response = await fetch('http://localhost:3001/auth/2fa/disable');
         // const data = await response.json();
         // console.log('2FA無効化:', data);
-        fetch('http://localhost:3001/auth/2fa/disable', {
+        fetch(`${API_URL}/auth/2fa/disable`, {
             method: 'POST',
             credentials: 'include',
             // headers: {

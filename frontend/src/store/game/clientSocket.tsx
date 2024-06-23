@@ -7,6 +7,8 @@ import { create } from 'zustand';
 // zustand: 状態管理ライブラリで、ReactのコンテキストAPIやReduxのような他の状態管理ライブラリの代わりに使用されることがあります。
 //非常にシンプルでフックベースのAPIを提供しており、グローバルステートを簡単に作成・使用できます。 useContextより簡単に使える
 
+// const API_URL = process.env.NEXT_PUBLIC_API_URL ?? '';
+const API_URL = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3001';
 
 type State = {
     socket: Socket;
@@ -15,7 +17,8 @@ type State = {
 // create: socketの初期化
 export const useSocketStore = create<State>(() => ({
     //, {autoConnect: false}   soxket.connect()を使う場合は、ここに記述
-    socket: io("http://localhost:3001/game", {autoConnect: false} ),
+    // socket: io("http://localhost:3001/game", {autoConnect: false} ),
+    socket: io(API_URL + "/game", {autoConnect: false} ),
 }));
 
 // ステップ1: Contextの作成

@@ -6,8 +6,8 @@ import { Avatar, Card, CardHeader, Typography } from '@mui/material';
 import UserDetailModal from '@/components/users/list/detailModal';
 import { User } from '@/types/user';
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL ?? '';
-
+// const API_URL = process.env.NEXT_PUBLIC_API_URL ?? '';
+const API_URL = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3001';
 
 export default function UserProfile() {
   const { loginUser, getCurrentUser } = useAuth();

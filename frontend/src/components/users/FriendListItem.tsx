@@ -15,7 +15,8 @@ import { PlayerInfo } from '@/types/game/game';
 import Avatar from '@mui/material/Avatar';
 import { BadgedAvatar, AvatarFontSize } from '../game/common/BadgedAvatar';
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL ?? '';
+// const API_URL = process.env.NEXT_PUBLIC_API_URL ?? '';
+const API_URL = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3001';
 
 type Props = {
     friend: Friend;

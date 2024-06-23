@@ -390,12 +390,12 @@ export class UsersService {
   // }
 
   async updateUser(user: User, updateUser: UpdateUserDto): Promise<User> {
-    const conflictUser = await this.userRepository.findOne({ where: { userName: updateUser.userName } });
-    if (conflictUser) {
-      //return null;
-      // console.log('User name already exists');
-      throw new ConflictException('User name already exists');  
-    }
+    // const conflictUser = await this.userRepository.findOne({ where: { userName: updateUser.userName } });
+    // if (conflictUser) {
+    //   //return null;
+    //   // console.log('User name already exists');
+    //   throw new ConflictException('User name already exists');  
+    // }
 
     // passwordの確認
     // updateUserのpasswordとuserのpasswordが一致するか確認
@@ -417,6 +417,8 @@ export class UsersService {
       //return null;
       throw new NotFoundException('User not found');
     }
+
+    // console.log('targetUser: ', targetUser)
 
     // パスワードの更新
     // 新しいパスワードがある場合、かつ、新しいパスワードと新しいパスワードの確認が一致する場合
@@ -483,7 +485,7 @@ export class UsersService {
     const fs = require('fs');
     const filePath = path.join(process.cwd(), process.env.AVATAR_IMAGE_DIR, iconName)
 
-    console.log('filePath: ', filePath)
+    // console.log('filePath: ', filePath)
 
     // ファイルが存在する場合
     if (fs.existsSync(filePath)) {

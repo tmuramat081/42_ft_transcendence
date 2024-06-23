@@ -14,7 +14,9 @@ import { useSocketStore } from '@/store/game/clientSocket';
 import { useInvitedFriendStrore } from '@/store/game/invitedFriendState';
 import { Friend } from '@/types/game/friend';
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL ?? '';
+// const API_URL = process.env.NEXT_PUBLIC_API_URL ?? '';
+const API_URL = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3001';
+
 const BLOCKED_USER_KEY = 'blockedUser';
 
 export default function DMPage({ params }: { params: string }) {

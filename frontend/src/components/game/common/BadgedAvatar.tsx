@@ -9,14 +9,18 @@ const stringToColor = (string: string, isLoadingError: boolean) => {
     let hash = 0;
     let i;
 
+    // 文字列の各文字に対して、その文字のcharコードを用いてハッシュ値を計算します。
+    // 文字列の各文字に対して、その文字のUTF-16コード（charコード）を取得し、ハッシュ値を更新します
     for (i = 0; i < string.length; i += 1) {
         hash = string.charCodeAt(i) + ((hash << 5) - hash);
     } 
 
-    console.log(hash)
+    // console.log(hash)
 
     let value = '#';
 
+    // ハッシュ値を用いてカラーコード（16進数のRGB値）を生成します。
+    //ハッシュ値を用いてRGBカラーコードを生成します。ハッシュ値をビットシフトし、各8ビット（1バイト）を取り出して16進数に変換し、それをカラーコードの一部として結合します。
     for (i = 0; i < 3; i += 1) {
         const color = (hash >> (i * 8)) & 0xff;
         value += ('00' + color.toString(16)).substr(-2);
@@ -24,6 +28,7 @@ const stringToColor = (string: string, isLoadingError: boolean) => {
 
     // console.log(value)
 
+    // isLoadingErrorがtrueの場合にのみ、生成したカラーコードを返します。falseの場合は空文字列を返します。
     return isLoadingError ? value : '';
 };
 
