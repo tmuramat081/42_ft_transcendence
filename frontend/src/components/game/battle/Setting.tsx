@@ -185,7 +185,7 @@ export const Setting = () => {
           left: '50%',
           transform: 'translate(-50%, -50%)',
           bgcolor: 'background.paper',
-          width: '25%',
+          width: '50%',
           height: '50%',
         }}
       >
@@ -210,7 +210,6 @@ export const Setting = () => {
           </>
         )}
         {playState === PlayState.stateSelecting && (
-          <>
             <Grid item>
               <Grid
                 container
@@ -294,7 +293,6 @@ export const Setting = () => {
                 </Button>
               </Grid>
             </Grid>
-          </>
         )}
       </Grid>
     </Grid>
