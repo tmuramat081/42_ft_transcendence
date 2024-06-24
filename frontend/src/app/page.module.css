@@ -1,0 +1,14 @@
+/*
+  Next.jsは組み込みでCSS Modulesをサポートしている。
+  CSS Mosulesを使うことで、名前の衝突を避け、ローカルにスコープされたCSSクラスを作成可能。
+  https://nextjs.org/docs/app/building-your-application/styling
+*/
+.main {
+  display: flex;
+  padding: 20px;
+}
+
+.largeInput {
+  width: 300px;
+  height: 40px;
+}
