@@ -8,9 +8,11 @@ type Props = {
 
 export default function FriendList({ user }: Props) {
   return (
-    <Grid container sx={{ mt: 2 }}>
+    <>
+    {/* <Grid container sx={{ mt: 2 }}> */}
       <Typography variant="h4">Friend List</Typography>
       <FL friends={user.friends} user={user} />
-    </Grid>
+    {/* </Grid> */}
+    </>
   );
 }

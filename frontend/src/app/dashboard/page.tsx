@@ -3,22 +3,18 @@
 import FriendList from '@/components/dashboard/friendList';
 import UserProfile from '@/components/dashboard/userProfile';
 import MatchResult from '@/components/dashboard/matchResult';
-import { Button, Box } from '@mui/material';
+import { Button, Box, Grid } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/providers/useAuth';
-import { useEffect, useState } from 'react';
 import { useAsyncEffect } from '@/hooks/effect/useAsyncEffect';
-import { User } from '@/types/user';
 
 /**
  * ダッシュボード画面
  */
 export default function Page() {
   const { loginUser, getCurrentUser } = useAuth();
-  // スタイルテーマ
   const theme = useTheme();
-  // ルーティング
   const router = useRouter();
 
   useAsyncEffect(async () => {
@@ -36,25 +32,29 @@ export default function Page() {
         width: '100%',
         height: 'auto',
         gap: 10,
+        flexDirection: 'column',
+        [theme.breakpoints.up('md')]: {
+          flexDirection: 'row',
+        },
       }}
     >
-      <Box
+      <Grid
+        container
+        spacing={2}
         sx={{
           flex: 1,
           marginTop: 12,
-          display: 'flex',
-          flexDirection: 'row',
-          alignItems: 'center',
-          justifyContent: 'center',
           width: '100%',
           maxWidth: 1024,
           height: '100%',
           minHeight: 400,
         }}
       >
-        <Box
+        <Grid
+          item
+          xs={12}
+          md={4}
           sx={{
-            flex: 1,
             display: 'flex',
             flexDirection: 'column',
             justifyContent: 'center',
@@ -63,11 +63,10 @@ export default function Page() {
             bgcolor: theme.palette.background.paper,
             boxShadow: 4,
             borderRadius: 4,
+            p: 2,
           }}
         >
-          {/* ユーザープロフィール */}
           <UserProfile />
-          {/* ボタン */}
           <Box
             sx={{
               display: 'flex',
@@ -115,10 +114,12 @@ export default function Page() {
               Start Game
             </Button>
           </Box>
-        </Box>
-        <Box
+        </Grid>
+        <Grid
+          item
+          xs={12}
+          md={4}
           sx={{
-            flex: 1,
             display: 'flex',
             flexDirection: 'column',
             justifyContent: 'center',
@@ -127,16 +128,16 @@ export default function Page() {
             bgcolor: theme.palette.background.paper,
             boxShadow: 4,
             borderRadius: 4,
-            px: 4,
+            p: 2,
           }}
         >
-          {/* マッチ結果 */}
           <MatchResult user={loginUser} />
-        </Box>
-        {/* フレンドリスト */}
-        <Box
+        </Grid>
+        <Grid
+          item
+          xs={12}
+          md={4}
           sx={{
-            flex: 1,
             display: 'flex',
             flexDirection: 'column',
             justifyContent: 'center',
@@ -145,12 +146,12 @@ export default function Page() {
             bgcolor: theme.palette.background.paper,
             boxShadow: 4,
             borderRadius: 4,
-            px: 4,
+            p: 2,
           }}
         >
           <FriendList user={loginUser} />
-        </Box>
-      </Box>
+        </Grid>
+      </Grid>
     </Box>
   );
 }

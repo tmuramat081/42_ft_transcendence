@@ -36,21 +36,21 @@ export default function MatchResult({ user }: Props) {
 
   return (
     <>
-      <Grid container sx={{ mt: 2 }}>
+      {/* <Grid container sx={{ mt: 2 }}> */}
         <Typography variant="h4">Match Results</Typography>
-        <Grid item>
+        {/* <Grid item>
           <Grid
             container
             direction="column"
             alignItems="center"
-          >
+          > */}
           <History
             user={user}
             records={records}
           />
-          </Grid>
+          {/* </Grid>
         </Grid>
-      </Grid>
+      </Grid> */}
     </>
   );
 }
