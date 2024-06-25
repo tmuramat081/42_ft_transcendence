@@ -206,10 +206,6 @@ export class UsersController {
         return JSON.stringify({"accessToken": accessToken});
     }
 
-
-    // 11 manba 15 バック
-    // manba  mfny フロント
-    // swagger mfny
     @UseGuards(JwtAuthGuard)
     // iconはformData.appendで送信すると保存される
     @UseInterceptors(FileInterceptor('icon', storage))
