@@ -40,18 +40,43 @@ export class RecordsRepository {
 
     if (skip) queryBuilder.skip(skip);
     if (take) queryBuilder.take(take);
-    if (cursor) queryBuilder.where('gameRecord.id > :cursor', { cursor });
+    if (cursor) {
+      // queryBuilder.where('gameRecord.id > :cursor', { cursor });
+    }
     if (where) {
       // 追加のwhere条件は、具体的な条件に応じて設定する必要があります。
+      if (where?.OR) {
+        const orConditions = where.OR.map(condition => {
+          const queries = [];
+          if (condition.winnerId !== undefined) {
+            queries.push('gameRecord.winnerId = :winnerId');
+          }
+          if (condition.loserId !== undefined) {
+            queries.push('gameRecord.loserId = :loserId');
+          }
+          return `(${queries.join(' OR ')})`;
+        }).join(' OR ');
+
+        queryBuilder.where(orConditions, {
+          winnerId: where.OR[0]?.winnerId,
+          loserId: where.OR[1]?.loserId,
+        });
+
+      }
     }
     if (orderBy) {
       // orderBy条件は、具体的なソートキーに応じて設定する必要があります。
+      for (const key in orderBy) {
+        if (orderBy[key] === 'ASC' || orderBy[key] === 'DESC') {
+          queryBuilder.addOrderBy(`gameRecord.${key}`, orderBy[key]);
+        }
+      }
     }
 
     // ここでクエリを実行します。
     const records = await queryBuilder.getMany();
 
-    //console.log('records:', records);
+    console.log('records:', records);
 
     // interfaceを使って、返り値の形を定義します。
     return records.map(record => ({
