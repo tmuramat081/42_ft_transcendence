@@ -13,6 +13,7 @@ import { useAuth } from '@/providers/useAuth';
 
 import { usePublicRoute } from '@/hooks/routes/usePublicRoute';
 import Modal from '../../users/2fa/modal'; // Modalコンポーネントをインポート
+import TwoFaModal from '@/components/auth/signin/modal/twoFaModal';
 
 // const API_URL = process.env.NEXT_PUBLIC_API_URL ?? '';
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3001';
@@ -106,14 +107,13 @@ export default function Form() {
         <div>
             <h1>42ログイン中...</h1>
 
-            <Modal show={show2Fa} onClose={() => {
-                // 無効リクエストを送る
-            }}>
+            {/* <Modal show={show2Fa} onClose={() => {
+            }}> */}
                 {/* 2FAフォームコンポーネント */}
-                <form onSubmit={handleSubmit2fa}>
+                {/* <form onSubmit={handleSubmit2fa}> */}
 
                 {/* {qrCodeUrl && <img src={qrCodeUrl} alt="QR Code" />} */}
-                <input
+                {/* <input
                     type="text"
                     value={code}
                     onChange={(e) => setCode(e.target.value)}
@@ -122,7 +122,12 @@ export default function Form() {
                 />
                 <button type="submit">確認</button>
                 </form>
-            </Modal>
+            </Modal> */}
+
+            <TwoFaModal
+                showModal={show2Fa}
+                validationUserId={validationUserId}
+            />
         </div>
     )
     

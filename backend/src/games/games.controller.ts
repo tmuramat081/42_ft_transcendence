@@ -75,7 +75,7 @@ export class GamesController {
         ],
       },
       orderBy: {
-        createdAt: 'desc',
+        createdAt: 'DESC',
       },
     });
     //console.log('records:', records)
